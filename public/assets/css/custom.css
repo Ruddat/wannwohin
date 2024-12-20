@@ -1,0 +1,203 @@
+.sidebar-left-nav {
+    -webkit-transform: translate3d(0px, 0px, 0px);
+    transform: translate3d(0px, 0px, 0px);
+    visibility: visible;
+    transition: all 0.5s ease 0s;
+    -webkit-transition: all 0.5s ease 0s;
+}
+
+.closed.sidebar-left-nav  {
+    -webkit-transform: translate3d(-240px, 0px, 0px);
+    transform: translate3d(-240px, 0px, 0px);
+    visibility: visible;
+}
+
+#sidebar {
+    z-index: 1000;
+    position: fixed;
+    overflow-y: auto;
+    /*top: 100px;*/
+    width: 240px;
+    height: 100%;
+    background-color: #0b0b0b;
+}
+
+#sidebarButton {
+    z-index: 1000;
+    position: fixed;
+    top: 100px;
+    left: 240px;
+    cursor: pointer;
+    border-radius: 0 5px 5px 0;
+}
+
+.form-check-input:checked {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    text-transform: unset;
+}
+
+#location_flag{
+    z-index: 1000;
+    top: 54px;
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    /*background-image: url(http://localhost/img/location_main_img/europa/griechenland/flagge-griechenland.gif);*/
+    background-repeat: no-repeat;
+    background-position: left;
+    background-size: cover;
+    background-position-x: -2px;
+    background-position-y: center;
+    display: flex;
+}
+
+#location_table tr:last-child td { border-bottom:none; }
+#location_table tr td {
+    padding: 0;
+}
+#location_table tr td span {
+    padding: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #838383;
+}
+#location_table tr td div h5 {
+    text-transform: unset;
+    font-size: 1.15em;
+    font-weight: 700;
+}
+
+
+.article-img
+{
+    background-position : center;
+    background-repeat :no-repeat;
+    background-size :cover;
+}
+
+
+.img-fluid {
+    /*height: 100%;*/
+}
+
+.my-zoom {
+    /*padding: 50px;
+    background-color: green;*/
+    transition: transform .2s; /* Animation */
+  /*  width: 200px;
+    height: 200px;*/
+height: 100%;
+    background-size: cover;
+}
+.my-zoom:hover {
+    transform: scale(1.2); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+}
+
+.my-zoom1 {
+    transition: transform .2s; /* Animation */
+    height: 100%;
+}
+
+.my-zoom1:hover {
+    transform: scale(1.02); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+    cursor: pointer;
+    /*border: solid white 0.1em;*/
+}
+.my-zoom2 {
+    transition: transform .2s; /* Animation */
+    height: 100%;
+}
+
+.my-zoom2:hover {
+    transform: scale(1.03); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+    cursor: pointer;
+}
+
+.img-fill{
+    height: 100%;
+    max-width: 100%;
+}
+
+
+.main-content-section {
+    background-color: #ecf1f7 !important;
+    border-color: #dae4ef !important;
+    padding: 0 !important;
+}
+
+.fa-disabled {
+    opacity: 0.6;
+}
+
+.cursor-click{
+    cursor: pointer;
+}
+/*pANORAMAtEXT STYLING */
+.panorama-text{
+    text-transform: uppercase;
+    min-font-size: 30px;
+    color: white;
+}
+.panorama-text span{
+    margin-bottom: 20px;
+}
+.panorama-text div span:first-child, .panorama-text div span:nth-child(3){
+    font-family: "Open Sans", Arial, sans-serif ;
+    font-size: 30px;
+    display: block;
+}
+.panorama-text div span:nth-child(2), .panorama-text div span:nth-child(4){
+    font-family: "Arial Black";
+    font-weight: bolder;
+    font-size: 35px;
+    padding-left: 20px;
+    display: block;
+}
+
+.panorama-text .txt2, .panorama-text .txt4{
+    color: black !important;
+}
+
+.panorama-text .txt4{
+   margin-top: -35px;
+}
+.panorama-text .txt4 span:nth-child(3){
+   padding-left: 66px;
+}
+.panorama-text .txt4 span:nth-child(4){
+   padding-left: 47px;
+    letter-spacing: 0.1em;
+    margin-top: -0.2em;
+}
+
+/*pANORAMAtEXT STYLING */
+
+article .experience-description a h4.text-dark {
+    line-height: 1.1;
+/*    font-size: 2.75em !important;*/
+}
+
+
+#urlaub_type_month {
+    background-color: #fdd55c;
+}
+
+#urlaub_type_month option {
+    background-color: whitesmoke;
+    color: black;
+}
+
+ul.breadcrumb a{
+    color: #CC8400;
+}
+
+ul.breadcrumb .active{
+
+
+}
