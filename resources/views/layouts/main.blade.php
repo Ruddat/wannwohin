@@ -60,7 +60,12 @@
     <script src="{{ asset('assets/vendor/modernizr/modernizr.min.js') }}"></script>
 </head>
 <body data-plugin-scroll-spy data-plugin-options="{'target': '.wrapper-spy'}">
-@include('layouts.search')
+    <livewire:frontend.quick-search.quick-search-component />
+                    {{--
+    @include('layouts.search')
+--}}
+
+
 
 <x-header
     :panorama-location-picture="$panorama_location_picture ?? null"
