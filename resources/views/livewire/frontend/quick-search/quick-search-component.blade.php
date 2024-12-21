@@ -15,7 +15,7 @@
         <form wire:submit.prevent="redirectToResults">
             <div class="form-group">
                 <label for="continent">Kontinent</label>
-                <select wire:model="continent" class="form-select py-1">
+                <select wire:model.change="continent" class="form-select py-1">
                     <option value="">Beliebig</option>
                     @foreach($continents as $continent)
                         <option value="{{ $continent->id }}">{{ $continent->title }}</option>
