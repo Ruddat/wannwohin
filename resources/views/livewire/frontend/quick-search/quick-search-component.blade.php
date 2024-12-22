@@ -85,6 +85,10 @@
                 <span>{{ $filteredLocations }}</span> von <span>{{ $totalLocations }}</span> Ergebnissen anzeigen
             </button>
         </form>
+
+        <div class="mt-2">
+            <a class="text-decoration-underline text-white" href="{{ route('detail_search') }}"><i class="fas fa-arrow-circle-right text-warning rounded-circle me-1 bg-white"></i>Detailsuche</a>
+        </div>
     </div>
 
     <script>

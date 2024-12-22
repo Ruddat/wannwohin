@@ -27,12 +27,23 @@ class IndexController extends Controller
         $totalLocations = $this->locationRepository->getTotalFinishedLocations();
 
         // Header-Inhalte abrufen
-        $headerContents = HeaderContent::all(); // Alle Einträge aus der Tabelle holen
+        $headerContents = HeaderContent::all();
+
+        // Überprüfen, ob Header-Inhalte verfügbar sind
+        if ($headerContents->isEmpty()) {
+            return view('pages.main.index', [
+                'top_ten' => $topTenWithWeather,
+                'total_locations' => $totalLocations,
+                'panorama_location_picture' => null,
+                'main_location_picture' => null,
+                'panorama_location_text' => 'Default Text',
+            ]);
+        }
 
         // Auswahl eines Header-Inhalts basierend auf der aktuellen Zeit
         $currentMinute = now()->minute;
         $headerIndex = intdiv($currentMinute, 15) % $headerContents->count(); // Index berechnen
-        $headerContent = $headerContents[$headerIndex] ?? null;
+        $headerContent = $headerContents->get($headerIndex);
 
         return view('pages.main.index', [
             'top_ten' => $topTenWithWeather,
