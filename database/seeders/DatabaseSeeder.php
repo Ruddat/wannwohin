@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             WwdeCountriesSeeder::class,  // Für Länder
             WwdeLocationsSeeder::class,  // Für Standorte
             WwdeRangesSeeder::class,     // Für Preisbereiche
+            HeaderContentSeeder::class,     // Für Preisbereiche
         ]);
 
 

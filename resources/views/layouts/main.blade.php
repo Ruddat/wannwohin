@@ -52,6 +52,10 @@
     <!-- Slider Custom CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/custom-slider.css') }}">
 
+
+    <!-- Flag Icons CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/flag-icons-master/flag-icon.css') }}">
+
     <!-- Cookies Consent CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/cookie-consent.css') }}">
     @yield('css')
@@ -121,6 +125,10 @@
 
     <!-- jquery UI extra added from hani.masoud@gmx.de -->
     <script src={{ asset('assets/js/jquery-ui.js') }}></script>
+
+    <!-- flags icons js -->
+    <script src="{{ asset('assets/js/flag_icons.js') }}"></script>
+
 
     <!-- Cookies Consent added from hani.masoud@gmx.de -->
     <script src={{ asset('assets/js/cookie-consent.js') }}></script>

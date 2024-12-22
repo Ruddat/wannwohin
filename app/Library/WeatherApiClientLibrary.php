@@ -36,6 +36,8 @@ class WeatherApiClientLibrary
             'lang' => 'de',
         ]);
 
+//dd($response->json());
+
         if ($response->successful()) {
             return [
                 'daily_temperature' => round(floatval($response->json('main.temp', 0))),
@@ -44,6 +46,9 @@ class WeatherApiClientLibrary
                 'sunshine_per_day' => rand(5, 10), // Beispielwerte
                 'rainy_days' => rand(0, 1), // Beispielwerte
                 'weather' => $response->json('weather.0.description', ''), // Wetterbeschreibung
+                'icon' => $response['weather'][0]['icon'] ?? null, // Icon hinzufügen
+               // 'icon' => $weatherData['icon'] ?? null, // Icon hinzufügen
+
             ];
         }
 
@@ -64,6 +69,7 @@ class WeatherApiClientLibrary
         return [
             'current_tmp' => $weatherData['daily_temperature'] ?? null,
             'weather' => $weatherData['weather'] ?? null,
+            'icon' => $weatherData['icon'] ?? null, // Icon hinzufügen
         ];
     }
 }

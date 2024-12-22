@@ -2,142 +2,123 @@
     <section class="section section-no-border bg-color-light m-0">
         <div class="container">
             <div class="row">
-                <div class="col">
-
-                    <div class="custom-box-details bg-color-light custom-box-shadow-1 col-lg-6 ms-5 mb-5 mb-lg-4 float-end clearfix">
-                        <h4>Top 10 Reiseziele</h4>
-                        <div class="row  p-0 m-0">
-                            <div class="col-12">
-                                <div class="row">
-                                    <div class="col-md-2">
-                                        <span class="text-color-dark">Pos.</span>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <span class="text-color-dark">Reiseziel</span>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <span class="text-color-dark">Temp</span>
-                                    </div>
-                                    <div class="col-md-3 p-0 m-0">
-                                        <span class="text-color-dark">Wetter</span>
-                                    </div>
-                                </div>
-                                    @foreach($top_ten as $location)
-                                    <div class="row p-0 m-0">
-                                        <div class="col-md-2">
-                                            <span class="text-color-dark">{{$loop->iteration}}.</span>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <img src="{{asset('img/flags_small/'.$location->country_alias.'.jpg')}}">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <span class="custom-text-color-2 text-nowrap">{{$location->current_temp_from_api}} °C</span>
-                                        </div>
-                                        <div class="col-md-3 p-0 m-0">
-                                            <span class="custom-text-color-2 text-nowrap">{{$location->current_weather_from_api}}</span>
-                                        </div>
-                                    </div>
-                                        @endforeach
-                            </div>
-{{--
-
-                                    <li>
-                                        <span class="custom-text-color-2">23°C</span>
-                                        <span class="custom-text-color-2">Sonnenschein</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">7°C</span>
-                                        <span class="custom-text-color-2">Bedeckt</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">28°C</span>
-                                        <span class="custom-text-color-2">Regen</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">16°C</span>
-                                        <span class="custom-text-color-2">Sonnenschein</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">15°C</span>
-                                        <span class="custom-text-color-2">Bedeckt</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">7°C</span>
-                                        <span class="custom-text-color-2">Sonnenschein</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">4°C</span>
-                                        <span class="custom-text-color-2">Sturm</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">9°C</span>
-                                        <span class="custom-text-color-2">Regen</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">25°C</span>
-                                        <span class="custom-text-color-2">Sonnenschein</span>
-                                    </li>
-                                    <li>
-                                        <span class="custom-text-color-2">-4°C</span>
-                                        <span class="custom-text-color-2">Schneefall</span>
-                                    </li>
-                                </ul>--}}
-                           {{-- </div>--}}
-                        </div>
-{{--                        <div class="row">--}}
-{{--                            <div class="col-md-6">--}}
-{{--                                <ul class="custom-list-style-1 p-0 mb-0">--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">Birthday:</span>--}}
-{{--                                        <span class="custom-text-color-2">1990 October 2</span>--}}
-{{--                                    </li>--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">Marital:</span>--}}
-{{--                                        <span class="custom-text-color-2">Single</span>--}}
-{{--                                    </li>--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">Nationality:</span>--}}
-{{--                                        <span class="custom-text-color-2">American</span>--}}
-{{--                                    </li>--}}
-{{--                                </ul>--}}
-{{--                            </div>--}}
-{{--                            <div class="col-md-6">--}}
-{{--                                <ul class="custom-list-style-1 p-0 mb-0">--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">Skype:</span>--}}
-{{--                                        <span class="custom-text-color-2"><a class="custom-text-color-2" href="skype:yourskype?chat">yourskype</a></span>--}}
-{{--                                    </li>--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">PHONE:</span>--}}
-{{--                                        <span class="custom-text-color-2"><a class="custom-text-color-2" href="tel:123456789">123-456-789</a></span>--}}
-{{--                                    </li>--}}
-{{--                                    <li>--}}
-{{--                                        <span class="text-color-dark">EMAIL:</span>--}}
-{{--                                        <span class="custom-text-color-2"><a class="custom-text-color-2" href="mailto:me@domain.com">me@domain.com</a></span>--}}
-{{--                                    </li>--}}
-{{--                                </ul>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-                    </div>
-
+                <!-- Linke Spalte: Texte -->
+                <div class="col-lg-6 mb-4">
                     <h2 class="text-color-dark font-weight-extra-bold text-uppercase">ONLINE REISEFÜHRER</h2>
-
                     <p>Herzlich willkommen bei www.wann-wohin.de – Ihrem Online Reiseführer. Sie haben Urlaub und Lust auf einen Tapetenwechsel – wissen aber nicht wohin die nächste Reise gehen soll? Wir haben auf dieser Seite unterschiedliche Möglichkeiten für Sie zusammengestellt, mit denen Sie schnell und unkompliziert Ihr Traumziel finden.</p>
                     <p>Für Unentschlossene haben wir über 150 Urlaubsziele in verschiedene Kategorien eingeteilt. Diese finden Sie etwas weiter unten. Mit einem Klick geht’s auch schon los. Wenn Sie aber schon spezielle Vorstellungen von Ihrem Urlaub haben, können Sie direkt mit der Detailsuche von unserem Reise-Wizard starten. So finden auch Sie garantiert Ihr Traumziel – probieren Sie es einfach aus.</p>
                     <p>Das Team von wann-wohin wünscht Ihnen viel Spaß bei der Suche nach Ihrem nächsten Urlaubsziel.</p>
+                </div>
 
+                <!-- Rechte Spalte: Top 10 Box -->
+                <div class="col-lg-6">
+                    <div class="custom-box-details bg-color-light custom-box-shadow-1 p-4">
+                        <h4 class="text-center text-color-dark font-weight-bold mb-4">🌍 Top 10 Reiseziele</h4>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle text-center mb-0">
+                                <thead class="bg-primary text-white">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Reiseziel</th>
+                                        <th>Temp</th>
+                                        <th>Wetter</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($top_ten as $location)
+                                    <tr class="border-bottom">
+                                        <!-- Position -->
+                                        <td class="text-primary fw-bold">{{ $loop->iteration }}.</td>
 
-{{--
-                    <div class="about-me-more" id="aboutMeMore">
-                        <p>Für Unentschlossene haben wir über 150 Urlaubsziele in verschiedene Kategorien eingeteilt. Diese finden Sie etwas weiter unten. Mit einem Klick geht’s auch schon los. Wenn Sie aber schon spezielle Vorstellungen von Ihrem Urlaub haben, können Sie direkt mit der Detailsuche von unserem Reise-Wizard starten. So finden auch Sie garantiert Ihr Traumziel – probieren Sie es einfach aus.</p>
-                        <p>Das Team von wann-wohin wünscht Ihnen viel Spaß bei der Suche nach Ihrem nächsten Urlaubsziel.</p>
+                                        <!-- Flagge und Reiseziel -->
+                                        <td class="d-flex align-items-center justify-content-center">
+                                            @if($location->country_flag)
+                                            <img src="{{ $location->country_flag }}" alt="{{ $location->country->title }}" class="me-2" style="height: 25px; width: auto;">
+                                            @endif
+                                            <span data-bs-toggle="tooltip" title="{{ $location->country->title }}">{{ $location->country->title }}</span>
+                                        </td>
+
+                                        <!-- Temperatur -->
+                                        <td>
+                                            <span class="custom-text-color-2 text-nowrap fw-bold">{{ $location->current_temp_from_api }}°C</span>
+                                        </td>
+
+                                        <!-- Wetterbeschreibung und Icon -->
+                                        <td class="d-flex align-items-center justify-content-center">
+                                            @if($location->weather_icon)
+                                            <img src="{{ $location->weather_icon }}" alt="{{ $location->current_weather_from_api }}" class="me-2" style="height: 30px; width: auto;">
+                                            @endif
+                                            <span class="custom-text-color-2">{{ $location->current_weather_from_api }}</span>
+                                        </td>
+
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <a id="aboutMeMoreBtn" class="btn btn-tertiary text-uppercase custom-btn-style-1 text-1" href="#">View More</a>
---}}
-
                 </div>
             </div>
         </div>
     </section>
 </div>
+
+<style>
+/* Scoped Styles für #about-me */
+#about-me .custom-box-details {
+    border-radius: 10px;
+    background: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#about-me .table-borderless th,
+#about-me .table-borderless td {
+    vertical-align: middle;
+}
+
+#about-me .table-borderless thead {
+    border-bottom: 2px solid #ddd;
+}
+
+#about-me .table-borderless tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+#about-me .table-borderless tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+#about-me img {
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+#about-me [data-bs-toggle="tooltip"] {
+    cursor: pointer;
+}
+
+/* Responsive Anpassungen für #about-me */
+@media (max-width: 768px) {
+    #about-me .custom-box-details {
+        padding: 1rem;
+    }
+
+    #about-me img {
+        height: 20px !important;
+    }
+
+    #about-me td:nth-child(5) {
+        display: block;
+        margin-top: 10px;
+    }
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>

@@ -156,3 +156,89 @@
         </div>
     </div>
 </section>
+
+
+
+
+
+
+
+
+
+<style>
+
+/* Grundstruktur */
+.timeline-box {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.experience-info img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.experience-description {
+    padding: 20px;
+}
+
+/* Desktop-Layout */
+.col-lg-4 {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+}
+
+.col-lg-8 {
+    flex: 0 0 66.66%;
+    max-width: 66.66%;
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .col-lg-4,
+    .col-lg-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .timeline-box {
+        flex-direction: column;
+    }
+
+    .experience-info img {
+        max-height: 250px;
+    }
+
+    .experience-description {
+        padding: 15px;
+        text-align: center;
+    }
+}
+
+/* Smartphones */
+@media (max-width: 768px) {
+    .experience-description {
+        text-align: center;
+        padding: 10px;
+    }
+
+    .experience-info img {
+        max-height: 200px;
+    }
+
+    h4 {
+        font-size: 1.25rem;
+    }
+
+    p {
+        font-size: 0.9rem;
+    }
+}
+
+</style>
