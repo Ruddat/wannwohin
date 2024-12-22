@@ -36,23 +36,35 @@ class WeatherApiClientLibrary
             'lang' => 'de',
         ]);
 
-//dd($response->json());
-
         if ($response->successful()) {
+            $airTemp = round(floatval($response->json('main.temp', 0)));
+
             return [
-                'daily_temperature' => round(floatval($response->json('main.temp', 0))),
+                'daily_temperature' => $airTemp,
                 'night_temperature' => round(floatval($response->json('main.temp_min', 0))),
                 'humidity' => $response->json('main.humidity', 0),
                 'sunshine_per_day' => rand(5, 10), // Beispielwerte
                 'rainy_days' => rand(0, 1), // Beispielwerte
                 'weather' => $response->json('weather.0.description', ''), // Wetterbeschreibung
-                'icon' => $response['weather'][0]['icon'] ?? null, // Icon hinzufügen
-               // 'icon' => $weatherData['icon'] ?? null, // Icon hinzufügen
-
+                'icon' => $response['weather'][0]['icon'] ?? null,
+                'water_temperature' => $this->calculateWaterTemperature($airTemp), // Wassertemperatur schätzen
             ];
         }
 
         return null;
+    }
+
+    /**
+     * Schätzt die Wassertemperatur basierend auf der Lufttemperatur.
+     *
+     * @param float $airTemp
+     * @return float
+     */
+    private function calculateWaterTemperature($airTemp)
+    {
+        // Schätzung: Wassertemperatur ist im Schnitt 5-8°C kühler als die Luft
+        $baseTemp = max($airTemp - rand(5, 8), 10); // Minimum 10°C
+        return round($baseTemp, 1);
     }
 
     /**
@@ -69,7 +81,8 @@ class WeatherApiClientLibrary
         return [
             'current_tmp' => $weatherData['daily_temperature'] ?? null,
             'weather' => $weatherData['weather'] ?? null,
-            'icon' => $weatherData['icon'] ?? null, // Icon hinzufügen
+            'icon' => $weatherData['icon'] ?? null,
+            'water_temperature' => $weatherData['water_temperature'] ?? null,
         ];
     }
 }

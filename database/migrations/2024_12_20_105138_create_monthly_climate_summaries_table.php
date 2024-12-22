@@ -20,6 +20,7 @@ return new class extends Migration
             $table->float('avg_sunshine_per_day')->nullable();
             $table->float('avg_humidity')->nullable();
             $table->integer('total_rainy_days')->nullable();
+            $table->float('avg_water_temperature')->nullable();
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ class QuickSearchComponent extends Component
     public $urlaub;
     public $sonnenstunden;
     public $wassertemperatur;
-    public $spezielle = '';
+    public $spezielle = []; // Array für mehrere spezielle Wünsche
 
     public $totalLocations = 0; // Gesamtanzahl aller Standorte
     public $filteredLocations = 0; // Gefilterte Anzahl der Standorte
@@ -58,25 +58,50 @@ class QuickSearchComponent extends Component
         }
 
         if (!empty($this->price)) {
-            $query->where('range_flight', $this->price);
+            // Preisbereich abrufen
+            $priceRange = WwdeRange::find($this->price);
+
+            if ($priceRange) {
+                $rangeToShow = $priceRange->Range_to_show;
+
+                // Prüfen, ob der Wert ein Bereich ist (z.B. "500-1000€")
+                if (str_contains($rangeToShow, '-')) {
+                    [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
+                    $query->whereBetween('price_flight', [$minPrice, $maxPrice]);
+                } elseif (str_contains($rangeToShow, '>')) {
+                    // Nur Mindestpreis (z.B. ">2000€")
+                    $minPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                    $query->where('price_flight', '>=', $minPrice);
+                } else {
+                    // Einzelner Preiswert (z.B. "250€")
+                    $maxPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                    $query->where('price_flight', '<=', $maxPrice);
+                }
+            }
         }
 
         if (!empty($this->urlaub)) {
-            $query->where('best_traveltime', 'like', "%{$this->urlaub}%");
+            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', ['"' . $this->urlaub . '"']);
         }
 
         if (!empty($this->sonnenstunden)) {
-            $hours = (int) str_replace('more_', '', $this->sonnenstunden);
-            $query->where('climate_details_id', '>=', $hours);
+            $query->whereHas('climates', function ($q) {
+                $minHours = (int) str_replace('more_', '', $this->sonnenstunden);
+                $q->where('sunshine_per_day', '>=', $minHours);
+            });
         }
 
         if (!empty($this->wassertemperatur)) {
-            $temp = (int) str_replace('more_', '', $this->wassertemperatur);
-            $query->where('climate_details_lnam', '>=', $temp);
+            $query->whereHas('climates', function ($q) {
+                $minTemp = (int) str_replace('more_', '', $this->wassertemperatur);
+                $q->where('water_temperature', '>=', $minTemp);
+            });
         }
 
         if (!empty($this->spezielle)) {
-            $query->where($this->spezielle, 1);
+            foreach ($this->spezielle as $wish) {
+                $query->where($wish, 1);
+            }
         }
 
         $this->filteredLocations = $query->count();

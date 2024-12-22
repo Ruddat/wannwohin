@@ -25,7 +25,7 @@
 
             <div class="form-group">
                 <label for="price">Preis pro Person bis</label>
-                <select wire:model="price" class="form-select">
+                <select wire:model.change="price" class="form-select">
                     <option value="">Beliebig</option>
                     @foreach($ranges as $range)
                         <option value="{{ $range->id }}">{{ $range->Range_to_show }}</option>
@@ -35,16 +35,16 @@
 
             <div class="form-group">
                 <label for="urlaub">Urlaub im</label>
-                <select wire:model="urlaub" class="form-select py-1">
+                <select wire:model.change="urlaub" class="form-select py-1">
                     @foreach($months as $key => $month)
-                        <option value="{{ $key }}">{{ $month }}</option>
+                        <option value="{{ $month }}">{{ $month }}</option>
                     @endforeach
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="sonnenstunden">Sonnenstunden</label>
-                <select wire:model="sonnenstunden" class="form-select py-1">
+                <select wire:model.change="sonnenstunden" class="form-select py-1">
                     <option value="">Beliebig</option>
                     @for($i = 3; $i <= 12; $i++)
                         <option value="more_{{ $i }}">min. {{ $i }}h</option>
@@ -54,7 +54,7 @@
 
             <div class="form-group">
                 <label for="wassertemperatur">Wassertemperatur</label>
-                <select wire:model="wassertemperatur" class="form-select py-1">
+                <select wire:model.change="wassertemperatur" class="form-select py-1">
                     <option value="">Beliebig</option>
                     @for($i = 16; $i <= 27; $i++)
                         <option value="more_{{ $i }}">min. {{ $i }}°C</option>
@@ -63,22 +63,22 @@
             </div>
 
             <h5 class="text-white">Spezielle Wünsche</h5>
-            <div>
-                <input wire:model="spezielle" id="Beliebig" type="radio" value="" class="form-check-input">
-                <label for="Beliebig">Beliebig</label>
-            </div>
-            <div>
-                <input wire:model="spezielle" id="Strandurlaub" type="radio" value="list_beach" class="form-check-input">
-                <label for="Strandurlaub">Strandurlaub</label>
-            </div>
-            <div>
-                <input wire:model="spezielle" id="Städtereise" type="radio" value="list_citytravel" class="form-check-input">
-                <label for="Städtereise">Städtereise</label>
-            </div>
-            <div>
-                <input wire:model="spezielle" id="Sport" type="radio" value="list_sports" class="form-check-input">
-                <label for="Sport">Sporturlaub</label>
-            </div>
+            @foreach([
+                'list_beach' => 'Strandurlaub',
+                'list_citytravel' => 'Städtereise',
+                'list_sports' => 'Sporturlaub',
+                'list_culture' => 'Kulturreise',
+                'list_nature' => 'Natururlaub',
+                'list_watersport' => 'Wassersport',
+                'list_wintersport' => 'Wintersport',
+                'list_mountainsport' => 'Bergsport',
+                'list_amusement_park' => 'Freizeitpark',
+            ] as $field => $label)
+                <div>
+                    <input wire:model.change="spezielle" id="{{ $field }}" type="checkbox" value="{{ $field }}" class="form-check-input">
+                    <label for="{{ $field }}">{{ $label }}</label>
+                </div>
+            @endforeach
 
             <button type="submit" class="bg-warning text-color-black mt-3 btn py-4 px-1">
                 <i class="fas fa-search me-2"></i>

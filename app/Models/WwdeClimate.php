@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\WwdeLocation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -33,12 +34,10 @@ class WwdeClimate extends Model
         'water_temperature',
     ];
 
-        /**
-     * Relationship with Location.
-     */
+    // Beziehung zur Location
     public function location()
     {
-        return $this->belongsTo(WwdeLocation::class);
+        return $this->belongsTo(WwdeLocation::class, 'location_id', 'id');
     }
-    
+
 }

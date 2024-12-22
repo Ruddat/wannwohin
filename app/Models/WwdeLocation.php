@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
 use Illuminate\Database\Eloquent\Model;
@@ -93,4 +94,12 @@ class WwdeLocation extends Model
     {
         return $this->belongsTo(WwdeCountry::class, 'country_id', 'id');
     }
+
+
+    // Beziehung zu den Klimadaten
+    public function climates()
+    {
+        return $this->hasMany(WwdeClimate::class, 'location_id', 'id');
+    }
+
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\LocationRepository;
 use App\Services\WeatherService;
-use App\Models\HeaderContent; // Import für Header-Inhalte
+use App\Models\HeaderContent;
 
 class IndexController extends Controller
 {
@@ -27,17 +27,19 @@ class IndexController extends Controller
         $totalLocations = $this->locationRepository->getTotalFinishedLocations();
 
         // Header-Inhalte abrufen
-        $headerContent = HeaderContent::first(); // Den ersten Eintrag aus der Tabelle 'header_contents' holen
+        $headerContents = HeaderContent::all(); // Alle Einträge aus der Tabelle holen
 
-//dd($headerContent);
+        // Auswahl eines Header-Inhalts basierend auf der aktuellen Zeit
+        $currentMinute = now()->minute;
+        $headerIndex = intdiv($currentMinute, 15) % $headerContents->count(); // Index berechnen
+        $headerContent = $headerContents[$headerIndex] ?? null;
 
-
-return view('pages.main.index', [
-    'top_ten' => $topTenWithWeather,
-    'total_locations' => $totalLocations,
-    'panorama_location_picture' => $headerContent->bg_img ?? null,
-    'main_location_picture' => $headerContent->main_img ?? null,
-    'panorama_location_text' => $headerContent->main_text ?? null,
-]);
+        return view('pages.main.index', [
+            'top_ten' => $topTenWithWeather,
+            'total_locations' => $totalLocations,
+            'panorama_location_picture' => $headerContent->bg_img ?? null,
+            'main_location_picture' => $headerContent->main_img ?? null,
+            'panorama_location_text' => $headerContent->main_text ?? null,
+        ]);
     }
 }

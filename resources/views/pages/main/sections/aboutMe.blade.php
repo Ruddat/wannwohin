@@ -31,11 +31,11 @@
                                         <td class="text-primary fw-bold">{{ $loop->iteration }}.</td>
 
                                         <!-- Flagge und Reiseziel -->
-                                        <td class="d-flex align-items-center justify-content-center">
+                                        <td class="d-flex align-items-center">
                                             @if($location->country_flag)
                                             <img src="{{ $location->country_flag }}" alt="{{ $location->country->title }}" class="me-2" style="height: 25px; width: auto;">
                                             @endif
-                                            <span data-bs-toggle="tooltip" title="{{ $location->country->title }}">{{ $location->country->title }}</span>
+                                            <span data-bs-toggle="tooltip" title="{{ $location->title }}">{{ $location->title }}</span>
                                         </td>
 
                                         <!-- Temperatur -->
@@ -44,7 +44,7 @@
                                         </td>
 
                                         <!-- Wetterbeschreibung und Icon -->
-                                        <td class="d-flex align-items-center justify-content-center">
+                                        <td class="d-flex align-items-center">
                                             @if($location->weather_icon)
                                             <img src="{{ $location->weather_icon }}" alt="{{ $location->current_weather_from_api }}" class="me-2" style="height: 30px; width: auto;">
                                             @endif

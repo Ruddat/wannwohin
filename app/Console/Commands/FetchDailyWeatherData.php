@@ -39,6 +39,7 @@ class FetchDailyWeatherData extends Command
                             'sunshine_per_day' => $weatherData['sunshine_per_day'],
                             'humidity' => $weatherData['humidity'],
                             'rainy_days' => $weatherData['rainy_days'],
+                            'water_temperature' => $weatherData['water_temperature'] ?? null, // Wassertemperatur speichern
                         ]
                     );
 
@@ -78,7 +79,8 @@ class FetchDailyWeatherData extends Command
                 DB::raw('AVG(night_temperature) as avg_night_temperature'),
                 DB::raw('AVG(sunshine_per_day) as avg_sunshine_per_day'),
                 DB::raw('AVG(humidity) as avg_humidity'),
-                DB::raw('SUM(rainy_days) as total_rainy_days')
+                DB::raw('SUM(rainy_days) as total_rainy_days'),
+                DB::raw('AVG(water_temperature) as avg_water_temperature') // Zusammenfassung der Wassertemperatur
             )
             ->groupBy('location_id', 'month_id')
             ->get();
@@ -95,6 +97,7 @@ class FetchDailyWeatherData extends Command
                     'avg_sunshine_per_day' => $summary->avg_sunshine_per_day,
                     'avg_humidity' => $summary->avg_humidity,
                     'total_rainy_days' => $summary->total_rainy_days,
+                    'avg_water_temperature' => $summary->avg_water_temperature, // Zusammenfassung der Wassertemperatur
                 ]
             );
 
