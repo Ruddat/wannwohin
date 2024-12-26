@@ -122,101 +122,82 @@ class ImportWorldCities extends Command
         $this->info('Countries loaded into memory.');
 
         $count = 0;
-        $batchSize = 100;
+        $batchSize = 10; // Verkleinerte Batch-Größe
         $batchData = [];
 
-        DB::beginTransaction();
+        while (($row = fgetcsv($file)) !== false) {
+            $data = array_combine($header, $row);
 
-        try {
-            while (($row = fgetcsv($file)) !== false) {
-                $data = array_combine($header, $row);
-
-                // Überprüfen, ob der Ländercode in der Liste ist
-                if (!isset($countries[$data['iso2']])) {
-                    $this->info("Skipping city {$data['city']} as country code {$data['iso2']} is not in the database.");
-                    continue;
-                }
-
-                $country = $countries[$data['iso2']];
-                $population = is_numeric($data['population']) ? (int)$data['population'] : null;
-
-                // Überspringe Städte ohne Flughafen und mit kleiner Bevölkerung
-                if (empty($data['iata']) && $population < 100000) {
-                    continue;
-                }
-
-                // Berechnung der Reisezeit
-                $bestTravelTimeArray = $this->getBestTravelTimeByLatitude($data['lat']);
-                //$panorama = $this->panorama_text_and_style($data['city'], 'spring', 'parks');
-                $panorama = $this->panorama_text_and_style($data['city'], $bestTravelTimeArray, 'parks');
-
-                $status = 'active'; // Standardstatus
-
-                // Bilder abrufen und Status dynamisch anpassen
-                $textPic1 = $this->getCityImage($data['city'], 1, $status);
-                $textPic2 = $this->getCityImage($data['city'], 2, $status);
-                $textPic3 = $this->getCityImage($data['city'], 3, $status);
-
-
-                $batchData[] = [
-                    'title' => $data['city'],
-                    'country_id' => $country->id,
-                    'continent_id' => $country->continent_id,
-                    'alias' => Str::slug($data['city']),
-                    'iata_code' => $data['iata'] ?? null,
-                    'lat' => $data['lat'],
-                    'lon' => $data['lng'],
-                    'population' => $population,
-                    'list_beach' => $this->isNearBeach($data['lat'], $data['lng']),
-                    'list_citytravel' => $population > 1000000,
-                    'list_sports' => $this->hasSportsActivities($data['city']),
-                    'list_culture' => $this->isCulturalDestination($data['city']),
-                    'text_short' => $this->generateShortText($data['city']),
-                    'text_headline' => $this->generateHeadline($data['city']),
-
-                    'text_pic1' => $textPic1,
-                    'text_pic2' => $textPic2,
-                    'text_pic3' => $textPic3,
-                    'status' => $status, // Dynamisch gesetzter Status
-
-                    'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]), // Kompakte Anzeige
-                    'best_traveltime_json' => json_encode($bestTravelTimeArray), // JSON als Array
-                    'panorama_text_and_style' => json_encode($panorama), // Kombinierter Text und Stil als JSON
-                    'finished' => 1, // Fertiggestellt
-                    'created_at' => now(), // Zum Erstellen erforderlich
-                    'updated_at' => now(), // Zum Aktualisieren erforderlich
-                ];
-
-                // Batch-Insert, wenn die Batch-Größe erreicht ist
-                if (count($batchData) >= $batchSize) {
-                    $this->upsertLocations($batchData);
-                    $batchData = [];
-                }
-
-                $count++;
-
-                // Stop nach 10 Einträgen
-                if ($count >= 100) {
-                    $this->info('Test limit reached: 10 cities processed.');
-                    break; // Entferne diesen Break, um alle Städte zu verarbeiten
-                }
+            // Überprüfen, ob der Ländercode in der Liste ist
+            if (!isset($countries[$data['iso2']])) {
+                $this->info("Skipping city {$data['city']} as country code {$data['iso2']} is not in the database.");
+                continue;
             }
 
-            // Restliche Daten einfügen
-            if (!empty($batchData)) {
+            $country = $countries[$data['iso2']];
+            $population = is_numeric($data['population']) ? (int)$data['population'] : null;
+
+            // Überspringe Städte ohne Flughafen und mit kleiner Bevölkerung
+            if (empty($data['iata']) && $population < 100000) {
+                continue;
+            }
+
+            // Berechnung der Reisezeit
+            $bestTravelTimeArray = $this->getBestTravelTimeByLatitude($data['lat']);
+            $panorama = $this->panorama_text_and_style($data['city'], $bestTravelTimeArray, 'parks');
+
+            $status = 'active'; // Standardstatus
+
+            // Bilder abrufen und Status dynamisch anpassen
+            $textPic1 = $this->getCityImage($data['city'], 1, $status);
+            $textPic2 = $this->getCityImage($data['city'], 2, $status);
+            $textPic3 = $this->getCityImage($data['city'], 3, $status);
+
+            $batchData[] = [
+                'title' => $data['city'],
+                'country_id' => $country->id,
+                'continent_id' => $country->continent_id,
+                'alias' => Str::slug($data['city']),
+                'iata_code' => $data['iata'] ?? null,
+                'lat' => $data['lat'],
+                'lon' => $data['lng'],
+                'population' => $population,
+                'list_beach' => $this->isNearBeach($data['lat'], $data['lng']),
+                'list_citytravel' => $population > 1000000,
+                'list_sports' => $this->hasSportsActivities($data['city']),
+                'list_culture' => $this->isCulturalDestination($data['city']),
+                'text_short' => $this->generateShortText($data['city']),
+                'text_headline' => $this->generateHeadline($data['city']),
+                'text_pic1' => $textPic1,
+                'text_pic2' => $textPic2,
+                'text_pic3' => $textPic3,
+                'status' => $status, // Dynamisch gesetzter Status
+                'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]), // Kompakte Anzeige
+                'best_traveltime_json' => json_encode($bestTravelTimeArray), // JSON als Array
+                'panorama_text_and_style' => json_encode($panorama), // Kombinierter Text und Stil als JSON
+                'finished' => 1, // Fertiggestellt
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            // Batch-Insert, wenn die Batch-Größe erreicht ist
+            if (count($batchData) >= $batchSize) {
                 $this->upsertLocations($batchData);
+                $batchData = [];
             }
 
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $this->error('Error importing CSV: ' . $e->getMessage());
-            Log::error('Error importing CSV: ' . $e->getMessage());
+            $count++;
+        }
+
+        // Restliche Daten einfügen
+        if (!empty($batchData)) {
+            $this->upsertLocations($batchData);
         }
 
         fclose($file);
         $this->info("CSV data imported into the database. Total processed: {$count}");
     }
+
 
     private function importXLSX($filePath)
     {
@@ -324,23 +305,11 @@ class ImportWorldCities extends Command
 
     private function upsertLocations(array $batchData)
     {
-        foreach ($batchData as $data) {
-            // Prüfen, ob der Eintrag existiert
-            $exists = DB::table('wwde_locations')
-                ->where('title', $data['title'])
-                ->where('country_id', $data['country_id'])
-                ->exists();
-
-            if ($exists) {
-                // Aktualisieren
-                DB::table('wwde_locations')
-                    ->where('title', $data['title'])
-                    ->where('country_id', $data['country_id'])
-                    ->update($data);
-            } else {
-                // Neu einfügen
-                DB::table('wwde_locations')->insert($data);
-            }
+        try {
+            DB::table('wwde_locations')->upsert($batchData, ['title', 'country_id'], ['updated_at']);
+        } catch (\Exception $e) {
+            Log::error('Error during upsert: ' . $e->getMessage());
+            throw $e;
         }
     }
 
