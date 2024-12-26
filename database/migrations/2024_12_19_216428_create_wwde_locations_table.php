@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('bundesstaat_long', 50)->nullable();
             $table->string('bundesstaat_short', 50)->nullable();
             $table->char('no_city_but', 50)->nullable();
+            $table->integer('population')->nullable(); // 'population'
+
 
             // Boolean flags
             $table->boolean('list_beach')->default(false);
@@ -80,9 +82,15 @@ return new class extends Migration
             $table->string('lat_new', 255)->nullable();
             $table->string('lon_new', 255)->nullable();
 
+            $table->unique(['title', 'country_id']);
+
             // Indexes
             $table->foreign('continent_id')->references('id')->on('wwde_continents')->nullOnDelete();
             $table->foreign('country_id')->references('id')->on('wwde_countries')->nullOnDelete();
+
+
+            // Status field
+            $table->enum('status', ['active', 'pending', 'inactive'])->default('active');
 
             $table->timestamps();
         });

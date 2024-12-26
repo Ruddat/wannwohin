@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\LocationRepository;
 use App\Services\WeatherService;
 use App\Models\HeaderContent;
+use Illuminate\Support\Facades\Storage;
 
 class IndexController extends Controller
 {
@@ -26,11 +27,12 @@ class IndexController extends Controller
         // Anzahl der Locations
         $totalLocations = $this->locationRepository->getTotalFinishedLocations();
 
-        // Header-Inhalte abrufen
-        $headerContents = HeaderContent::all();
+        // Einen zufälligen oder den neuesten HeaderContent abrufen
+        $headerContent = HeaderContent::inRandomOrder()->first(); // Zufällig
+        // Alternativ: $headerContent = HeaderContent::latest()->first(); // Neuester
 
-        // Überprüfen, ob Header-Inhalte verfügbar sind
-        if ($headerContents->isEmpty()) {
+        // Überprüfen, ob HeaderContent verfügbar ist
+        if (!$headerContent) {
             return view('pages.main.index', [
                 'top_ten' => $topTenWithWeather,
                 'total_locations' => $totalLocations,
@@ -40,16 +42,15 @@ class IndexController extends Controller
             ]);
         }
 
-        // Auswahl eines Header-Inhalts basierend auf der aktuellen Zeit
-        $currentMinute = now()->minute;
-        $headerIndex = intdiv($currentMinute, 15) % $headerContents->count(); // Index berechnen
-        $headerContent = $headerContents->get($headerIndex);
+        // Bildpfade anpassen
+        $bgImgPath = $headerContent->bg_img ? Storage::url($headerContent->bg_img) : null;
+        $mainImgPath = $headerContent->main_img ? Storage::url($headerContent->main_img) : null;
 
         return view('pages.main.index', [
             'top_ten' => $topTenWithWeather,
             'total_locations' => $totalLocations,
-            'panorama_location_picture' => $headerContent->bg_img ?? null,
-            'main_location_picture' => $headerContent->main_img ?? null,
+            'panorama_location_picture' => $bgImgPath,
+            'main_location_picture' => $mainImgPath,
             'panorama_location_text' => $headerContent->main_text ?? null,
         ]);
     }

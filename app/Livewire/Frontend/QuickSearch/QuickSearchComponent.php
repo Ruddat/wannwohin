@@ -38,7 +38,11 @@ class QuickSearchComponent extends Component
 
     public function mount()
     {
-        $this->allLocations = WwdeLocation::all();
+        // Nur aktive und fertige Einträge laden
+        $this->allLocations = WwdeLocation::where('status', 'active')
+            ->where('finished', 1)
+            ->get();
+
         $this->totalLocations = $this->allLocations->count();
         $this->filteredLocations = $this->totalLocations;
     }
@@ -52,6 +56,10 @@ class QuickSearchComponent extends Component
     public function filterLocations()
     {
         $query = WwdeLocation::query();
+
+        // Immer nur aktive und fertige Einträge berücksichtigen
+        $query->where('status', 'active')
+              ->where('finished', 1);
 
         if (!empty($this->continent)) {
             $query->where('continent_id', $this->continent);

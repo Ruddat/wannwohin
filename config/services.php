@@ -28,6 +28,14 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'geodb' => [
+    'api_key' => env('GEODB_API_KEY'),
+    ],
+
+    'pixabay' => [
+    'api_key' => env('PIXABAY_API_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

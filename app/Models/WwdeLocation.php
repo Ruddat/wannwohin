@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
+use App\Models\WwdeLocationImages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -80,6 +81,8 @@ class WwdeLocation extends Model
         'time_zone',
         'lat_new',
         'lon_new',
+        'population',
+        'status'
     ];
 
     /**
@@ -101,5 +104,18 @@ class WwdeLocation extends Model
     {
         return $this->hasMany(WwdeClimate::class, 'location_id', 'id');
     }
+
+    // Beziehung zu LocationImages
+    public function images()
+    {
+        return $this->hasMany(WwdeLocationImages::class);
+    }
+
+    // Primärbild abrufen
+    public function primaryImage()
+    {
+        return $this->images()->where('is_primary', true)->first();
+    }
+
 
 }
