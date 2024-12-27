@@ -10,5 +10,7 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('climate:fetch-daily')->dailyAt('14:00');
+Schedule::command('locations:import-world-cities --format=csv')->hourly();
+
 
 // Schedule::command(FetchDailyWeatherData::class)->dailyAt('14:00');

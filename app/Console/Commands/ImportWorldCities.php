@@ -50,10 +50,14 @@ class ImportWorldCities extends Command
             return;
         }
 
+        // Offset-Handling
+        $offset = DB::table('job_offsets')->where('job_name', 'import_world_cities')->value('offset') ?? 0;
+        $batchSize = 30;
+
         if ($format === 'csv') {
-            $this->importCSV($filePath);
+            $this->importCSV($filePath, $offset, $batchSize);
         } else {
-            $this->importXLSX($filePath);
+            $this->importXLSX($filePath, $offset, $batchSize);
         }
 
         $this->info('World cities imported successfully.');
@@ -106,7 +110,7 @@ class ImportWorldCities extends Command
         }
     }
 
-    private function importCSV($filePath)
+    private function importCSV($filePath, $offset, $batchSize)
     {
         $this->info('Processing CSV file...');
 
@@ -121,14 +125,18 @@ class ImportWorldCities extends Command
 
         $this->info('Countries loaded into memory.');
 
-        $count = 0;
-        $batchSize = 10; // Verkleinerte Batch-Größe
+        $currentOffset = 0;
         $batchData = [];
 
         while (($row = fgetcsv($file)) !== false) {
+            // Überspringe bis zum aktuellen Offset
+            if ($currentOffset < $offset) {
+                $currentOffset++;
+                continue;
+            }
+
             $data = array_combine($header, $row);
 
-            // Überprüfen, ob der Ländercode in der Liste ist
             if (!isset($countries[$data['iso2']])) {
                 $this->info("Skipping city {$data['city']} as country code {$data['iso2']} is not in the database.");
                 continue;
@@ -137,7 +145,6 @@ class ImportWorldCities extends Command
             $country = $countries[$data['iso2']];
             $population = is_numeric($data['population']) ? (int)$data['population'] : null;
 
-            // Überspringe Städte ohne Flughafen und mit kleiner Bevölkerung
             if (empty($data['iata']) && $population < 100000) {
                 continue;
             }
@@ -146,12 +153,14 @@ class ImportWorldCities extends Command
             $bestTravelTimeArray = $this->getBestTravelTimeByLatitude($data['lat']);
             $panorama = $this->panorama_text_and_style($data['city'], $bestTravelTimeArray, 'parks');
 
-            $status = 'active'; // Standardstatus
+            $status = 'active';
 
-            // Bilder abrufen und Status dynamisch anpassen
+            // Bilder abrufen
             $textPic1 = $this->getCityImage($data['city'], 1, $status);
             $textPic2 = $this->getCityImage($data['city'], 2, $status);
             $textPic3 = $this->getCityImage($data['city'], 3, $status);
+
+            $flags = $this->determineFlags($data);
 
             $batchData[] = [
                 'title' => $data['city'],
@@ -171,31 +180,41 @@ class ImportWorldCities extends Command
                 'text_pic1' => $textPic1,
                 'text_pic2' => $textPic2,
                 'text_pic3' => $textPic3,
-                'status' => $status, // Dynamisch gesetzter Status
-                'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]), // Kompakte Anzeige
-                'best_traveltime_json' => json_encode($bestTravelTimeArray), // JSON als Array
-                'panorama_text_and_style' => json_encode($panorama), // Kombinierter Text und Stil als JSON
-                'finished' => 1, // Fertiggestellt
+                'status' => $status,
+                'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]),
+                'best_traveltime_json' => json_encode($bestTravelTimeArray),
+                'panorama_text_and_style' => json_encode($panorama),
+                'finished' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
 
-            // Batch-Insert, wenn die Batch-Größe erreicht ist
+            $currentOffset++;
+
             if (count($batchData) >= $batchSize) {
                 $this->upsertLocations($batchData);
                 $batchData = [];
-            }
 
-            $count++;
+                DB::table('job_offsets')->updateOrInsert(
+                    ['job_name' => 'import_world_cities'],
+                    ['offset' => $currentOffset]
+                );
+
+                $this->info("Processed batch of {$batchSize} entries. Offset is now {$currentOffset}.");
+                break; // Batchgröße erreicht, Schleife verlassen
+            }
         }
 
-        // Restliche Daten einfügen
         if (!empty($batchData)) {
             $this->upsertLocations($batchData);
+
+            DB::table('job_offsets')->updateOrInsert(
+                ['job_name' => 'import_world_cities'],
+                ['offset' => $currentOffset]
+            );
         }
 
         fclose($file);
-        $this->info("CSV data imported into the database. Total processed: {$count}");
     }
 
 
@@ -282,7 +301,7 @@ class ImportWorldCities extends Command
                 $count++;
 
                 // Stop nach 10 Einträgen
-                if ($count >= 10) {
+                if ($count >= 50) {
                     $this->info('Test limit reached: 10 cities processed.');
                     break; // Entferne diesen Break, um alle Städte zu verarbeiten
                 }
@@ -371,12 +390,200 @@ class ImportWorldCities extends Command
     }
 
     // Hilfsmethoden (unverändert)
-    private function isNearBeach($lat, $lon) { return false; }
-    private function hasSportsActivities($city) { return in_array($city, ['Munich', 'Innsbruck']); }
-    private function isCulturalDestination($city) { return in_array($city, ['Berlin', 'Paris', 'Rome']); }
+   // private function isNearBeach($lat, $lon) { return false; }
+   // private function hasSportsActivities($city) { return in_array($city, ['Munich', 'Innsbruck']); }
+  //  private function isCulturalDestination($city) { return in_array($city, ['Berlin', 'Paris', 'Rome']); }
     private function generateShortText($city) { return "{$city} is a wonderful destination to explore!"; }
     private function generateHeadline($city) { return "Explore the wonders of {$city}"; }
     private function getBestTravelTime($lat, $lon) { return 'May - September'; }
+
+
+    private function determineFlags(array $data): array
+    {
+        $flags = [
+            'list_beach' => $this->isNearBeach($data['lat'], $data['lng']),
+            'list_citytravel' => $data['population'] > 1000000,
+            'list_sports' => $this->hasSportsActivities($data['city']),
+            'list_island' => $this->isOnIsland($data['city']),
+            'list_culture' => $this->isCulturalDestination($data['city']),
+            'list_nature' => $this->isNatureDestination($data['lat'], $data['lng']),
+            'list_watersport' => $this->isWatersportDestination($data['lat'], $data['lng']),
+            'list_wintersport' => $this->isWintersportDestination($data['lat']),
+            'list_mountainsport' => $this->isMountainDestination($data['lat'], $data['lng']),
+            'list_biking' => $this->isBikingFriendly($data['city']),
+            'list_fishing' => $this->isFishingDestination($data['lat'], $data['lng']),
+            'list_amusement_park' => $this->hasAmusementPark($data['city']),
+            'list_water_park' => $this->hasWaterPark($data['city']),
+            'list_animal_park' => $this->hasAnimalPark($data['city']),
+        ];
+
+        return $flags;
+    }
+
+
+    private function isNearBeach($lat, $lon)
+    {
+        // Dummy-Koordinaten für Küstenregionen
+        $coastalRegions = [
+            ['minLat' => -10, 'maxLat' => 10, 'minLon' => -180, 'maxLon' => -170], // Beispielregion
+            ['minLat' => 30, 'maxLat' => 40, 'minLon' => 120, 'maxLon' => 130], // Beispielregion
+        ];
+
+        foreach ($coastalRegions as $region) {
+            if (
+                $lat >= $region['minLat'] &&
+                $lat <= $region['maxLat'] &&
+                $lon >= $region['minLon'] &&
+                $lon <= $region['maxLon']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isOnIsland($city)
+    {
+        $islandCities = ['Honolulu', 'Male', 'Reykjavik', 'Ibiza', 'Palma de Mallorca'];
+        return in_array($city, $islandCities);
+    }
+
+    private function hasSportsActivities($city)
+    {
+        $sportsCities = ['Munich', 'Rio de Janeiro', 'Melbourne', 'Barcelona', 'London'];
+        return in_array($city, $sportsCities);
+    }
+
+    private function isCulturalDestination($city)
+    {
+        $culturalCities = ['Berlin', 'Paris', 'Rome', 'Kyoto', 'Istanbul'];
+        return in_array($city, $culturalCities);
+    }
+
+
+    private function isNatureDestination($lat, $lon)
+    {
+        // Koordinatenbereiche für Naturregionen
+        $natureRegions = [
+            ['minLat' => -5, 'maxLat' => 5, 'minLon' => 100, 'maxLon' => 110], // Tropische Wälder in Südostasien
+            ['minLat' => -20, 'maxLat' => -10, 'minLon' => 120, 'maxLon' => 130], // Australisches Outback
+            ['minLat' => 50, 'maxLat' => 60, 'minLon' => -10, 'maxLon' => 10], // Skandinavische Natur
+            ['minLat' => -10, 'maxLat' => 0, 'minLon' => -70, 'maxLon' => -60], // Amazonasgebiet
+            ['minLat' => 30, 'maxLat' => 40, 'minLon' => -120, 'maxLon' => -110], // Yosemite und westamerikanische Natur
+        ];
+
+        foreach ($natureRegions as $region) {
+            if (
+                $lat >= $region['minLat'] &&
+                $lat <= $region['maxLat'] &&
+                $lon >= $region['minLon'] &&
+                $lon <= $region['maxLon']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isWatersportDestination($lat, $lon)
+    {
+        // Beispielhafte Koordinatenbereiche für Wassersport
+        $watersportRegions = [
+            ['minLat' => -30, 'maxLat' => -10, 'minLon' => 150, 'maxLon' => 180], // Südlicher Pazifik
+            ['minLat' => 20, 'maxLat' => 30, 'minLon' => -90, 'maxLon' => -80], // Karibik
+        ];
+
+        foreach ($watersportRegions as $region) {
+            if (
+                $lat >= $region['minLat'] &&
+                $lat <= $region['maxLat'] &&
+                $lon >= $region['minLon'] &&
+                $lon <= $region['maxLon']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isWintersportDestination($lat)
+    {
+        // Regionen basierend auf Breitengrad für Wintersport
+        return $lat > 45 || $lat < -45; // Beispiel: Regionen in höheren Breitengraden
+    }
+
+    private function isMountainDestination($lat, $lon)
+    {
+        // Koordinatenbereiche für Berge
+        $mountainRegions = [
+            ['minLat' => 30, 'maxLat' => 50, 'minLon' => -110, 'maxLon' => -100], // Rocky Mountains
+            ['minLat' => 40, 'maxLat' => 50, 'minLon' => 5, 'maxLon' => 15], // Alpen
+        ];
+
+        foreach ($mountainRegions as $region) {
+            if (
+                $lat >= $region['minLat'] &&
+                $lat <= $region['maxLat'] &&
+                $lon >= $region['minLon'] &&
+                $lon <= $region['maxLon']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isBikingFriendly($city)
+    {
+        $bikingCities = ['Amsterdam', 'Copenhagen', 'Portland', 'Berlin', 'Barcelona'];
+        return in_array($city, $bikingCities);
+    }
+
+    private function isFishingDestination($lat, $lon)
+    {
+        // Koordinatenbereiche für beliebte Fischereiregionen
+        $fishingRegions = [
+            ['minLat' => 10, 'maxLat' => 20, 'minLon' => 100, 'maxLon' => 110], // Südostasien
+            ['minLat' => 40, 'maxLat' => 50, 'minLon' => -10, 'maxLon' => 0], // Nordsee
+        ];
+
+        foreach ($fishingRegions as $region) {
+            if (
+                $lat >= $region['minLat'] &&
+                $lat <= $region['maxLat'] &&
+                $lon >= $region['minLon'] &&
+                $lon <= $region['maxLon']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasAmusementPark($city)
+    {
+        $amusementParkCities = ['Orlando', 'Los Angeles', 'Tokyo', 'Paris'];
+        return in_array($city, $amusementParkCities);
+    }
+
+    private function hasWaterPark($city)
+    {
+        $waterParkCities = ['Orlando', 'Dubai', 'Singapore'];
+        return in_array($city, $waterParkCities);
+    }
+
+    private function hasAnimalPark($city)
+    {
+        $animalParkCities = ['San Diego', 'Berlin', 'Singapore'];
+        return in_array($city, $animalParkCities);
+    }
+
+
 
     private function getBestTravelTimeByLatitude($lat)
     {

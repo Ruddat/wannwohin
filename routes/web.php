@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\Search\SearchController;
+use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
 
 //Route::get('/', function () {
@@ -16,6 +17,10 @@ Route::match(['post', 'get'],'/suche', SearchController::class)->name('search');
 //Route::get('/detailsuche', [DetailSearchController::class, 'index'] )->name('detailSearch');
 Route::get('/detailsuche', [DetailSearchController::class, 'index'])->name('detail_search');
 Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])->name('detail_search_result');
+
+
+Route::get('/search-results', SearchResultsComponent::class)->name('search.results');
+
 
 //Route::get('/{continent}/{country}/{location}', LocationController::class)->name('location');
 
