@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Services\GeocodeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -10,10 +9,12 @@ class AmusementParkService
 {
     protected $apiUrl = 'https://api.wartezeiten.app/v1/parks';
     protected $geocodeService;
+    protected $openingTimesService;
 
-    public function __construct(GeocodeService $geocodeService)
+    public function __construct(GeocodeService $geocodeService, AmusementParkOpeningTimesService $openingTimesService)
     {
         $this->geocodeService = $geocodeService;
+        $this->openingTimesService = $openingTimesService;
     }
 
     // Freizeitparks abrufen
@@ -37,8 +38,8 @@ class AmusementParkService
         $parks = $this->getParks();
 
         foreach ($parks as $park) {
-            // Nur nach Parknamen suchen
             $coordinates = $this->getCoordinates($park['name']);
+            $openingTimes = $this->getParkOpeningTimes($park['id']);
 
             DB::table('amusement_parks')->updateOrInsert(
                 ['external_id' => $park['id']],
@@ -47,10 +48,28 @@ class AmusementParkService
                     'country' => $park['land'],
                     'latitude' => $coordinates['lat'] ?? null,
                     'longitude' => $coordinates['lon'] ?? null,
+                    'open_today' => $openingTimes['opened_today'] ?? null,
+                    'open_from' => $openingTimes['open_from'] ?? null,
+                    'closed_from' => $openingTimes['closed_from'] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]
             );
+        }
+    }
+
+    // Öffnungszeiten für einen Park abrufen
+    protected function getParkOpeningTimes(string $externalId)
+    {
+        try {
+            return $this->openingTimesService->getOpeningTimes($externalId);
+        } catch (\Exception $e) {
+            \Log::error("Failed to fetch opening times for park ID {$externalId}: " . $e->getMessage());
+            return [
+                'opened_today' => null,
+                'open_from' => null,
+                'closed_from' => null,
+            ];
         }
     }
 
@@ -64,7 +83,6 @@ class AmusementParkService
                 'lon' => $response[0]['lon'] ?? null,
             ];
         } catch (\Exception $e) {
-            // Fehler bei der Geokodierung protokollieren
             \Log::error("Failed to fetch coordinates for {$parkName}: " . $e->getMessage());
             return ['lat' => null, 'lon' => null];
         }

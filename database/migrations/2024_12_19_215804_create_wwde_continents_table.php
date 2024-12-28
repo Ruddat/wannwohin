@@ -20,6 +20,13 @@ return new class extends Migration
             $table->integer('no_countries')->nullable();
             $table->integer('no_climate_tables')->nullable();
             $table->tinyText('continent_text')->nullable();
+
+            // New columns for images and flag
+            $table->string('image1_path')->nullable();
+            $table->string('image2_path')->nullable();
+            $table->string('image3_path')->nullable();
+            $table->boolean('custom_images')->default(false);
+
             $table->timestamps();
 
             // Indexes

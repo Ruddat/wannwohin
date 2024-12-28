@@ -2,10 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
-use App\Http\Controllers\LocationController;
 use App\Http\Controllers\Search\SearchController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
+use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
 
 //Route::get('/', function () {
 //    return view('welcome');
@@ -22,7 +22,15 @@ Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])
 Route::get('/search-results', SearchResultsComponent::class)->name('search.results');
 
 
-//Route::get('/{continent}/{country}/{location}', LocationController::class)->name('location');
+Route::get('/details/{continent}/{country}/{location}', [LocationDetailsController::class, 'show'])
+    ->where([
+        'continent' => '[a-zA-Z0-9-]+',
+        'country' => '[a-zA-Z0-9-]+',
+        'location' => '[a-zA-Z0-9-]+',
+    ])
+    ->name('location.details');
+
+// Route::get('/{continent}/{country}/{location}', LocationDetailsController::class)->name('location');
 
 Route::view('impressum', 'pages.impressum')->name('impressum');
 

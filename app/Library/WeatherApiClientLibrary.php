@@ -36,6 +36,9 @@ class WeatherApiClientLibrary
             'lang' => 'de',
         ]);
 
+//
+//dd($response->json());
+
         if ($response->successful()) {
             $airTemp = round(floatval($response->json('main.temp', 0)));
 

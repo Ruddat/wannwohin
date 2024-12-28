@@ -32,10 +32,16 @@
 
                                         <!-- Flagge und Reiseziel -->
                                         <td class="d-flex align-items-center">
-                                            @if($location->country_flag)
-                                            <img src="{{ $location->country_flag }}" alt="{{ $location->country->title }}" class="me-2" style="height: 25px; width: auto;">
-                                            @endif
-                                            <span data-bs-toggle="tooltip" title="{{ $location->title }}">{{ $location->title }}</span>
+                                            <a href="{{ route('location.details', [
+                                                'continent' => $location->country->continent->alias,
+                                                'country' => $location->country->alias,
+                                                'location' => $location->alias,
+                                            ]) }}">
+                                                @if($location->country_flag)
+                                                <img src="{{ $location->country_flag }}" alt="{{ $location->country->title }}" class="me-2" style="height: 25px; width: auto;">
+                                                @endif
+                                                <span data-bs-toggle="tooltip" title="{{ $location->title }}">{{ $location->title }}</span>
+                                            </a>
                                         </td>
 
                                         <!-- Temperatur -->
@@ -53,6 +59,7 @@
 
                                     </tr>
                                     @endforeach
+
                                 </tbody>
                             </table>
                         </div>
@@ -114,11 +121,3 @@
     }
 }
 </style>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-</script>

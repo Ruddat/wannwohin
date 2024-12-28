@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
+use App\Models\LocationGallery;
 use App\Models\WwdeLocationImages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -117,5 +118,15 @@ class WwdeLocation extends Model
         return $this->images()->where('is_primary', true)->first();
     }
 
+    public function galleryImages()
+    {
+        return $this->hasMany(LocationGallery::class, 'location_id');
+    }
+
+    // Beziehungen
+    public function gallery()
+    {
+        return $this->hasMany(LocationGallery::class, 'location_id', 'id');
+    }
 
 }

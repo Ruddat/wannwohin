@@ -52,7 +52,7 @@ class ImportWorldCities extends Command
 
         // Offset-Handling
         $offset = DB::table('job_offsets')->where('job_name', 'import_world_cities')->value('offset') ?? 0;
-        $batchSize = 30;
+        $batchSize = 20;
 
         if ($format === 'csv') {
             $this->importCSV($filePath, $offset, $batchSize);
@@ -153,6 +153,9 @@ class ImportWorldCities extends Command
             $bestTravelTimeArray = $this->getBestTravelTimeByLatitude($data['lat']);
             $panorama = $this->panorama_text_and_style($data['city'], $bestTravelTimeArray, 'parks');
 
+            $calculatedTimeZone = $this->calculateTimeZone($data['lat'], $data['lng']);
+
+
             $status = 'active';
 
             // Bilder abrufen
@@ -181,6 +184,7 @@ class ImportWorldCities extends Command
                 'text_pic2' => $textPic2,
                 'text_pic3' => $textPic3,
                 'status' => $status,
+                'time_zone' => $calculatedTimeZone,
                 'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]),
                 'best_traveltime_json' => json_encode($bestTravelTimeArray),
                 'panorama_text_and_style' => json_encode($panorama),
@@ -670,5 +674,32 @@ class ImportWorldCities extends Command
             return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
         }
     }
+
+
+    private function calculateTimeZone(float $latitude, float $longitude): string
+    {
+        // Berechnung des GMT-Offsets
+        $gmtOffset = round($longitude / 15);
+
+        // Handling für GMT+-Zonen
+        if ($gmtOffset > 0) {
+            $timeZone = "GMT+{$gmtOffset}";
+        } elseif ($gmtOffset < 0) {
+            $timeZone = "GMT{$gmtOffset}";
+        } else {
+            $timeZone = "GMT+0";
+        }
+
+        // Optional: Sommerzeit oder Spezialfälle ergänzen
+        // Beispiel: Falls Breitengrad spezifische Anpassungen benötigt
+        if ($latitude > 66.5 || $latitude < -66.5) {
+            // Arktische/Antarktische Regionen - keine präzisen Regeln
+            $timeZone .= " (Polar Region)";
+        }
+
+        return $timeZone;
+    }
+
+
 
 }

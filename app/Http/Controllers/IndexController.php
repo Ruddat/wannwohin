@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Repositories\LocationRepository;
 use App\Services\WeatherService;
 use App\Models\HeaderContent;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class IndexController extends Controller
@@ -20,18 +22,31 @@ class IndexController extends Controller
 
     public function __invoke()
     {
-        // Top 10 Locations abrufen
-        $topTenLocations = $this->locationRepository->getTopTenLocations();
-        $topTenWithWeather = $this->weatherService->addWeatherToLocations($topTenLocations);
+        // Ladezeit-Start
+        $startTime = microtime(true);
 
-        // Anzahl der Locations
-        $totalLocations = $this->locationRepository->getTotalFinishedLocations();
+        // Top 10 Locations abrufen und im Cache speichern (für 30 Minuten)
+        $topTenLocations = Cache::remember('top_ten_locations', 30 * 60, function () {
+            return $this->locationRepository->getTopTenLocations()
+                ->load(['country', 'country.continent']); // Eager Loading direkt hier
+        });
 
-        // Einen zufälligen oder den neuesten HeaderContent abrufen
-        $headerContent = HeaderContent::inRandomOrder()->first(); // Zufällig
-        // Alternativ: $headerContent = HeaderContent::latest()->first(); // Neuester
+        // Wetterdaten hinzufügen und im Cache speichern (für 30 Minuten)
+        $topTenWithWeather = Cache::remember('top_ten_weather', 30 * 60, function () use ($topTenLocations) {
+            return $this->weatherService->addWeatherToLocations($topTenLocations);
+        });
 
-        // Überprüfen, ob HeaderContent verfügbar ist
+        // Anzahl der Locations cachen (für 60 Minuten)
+        $totalLocations = Cache::remember('total_finished_locations', 60 * 60, function () {
+            return $this->locationRepository->getTotalFinishedLocations();
+        });
+
+        // Einen zufälligen oder den neuesten HeaderContent cachen (für 60 Minuten)
+        $headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+            return HeaderContent::inRandomOrder()->first();
+        });
+
+        // HeaderContent validieren
         if (!$headerContent) {
             return view('pages.main.index', [
                 'top_ten' => $topTenWithWeather,
@@ -42,9 +57,13 @@ class IndexController extends Controller
             ]);
         }
 
-        // Bildpfade anpassen
+        // Bildpfade
         $bgImgPath = $headerContent->bg_img ? Storage::url($headerContent->bg_img) : null;
         $mainImgPath = $headerContent->main_img ? Storage::url($headerContent->main_img) : null;
+
+        // Ladezeit-Ende
+        $endTime = microtime(true);
+        Log::info('IndexController Ladezeit: ' . ($endTime - $startTime) . ' Sekunden');
 
         return view('pages.main.index', [
             'top_ten' => $topTenWithWeather,

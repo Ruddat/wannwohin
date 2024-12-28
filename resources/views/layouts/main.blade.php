@@ -129,10 +129,6 @@
     <!-- jquery UI extra added from hani.masoud@gmx.de -->
     <script src={{ asset('assets/js/jquery-ui.js') }}></script>
 
-    <!-- flags icons js -->
-    <script src="{{ asset('assets/js/flag_icons.js') }}"></script>
-
-
     <!-- Cookies Consent added from hani.masoud@gmx.de -->
     <script src={{ asset('assets/js/cookie-consent.js') }}></script>
 <script>

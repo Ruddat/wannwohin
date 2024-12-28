@@ -79,7 +79,30 @@ class GeocodeService
         return $this->sendRequest($url, $params);
     }
 
+    public function getCoordinatesByLocationName(string $locationName): array
+    {
+        $url = "https://nominatim.openstreetmap.org/search";
+        $params = [
+            'query' => [
+                'q' => $locationName, // Location Name
+                'format' => 'json',
+                'addressdetails' => 1,
+                'limit' => 1, // Nur das erste Ergebnis
+            ],
+            'headers' => $this->getDefaultHeaders(),
+        ];
 
+        $result = $this->sendRequest($url, $params);
+
+        if (!empty($result)) {
+            return [
+                'lat' => $result[0]['lat'] ?? null,
+                'lon' => $result[0]['lon'] ?? null,
+            ];
+        }
+
+        throw new \Exception("Keine Koordinaten für die Location '{$locationName}' gefunden.");
+    }
 
     /**
      * Sende eine HTTP-Anfrage.
