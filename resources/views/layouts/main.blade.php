@@ -70,12 +70,29 @@
 --}}
 
 
+@if (Route::is('home', 'impressum'))
 
 <x-header
     :panorama-location-picture="$panorama_location_picture ?? null"
     :main-location-picture="$main_location_picture ?? null"
     :panorama-location-text="$panorama_location_text ?? null"
 />
+
+@else
+
+<x-header-details
+    :pic1-text="$pic1_text"
+    :pic2-text="$pic2_text"
+    :pic3-text="$pic3_text"
+    :head-line="$head_line"
+    :gallery-images="$gallery_images"
+/>
+
+
+@endif
+
+
+
 
 <div class="bg-white">
     <div class="container-fluid main-content-section">

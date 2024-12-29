@@ -32,7 +32,7 @@ Route::get('/details/{continent}/{country}/{location}', [LocationDetailsControll
 
 // Route::get('/{continent}/{country}/{location}', LocationDetailsController::class)->name('location');
 
-Route::view('impressum', 'pages.impressum')->name('impressum');
+Route::view('impressum', 'pages.impressum-neu')->name('impressum');
 
 
 Route::get('/api/countries-by-continent/{continent}', function ($continent) {

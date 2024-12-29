@@ -25,6 +25,8 @@ return new class extends Migration
     {
         Schema::table('location_galleries', function (Blueprint $table) {
             //
+            $table->dropColumn('description');
+            $table->dropColumn('image_hash');
         });
     }
 };

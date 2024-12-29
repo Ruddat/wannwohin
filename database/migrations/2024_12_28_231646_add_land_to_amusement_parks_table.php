@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('amusement_parks', function (Blueprint $table) {
-            $table->boolean('open_today')->nullable();
-            $table->timestamp('open_from')->nullable();
-            $table->timestamp('closed_from')->nullable();
+            $table->string('land')->nullable()->after('name');
+
         });
     }
 
@@ -24,10 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('amusement_parks', function (Blueprint $table) {
-            //
-            dropColumn('open_today');
-            dropColumn('open_from');
-            dropColumn('closed_from');
+            $table->dropColumn('land');
         });
     }
 };

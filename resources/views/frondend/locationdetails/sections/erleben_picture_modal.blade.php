@@ -3,7 +3,7 @@
         <!-- Überschrift -->
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h2 class="fw-bold text-uppercase">Was kann man in {{ $location->title }} erleben?</h2>
+                <h2 class="fw-bold text-uppercase">Urlaubsfotos von {{ $location->title }}</h2>
                 <hr class="w-25 mx-auto" style="border: 2px solid #007bff;">
             </div>
         </div>
@@ -30,29 +30,23 @@
                         </a>
                     </div>
                 @endif
-                @php
-    $imageUrl = trim($image['url']);
-    if (!filter_var($imageUrl, FILTER_VALIDATE_URL)) {
-        \Log::warning("Ungültige URL gefunden: " . $image['url']);
-    }
-@endphp
             @endforeach
         </div>
 
+
         <!-- Miniaturansicht -->
-        <div class="mt-4 text-center">
-            <div class="d-flex justify-content-center">
-                @foreach ($gallery_images as $index => $image)
-                    @if (filter_var($image['url'], FILTER_VALIDATE_URL))
-                        <div class="mx-2">
-                            <a href="{{ $image['url'] }}" class="glightbox-thumbnail" data-gallery="gallery" data-title="{{ $image['description'] }}">
-                                <img src="{{ $image['url'] }}" alt="{{ $image['description'] }}" class="img-thumbnail" style="width: 75px; height: 50px; object-fit: cover;">
-                            </a>
-                        </div>
-                    @endif
-                @endforeach
+        <div class="mt-4 text-center d-none d-md-flex justify-content-center">
+            @foreach ($gallery_images as $index => $image)
+            @if (filter_var($image['url'], FILTER_VALIDATE_URL))
+            <div class="mx-2">
+                <a href="{{ $image['url'] }}" class="glightbox-thumbnail" data-gallery="gallery" data-title="{{ $image['description'] }}">
+                    <img src="{{ $image['url'] }}" alt="{{ $image['description'] }}" class="img-thumbnail" style="width: 75px; height: 50px; object-fit: cover;">
+                </a>
             </div>
+            @endif
+            @endforeach
         </div>
+
     </div>
 </section>
 

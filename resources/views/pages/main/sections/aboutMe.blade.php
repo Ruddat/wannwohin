@@ -71,53 +71,65 @@
 </div>
 
 <style>
-/* Scoped Styles für #about-me */
-#about-me .custom-box-details {
-    border-radius: 10px;
-    background: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-#about-me .table-borderless th,
-#about-me .table-borderless td {
-    vertical-align: middle;
-}
-
-#about-me .table-borderless thead {
-    border-bottom: 2px solid #ddd;
-}
-
-#about-me .table-borderless tbody tr {
-    transition: background-color 0.3s ease;
-}
-
-#about-me .table-borderless tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-#about-me img {
-    border-radius: 4px;
-    object-fit: cover;
-}
-
-#about-me [data-bs-toggle="tooltip"] {
-    cursor: pointer;
-}
-
-/* Responsive Anpassungen für #about-me */
-@media (max-width: 768px) {
+    /* Anpassung für die Schriftgrößen */
     #about-me .custom-box-details {
-        padding: 1rem;
+        font-size: 0.9rem; /* Grundgröße für den Text */
+        border-radius: 10px;
+        background: #f9f9f9;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    #about-me .table-borderless th {
+        font-size: 0.95rem; /* Überschriften etwas größer */
+    }
+
+    #about-me .table-borderless td {
+        font-size: 0.85rem; /* Inhalte etwas kleiner */
+        vertical-align: middle;
+    }
+
+    #about-me .table-borderless thead {
+        border-bottom: 2px solid #ddd;
+    }
+
+    #about-me .table-borderless tbody tr {
+        transition: background-color 0.3s ease;
+    }
+
+    #about-me .table-borderless tbody tr:hover {
+        background-color: #f1f1f1;
     }
 
     #about-me img {
-        height: 20px !important;
+        border-radius: 4px;
+        object-fit: cover;
     }
 
-    #about-me td:nth-child(5) {
-        display: block;
-        margin-top: 10px;
+    #about-me [data-bs-toggle="tooltip"] {
+        cursor: pointer;
+        font-size: 0.85rem; /* Tooltips kleiner machen */
     }
-}
-</style>
+
+    /* Responsive Anpassungen für #about-me */
+    @media (max-width: 768px) {
+        #about-me .custom-box-details {
+            padding: 1rem;
+        }
+
+        #about-me img {
+            height: 20px !important;
+        }
+
+        #about-me td:nth-child(5) {
+            display: block;
+            margin-top: 10px;
+        }
+
+        #about-me .table-borderless th,
+        #about-me .table-borderless td {
+            font-size: 0.8rem; /* Schriftgröße für mobile Geräte anpassen */
+        }
+    }
+    </style>
+

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class AmusementParkService
 {
@@ -41,16 +42,26 @@ class AmusementParkService
             $coordinates = $this->getCoordinates($park['name']);
             $openingTimes = $this->getParkOpeningTimes($park['id']);
 
+            // Zeitstempel konvertieren
+            $openToday = $openingTimes['opened_today'] ?? null;
+            $openFrom = isset($openingTimes['open_from'])
+                ? Carbon::parse($openingTimes['open_from'])->format('Y-m-d H:i:s')
+                : null;
+            $closedFrom = isset($openingTimes['closed_from'])
+                ? Carbon::parse($openingTimes['closed_from'])->format('Y-m-d H:i:s')
+                : null;
+
             DB::table('amusement_parks')->updateOrInsert(
                 ['external_id' => $park['id']],
                 [
                     'name' => $park['name'],
-                    'country' => $park['land'],
+                    'land' => $park['land'], // Neues Feld hinzugefügt
+                    'country' => $park['land'], // Optional, falls das alte Feld "country" beibehalten wird
                     'latitude' => $coordinates['lat'] ?? null,
                     'longitude' => $coordinates['lon'] ?? null,
-                    'open_today' => $openingTimes['opened_today'] ?? null,
-                    'open_from' => $openingTimes['open_from'] ?? null,
-                    'closed_from' => $openingTimes['closed_from'] ?? null,
+                    'open_today' => $openToday,
+                    'open_from' => $openFrom,
+                    'closed_from' => $closedFrom,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]

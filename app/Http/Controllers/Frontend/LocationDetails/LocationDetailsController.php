@@ -77,14 +77,28 @@ class LocationDetailsController extends Controller
         ];
     });
 
+    // Haupt- und Panorama-Bilder
+    $mainImagePath = $location->main_img ? Storage::url($location->main_img) : null;
+    $panoramaImagePath = $location->panorama_text_and_style ?? asset('default-bg.jpg');
 
-//dd($galleryImages);
+    // Texte für die Bilder
+    $pic1Text = $location->text_pic1 ?? 'Standard Text für Bild 1';
+    $pic2Text = $location->text_pic2 ?? 'Standard Text für Bild 2';
+    $pic3Text = $location->text_pic3 ?? 'Standard Text für Bild 3';
+    $headLine = $location->text_headline ?? 'Standard Headline';
+
+//dd($headLine);
 
         return view('frondend.locationdetails._index', [
             'location' => $location,
             'main_image_path' => $mainImagePath,
             'gallery_images' => $galleryImages,
             'parks_with_opening_times' => $parksWithOpeningTimes,
+            'panorama_location_picture' => $panoramaImagePath,
+            'pic1_text' => $pic1Text,
+            'pic2_text' => $pic2Text,
+            'pic3_text' => $pic3Text,
+            'head_line' => $headLine,
         ]);
     }
 }
