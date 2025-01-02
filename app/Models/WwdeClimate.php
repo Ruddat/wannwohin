@@ -22,17 +22,9 @@ class WwdeClimate extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'location_id',
-        'month_id',
-        'month',
-        'daily_temperature',
-        'night_temperature',
-        'sunshine_per_day',
-        'humidity',
-        'rainy_days',
-        'water_temperature',
-    ];
+
+    protected $guarded = [];
+    
 
     // Beziehung zur Location
     public function location()

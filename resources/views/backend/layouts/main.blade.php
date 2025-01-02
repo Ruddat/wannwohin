@@ -12,6 +12,7 @@
 
 @include('backend.layouts.partials.header-css')
 
+@stack('styles')
 
 </head>
 
@@ -64,7 +65,7 @@
               </div>
             </div>
           </div>
-          
+
 
             {{-- main body content --}}
             @yield('main-content')

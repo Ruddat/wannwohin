@@ -28,9 +28,13 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
 
             <!-- Text Content -->
             <div class="col-md-8 bg-white p-4 rounded shadow">
-                @foreach (explode('  ', $location->{'text_what-to-do'}) as $paragraph)
-                    <p class="text-dark mb-3">{{ $paragraph }}</p>
-                @endforeach
+                @if (!empty($location->text_what_to_do))
+                <div class="formatted-text">
+                    {!! $location->text_what_to_do !!}
+                </div>
+            @else
+                <p class="text-muted">Kein Text verfügbar.</p>
+            @endif
             </div>
         </div>
     </div>

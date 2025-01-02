@@ -7,6 +7,7 @@ use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
 use App\Models\LocationGallery;
 use App\Models\WwdeLocationImages;
+use App\Models\MonthlyClimateSummary;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -83,7 +84,9 @@ class WwdeLocation extends Model
         'lat_new',
         'lon_new',
         'population',
-        'status'
+        'status',
+        'iso2',
+        'iso3',
     ];
 
     /**
@@ -105,6 +108,17 @@ class WwdeLocation extends Model
     {
         return $this->hasMany(WwdeClimate::class, 'location_id', 'id');
     }
+
+    public function monthlyClimateSummaries()
+    {
+        return $this->hasMany(MonthlyClimateSummary::class, 'location_id', 'id');
+    }
+
+    public function climateArchives()
+    {
+        return $this->hasMany(WwdeClimateArchive::class, 'location_id', 'id');
+    }
+
 
     // Beziehung zu LocationImages
     public function images()

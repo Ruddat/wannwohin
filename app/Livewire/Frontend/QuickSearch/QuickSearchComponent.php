@@ -38,6 +38,9 @@ class QuickSearchComponent extends Component
 
     public function mount()
     {
+
+        $this->isCollapsed = request()->cookie('isCollapsed', false);
+
         // Nur aktive und fertige Einträge laden
         $this->allLocations = WwdeLocation::where('status', 'active')
             ->where('finished', 1)
@@ -124,6 +127,9 @@ class QuickSearchComponent extends Component
     public function toggleCollapse()
     {
         $this->isCollapsed = !$this->isCollapsed;
+
+        // Zustand in einem Cookie speichern
+        cookie()->queue('isCollapsed', $this->isCollapsed, 60 * 24 * 30); // 30 Tage
     }
 
     public function redirectToResults()

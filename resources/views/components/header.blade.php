@@ -20,7 +20,22 @@
 <div class="custom-about-links bg-color-light">
     <div class="container">
         <div class="row justify-content-end">
-            <div class="col-lg-3 text-center custom-xs-border-bottom p-0"></div>
+            <!-- Kontinent-Dropdown -->
+            <div class="col-lg-3 text-center custom-xs-border-bottom p-0">
+                <form action="#" method="GET">
+                    <select name="continent_id" class="form-select">
+                        <option value="" selected>Wähle einen Kontinent</option>
+                        <option value="1">Europa</option>
+                        <option value="2">Asien</option>
+                        <option value="3">Afrika</option>
+                        <option value="4">Nordamerika</option>
+                        <option value="5">Südamerika</option>
+                        <option value="6">Australien</option>
+                        <option value="7">Antarktis</option>
+                    </select>
+                </form>
+            </div>
+
             <div class="col-lg-2 text-center custom-xs-border-bottom p-0">
                 <a data-hash href="#say-hello" class="text-decoration-none">
                     <span class="custom-nav-button custom-divisors text-color-dark">
@@ -28,14 +43,18 @@
                     </span>
                 </a>
             </div>
+
             <div class="col-lg-3 text-center p-0">
                 <a href="#" class="text-decoration-none">
-                    <span class="custom-nav-button text-color-dark"><i class="icon-cloud-download icons text-color-primary"></i> Neuen Ort vorschlagen</span>
+                    <span class="custom-nav-button text-color-dark">
+                        <i class="icon-cloud-download icons text-color-primary"></i> Neuen Ort vorschlagen
+                    </span>
                 </a>
             </div>
         </div>
     </div>
 </div>
+
 
 <style>
 /* Spezifisches Styling nur für die Header-Sektion */
@@ -74,6 +93,16 @@
         transform: translateY(-10px);
     }
 }
+
+.custom-about-links select.form-select {
+    background-color: #FDD55C;
+}
+.custom-about-links .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 1.5rem;
+}
+
 
 /* Responsives Design */
 @media (max-width: 768px) {

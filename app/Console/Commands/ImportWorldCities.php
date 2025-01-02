@@ -52,7 +52,7 @@ class ImportWorldCities extends Command
 
         // Offset-Handling
         $offset = DB::table('job_offsets')->where('job_name', 'import_world_cities')->value('offset') ?? 0;
-        $batchSize = 20;
+        $batchSize = 50;
 
         if ($format === 'csv') {
             $this->importCSV($filePath, $offset, $batchSize);
@@ -125,6 +125,14 @@ class ImportWorldCities extends Command
 
         $this->info('Countries loaded into memory.');
 
+        $continents = DB::table('wwde_continents')
+        ->select('id', 'title')
+        ->get()
+        ->keyBy('id'); // Assoziatives Array mit continent_id als Schlüssel
+
+        $this->info('Continents loaded into memory.');
+
+
         $currentOffset = 0;
         $batchData = [];
 
@@ -143,6 +151,9 @@ class ImportWorldCities extends Command
             }
 
             $country = $countries[$data['iso2']];
+            $continentName = $continents[$country->continent_id]->title ?? 'Unbekannter Kontinent';
+
+           //dd($country, $continentName);
             $population = is_numeric($data['population']) ? (int)$data['population'] : null;
 
             if (empty($data['iata']) && $population < 100000) {
@@ -173,13 +184,15 @@ class ImportWorldCities extends Command
                 'iata_code' => $data['iata'] ?? null,
                 'lat' => $data['lat'],
                 'lon' => $data['lng'],
+                'iso2' => $data['iso2'],
+                'iso3' => $data['iso3'],
+                
                 'population' => $population,
                 'list_beach' => $this->isNearBeach($data['lat'], $data['lng']),
                 'list_citytravel' => $population > 1000000,
                 'list_sports' => $this->hasSportsActivities($data['city']),
                 'list_culture' => $this->isCulturalDestination($data['city']),
-                'text_short' => $this->generateShortText($data['city']),
-                'text_headline' => $this->generateHeadline($data['city']),
+                //'text_short' => $this->generateShortText($data['city']),
                 'text_pic1' => $textPic1,
                 'text_pic2' => $textPic2,
                 'text_pic3' => $textPic3,
@@ -188,6 +201,33 @@ class ImportWorldCities extends Command
                 'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]),
                 'best_traveltime_json' => json_encode($bestTravelTimeArray),
                 'panorama_text_and_style' => json_encode($panorama),
+
+                'text_headline' => $this->generateHeadline(
+                    $data['city'],
+                    $this->determineFlags($data),
+                    $population,
+                    $continentName
+                 //   $countries[$data['iso2']]->continent_id ?? 'Unbekannter Kontinent'
+                ),
+
+                'text_what_to_do' => $this->generateWhatToDoText(
+                    $data['city'],
+                    $flags,
+                    $population,
+                    $continentName
+                    //$country->continent_id // Falls Kontinent-Name direkt verfügbar ist
+                ),
+
+                'text_short' => $this->generateShortText(
+                    $data['city'],
+                    $flags,
+                    $population,
+                    $continentName
+                    //$countries[$data['iso2']]->continent_id ?? 'Unbekannter Kontinent'
+                ),
+
+                'text_amusement_parks' => $this->generateAmusementParksText($data['city'], $data['lat'], $data['lng']),
+
                 'finished' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -259,6 +299,8 @@ class ImportWorldCities extends Command
                 }
 
                 $country = $countries[$data['iso2']];
+                //dd($country);
+
                 $population = is_numeric($data['population']) ? (int)$data['population'] : null;
 
                 // Berechnung der Reisezeit
@@ -285,13 +327,30 @@ class ImportWorldCities extends Command
                     'list_sports' => $this->hasSportsActivities($data['city']),
                     'list_culture' => $this->isCulturalDestination($data['city']),
                     'text_short' => $this->generateShortText($data['city']),
-                    'text_headline' => $this->generateHeadline($data['city']),
                     'best_traveltime' => $this->getBestTravelTime($data['lat'], $data['lng']),
                     'text_pic1' => $this->getCityImage($data['city'], 1),
                     'text_pic2' => $this->getCityImage($data['city'], 2),
                     'text_pic3' => $this->getCityImage($data['city'], 3),
                     'best_traveltime' => implode(' - ', [$bestTravelTimeArray[0], end($bestTravelTimeArray)]), // Kompakte Anzeige
                     'best_traveltime_json' => json_encode($bestTravelTimeArray), // JSON als Array
+
+                    //'panorama_text_and_style' => json_encode($this->panorama_text_and_style($data['city'], $bestTravelTimeArray, 'parks')),
+                    'text_what_to_do' => $this->generateWhatToDoText(
+                        $data['city'],
+                        $flags,
+                        $population,
+                        $country->continent_id // Falls Kontinent-Name direkt verfügbar ist
+                    ),
+
+                    'text_headline' => $this->generateHeadline(
+                        $data['city'],
+                        $flags,
+                        $population,
+                        $countries[$data['iso2']]->continent_id ?? 'Unbekannter Kontinent'
+                    ),
+
+                    'text_amusement_parks' => $this->generateAmusementParksText($data['city'], $data['lat'], $data['lng']),
+
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -397,9 +456,75 @@ class ImportWorldCities extends Command
    // private function isNearBeach($lat, $lon) { return false; }
    // private function hasSportsActivities($city) { return in_array($city, ['Munich', 'Innsbruck']); }
   //  private function isCulturalDestination($city) { return in_array($city, ['Berlin', 'Paris', 'Rome']); }
-    private function generateShortText($city) { return "{$city} is a wonderful destination to explore!"; }
-    private function generateHeadline($city) { return "Explore the wonders of {$city}"; }
-    private function getBestTravelTime($lat, $lon) { return 'May - September'; }
+  //  private function generateShortText($city) { return "{$city} is a wonderful destination to explore!"; }
+    // private function getBestTravelTime($lat, $lon) { return 'May - September'; }
+
+
+
+    private function generateAmusementParksText($city, $latitude, $longitude)
+    {
+        $parks = $this->findNearbyAmusementParks($latitude, $longitude);
+
+        if ($parks->isEmpty()) {
+            return "<p>Leider gibt es keine Freizeitparks in der Nähe von {$city}. Vielleicht möchten Sie einen Ausflug in eine andere Region unternehmen!</p>";
+        }
+
+        $text = "<h3>Freizeitparks in der Nähe von {$city}</h3><ul>";
+
+        foreach ($parks as $park) {
+            $text .= "<li><strong>{$park->name}</strong> in {$park->country}</li>";
+        }
+
+        $text .= "</ul>";
+        return $text;
+    }
+
+    public function findNearbyAmusementParks($latitude, $longitude)
+    {
+        if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+            throw new InvalidArgumentException("Ungültige Koordinaten: ({$latitude}, {$longitude})");
+        }
+
+        $parks = DB::table('amusement_parks')
+            ->selectRaw("
+                *,
+                (6371 * acos(
+                    cos(radians(?)) * cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) +
+                    sin(radians(?)) * sin(radians(latitude))
+                )) AS distance
+            ", [$latitude, $longitude, $latitude])
+            ->having('distance', '<=', 500) // Erhöhe den Radius
+            ->orderBy('distance', 'asc')
+            ->get();
+
+        if ($parks->isEmpty()) {
+            Log::warning("Keine Freizeitparks gefunden für ({$latitude}, {$longitude})");
+        }
+
+        return $parks;
+    }
+
+    private function getBestTravelTime($lat, $lon)
+    {
+        // Tropische Gebiete (nahe Äquator)
+        if ($lat >= -23.5 && $lat <= 23.5) {
+            return 'November - March'; // Trockenzeit
+        }
+
+        // Gemäßigte Zonen
+        if (($lat > 23.5 && $lat < 66.5) || ($lat < -23.5 && $lat > -66.5)) {
+            return 'May - September'; // Sommer in den nördlichen Breitengraden
+        }
+
+        // Polargebiete
+        if ($lat >= 66.5 || $lat <= -66.5) {
+            return 'June - August'; // Milde Monate
+        }
+
+        // Fallback, falls keine spezifische Region erkannt wird
+        return 'All year round'; // Standardwert
+    }
 
 
     private function determineFlags(array $data): array
@@ -698,6 +823,116 @@ class ImportWorldCities extends Command
         }
 
         return $timeZone;
+    }
+
+    /// Texte generiert
+    private function generateWhatToDoText($city, $flags, $population, $continent)
+    {
+        // Einführung
+        $intro = "<h2>Entdecken Sie {$city}</h2>";
+        $intro .= "<p>{$city} ist ein faszinierendes Reiseziel, das für jeden etwas zu bieten hat. Von malerischen Landschaften bis hin zu pulsierenden Stadtzentren – hier finden Sie alles, was Ihr Herz begehrt.</p>";
+
+        // Aktivitäten basierend auf Flags
+        $activities = [];
+        if ($flags['list_beach']) {
+            $activities[] = "<li>Genießen Sie die <strong>sonnigen Strände</strong> von {$city} und entspannen Sie sich beim Rauschen der Wellen.</li>";
+        }
+        if ($flags['list_culture']) {
+            $activities[] = "<li>Entdecken Sie die <strong>kulturellen Highlights</strong> von {$city}, darunter historische Stätten, Museen und Festivals.</li>";
+        }
+        if ($flags['list_sports']) {
+            $activities[] = "<li>Erleben Sie <strong>sportliche Abenteuer</strong> wie Radfahren, Wandern oder Wassersport in und um {$city}.</li>";
+        }
+        if ($flags['list_island']) {
+            $activities[] = "<li>Die idyllische <strong>Inselstadt {$city}</strong> lädt Sie ein, ihre atemberaubenden Landschaften zu erkunden.</li>";
+        }
+        if ($flags['list_nature']) {
+            $activities[] = "<li>Tauchen Sie ein in die <strong>unberührte Natur</strong> rund um {$city}, ideal für Wanderungen und Naturliebhaber.</li>";
+        }
+
+        // Standardaktivität, falls keine Flags gesetzt sind
+        if (empty($activities)) {
+            $activities[] = "<li>{$city} bietet eine Vielzahl von Möglichkeiten für Abenteuer, Entspannung oder kulturelle Erlebnisse.</li>";
+        }
+
+        // Aktivitätenliste
+        $activitiesList = "<h3>Was können Sie in {$city} unternehmen?</h3>";
+        $activitiesList .= "<ul>" . implode('', $activities) . "</ul>";
+
+        // Zusätzliche Informationen basierend auf Bevölkerung und Kontinent
+        $additionalInfo = $population > 1000000
+            ? "<p>{$city} ist eine pulsierende Metropole mit über einer Million Einwohnern, die Ihnen zahlreiche Möglichkeiten bietet, die Stadt zu entdecken.</p>"
+            : "<p>{$city} ist eine charmante Stadt mit einer einzigartigen Atmosphäre, die zum Erkunden einlädt.</p>";
+        $additionalInfo .= "<p>Gelegen in <strong>{$continent}</strong>, verbindet {$city} Tradition und Moderne auf faszinierende Weise.</p>";
+
+        // Gesamter Text
+        return $intro . $activitiesList . $additionalInfo;
+    }
+
+    private function generateHeadline($city, $flags, $population, $continent)
+    {
+        // Basistexte für Überschriften
+        $baseHeadlines = [
+            'default' => "Entdecken Sie die faszinierenden Seiten von {$city}",
+            'beach' => "{$city}: Paradies für Strandliebhaber",
+            'culture' => "Tauchen Sie ein in die kulturellen Schätze von {$city}",
+            'sports' => "Sport und Abenteuer erwarten Sie in {$city}",
+            'island' => "Erleben Sie die idyllische Inselstadt {$city}",
+            'nature' => "Natur pur: Erkunden Sie die Landschaften von {$city}",
+            'metropolis' => "Pulsierendes Leben in der Metropole {$city}",
+        ];
+
+        // Individuelle Überschrift basierend auf Flags und Kontext
+        if ($flags['list_beach']) {
+            return $baseHeadlines['beach'];
+        } elseif ($flags['list_culture']) {
+            return $baseHeadlines['culture'];
+        } elseif ($flags['list_sports']) {
+            return $baseHeadlines['sports'];
+        } elseif ($flags['list_island']) {
+            return $baseHeadlines['island'];
+        } elseif ($flags['list_nature']) {
+            return $baseHeadlines['nature'];
+        }
+
+        // Wenn die Stadt eine Metropole ist
+        if ($population > 1000000) {
+            return $baseHeadlines['metropolis'];
+        }
+
+        // Standardüberschrift
+        return $baseHeadlines['default'];
+    }
+
+
+    private function generateShortText($city, $flags, $population, $continent)
+    {
+        // Basisinformationen
+        $text = "{$city} ist ein faszinierendes Reiseziel";
+
+        // Zusätzliche Informationen basierend auf Flags
+        if ($flags['list_beach']) {
+            $text .= ", das für seine wunderschönen Strände bekannt ist";
+        } elseif ($flags['list_culture']) {
+            $text .= ", das reich an kulturellen Sehenswürdigkeiten ist";
+        } elseif ($flags['list_sports']) {
+            $text .= ", das Sport- und Abenteuerliebhaber begeistert";
+        } elseif ($flags['list_island']) {
+            $text .= ", das als idyllische Insel bekannt ist";
+        } elseif ($flags['list_nature']) {
+            $text .= ", das von atemberaubender Natur umgeben ist";
+        }
+
+        // Bevölkerung hinzufügen
+        $text .= $population > 1000000
+            ? ". Mit einer Bevölkerung von über einer Million ist {$city} eine lebendige Metropole"
+            : ". Diese charmante Stadt bietet eine ruhige und einladende Atmosphäre";
+
+        // Kontinent hinzufügen
+        $text .= " und liegt auf dem Kontinent {$continent}.";
+
+        // Rückgabe des gekürzten Texts (maximal 1000 Zeichen)
+        return Str::limit($text, 1000, '...');
     }
 
 

@@ -34,17 +34,24 @@ class LocationImageService
         $url = 'https://pixabay.com/api/';
         $galleryPaths = [];
 
-        // Ersetze Leerzeichen in den Ordnernamen durch Unterstriche
-        $safeCityName = str_replace(' ', '_', $city);
+        // Ersetze Leerzeichen in den Ordnernamen durch Unterstriche und eliminiere Sonderzeichen
+        $safeCityName = str_replace(' ', '_', $this->sanitizeString($city));
         $directoryPath = "uploads/images/locations/{$safeCityName}";
 
         // Ensure the directory exists
         Storage::disk('public')->makeDirectory($directoryPath);
 
-        // Get existing image hashes across all records to avoid duplicates globally
-        $existingImageHashes = LocationGallery::pluck('image_hash')->toArray();
+        // Get existing image hashes and activities for the location
+        $existingImages = LocationGallery::where('location_id', $locationId)
+            ->pluck('activity', 'image_hash')
+            ->toArray();
 
         foreach ($activities as $activity) {
+            // Skip if images already exist for this activity
+            if (in_array($activity, $existingImages)) {
+                continue;
+            }
+
             try {
                 $response = Http::get($url, [
                     'key' => $this->pixabayApiKey,
@@ -64,16 +71,20 @@ class LocationImageService
                         }
 
                         $imageUrl = $image['webformatURL'];
-                        $description = $image['tags'] ?? 'No description available'; // Fetch description
-                        $imageHash = md5($imageUrl); // Generate a unique hash for the image URL
+                        $description = $image['tags'] ?? 'No description available';
+                        $imageHash = md5($imageUrl);
 
                         // Skip if the image hash already exists
-                        if (in_array($imageHash, $existingImageHashes)) {
+                        if (array_key_exists($imageHash, $existingImages)) {
                             continue;
                         }
 
-                        // Ersetze Leerzeichen durch Unterstriche in den Dateinamen
-                        $fileName = "{$directoryPath}/" . str_replace(' ', '_', basename($imageUrl));
+                        // Ersetze Leerzeichen durch Unterstriche in den Dateinamen und eliminiere Sonderzeichen
+                        // Ursprüngliche Dateierweiterung extrahieren
+                        $fileExtension = pathinfo($imageUrl, PATHINFO_EXTENSION);
+
+                        // Bereinige den Dateinamen, aber behalte die Erweiterung
+                        $fileName = "{$directoryPath}/" . str_replace(' ', '_', $this->sanitizeString(pathinfo($imageUrl, PATHINFO_FILENAME))) . ".{$fileExtension}";
 
                         try {
                             // Download and save the image
@@ -85,8 +96,9 @@ class LocationImageService
                                 'location_id' => $locationId,
                                 'location_name' => $city,
                                 'image_path' => $fileName,
-                                'image_hash' => $imageHash, // Save image hash
-                                'description' => $description, // Save description
+                                'image_hash' => $imageHash,
+                                'activity' => $activity, // Save the activity
+                                'description' => $description,
                             ]);
 
                             $galleryPaths[] = [
@@ -95,7 +107,7 @@ class LocationImageService
                             ];
 
                             // Add the new hash to the list of existing hashes
-                            $existingImageHashes[] = $imageHash;
+                            $existingImages[$imageHash] = $activity;
                         } catch (\Exception $e) {
                             Log::error("Error saving image for {$city}: {$e->getMessage()}");
                         }
@@ -110,6 +122,7 @@ class LocationImageService
 
         return $galleryPaths;
     }
+
 
 
 
@@ -134,5 +147,22 @@ class LocationImageService
             'url' => Storage::url($image->image_path),
             'description' => $image->description,
         ])->toArray();
+    }
+
+
+    /**
+    * Sanitize a string by removing special characters and accents.
+    *
+    * @param string $string
+    * @return string
+    */
+    protected function sanitizeString(string $string): string
+    {
+        // Entferne Akzente und Sonderzeichen
+        $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+        // Entferne alles außer Buchstaben, Zahlen, Unterstrichen und Leerzeichen
+        $string = preg_replace('/[^A-Za-z0-9 _-]/', '', $string);
+        // Trim und zurückgeben
+        return trim($string);
     }
 }

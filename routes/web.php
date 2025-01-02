@@ -13,6 +13,9 @@ use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
 
 
 Route::get('/', IndexController::class)->name('home');
+Route::get('/urlaub/{urlaub_type}/month/{month_id}', [IndexController::class, 'searchResults'])->name('search.results');
+
+
 Route::match(['post', 'get'],'/suche', SearchController::class)->name('search');
 //Route::get('/detailsuche', [DetailSearchController::class, 'index'] )->name('detailSearch');
 Route::get('/detailsuche', [DetailSearchController::class, 'index'])->name('detail_search');
@@ -31,6 +34,8 @@ Route::get('/details/{continent}/{country}/{location}', [LocationDetailsControll
     ->name('location.details');
 
 // Route::get('/{continent}/{country}/{location}', LocationDetailsController::class)->name('location');
+
+
 
 Route::view('impressum', 'pages.impressum-neu')->name('impressum');
 

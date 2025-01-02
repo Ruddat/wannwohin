@@ -6,8 +6,10 @@
         <div role="main" class="main">
             @include('frondend.locationdetails.sections.main')
 
+            @include('frondend.locationdetails.sections.climate_table')
+
             @include('frondend.locationdetails.sections.amusement_parks')
-            
+
             @include('frondend.locationdetails.sections.erleben')
 
             @include('frondend.locationdetails.sections.erleben_picture_modal')

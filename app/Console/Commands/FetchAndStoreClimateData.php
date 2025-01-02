@@ -20,7 +20,8 @@ class FetchAndStoreClimateData extends Command
         foreach ($locations as $location) {
             $this->info("Fetching data for location: {$location->title}");
 
-            $weatherData = $weatherClient->fetchDailyWeather($location->lat, $location->lon);
+            $weatherData = $weatherClient->fetchCurrentWeather($location->lat, $location->lon);
+//dd($weatherData);
 
             if ($weatherData) {
                 WwdeClimate::create([
@@ -32,7 +33,7 @@ class FetchAndStoreClimateData extends Command
                     'sunshine_per_day' => $weatherData['sunshine_per_day'],
                     'humidity' => $weatherData['humidity'],
                     'rainy_days' => $weatherData['rainy_days'],
-                    'water_temperature' => null, // API bietet dies eventuell nicht an
+                    'water_temperature' => $weatherData['water_temperature'], // API bietet dies eventuell nicht an
                 ]);
 
                 $this->info("Climate data stored for location: {$location->title}");

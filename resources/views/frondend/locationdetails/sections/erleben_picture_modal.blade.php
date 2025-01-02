@@ -55,16 +55,24 @@
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const lightbox = GLightbox({
-            selector: '.glightbox, .glightbox-thumbnail',
-            loop: true,
-            touchNavigation: true,
-            zoomable: true,
-            openEffect: 'zoom',
-            closeEffect: 'fade',
-            slideThumbnails: true, // Miniaturansicht aktivieren
-            touchFollowAxis: true, // Navigation per Swipe
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    const lightbox = GLightbox({
+        selector: '.glightbox, .glightbox-thumbnail',
+        loop: true,
+        touchNavigation: true,
+        zoomable: true,
+        openEffect: 'zoom',
+        closeEffect: 'fade',
+        slideThumbnails: true,
+        touchFollowAxis: true,
     });
+
+    // Verhindert `aria-hidden` auf aktiven Lightbox-Elementen
+    lightbox.on('open', () => {
+        const lightboxWrapper = document.querySelector('.glightbox-container');
+        if (lightboxWrapper) {
+            lightboxWrapper.removeAttribute('aria-hidden');
+        }
+    });
+});
 </script>

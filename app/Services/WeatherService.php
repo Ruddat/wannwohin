@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
-use App\Library\WeatherApiClientLibrary;
+use App\Models\WwdeClimate;
+use App\Models\WwdeLocation;
 use App\Services\GeocodeService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Library\WeatherApiClientLibrary;
+use App\Library\WeatherDataManagerLibrary;
 
 class WeatherService
 {
@@ -12,10 +16,11 @@ class WeatherService
     protected $geocodeService;
     protected $geocodedLocations = []; // Caching für Geokodierte Locations
 
-    public function __construct(WeatherApiClientLibrary $weatherApiClient, GeocodeService $geocodeService)
+    public function __construct(WeatherApiClientLibrary $weatherApiClient, GeocodeService $geocodeService, WeatherDataManagerLibrary $WeatherDataManager,)
     {
         $this->weatherApiClient = $weatherApiClient;
         $this->geocodeService = $geocodeService;
+        $this->WeatherDataManager = $WeatherDataManager;
     }
 
     public function addWeatherToLocations($locations)
@@ -55,7 +60,10 @@ class WeatherService
             }
 
             // Abrufen der Wetterdaten
-            $weatherData = $this->weatherApiClient->getCurrentWeatherByTimeZone($location->lat_new, $location->lon_new);
+         //   $weatherData = $this->WeatherDataManagerLibrary->getCurrentWeatherByTimeZone($location->lat_new, $location->lon_new);
+//dd($weatherData);
+$weatherData = null;
+
             if ($weatherData) {
                 $location->current_temp_from_api = $weatherData['current_tmp'] ?? null;
                 $location->current_weather_from_api = $weatherData['weather'] ?? null;
@@ -74,9 +82,68 @@ class WeatherService
                 $location->country_flag = "https://flagcdn.com/w40/" . strtolower($location->country->country_code) . ".png";
             }
         }
-
+//dd($locations);
         return $locations;
     }
+
+
+
+    public function getWeatherDataForLocation($location)
+    {
+        if (is_int($location)) {
+            $location = WwdeLocation::findOrFail($location);
+        }
+//dd($location);
+
+        if ($location->weather_updated_at && $location->weather_updated_at->diffInHours(now()) < 1) {
+            return [
+                'temperature' => $location->current_temp_from_api,
+                'description' => $location->current_weather_from_api,
+                'icon' => $location->weather_icon,
+                'humidity' => $location->humidity,
+                'cloudiness' => $location->cloudiness,
+                'wind_speed' => $location->wind_speed,
+                'wind_direction' => $location->wind_direction,
+            ];
+        }
+
+        // API-Aufruf durchführen
+        $weatherData = $this->WeatherDataManager->fetchAndStoreWeatherData($location->lat, $location->lon, $location->id);
+
+
+
+        DB::beginTransaction();
+        try {
+            WwdeClimate::updateOrCreate(
+                ['location_id' => $location->id, 'month_id' => now()->month],
+                [
+                    'location_id' => $location->id,
+                    'month_id' => now()->month,
+                    'month' => now()->format('F'),
+                    'daily_temperature' => $weatherData['main']['temp'] ?? null,
+                    'night_temperature' => $weatherData['main']['temp_min'] ?? null,
+                    'humidity' => $weatherData['main']['humidity'] ?? null,
+                    'icon' => "https://openweathermap.org/img/wn/{$weatherData['weather'][0]['icon']}@2x.png",
+                    'visibility' => $weatherData['visibility'] ?? null,
+                    'wind_speed' => $weatherData['wind']['speed'] ?? null,
+                    'wind_direction' => $weatherData['wind']['deg'] ?? null,
+                    'cloudiness' => $weatherData['clouds']['all'] ?? null,
+                    'sunshine_per_day' => $weatherData['sunshine_per_day'] ?? null,
+                    'water_temperature' => $weatherData['water_temperature'] ?? null,
+                ]
+            );
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Fehler bei updateOrCreate:', ['error' => $e->getMessage()]);
+        }
+
+
+        Log::error('Fehler beim Abrufen der Wetterdaten');
+        return null;
+    }
+
+
 
     /**
      * Validiert die Koordinaten.

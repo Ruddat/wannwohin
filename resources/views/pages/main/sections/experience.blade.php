@@ -5,20 +5,13 @@
                 <h2 class="text-color-dark text-uppercase font-weight-extra-bold mb-0">WELCHER URLAUBSTYP SIND SIE?</h2>
                 <h5 class="text-color-dark">und in welchem Monat wollen Sie verreisen?</h5>
                 <div class="row col-lg-3 ms-4">
-                <select class="form-select urlaub_type_month" id="urlaub_type_month">
-                    <option value="1">Januar</option>
-                    <option value="2">Februar</option>
-                    <option value="3">März</option>
-                    <option value="4">April</option>
-                    <option value="5">Mai</option>
-                    <option value="6" selected="">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Dezember</option>
-                </select>
+                    <select class="form-select urlaub_type_month" id="urlaub_type_month" onchange="updateSearchResults()">
+                        @foreach(range(1, 12) as $month)
+                            <option value="{{ $month }}" {{ $month == 6 ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create()->month($month)->translatedFormat('F') }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <section class="timeline custom-timeline" id="timeline">
@@ -180,7 +173,6 @@
 
 .experience-info img {
     max-width: 100%;
-    height: auto;
     object-fit: cover;
 }
 

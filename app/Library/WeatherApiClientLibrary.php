@@ -36,8 +36,8 @@ class WeatherApiClientLibrary
             'lang' => 'de',
         ]);
 
-//
 //dd($response->json());
+
 
         if ($response->successful()) {
             $airTemp = round(floatval($response->json('main.temp', 0)));
@@ -51,6 +51,10 @@ class WeatherApiClientLibrary
                 'weather' => $response->json('weather.0.description', ''), // Wetterbeschreibung
                 'icon' => $response['weather'][0]['icon'] ?? null,
                 'water_temperature' => $this->calculateWaterTemperature($airTemp), // Wassertemperatur schätzen
+                //'pressure' => $this->convertPressure($response->json('main.pressure', 0)),
+                'wind_speed' => $response->json('wind.speed', 0),
+                //'wind_direction' => $this->convertWindDirection($response->json('wind.deg', 0)),
+
             ];
         }
 
@@ -79,13 +83,18 @@ class WeatherApiClientLibrary
      */
     public function getCurrentWeatherByTimeZone($latitude, $longitude)
     {
-        $weatherData = $this->fetchCurrentWeather($latitude, $longitude);
+        return $this->fetchCurrentWeather($latitude, $longitude);
+    }
 
-        return [
-            'current_tmp' => $weatherData['daily_temperature'] ?? null,
-            'weather' => $weatherData['weather'] ?? null,
-            'icon' => $weatherData['icon'] ?? null,
-            'water_temperature' => $weatherData['water_temperature'] ?? null,
-        ];
+    /**
+     * Added method to fetch current weather using coordinates.
+     *
+     * @param float $latitude
+     * @param float $longitude
+     * @return array|null
+     */
+    public function getCurrentWeatherByCoordinates($latitude, $longitude)
+    {
+        return $this->fetchCurrentWeather($latitude, $longitude);
     }
 }

@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Services\GeocodeService;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
+use App\Library\WeatherApiClientLibrary;
+use App\Repositories\LocationRepository;
+use App\Library\WeatherDataManagerLibrary;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +20,15 @@ class AppServiceProvider extends ServiceProvider
             return new GeocodeService();
         });
 
+        $this->app->singleton(WeatherApiClientLibrary::class, function ($app) {
+            return new WeatherApiClientLibrary();
+        });
+
+        $this->app->singleton(WeatherDataManagerLibrary::class, function ($app) {
+            return new WeatherDataManagerLibrary();
+        });
+
+
 
     }
 
@@ -24,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+    // Verwende Bootstrap für die Paginator-Darstellung
+    Paginator::useBootstrap();
     }
 }
