@@ -14,10 +14,14 @@ class WeatherService
 {
     protected $weatherApiClient;
     protected $geocodeService;
+    protected $WeatherDataManager;
     protected $geocodedLocations = []; // Caching für Geokodierte Locations
 
-    public function __construct(WeatherApiClientLibrary $weatherApiClient, GeocodeService $geocodeService, WeatherDataManagerLibrary $WeatherDataManager,)
-    {
+    public function __construct(
+        WeatherApiClientLibrary $weatherApiClient,
+        GeocodeService $geocodeService,
+        WeatherDataManagerLibrary $WeatherDataManager
+    ) {
         $this->weatherApiClient = $weatherApiClient;
         $this->geocodeService = $geocodeService;
         $this->WeatherDataManager = $WeatherDataManager;
@@ -60,9 +64,7 @@ class WeatherService
             }
 
             // Abrufen der Wetterdaten
-         //   $weatherData = $this->WeatherDataManagerLibrary->getCurrentWeatherByTimeZone($location->lat_new, $location->lon_new);
-//dd($weatherData);
-$weatherData = null;
+            $weatherData = $this->weatherApiClient->getCurrentWeatherByTimeZone($location->lat_new, $location->lon_new);
 
             if ($weatherData) {
                 $location->current_temp_from_api = $weatherData['current_tmp'] ?? null;
@@ -82,19 +84,16 @@ $weatherData = null;
                 $location->country_flag = "https://flagcdn.com/w40/" . strtolower($location->country->country_code) . ".png";
             }
         }
-//dd($locations);
+
         return $locations;
     }
 
-
-
-    public function getWeatherDataForLocation($location)
+    /**
+     * Holt Wetterdaten für eine Location und aktualisiert die Datenbank bei Bedarf.
+     */
+    public function getWeatherDataForLocation(WwdeLocation $location)
     {
-        if (is_int($location)) {
-            $location = WwdeLocation::findOrFail($location);
-        }
-//dd($location);
-
+        // Prüfe, ob die Daten in der Datenbank aktuell sind
         if ($location->weather_updated_at && $location->weather_updated_at->diffInHours(now()) < 1) {
             return [
                 'temperature' => $location->current_temp_from_api,
@@ -107,50 +106,55 @@ $weatherData = null;
             ];
         }
 
-        // API-Aufruf durchführen
-        $weatherData = $this->WeatherDataManager->fetchAndStoreWeatherData($location->lat, $location->lon, $location->id);
+        // API-Aufruf für Wetterdaten
+        $weatherData = $this->WeatherDataManager->getCurrentWeatherByTimeZone($location->lat, $location->lon, $location->id);
+//dd($weatherData);
 
+        if ($weatherData) {
+            Log::info('Wetterdaten vor Update', $weatherData);
 
+            // Speichere die Wetterdaten in der wwde_climates Tabelle
+            $climateData = [
+                'location_id' => $location->id,
+                'month_id' => now()->month,
+                'month' => now()->format('F'),
+                'daily_temperature' => $weatherData['main']['temp'] ?? null,
+                'night_temperature' => $weatherData['main']['temp_min'] ?? null,
+                'sunshine_per_day' => $weatherData['sunshine_per_day'] ?? null,
+            //    'humidity' => $weatherData['humidity'] ?? null,
+                'humidity' => $weatherData['main']['humidity'] ?? null,
+                'rainy_days' => $weatherData['rainy_days'] ?? null,
+                'water_temperature' => $weatherData['water_temperature'] ?? null,
+                'icon' => isset($weatherData['icon'])
+                    ? "https://openweathermap.org/img/wn/{$weatherData['icon']}@2x.png"
+                    : 'https://openweathermap.org/img/wn/01d@2x.png',
+            ];
 
-        DB::beginTransaction();
-        try {
             WwdeClimate::updateOrCreate(
                 ['location_id' => $location->id, 'month_id' => now()->month],
-                [
-                    'location_id' => $location->id,
-                    'month_id' => now()->month,
-                    'month' => now()->format('F'),
-                    'daily_temperature' => $weatherData['main']['temp'] ?? null,
-                    'night_temperature' => $weatherData['main']['temp_min'] ?? null,
-                    'humidity' => $weatherData['main']['humidity'] ?? null,
-                    'icon' => "https://openweathermap.org/img/wn/{$weatherData['weather'][0]['icon']}@2x.png",
-                    'visibility' => $weatherData['visibility'] ?? null,
-                    'wind_speed' => $weatherData['wind']['speed'] ?? null,
-                    'wind_direction' => $weatherData['wind']['deg'] ?? null,
-                    'cloudiness' => $weatherData['clouds']['all'] ?? null,
-                    'sunshine_per_day' => $weatherData['sunshine_per_day'] ?? null,
-                    'water_temperature' => $weatherData['water_temperature'] ?? null,
-                ]
+                $climateData
             );
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Fehler bei updateOrCreate:', ['error' => $e->getMessage()]);
-        }
 
+            // Gib die aktualisierten Wetterdaten zurück
+            return [
+                'temperature' => $weatherData['main']['temp'] ?? null,
+                'night_temperature' => $weatherData['main']['temp_min'] ?? null,
+                'description' => $weatherData['weather'][0]['description'] ?? null,
+                'icon' => $climateData['icon'],
+                'rainy_days' => $weatherData['rainy_days'] ?? null,
+                'wind_speed' => $weatherData['wind']['speed'] ?? null,
+                'wind_direction' => $weatherData['wind']['deg'] ?? null,
+                'humidity' => $weatherData['main']['humidity'] ?? null,
+                'cloudiness' => $weatherData['clouds']['all'] ?? null,
+            ];
+        }
 
         Log::error('Fehler beim Abrufen der Wetterdaten');
         return null;
     }
 
-
-
     /**
      * Validiert die Koordinaten.
-     *
-     * @param float|null $lat
-     * @param float|null $lon
-     * @return bool
      */
     private function isValidCoordinates($lat, $lon)
     {

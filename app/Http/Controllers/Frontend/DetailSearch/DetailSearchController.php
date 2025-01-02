@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Frontend\DetailSearch;
 
 use App\Models\WwdeRange;
 use App\Models\WwdeCountry;
-use App\Models\WwdeContinent; // WwdeContinent importieren
+use App\Models\ModLanguages;
 use App\Models\WwdeLocation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\WwdeContinent; // WwdeContinent importieren
 
 class DetailSearchController extends Controller
 {
@@ -22,6 +23,10 @@ class DetailSearchController extends Controller
         // Preisspannen abrufen
         $ranges = WwdeRange::where('Type', 'Flight')->orderBy('Sort')->get();
 
+        // Sprachen
+        $languages = ModLanguages::all();
+
+
         // Klimazonen aus Ländern extrahieren
         $climateZones = WwdeCountry::query()
             ->whereNotNull('climatezones_ids')
@@ -35,12 +40,13 @@ class DetailSearchController extends Controller
         // Anzahl der Locations (Placeholder, bis eine Suche ausgeführt wird)
         $totalLocations = WwdeLocation::count();
 
-        return view('pages.detailSearch.index', [
+        return view('frondend.detailSearch._index', [
             'countries' => $countries,
             'ranges' => $ranges,
             'climate_lnam' => $climateZones,
             'continents' => $continents, // Kontinente an die View übergeben
             'total_locations' => $totalLocations,
+            'languages' => $languages,
         ]);
     }
 

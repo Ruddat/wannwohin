@@ -59,7 +59,7 @@
     <!-- Cookies Consent CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/cookie-consent.css') }}">
     @yield('css')
-
+    @stack('css')
     <!-- Head Libs -->
     <script src="{{ asset('assets/vendor/modernizr/modernizr.min.js') }}"></script>
 </head>
@@ -265,6 +265,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 @yield('js')
+@stack('js')
+
 </body>
 </html>
 

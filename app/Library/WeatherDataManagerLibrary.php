@@ -208,8 +208,8 @@ class WeatherDataManagerLibrary
      * @param float $longitude
      * @return array|null
      */
-    public function getCurrentWeatherByTimeZone($latitude, $longitude)
+    public function getCurrentWeatherByTimeZone($latitude, $longitude, $location_id)
     {
-        return $this->fetchAndStoreWeatherData($latitude, $longitude);
+        return $this->fetchAndStoreWeatherData($latitude, $longitude, $location_id);
     }
 }

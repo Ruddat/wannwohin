@@ -11,14 +11,19 @@
 
                 <div class="text-center align-middle mb-5">
                     <h1 class="text-color-white">
-                        <img src="{{ $weather_data['icon'] ?? 'default-icon.png' }}" alt="Wetter-Icon" class="pe-2">
-                        {{ $weather_data['temperature'] ?? 'N/A' }} °C
+                        <img src="{{ \App\Helpers\WeatherHelper::getWeatherIcon($weather_data['icon'] ?? null) }}" alt="Wetter-Icon" class="pe-2">
+                        {{ \App\Helpers\WeatherHelper::formatTemperature($weather_data['temperature'] ?? null) }}
                     </h1>
                 </div>
+@php
+  // dd($weather_data);
+@endphp
 
                 <div class="text-center align-middle mb-5">
                     <h3 class="text-color-white">
-                        {{ $weather_data['description'] ?? 'Keine Daten verfügbar' }}
+                        {{ $weather_data['description'] ?? 'N/A' }}
+
+
                     </h3>
                 </div>
 
@@ -36,10 +41,16 @@
                 </div>
                 <div class="text-center align-middle mb-1">
                     <h5 class="text-color-white">
-                        <span class="me-1">Wind ({{ $weather_data['wind_direction'] ?? '-' }}):</span>
-                        {{ $weather_data['wind_speed'] ?? 'N/A' }} km/h
+                        <span class="me-1">Wind ({{ isset($weather_data['wind_direction']) ? \App\Helpers\WeatherHelper::getWindDirection($weather_data['wind_direction']) : 'Keine Daten' }}):</span>
+                        {{ \App\Helpers\WeatherHelper::formatWindSpeed($weather_data['wind_speed'] ?? null) }}
+                        @if(isset($weather_data['wind_speed']))
+                            <small>({{ \App\Helpers\WeatherHelper::getWindDescription($weather_data['wind_speed']) }})</small>
+                        @endif
                     </h5>
                 </div>
+
+
+
             </div>
 
             <!-- Klimatabelle -->
