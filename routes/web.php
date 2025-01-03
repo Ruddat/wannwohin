@@ -20,6 +20,7 @@ Route::match(['post', 'get'],'/suche', SearchController::class)->name('search');
 //Route::get('/detailsuche', [DetailSearchController::class, 'index'] )->name('detailSearch');
 Route::get('/detailsuche', [DetailSearchController::class, 'index'])->name('detail_search');
 Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])->name('detail_search_result');
+Route::get('/climate-forecast/{locationId}', [DetailSearchController::class, 'predictFutureClimate']);
 
 
 Route::get('/search-results', SearchResultsComponent::class)->name('search.results');

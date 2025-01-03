@@ -113,6 +113,16 @@ class WeatherService
         if ($weatherData) {
             Log::info('Wetterdaten vor Update', $weatherData);
 
+
+            // Beispiel: $weatherData['weather'][0]['icon'] kann entweder "02d" oder "https://openweathermap.org/img/wn/01d@2x.png" sein
+            $icon = $weatherData['weather'][0]['icon'];
+
+            // Prüfe, ob das Icon bereits eine URL ist
+            if (!filter_var($icon, FILTER_VALIDATE_URL)) {
+                // Wenn es keine URL ist, baue die URL für das OpenWeatherMap-Icon
+                $icon = "https://openweathermap.org/img/wn/{$icon}@2x.png";
+            }
+
             // Speichere die Wetterdaten in der wwde_climates Tabelle
             $climateData = [
                 'location_id' => $location->id,
@@ -123,11 +133,9 @@ class WeatherService
                 'sunshine_per_day' => $weatherData['sunshine_per_day'] ?? null,
             //    'humidity' => $weatherData['humidity'] ?? null,
                 'humidity' => $weatherData['main']['humidity'] ?? null,
-                'rainy_days' => $weatherData['rainy_days'] ?? null,
+               // 'rainy_days' => $weatherData['rainy_days'] ?? null,
                 'water_temperature' => $weatherData['water_temperature'] ?? null,
-                'icon' => isset($weatherData['icon'])
-                    ? "https://openweathermap.org/img/wn/{$weatherData['icon']}@2x.png"
-                    : 'https://openweathermap.org/img/wn/01d@2x.png',
+                'icon' => $icon, // Verwende die konsistente Icon-URL
             ];
 
             WwdeClimate::updateOrCreate(

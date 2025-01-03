@@ -47,100 +47,83 @@ class IndexController extends Controller
         });
         Log::info('Schritt 1: Top 10 Location-IDs geladen in ' . (microtime(true) - $step1Start) . ' Sekunden');
 
-       // dd($topTenLocationIds);
-
-
-
-
-    // Klimadaten abrufen
-    $climates = WwdeClimate::all();
-
-
-
-    //dd($climates);
-
-    // Hole die Top 10 Location-IDs aus der Datenbank
-    $topTenLocationIds = Cache::remember('top_ten_location_ids', 30 * 60, function () {
-        return DB::table('stat_top_ten_locations')
-            ->orderByDesc('search_count') // Nach Suchanfragen sortieren
-            ->limit(10) // Nur die Top 10 IDs holen
-            ->pluck('location_id') // Nur die IDs
-            ->toArray(); // Als Array
-    });
-
-    // Hole die Location-Daten und Klimadaten in einer Abfrage
-    $topTenLocationsWithClima = WwdeLocation::whereIn('wwde_locations.id', $topTenLocationIds)
+        // 2. Hole die Location-Daten und Klimadaten in einer Abfrage
+        $topTenLocationsWithClima = WwdeLocation::whereIn('wwde_locations.id', $topTenLocationIds)
         ->leftJoin('wwde_climates', 'wwde_locations.id', '=', 'wwde_climates.location_id')
-        ->with(['continent', 'country']) // Beziehungen laden
+        ->leftJoin('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id') // Join mit Kontinente-Tabelle
+        ->leftJoin('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id') // Join mit Länder-Tabelle
         ->select(
             'wwde_locations.id as location_id',
             'wwde_locations.title as location_title', // Location-Name
             'wwde_locations.alias as location_alias', // Location-Alias
-            'wwde_locations.country_id', // Land-ID
             'wwde_locations.lat', // Latitude
             'wwde_locations.lon', // Longitude
             'wwde_locations.iso2', // ISO2
             'wwde_locations.iso3', // ISO3
+            'wwde_continents.alias as continent_alias', // Alias aus Kontinente-Tabelle
+            'wwde_countries.alias as country_alias', // Alias aus Länder-Tabelle
+            'wwde_countries.title as country_title', // Land-Name
             'wwde_climates.daily_temperature',
             'wwde_climates.night_temperature',
             'wwde_climates.humidity',
             'wwde_climates.sunshine_per_day',
             'wwde_climates.water_temperature',
-            // Weitere Klimadaten...
+            'wwde_climates.weather_description',
+            'wwde_climates.icon'
         )
         ->get();
 
-    // Erstelle die Variable `TopTenLocationWithClima`
-    $TopTenLocationWithClima = [];
+//dd($topTenLocationsWithClima);
 
-    foreach ($topTenLocationsWithClima as $location) {
-        // Prüfe, ob iso2 oder iso3 fehlen
-        if (empty($location->iso2) || empty($location->iso3)) {
-            // Ländercode aus den Koordinaten ermitteln
-            $geocodeService = new GeocodeService();
-            $geocodeData = $geocodeService->searchByCoordinates($location->lat, $location->lon);
 
-            // ISO2 aus dem country_code ermitteln
-            $iso2 = strtoupper($geocodeData['address']['country_code'] ?? 'unknown');
-//dd($iso2);
-            // ISO3 aus der Tabelle iso_codes ermitteln
-            $iso3 = strtoupper($geocodeData['address']['ISO3166-2-lvl4'] ?? 'unknown');
+        // 3. Erstelle die Variable `TopTenLocationWithClima`
+        $TopTenLocationWithClima = [];
 
-//dd($location, $iso3, $iso2);
+        foreach ($topTenLocationsWithClima as $location) {
+            // Prüfe, ob iso2 oder iso3 fehlen
+            if (empty($location->iso2) || empty($location->iso3)) {
+                // Ländercode aus den Koordinaten ermitteln
+                $geocodeService = new GeocodeService();
+                $geocodeData = $geocodeService->searchByCoordinates($location->lat, $location->lon);
 
-            // Fehlende Felder in der Datenbank aktualisieren
-            DB::table('wwde_locations')
-            ->where('id', $location->location_id)
-            ->update([
-                'iso2' => $iso2,
-                'iso3' => $iso3,
-            ]);
+                // ISO2 aus dem country_code ermitteln
+                $iso2 = strtoupper($geocodeData['address']['country_code'] ?? 'unknown');
+
+                // ISO3 aus der Tabelle iso_codes ermitteln
+                $iso3 = strtoupper($geocodeData['address']['ISO3166-2-lvl4'] ?? 'unknown');
+
+                // Fehlende Felder in der Datenbank aktualisieren
+                DB::table('wwde_locations')
+                    ->where('id', $location->location_id)
+                    ->update([
+                        'iso2' => $iso2,
+                        'iso3' => $iso3,
+                    ]);
+            }
+
+            $TopTenLocationWithClima[] = [
+                'location_id' => $location->location_id,
+                'location_title' => $location->location_title, // Location-Name
+                'location_alias' => $location->location_alias, // Location-Alias
+                'iso2' => $location->iso2, // ISO2
+                'iso3' => $location->iso3, // ISO3
+                'continent' => $location->continent_alias, // Kontinent-Daten
+                'country' => $location->country_alias, // Land-Daten
+                'climate_data' => [
+                    'daily_temperature' => $location->daily_temperature,
+                    'night_temperature' => $location->night_temperature,
+                    'humidity' => $location->humidity,
+                    'sunshine_per_day' => $location->sunshine_per_day,
+                    'water_temperature' => $location->water_temperature,
+                    'weather_description' => $location->weather_description,
+                    'weather_icon' => $location->icon,
+                    // Weitere Klimadaten...
+                ],
+            ];
         }
 
-        $TopTenLocationWithClima[] = [
-            'location_id' => $location->location_id,
-            'location_title' => $location->location_title, // Location-Name
-            'location_alias' => $location->location_alias, // Location-Alias
-            'iso2' => $location->iso2, // ISO2
-            'iso3' => $location->iso3, // ISO3
-            'continent' => $location->continent, // Kontinent-Daten
-            'country' => $location->country, // Land-Daten
-            'climate_data' => [
-                'daily_temperature' => $location->daily_temperature,
-                'night_temperature' => $location->night_temperature,
-                'humidity' => $location->humidity,
-                'sunshine_per_day' => $location->sunshine_per_day,
-                'water_temperature' => $location->water_temperature,
-                // Weitere Klimadaten...
-            ],
-        ];
-    }
-
-// Optional: Logge die Ergebnisse zur Überprüfung
-Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
-
-//dd($TopTenLocationWithClima);
-
+        // Optional: Logge die Ergebnisse zur Überprüfung
+        Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
 
         // 4. Gesamtanzahl der Locations abrufen
         $totalLocations = Cache::remember('total_finished_locations', 60 * 60, function () {

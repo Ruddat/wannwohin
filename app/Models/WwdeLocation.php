@@ -94,7 +94,7 @@ class WwdeLocation extends Model
      */
     public function continent()
     {
-        return $this->belongsTo(WwdeContinent::class);
+        return $this->belongsTo(WwdeContinent::class, 'continent_id', 'id');
     }
 
     public function country()

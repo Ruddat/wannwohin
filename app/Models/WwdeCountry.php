@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\WwdeContinent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -77,6 +78,6 @@ class WwdeCountry extends Model
      */
     public function continent()
     {
-        return $this->belongsTo(WwdeContinent::class);
+        return $this->belongsTo(WwdeContinent::class, 'continent_id', 'id');
     }
 }

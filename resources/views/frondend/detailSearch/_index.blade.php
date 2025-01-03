@@ -29,5 +29,5 @@
 </div>
 @endsection
 <style>
-    
+
 </style>

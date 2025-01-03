@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend\DetailSearch;
 
 use App\Models\WwdeRange;
+use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\ModLanguages;
 use App\Models\WwdeLocation;
@@ -83,5 +84,25 @@ class DetailSearchController extends Controller
         return view('pages.detailSearch.results', [
             'locations' => $locations,
         ]);
+    }
+
+        /**
+     * Berechnet zukünftige Monate basierend auf vorhandenen Klimadaten.
+     */
+    public function predictFutureClimate($locationId)
+    {
+        // Hole vorhandene Monate für die Location
+        $existingData = WwdeClimate::where('location_id', $locationId)
+            ->orderBy('month_id')
+            ->get();
+
+        if ($existingData->isEmpty()) {
+            return response()->json(['message' => 'Keine Klimadaten für diese Location verfügbar.'], 404);
+        }
+
+        // Berechnung zukünftiger Monate
+        $futureMonths = WwdeClimate::predictFutureMonths($locationId);
+
+        return view('pages.detailSearch.climate_forecast', compact('futureMonths'));
     }
 }

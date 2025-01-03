@@ -101,6 +101,8 @@ class WeatherDataManagerLibrary
             'lang' => 'de',
         ]);
 
+//dd($response->json_decode());
+
         if ($response->successful()) {
             $weatherData = $response->json();
 

@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
+use ZipArchive;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use ZipArchive;
 
 class ImportWorldCities extends Command
 {
@@ -52,7 +53,7 @@ class ImportWorldCities extends Command
 
         // Offset-Handling
         $offset = DB::table('job_offsets')->where('job_name', 'import_world_cities')->value('offset') ?? 0;
-        $batchSize = 50;
+        $batchSize = 30;
 
         if ($format === 'csv') {
             $this->importCSV($filePath, $offset, $batchSize);
@@ -170,9 +171,9 @@ class ImportWorldCities extends Command
             $status = 'active';
 
             // Bilder abrufen
-            $textPic1 = $this->getCityImage($data['city'], 1, $status);
-            $textPic2 = $this->getCityImage($data['city'], 2, $status);
-            $textPic3 = $this->getCityImage($data['city'], 3, $status);
+            $textPic1 = $this->getCityImage($data['city'], 1, $status, $data['city']);
+            $textPic2 = $this->getCityImage($data['city'], 2, $status, $data['city']);
+            $textPic3 = $this->getCityImage($data['city'], 3, $status, $data['city']);
 
             $flags = $this->determineFlags($data);
 
@@ -186,7 +187,7 @@ class ImportWorldCities extends Command
                 'lon' => $data['lng'],
                 'iso2' => $data['iso2'],
                 'iso3' => $data['iso3'],
-                
+
                 'population' => $population,
                 'list_beach' => $this->isNearBeach($data['lat'], $data['lng']),
                 'list_citytravel' => $population > 1000000,
@@ -776,11 +777,28 @@ class ImportWorldCities extends Command
                 if (isset($images[$index - 1])) {
                     $imageUrl = $images[$index - 1]['webformatURL'];
 
-                    // Bild-URL im Cache speichern (für 24 Stunden)
-                    cache([$cacheKey => $imageUrl], now()->addDay());
+                    // Speicherpfad erstellen (sanitize city name)
+                    $safeCityName = str_replace([' ', '/'], ['_', '-'], iconv('UTF-8', 'ASCII//TRANSLIT', $city));
+                    $directory = "uploads/images/locations/{$safeCityName}/";
+                    $fileName = "city_image_{$index}.jpg";
 
-                    $this->info('Image found and cached for city: ' . $city);
-                    return $imageUrl;
+                    // Verzeichnis erstellen, falls nicht vorhanden
+                    if (!Storage::exists($directory)) {
+                        Storage::makeDirectory($directory);
+                    }
+
+                    // Bild speichern
+                    $imageContents = Http::get($imageUrl)->body();
+                    Storage::put($directory . $fileName, $imageContents);
+
+                    // Öffentliche URL generieren
+                    $storedImageUrl = Storage::url($directory . $fileName);
+
+                    // Bild-URL im Cache speichern (für 24 Stunden)
+                    cache([$cacheKey => $storedImageUrl], now()->addDay());
+
+                    $this->info('Image found, saved, and cached for city: ' . $city);
+                    return $storedImageUrl;
                 } else {
                     $this->error('Image index out of bounds for city: ' . $city);
                     $status = 'pending'; // Bild-Index außerhalb des Bereichs
@@ -799,6 +817,7 @@ class ImportWorldCities extends Command
             return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
         }
     }
+
 
 
     private function calculateTimeZone(float $latitude, float $longitude): string
