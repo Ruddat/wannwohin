@@ -56,11 +56,18 @@ class LocationDetailsController extends Controller
         $mainImagePath = $location->main_img ? Storage::url($location->main_img) : null;
         $panoramaImagePath = $location->panorama_text_and_style ?? asset('default-bg.jpg');
 
+        // Zeitinformationen der Location abrufen
+        $timeInfo = $this->getLocationTimeInfo($location);
+
+        $panoramaData = json_decode($location->panorama_text_and_style, true);
+
         // Texte für die Bilder
         $pic1Text = $location->text_pic1 ?? 'Standard Text für Bild 1';
         $pic2Text = $location->text_pic2 ?? 'Standard Text für Bild 2';
         $pic3Text = $location->text_pic3 ?? 'Standard Text für Bild 3';
         $headLine = $location->text_headline ?? 'Standard Headline';
+
+//dd($location);
 
         return view('frondend.locationdetails._index', [
             'location' => $location,
@@ -75,6 +82,9 @@ class LocationDetailsController extends Controller
             'pic3_text' => $pic3Text,
             'head_line' => $headLine,
             'weather_data' => $weatherData,
+            'current_time' => $timeInfo['current_time'],
+            'time_offset' => $timeInfo['offset'],
+            'panorama_text_and_style' => $panoramaData,
         ]);
     }
 
@@ -151,4 +161,42 @@ class LocationDetailsController extends Controller
             ];
         });
     }
+
+
+
+    protected function getLocationTimeInfo(WwdeLocation $location)
+    {
+        // Standard-Zeitzone der Location (z. B. "Europe/Berlin")
+        $locationTimezone = $location->time_zone ?? 'UTC';
+
+        try {
+            // Aktuelle Zeit in der Server-Zeitzone
+            $serverTimezone = new \DateTimeZone(config('app.timezone', 'UTC'));
+            $currentTime = new \DateTime('now', $serverTimezone);
+
+            // Zeit in der Zeitzone der Location
+            $locationTimeZone = new \DateTimeZone($locationTimezone);
+            $locationTime = $currentTime->setTimezone($locationTimeZone);
+
+            // Zeitverschiebung berechnen (in Stunden)
+            $offsetInSeconds = $locationTimeZone->getOffset($currentTime);
+            $offsetInHours = $offsetInSeconds / 3600;
+
+            return [
+                'current_time' => $locationTime->format('Y-m-d H:i:s'),
+                'offset' => $offsetInHours,
+            ];
+        } catch (\Exception $e) {
+            Log::error("Error calculating timezone for location: {$location->id}. Error: {$e->getMessage()}");
+            return [
+                'current_time' => null,
+                'offset' => null,
+            ];
+        }
+    }
+
+
+
 }
+
+

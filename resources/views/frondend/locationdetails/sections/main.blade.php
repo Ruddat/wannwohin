@@ -29,6 +29,15 @@
                         <p class="mb-0 text-center fw-bold">
                             {{ $location->text_short ?? 'Kein Beschreibungstext verfügbar' }}
                         </p>
+                        @if(!empty($panorama_text_and_style))
+                        <div style="background: {{ $panorama_text_and_style['style']['background'] }};
+                                    color: {{ $panorama_text_and_style['style']['color'] }};
+                                    font-family: {{ $panorama_text_and_style['style']['font'] }};
+                                    padding: 20px;
+                                    text-align: center;">
+                            <p>{{ $panorama_text_and_style['text'] }}</p>
+                        </div>
+                    @endif
                     </div>
                 </div>
             </div>
@@ -44,7 +53,7 @@
                             <tr>
                                 <td>
                                     <strong>Datum & Uhrzeit</strong>
-                                    <div>{{ $location_time ?? 'Keine Daten' }}</div>
+                                    <div>{{ $current_time ?? 'Nicht verfügbar' }}</div>
                                 </td>
                                 <td>
                                     <strong>Hauptstadt</strong>
@@ -54,7 +63,7 @@
                             <tr>
                                 <td>
                                     <strong>Zeitverschiebung</strong>
-                                    <div>{{ $location_time_diff ?? '0' }} Stunden</div>
+                                    <div>{{ $time_offset ?? 'Nicht verfügbar' }} Stunden</div>
                                 </td>
                                 <td>
                                     <strong>Sprache</strong>

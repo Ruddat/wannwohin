@@ -63,9 +63,14 @@
                                                 <div class="row my-3 pb-1">
                                                     <div class="col-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            <img src="img/flags_small/chile.jpg" alt="" class="me-4">Chile
+                                                            <img src="{{ asset('assets/flags/4x3/' . strtolower($location->country->country_code) . '.svg') }}"
+                                                                 alt="{{ $location->country->title ?? 'Unknown Country' }}"
+                                                                 class="me-4"
+                                                                 style="width: 30px; height: auto;">
+                                                            {{ $location->country->title ?? 'Unknown Country' }}
                                                         </div>
                                                     </div>
+
                                                     <div class="col-3 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Tagsüber</div>
@@ -102,9 +107,20 @@
                                                 <div class="row my-3">
                                                     <div class="col-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            <img src="https://www.wann-wohin.de/img/location_main_img/suedamerika.png" alt="" class="me-3">Südamerika
+                                                            {{-- Kontinent-Flagge --}}
+                                                            @if($location->country && $location->country->continent)
+                                                                <img src="{{ asset('assets/img/location_main_img/' . strtolower($location->country->continent->alias) . '.png') }}"
+                                                                     alt="{{ $location->country->continent->title }}"
+                                                                     class="me-3"
+                                                                     style="width: 30px; height: auto;">
+                                                                {{ $location->country->continent->title ?? 'Unknown Continent' }}
+                                                            @else
+                                                                Unknown Continent
+                                                            @endif
                                                         </div>
                                                     </div>
+
+
                                                     <div class="col-3 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Wasser</div>
@@ -114,7 +130,9 @@
                                                     <div class="col-5 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-5">Regentage</div>
-                                                            <div class="col-7">{{ $location->climate_data['rainy_days'] ?? 'N/A' }}</div>
+                                                            <div class="col-7">
+                                                                {{ $location->climate_data['rain']['1h'] ?? 'N/A' }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>

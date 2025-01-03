@@ -168,7 +168,6 @@ class IndexController extends Controller
 
 
 
-
     public function searchResults($urlaubType, $monthId)
     {
         // Konvertiere numerischen `monthId` in den Monatsnamen
@@ -193,6 +192,7 @@ class IndexController extends Controller
 
         // Abfrage mit Pagination
         $locations = $this->locationRepository->getLocationsByTypeAndMonth($urlaubType, $monthName)
+            ->with('country') // Country-Daten laden
             ->orderBy($sortBy, $sortDirection)
             ->paginate($itemsPerPage);
 
@@ -205,10 +205,6 @@ class IndexController extends Controller
                 $location->id
             );
         }
-
-
-//dd($locations);
-
 
         // HeaderContent abrufen
         $step4Start = microtime(true);
