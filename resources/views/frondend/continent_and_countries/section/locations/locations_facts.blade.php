@@ -18,10 +18,10 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <div
-                                style="background-image : url('{{ asset("assets/flags/4x3/{$country->country_code}.svg") }}')"
-                                class="continent-flag">
+                            <div class="text-center mb-3">
+                                <div class="continent-flag" style="background-image: url('{{ asset("assets/flags/4x3/" . strtolower($country->country_code) . ".svg") }}');"></div>
                             </div>
+
                         </div>
                         <table class="table table-borderless continent-facts-table">
                             <tr>
