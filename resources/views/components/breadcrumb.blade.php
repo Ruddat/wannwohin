@@ -1,20 +1,21 @@
-@if($breadcrumbShowStatus == true)
-<section class="bg-color-light py-4">
-    <div class="container">
-        <div class="row">
-            <div class="col align-self-center p-static">
-                <ul class="breadcrumb d-block">
-                    <li><a href="{{url('/')}}">Home</a></li>
-                    @foreach($breadcrumbPaths as $breadcrumbPath)
-                        @if($breadcrumbPath['class']=='active')
-                            <li class="active">{{$breadcrumbPath['title']}}</li>
-                        @else
-                            <li class="{{$breadcrumbPath['class']}}"><a href="{{$breadcrumbPath['full_url']}}">{{$breadcrumbPath['title']}}</a></li>
-                        @endif
-                    @endforeach
-                </ul>
+@if(isset($breadcrumbs) && count($breadcrumbs) > 0)
+    <section class="bg-color-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col align-self-center p-static">
+                    <ul class="breadcrumb d-block">
+                        @foreach($breadcrumbs as $breadcrumb)
+                            @if ($loop->last)
+                                <li class="breadcrumb-item active">{{ $breadcrumb['title'] }}</li>
+                            @else
+                                <li class="breadcrumb-item">
+                                    <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 @endif

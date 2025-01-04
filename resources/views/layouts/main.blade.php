@@ -109,11 +109,10 @@
 
 
 
+
 <div class="bg-white">
     <div class="container-fluid main-content-section">
         @section('content')
-
-
 
         @show
     </div>

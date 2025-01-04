@@ -42,6 +42,7 @@
             </div>
         </div>
     </div>
+    <x-breadcrumb />
     <hr class="custom-suggestion">
 </div>
 <style>

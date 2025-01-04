@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\GenerateBreadcrumbs;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,20 +12,28 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             // Admin-Routen zuerst registrieren
-Route::middleware(['web'])
-->prefix('manager')
-->group(base_path('routes/admin.php'));
-
+            Route::middleware(['web'])
+                ->prefix('manager')
+                ->group(base_path('routes/admin.php'));
 
             // Standard Web-Routen
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
-        },
+            },
+
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Middleware-Aliase korrekt registrieren
+
+        $middleware->alias([
+            'breadcrumbs' => \App\Http\Middleware\GenerateBreadcrumbs::class
+        ]);
+
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
+
+
         //
     })->create();
