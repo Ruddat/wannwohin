@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row">
             <!-- Hauptbild -->
-            <div class="col-lg-4 position-relative custom-sm-margin-bottom-1">
+            <div class="custom-header-img col-lg-4 position-relative custom-sm-margin-bottom-1">
                 <img src="{{ $mainLocationPicture ?? asset('default-main.jpg') }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
             </div>
             <!-- Header-Text -->
@@ -19,24 +19,14 @@
 
 <div class="custom-about-links bg-color-light">
     <div class="container">
-        <div class="row justify-content-end">
-            <!-- Kontinent-Dropdown -->
-            <div class="col-lg-3 text-center custom-xs-border-bottom p-0">
-                <form action="#" method="GET">
-                    <select name="continent_id" class="form-select">
-                        <option value="" selected>Wähle einen Kontinent</option>
-                        <option value="1">Europa</option>
-                        <option value="2">Asien</option>
-                        <option value="3">Afrika</option>
-                        <option value="4">Nordamerika</option>
-                        <option value="5">Südamerika</option>
-                        <option value="6">Australien</option>
-                        <option value="7">Antarktis</option>
-                    </select>
-                </form>
+        <div class="custom-row"> <!-- Benutzerdefinierte Klasse -->
+            {{-- Kontinent-Dropdown --}}
+            <div class="custom-dropdown">
+                @livewire('frontend.continent-selector.continent-selector-component')
             </div>
 
-            <div class="col-lg-2 text-center custom-xs-border-bottom p-0">
+            {{-- Reiseziele-Link --}}
+            <div class="custom-link">
                 <a data-hash href="#say-hello" class="text-decoration-none">
                     <span class="custom-nav-button custom-divisors text-color-dark">
                         <i class="icon-envelope-open icons text-color-primary"></i> Reiseziele im
@@ -44,19 +34,17 @@
                 </a>
             </div>
 
-            <div class="col-lg-3 text-center p-0">
-                <a href="#" class="text-decoration-none">
-                    <span class="custom-nav-button text-color-dark">
-                        <i class="icon-cloud-download icons text-color-primary"></i> Neuen Ort vorschlagen
-                    </span>
-                </a>
+            {{-- Location-Suggestion --}}
+            <div class="custom-suggestion">
+                @livewire('frontend.location-suggestion.location-suggestion-component')
             </div>
         </div>
     </div>
 </div>
-
-
 <style>
+
+
+
 /* Spezifisches Styling nur für die Header-Sektion */
 .custom-header-section {
     position: relative;
@@ -111,4 +99,125 @@
         padding: 10px; /* Weniger Innenabstand */
     }
 }
+
+
+
+/* Hauptcontainer für die Links */
+.custom-about-links {
+    background-color: #f9f9f9; /* Hintergrundfarbe */
+    padding: 10px 0; /* Innenabstand oben und unten */
+}
+
+/* Zeile für die Elemente */
+.custom-about-links .custom-row {
+    display: flex;
+    justify-content: flex-end; /* Elemente rechts ausrichten */
+    align-items: baseline;
+    gap: 15px; /* Abstand zwischen den Elementen */
+}
+
+/* Stil für das Kontinent-Dropdown */
+.custom-about-links .custom-dropdown {
+    flex: 0 0 auto; /* Automatische Breite basierend auf dem Inhalt */
+}
+
+/* Stil für den Reiseziele-Link */
+/* Hauptcontainer für die Links */
+.custom-about-links {
+    background-color: #f9f9f9; /* Hintergrundfarbe */
+    padding: 10px 0; /* Innenabstand oben und unten */
+}
+
+/* Zeile für die Elemente */
+.custom-about-links .custom-row {
+    display: flex;
+    justify-content: flex-end; /* Elemente rechts ausrichten */
+    align-items: baseline; /* Elemente an der Grundlinie ausrichten */
+    gap: 15px; /* Abstand zwischen den Elementen */
+}
+
+
+/* Stil für das Kontinent-Dropdown */
+.custom-about-links .custom-dropdown {
+    flex: 0 0 auto; /* Automatische Breite basierend auf dem Inhalt */
+    position: relative; /* Für das Pfeil-Symbol */
+}
+
+.custom-about-links .custom-dropdown select {
+    width: 100%; /* Volle Breite des Containers */
+    padding: 8px 32px 8px 12px; /* Innenabstand: oben, rechts, unten, links */
+    font-size: 14px; /* Schriftgröße */
+    border: 1px solid #ccc; /* Rahmen */
+    border-radius: 4px; /* Abgerundete Ecken */
+    background-color: #FDD55C; /* Hintergrundfarbe */
+    appearance: none; /* Standard-Pfeil entfernen */
+    -webkit-appearance: none; /* Für Safari */
+    -moz-appearance: none; /* Für Firefox */
+}
+
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+    .custom-about-links .custom-dropdown {
+        width: 100%; /* Volle Breite auf kleinen Bildschirmen */
+    }
+
+    .custom-about-links .custom-dropdown select {
+        padding: 8px 32px 8px 12px; /* Innenabstand beibehalten */
+    }
+}
+
+/* Stil für den Reiseziele-Link */
+.custom-about-links .custom-link {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 8px 12px; /* Innenabstand */
+}
+
+.custom-about-links .custom-link a {
+    text-decoration: none; /* Unterstrich entfernen */
+    color: #333; /* Textfarbe */
+}
+
+.custom-about-links .custom-link a:hover {
+    color: #007bff; /* Textfarbe beim Hover */
+}
+
+/* Stil für den Vorschlag-Button */
+.custom-about-links .custom-suggestion {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 8px 12px;
+}
+
+.custom-about-links .custom-suggestion a {
+    text-decoration: none;
+    color: #333;
+}
+
+.custom-about-links .custom-suggestion a:hover {
+    color: #007bff;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+    .custom-about-links .custom-row {
+        flex-direction: column; /* Elemente untereinander anzeigen */
+        align-items: center; /* Zentrieren statt rechtsbündig */
+        gap: 10px; /* Abstand zwischen den Elementen */
+    }
+
+    .custom-about-links .custom-link,
+    .custom-about-links .custom-suggestion,
+    .custom-about-links .custom-dropdown {
+        width: 100%; /* Volle Breite auf kleinen Bildschirmen */
+        text-align: center; /* Text zentrieren */
+        padding: 8px 0; /* Innenabstand anpassen */
+    }
+
+    .custom-about-links .custom-link {
+        border-bottom: none; /* Rahmenlinie entfernen */
+    }
+}
+
 </style>

@@ -5,6 +5,7 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\Search\SearchController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
+use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
 use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
 
 //Route::get('/', function () {
@@ -35,6 +36,18 @@ Route::get('/details/{continent}/{country}/{location}', [LocationDetailsControll
     ->name('location.details');
 
 // Route::get('/{continent}/{country}/{location}', LocationDetailsController::class)->name('location');
+
+
+
+// list continent countrys
+Route::get('/{continentAlias}', [ContinentController::class, 'showCountries'])
+    ->name('continent.countries');
+
+    Route::get('/{continentAlias}/{countryAlias}/locations', [ContinentController::class, 'showLocations'])
+    ->name('list-country-locations');
+
+
+
 
 
 

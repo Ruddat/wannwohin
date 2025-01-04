@@ -126,10 +126,17 @@ class WwdeLocation extends Model
         return $this->hasMany(WwdeLocationImages::class);
     }
 
+
     // Primärbild abrufen
+    // public function primaryImage()
+    // {
+    //     return $this->images()->where('is_primary', true)->first();
+    // }
+
     public function primaryImage()
     {
-        return $this->images()->where('is_primary', true)->first();
+        // Priorisiere das erste Bild, falls vorhanden
+        return $this->text_pic1 ?? $this->text_pic2 ?? $this->text_pic3 ?? null;
     }
 
     public function galleryImages()

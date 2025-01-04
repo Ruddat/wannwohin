@@ -80,4 +80,10 @@ class WwdeCountry extends Model
     {
         return $this->belongsTo(WwdeContinent::class, 'continent_id', 'id');
     }
+
+        // Beziehungen
+        public function locations()
+        {
+            return $this->hasMany(WwdeLocation::class, 'country_id', 'id');
+        }
 }

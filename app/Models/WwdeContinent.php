@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\WwdeCountry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -42,4 +43,10 @@ class WwdeContinent extends Model
         'no_countries' => 'integer',
         'no_climate_tables' => 'integer',
     ];
+
+    public function countries()
+    {
+        return $this->hasMany(WwdeCountry::class, 'continent_id');
+    }
+
 }
