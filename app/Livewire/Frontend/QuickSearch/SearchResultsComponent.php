@@ -4,9 +4,16 @@ namespace App\Livewire\Frontend\QuickSearch;
 
 use Livewire\Component;
 use App\Models\WwdeLocation;
+use App\Models\HeaderContent;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SearchResultsComponent extends Component
 {
+    use WithPagination;
+
     public $continent;
     public $price;
     public $urlaub;
@@ -14,11 +21,43 @@ class SearchResultsComponent extends Component
     public $wassertemperatur;
     public $spezielle;
 
-    public $locations; // Ergebnisse der Suche
+    public $sortBy = 'title';
+    public $sortDirection = 'asc';
+
+    public $headerContent;
+    public $bgImgPath;
+    public $mainImgPath;
 
     public function mount()
     {
-        // Suchparameter aus der URL verwenden, um Standorte zu filtern
+        $this->headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+            return HeaderContent::inRandomOrder()->first();
+        });
+
+        $this->bgImgPath = $this->headerContent->bg_img ? Storage::url($this->headerContent->bg_img) : null;
+        $this->mainImgPath = $this->headerContent->main_img ? Storage::url($this->headerContent->main_img) : null;
+
+        $this->continent = request('continent');
+        $this->price = request('price');
+        $this->urlaub = request('urlaub');
+        $this->sonnenstunden = request('sonnenstunden');
+        $this->wassertemperatur = request('wassertemperatur');
+        $this->spezielle = request('spezielle');
+    }
+
+    public function updatedSortBy()
+    {
+        $this->resetPage(); // Reset pagination when sorting changes
+    }
+
+    public function render()
+    {
+        view()->share([
+            'panorama_location_picture' => $this->bgImgPath,
+            'main_location_picture' => $this->mainImgPath,
+            'panorama_location_text' => $this->headerContent->main_text ?? null,
+        ]);
+
         $query = WwdeLocation::query()
             ->where('status', 'active')
             ->where('finished', 1);
@@ -32,7 +71,7 @@ class SearchResultsComponent extends Component
         }
 
         if (!empty($this->urlaub)) {
-            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', ['"' . $this->urlaub . '"']);
+            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($this->urlaub)]);
         }
 
         if (!empty($this->sonnenstunden)) {
@@ -53,14 +92,10 @@ class SearchResultsComponent extends Component
             }
         }
 
-        $this->locations = $query->get();
-    }
+        $locations = $query->orderBy($this->sortBy, $this->sortDirection)->paginate(10);
 
-    public function render()
-    {
         return view('livewire.frontend.quick-search.search-results-component', [
-            'locations' => $this->locations,
-        ])
-        ->layout('layouts.main');
+            'locations' => $locations,
+        ]);
     }
 }

@@ -87,6 +87,8 @@ class WwdeLocation extends Model
         'status',
         'iso2',
         'iso3',
+        'currency',
+        'best_traveltime_json',
     ];
 
     /**
@@ -149,5 +151,28 @@ class WwdeLocation extends Model
     {
         return $this->hasMany(LocationGallery::class, 'location_id', 'id');
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeFinished($query)
+    {
+        return $query->where('finished', 1);
+    }
+
+    public function scopeWithClimateData($query, $minTemp = null, $minSunHours = null)
+    {
+        $query->whereHas('climates', function ($q) use ($minTemp, $minSunHours) {
+            if ($minTemp) {
+                $q->where('water_temperature', '>=', $minTemp);
+            }
+            if ($minSunHours) {
+                $q->where('sunshine_per_day', '>=', $minSunHours);
+            }
+        });
+    }
+
 
 }

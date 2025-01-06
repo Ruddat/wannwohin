@@ -36,7 +36,12 @@
             <div class="form-group">
                 <label for="urlaub">Urlaub im</label>
                 <select wire:model.change="urlaub" class="form-select py-1">
-                    @foreach($months as $key => $month)
+                    <option value="">Beliebig</option>
+                    @foreach([
+                        'Januar', 'Februar', 'März', 'April', 'Mai',
+                        'Juni', 'Juli', 'August', 'September',
+                        'Oktober', 'November', 'Dezember'
+                    ] as $month)
                         <option value="{{ $month }}">{{ $month }}</option>
                     @endforeach
                 </select>
@@ -47,8 +52,8 @@
                 <select wire:model.change="sonnenstunden" class="form-select py-1">
                     <option value="">Beliebig</option>
                     @for($i = 3; $i <= 12; $i++)
-                        <option value="more_{{ $i }}">min. {{ $i }}h</option>
-                    @endfor
+                    <option value="more_{{ $i }}">Mindestens {{ $i }} Stunden</option>
+                @endfor
                 </select>
             </div>
 
@@ -57,7 +62,7 @@
                 <select wire:model.change="wassertemperatur" class="form-select py-1">
                     <option value="">Beliebig</option>
                     @for($i = 16; $i <= 27; $i++)
-                        <option value="more_{{ $i }}">min. {{ $i }}°C</option>
+                        <option value="more_{{ $i }}">Mindestens {{ $i }}°C</option>
                     @endfor
                 </select>
             </div>
@@ -82,7 +87,7 @@
 
             <button type="submit" class="bg-warning text-color-black mt-3 btn py-4 px-1">
                 <i class="fas fa-search me-2"></i>
-                <span>{{ $filteredLocations }}</span> von <span>{{ $totalLocations }}</span> Ergebnissen anzeigen
+                <span>{{ $filteredLocations }}</span> Ergebnisse von <span>{{ $totalLocations }}</span> anzeigen
             </button>
         </form>
 
@@ -91,26 +96,31 @@
         </div>
     </div>
 
+
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Funktion zur Überprüfung der Bildschirmgröße
-    function checkScreenSize() {
-        const screenWidth = window.innerWidth;
+        document.addEventListener('livewire:initialized', () => {
+            function checkScreenSize() {
+                const screenWidth = window.innerWidth;
 
-        if (screenWidth <= 768) {
-            Livewire.dispatch('setSidebarState', { state: true }); // Sidebar einklappen
-        } else {
-            Livewire.dispatch('setSidebarState', { state: false }); // Sidebar ausklappen
-        }
-    }
+                // Sidebar automatisch schließen oder öffnen
+                if (screenWidth <= 768) {
+                    // Event "goOn-Delete" für Einklappen senden
+                    @this.dispatch('goOn-Sidebarstate', { state: true });
+                } else {
+                    // Event "goOn-Delete" für Ausklappen senden
+                    @this.dispatch('goOn-Sidebarstate', { state: false });
+                }
+            }
 
-    // Initiale Prüfung
-    checkScreenSize();
+            // Initiale Überprüfung bei Seitenladen
+            checkScreenSize();
 
-    // Überwache Fenstergröße
-    window.addEventListener('resize', checkScreenSize);
-});
+            // Überwachung der Fenstergröße bei Änderung
+            window.addEventListener('resize', checkScreenSize);
+        });
     </script>
+
+
 
     <style>
         #sidebarButton {

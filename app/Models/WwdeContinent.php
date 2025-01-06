@@ -48,5 +48,9 @@ class WwdeContinent extends Model
     {
         return $this->hasMany(WwdeCountry::class, 'continent_id');
     }
-
+    public function getCountriesCountAttribute()
+    {
+        return $this->countries()->count();
+    }
+    
 }

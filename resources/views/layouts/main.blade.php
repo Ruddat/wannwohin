@@ -85,7 +85,7 @@
 
 
 
-@if (Route::is('home', 'impressum', 'search.results', 'detail_search', 'continent.countries', 'list-country-locations'))
+@if (Route::is('home', 'impressum', 'search.results', 'detail_search', 'continent.countries', 'list-country-locations', 'search.results'))
 
 <x-header
     :panorama-location-picture="$panorama_location_picture ?? null"
@@ -94,6 +94,7 @@
 />
 
 @else
+
 
 <x-header-details
     :pic1-text="$pic1_text"
@@ -108,13 +109,11 @@
 
 
 
-
-
 <div class="bg-white">
     <div class="container-fluid main-content-section">
-        @section('content')
 
         @show
+        @yield('content')
     </div>
 </div>
 <!-- cookie consent-->

@@ -143,26 +143,27 @@ document.addEventListener('DOMContentLoaded', function () {
     background: #ddd;
     border-radius: 4px;
     margin-top: 10px;
+    margin-bottom: 20px; /* Abstand zwischen den Slidern */
+    padding-left: 20px; /* Abstand links */
 }
 
 .noUi-handle {
     width: 16px;
     height: 16px;
-    background: #f39c12;
+    background: #007bff;
     border-radius: 50%;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
 
-    /* Griff mittig auf der Slider-Linie positionieren */
-    top: 50%;
-    transform: translate(-50%, -50%);
+    /* Positionierung links */
+    transform: translateX(-50%);
 }
 
 .noUi-horizontal .noUi-handle {
     width: 34px;
     height: 28px;
     right: -17px;
-    top: 0px;
+    top: -12px;
 }
 
 .noUi-connect {

@@ -41,6 +41,7 @@ class LocationDetailsController extends Controller
 
         // Galerie-Bilder abrufen
         $activities = $this->getActivities($location);
+        //dd($activities);
         $galleryImages = $this->imageService->getGalleryByActivities($location->id, $location->title, $activities);
 
         // Freizeitparks im Umkreis abrufen
@@ -67,7 +68,20 @@ class LocationDetailsController extends Controller
         $pic3Text = $location->text_pic3 ?? 'Standard Text für Bild 3';
         $headLine = $location->text_headline ?? 'Standard Headline';
 
-//dd($location);
+
+
+        // Beste Reisezeit aus JSON extrahieren und in Monatsindizes umwandeln
+        $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
+        ->mapWithKeys(function ($month) {
+            $index = date('n', strtotime($month)); // Index (1–12)
+            return [$index => $month];
+        });
+
+
+        //dd($location);
+
+
+
 
         return view('frondend.locationdetails._index', [
             'location' => $location,
@@ -85,6 +99,8 @@ class LocationDetailsController extends Controller
             'current_time' => $timeInfo['current_time'],
             'time_offset' => $timeInfo['offset'],
             'panorama_text_and_style' => $panoramaData,
+            'best_travel_months' => $bestTravelMonths, // Hinzugefügt
+
         ]);
     }
 
@@ -104,7 +120,7 @@ class LocationDetailsController extends Controller
     {
         return collect([
             'Beach' => $location->list_beach,
-            'City Travel' => $location->list_citytravel,
+           // 'City Travel' => $location->list_citytravel,
             'Sports' => $location->list_sports,
             'Island' => $location->list_island,
             'Culture' => $location->list_culture,

@@ -3,8 +3,9 @@
 namespace App\Livewire\Frontend\QuickSearch;
 
 use Livewire\Component;
-use App\Models\WwdeLocation;
 use App\Models\WwdeRange;
+use Livewire\Attributes\On;
+use App\Models\WwdeLocation;
 use App\Models\WwdeContinent;
 
 class QuickSearchComponent extends Component
@@ -33,8 +34,9 @@ class QuickSearchComponent extends Component
         'urlaub' => 'nullable|string',
         'sonnenstunden' => 'nullable|string',
         'wassertemperatur' => 'nullable|string',
-        'spezielle' => 'nullable|string',
+        'spezielle' => 'nullable|array',
     ];
+
 
     public function mount()
     {
@@ -60,40 +62,38 @@ class QuickSearchComponent extends Component
     {
         $query = WwdeLocation::query();
 
-        // Immer nur aktive und fertige Einträge berücksichtigen
-        $query->where('status', 'active')
-              ->where('finished', 1);
+        // Scopes für wiederverwendbare Abfragen
+        $query->active()->finished();
 
         if (!empty($this->continent)) {
             $query->where('continent_id', $this->continent);
         }
 
         if (!empty($this->price)) {
-            // Preisbereich abrufen
-            $priceRange = WwdeRange::find($this->price);
-
-            if ($priceRange) {
-                $rangeToShow = $priceRange->Range_to_show;
-
-                // Prüfen, ob der Wert ein Bereich ist (z.B. "500-1000€")
-                if (str_contains($rangeToShow, '-')) {
-                    [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
-                    $query->whereBetween('price_flight', [$minPrice, $maxPrice]);
-                } elseif (str_contains($rangeToShow, '>')) {
-                    // Nur Mindestpreis (z.B. ">2000€")
-                    $minPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
-                    $query->where('price_flight', '>=', $minPrice);
-                } else {
-                    // Einzelner Preiswert (z.B. "250€")
-                    $maxPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
-                    $query->where('price_flight', '<=', $maxPrice);
-                }
-            }
+            $this->applyPriceFilter($query);
         }
 
-        if (!empty($this->urlaub)) {
-            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', ['"' . $this->urlaub . '"']);
-        }
+    // Übersetzung der Eingabe von Deutsch nach Englisch
+    if (!empty($this->urlaub)) {
+        $monthMapping = [
+            'Januar' => 'January',
+            'Februar' => 'February',
+            'März' => 'March',
+            'April' => 'April',
+            'Mai' => 'May',
+            'Juni' => 'June',
+            'Juli' => 'July',
+            'August' => 'August',
+            'September' => 'September',
+            'Oktober' => 'October',
+            'November' => 'November',
+            'Dezember' => 'December',
+        ];
+
+        $englishMonth = $monthMapping[$this->urlaub] ?? $this->urlaub;
+
+        $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($englishMonth)]);
+    }
 
         if (!empty($this->sonnenstunden)) {
             $query->whereHas('climates', function ($q) {
@@ -118,10 +118,13 @@ class QuickSearchComponent extends Component
         $this->filteredLocations = $query->count();
     }
 
+
     // Livewire-Listener-Methode mit Parameter
+    #[On('goOn-Sidebarstate')]
     public function updateSidebarState($state)
     {
         $this->isCollapsed = $state;
+
     }
 
     public function toggleCollapse()
@@ -145,6 +148,27 @@ class QuickSearchComponent extends Component
 
         return redirect()->route('search.results', array_filter($queryParams));
     }
+
+    private function applyPriceFilter($query)
+    {
+        $priceRange = WwdeRange::find($this->price);
+
+        if ($priceRange) {
+            $rangeToShow = $priceRange->Range_to_show;
+
+            if (str_contains($rangeToShow, '-')) {
+                [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
+                $query->whereBetween('price_flight', [$minPrice, $maxPrice]);
+            } elseif (str_contains($rangeToShow, '>')) {
+                $minPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '>=', $minPrice);
+            } else {
+                $maxPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '<=', $maxPrice);
+            }
+        }
+    }
+
 
     public function render()
     {

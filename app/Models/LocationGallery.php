@@ -11,7 +11,7 @@ class LocationGallery extends Model
     use HasFactory;
 
     protected $table = 'location_galleries';
-    protected $fillable = ['location_id', 'location_name', 'image_path', 'description', 'image_hash'];
+    protected $fillable = ['location_id', 'location_name', 'image_path', 'activity', 'description', 'image_hash'];
    // public $timestamps = false;
 
    public function location()

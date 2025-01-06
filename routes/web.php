@@ -25,8 +25,11 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
 
     Route::get('/climate-forecast/{locationId}', [DetailSearchController::class, 'predictFutureClimate']);
 
-    Route::get('/search-results', SearchResultsComponent::class)
-        ->name('search.results');
+    Route::get('/search-results', function () {
+        $title = 'Suchergebnisse'; // Beispiel für zusätzliche Daten
+        return view('frondend.quicksearch.quicksearchresults', compact('title'));
+    })->name('search.results');
+
 
     Route::get('/details/{continent}/{country}/{location}', [LocationDetailsController::class, 'show'])
         ->where([
