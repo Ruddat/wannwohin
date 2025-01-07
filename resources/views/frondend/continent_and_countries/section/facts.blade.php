@@ -5,9 +5,9 @@
             <div class="col-12 col-lg-7">
                 <div class="card h-100 custom-border continent-card">
                     <div class="card-body p-4">
-                        <h5 class="card-title text-uppercase text-primary">About {{ $continent->title }}</h5>
+                        <h5 class="card-title text-uppercase text-primary">@autotranslate('About', app()->getLocale()) @autotranslate($continent->title, app()->getLocale())</h5>
                         <p class="card-text">
-                            {{ $continent->continent_text }}
+                            @autotranslate($continent->continent_text, app()->getLocale())
                         </p>
                     </div>
                 </div>
@@ -17,7 +17,7 @@
             <div class="col-12 col-lg-5">
                 <div class="card h-100 continent-info-card">
                     <div class="card-header text-center p-4">
-                        <h4 class="text-uppercase mb-0">{{ $continent->title }}</h4>
+                        <h4 class="text-uppercase mb-0">@autotranslate($continent->title, app()->getLocale())</h4>
                     </div>
                     <div class="card-body bg-white pt-4">
                         <div class="text-center mb-3">

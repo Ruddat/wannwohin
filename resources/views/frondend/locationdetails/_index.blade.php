@@ -3,6 +3,7 @@
 @section('content')
     <div class="body" id="location_page">
 
+
         <div role="main" class="main">
             @include('frondend.locationdetails.sections.main')
 

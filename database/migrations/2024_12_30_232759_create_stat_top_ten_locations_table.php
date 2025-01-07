@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('stat_top_ten_locations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('location_id'); // Referenz zur wwde_locations-Tabelle
+            $table->unsignedBigInteger('location_id'); // Referenz zu wwde_locations
             $table->integer('search_count')->default(0); // Anzahl der Suchanfragen
             $table->timestamps(); // Zeitstempel
 
             // Fremdschlüssel-Definition
             $table->foreign('location_id')->references('id')->on('wwde_locations')->onDelete('cascade');
+
+            // Indizes
+            $table->index(['location_id', 'search_count']);
         });
     }
 

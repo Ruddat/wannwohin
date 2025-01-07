@@ -1,0 +1,131 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "WannWohin API",
+        "description": "API zur Verwaltung von Kontinenten, Ländern und Locations.",
+        "contact": {
+            "email": "support@wannwohin.de"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api",
+            "description": "Lokaler Entwicklungsserver"
+        }
+    ],
+    "paths": {
+        "/continents/{continentAlias}/countries": {
+            "get": {
+                "tags": [
+                    "Continents"
+                ],
+                "summary": "Zeigt die Länder eines Kontinents",
+                "description": "Ruft die Liste der Länder für einen bestimmten Kontinent basierend auf dem Alias ab.",
+                "operationId": "showCountries",
+                "parameters": [
+                    {
+                        "name": "continentAlias",
+                        "in": "path",
+                        "description": "Alias des Kontinents",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Erfolgreiche Antwort",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "continent": {
+                                            "type": "object"
+                                        },
+                                        "countries": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kontinent nicht gefunden"
+                    }
+                }
+            }
+        },
+        "/continents/{continentAlias}/countries/{countryAlias}/locations": {
+            "get": {
+                "tags": [
+                    "Continents"
+                ],
+                "summary": "Zeigt die Locations eines Landes",
+                "description": "Ruft die Liste der aktiven und abgeschlossenen Locations für ein bestimmtes Land ab.",
+                "operationId": "showLocations",
+                "parameters": [
+                    {
+                        "name": "continentAlias",
+                        "in": "path",
+                        "description": "Alias des Kontinents",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "countryAlias",
+                        "in": "path",
+                        "description": "Alias des Landes",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Erfolgreiche Antwort",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "continent": {
+                                            "type": "object"
+                                        },
+                                        "country": {
+                                            "type": "object"
+                                        },
+                                        "locations": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kontinent oder Land nicht gefunden"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Continents",
+            "description": "Continents"
+        }
+    ]
+}

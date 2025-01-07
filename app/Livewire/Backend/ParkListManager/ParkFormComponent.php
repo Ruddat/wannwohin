@@ -68,7 +68,7 @@ class ParkFormComponent extends Component
             session()->flash('success', 'Park erfolgreich gespeichert.');
         }
 
-        return redirect()->route('park-manager.index');
+        return redirect()->route('verwaltung.park-manager.index');
     }
 
     public function render()

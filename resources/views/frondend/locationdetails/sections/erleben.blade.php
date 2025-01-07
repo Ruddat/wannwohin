@@ -7,7 +7,9 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12 text-end">
-                <h2 class="text-color-dark font-weight-extra-bold">Was kann man in {{ $location->title }} erleben?</h2>
+                <h2 class="text-color-dark font-weight-extra-bold">
+                    @autotranslate("Was kann man in {$location->title} erleben?", app()->getLocale())
+                </h2>
             </div>
         </div>
 
@@ -20,7 +22,7 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
                         <button class="border-0 p-0" data-bs-toggle="modal" data-bs-target="#erleben_picture{{ $key + 1 }}_modal">
                             <img src="{{ Storage::url($image->image_path) }}"
                                  class="figure-img img-fluid rounded shadow-lg custom-border my-zoom"
-                                 alt="{{ $image->description ?? 'Bild zu ' . $location->title }}">
+                                 alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
                         </button>
                     </div>
                 @endforeach
@@ -30,11 +32,12 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
             <div class="col-md-8 bg-white p-4 rounded shadow">
                 @if (!empty($location->text_what_to_do))
                 <div class="formatted-text">
-                    {!! $location->text_what_to_do !!}
+                    {!! app('autotranslate')->trans($location->text_what_to_do, app()->getLocale()) !!}
                 </div>
-            @else
-                <p class="text-muted">Kein Text verfügbar.</p>
-            @endif
+
+                @else
+                    <p class="text-muted">@autotranslate('Kein Text verfügbar.', app()->getLocale())</p>
+                @endif
             </div>
         </div>
     </div>
@@ -46,13 +49,16 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold text-primary" id="erleben_picture{{ $key + 1 }}_label">{{ $location->title }}</h5>
+                <h5 class="modal-title fw-bold text-primary" id="erleben_picture{{ $key + 1 }}_label">
+                    @autotranslate($location->title, app()->getLocale())
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <img src="{{ Storage::url($image->image_path) }}" class="img-fluid rounded shadow" alt="{{ $image->description ?? 'Bild zu ' . $location->title }}">
+                <img src="{{ Storage::url($image->image_path) }}" class="img-fluid rounded shadow"
+                     alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
                 @if (!empty($image->description))
-                    <p class="mt-3 text-muted">{{ $image->description }}</p>
+                    <p class="mt-3 text-muted">@autotranslate($image->description, app()->getLocale())</p>
                 @endif
             </div>
         </div>

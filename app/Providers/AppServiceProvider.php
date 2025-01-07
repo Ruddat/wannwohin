@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
             return new WeatherDataManagerLibrary();
         });
 
+        $this->app->bind(LocationRepositoryInterface::class, EloquentLocationRepository::class);
 
 
     }

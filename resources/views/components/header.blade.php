@@ -7,7 +7,16 @@
             </div>
             <!-- Header-Text -->
             <div class="col-lg-6 col-xl-5">
-                <span class="custom-header-text">{!! $panoramaLocationText ?? '<h1>Default Header Text</h1>' !!}</span>
+                <span class="custom-header-text">
+                    {!! app('autotranslate')->trans($panoramaLocationText ?? '<h1>Default Header Text</h1>', app()->getLocale()) !!}
+                </span>
+
+                <!-- Admin-Button nur sichtbar für eingeloggte Admins -->
+                @if(Auth::guard('admin')->check())
+                    <a href="{{ route('verwaltung.header-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-3">
+                        Bearbeiten
+                    </a>
+                @endif
             </div>
             <!-- Scroll-Icon -->
             <div class="col-lg-2 col-xl-3 d-none d-lg-block">
@@ -16,6 +25,7 @@
         </div>
     </div>
 </section>
+
 
 <div class="custom-about-links bg-color-light">
     <div class="container">

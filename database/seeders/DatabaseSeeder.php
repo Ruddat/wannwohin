@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             WwdeRangesSeeder::class,     // Für Preisbereiche
             HeaderContentSeeder::class,     // Für Preisbereiche
             ModLanguagesSeeder::class, // Für Sprachen
+            AdminSeeder::class, // Für Admins
         ]);
 
 

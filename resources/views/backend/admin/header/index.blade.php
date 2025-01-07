@@ -6,7 +6,7 @@
         <div class="card-header">
             <h3 class="card-title">Header Content Management</h3>
             <div class="ms-auto">
-                <a href="{{ route('header-manager.header_contents.create') }}" class="btn btn-primary">
+                <a href="{{ route('verwaltung.header-manager.header_contents.create') }}" class="btn btn-primary">
                     <i class="ti ti-plus"></i> Add New Header Content
                 </a>
             </div>
@@ -48,13 +48,13 @@
                                 <td>{{ $content->title ?? '-' }}</td>
                                 <td>
                                     <div class="btn-list">
-                                        <a href="{{ route('header-manager.header_contents.edit', $content->id) }}" class="btn btn-warning btn-sm">
+                                        <a href="{{ route('verwaltung.header-manager.header_contents.edit', $content->id) }}" class="btn btn-warning btn-sm">
                                             <i class="ti ti-edit"></i> Edit
                                         </a>
-                                        <form action="{{ route('header-manager.header_contents.destroy', $content->id) }}" method="POST" style="display: inline-block;">
+                                        <form action="{{ route('verwaltung.header-manager.header_contents.destroy', $content->id) }}" method="POST" style="display: inline-block;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('header-manager.header_contents.destroy', $content->id) }}')">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('verwaltung.header-manager.header_contents.destroy', $content->id) }}')">
                                                 <i class="ti ti-trash"></i> Delete
                                             </button>
                                         </form>

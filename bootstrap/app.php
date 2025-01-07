@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             // Admin-Routen zuerst registrieren
             Route::middleware(['web'])
-                ->prefix('manager')
+               // ->prefix('verwaltung')
                 ->group(base_path('routes/admin.php'));
 
             // Standard Web-Routen

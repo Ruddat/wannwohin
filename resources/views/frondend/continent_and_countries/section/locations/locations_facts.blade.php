@@ -5,7 +5,7 @@
             <div class="col-12 col-lg-7">
                 <div class="card h-100 custom-border continent-facts-card">
                     <div class="card-body p-4">
-                        <p class="card-text">{{ $country->country_text }}</p>
+                        <p class="card-text">@autotranslate($country->country_text, app()->getLocale())</p>
                     </div>
                 </div>
             </div>
@@ -14,41 +14,50 @@
             <div class="col-12 col-lg-5">
                 <div class="card h-100 continent-facts-card">
                     <div class="card-header">
-                        <h4 class="text-uppercase mb-0">{{ $country->title }}</h4>
+                        <h4 class="text-uppercase mb-0">@autotranslate($country->title, app()->getLocale())</h4>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
                             <div class="text-center mb-3">
                                 <div class="continent-flag" style="background-image: url('{{ asset("assets/flags/4x3/" . strtolower($country->country_code) . ".svg") }}');"></div>
                             </div>
-
                         </div>
                         <table class="table table-borderless continent-facts-table">
                             <tr>
                                 <td>
-                                    <span>Währung</span>
-                                    <div><h5>{{ $country->currency_code }}</h5></div>
+                                    <span>@autotranslate('Währung', app()->getLocale())</span>
+                                    <div><h5>@autotranslate($country->currency_code, app()->getLocale())</h5></div>
                                 </td>
                                 <td>
-                                    <span>Hauptstadt</span>
-                                    <div><h5>{{ $country->capital }}</h5></div>
+                                    <span>@autotranslate('Hauptstadt', app()->getLocale())</span>
+                                    <div><h5>@autotranslate($country->capital, app()->getLocale())</h5></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <span>Preistendenz</span>
+                                    <span>@autotranslate('Preistendenz', app()->getLocale())</span>
                                     <div><h5></h5></div>
                                 </td>
                                 <td>
-                                    <span>{{ count(explode(',', $country->official_language)) > 1 ? 'Sprachen' : 'Sprache' }}</span>
-                                    <div><h5>{{ $country->official_language }}</h5></div>
+                                    <span>@autotranslate(
+                                        count(explode(',', $country->official_language)) > 1
+                                            ? 'Sprachen'
+                                            : 'Sprache',
+                                        app()->getLocale()
+                                    )</span>
+                                    <div><h5>@autotranslate($country->official_language, app()->getLocale())</h5></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <span>Visum & Reisepass</span>
+                                    <span>@autotranslate('Visum & Reisepass', app()->getLocale())</span>
                                     <div>
-                                        <h5>{{ $country->country_visum_needed ? 'Nicht nötig' : $country->country_visum_max_time }}</h5>
+                                        <h5>@autotranslate(
+                                            $country->country_visum_needed
+                                                ? 'Nicht nötig'
+                                                : ($country->country_visum_max_time ?? 'Keine Angaben'),
+                                            app()->getLocale()
+                                        )</h5>
                                     </div>
                                 </td>
                             </tr>
@@ -59,6 +68,7 @@
         </div>
     </div>
 </section>
+
 
 <style>
 /* Hauptbereich */

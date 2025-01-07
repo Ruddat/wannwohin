@@ -17,7 +17,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('location')->nullable();
             $table->string('country')->nullable();
-
+            $table->boolean('open_today')->nullable();
+            $table->timestamp('open_from')->nullable();
+            $table->timestamp('closed_from')->nullable();
+            $table->string('website')->nullable();
+            $table->string('land')->nullable();
             // Create columns for latitude and longitude
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();

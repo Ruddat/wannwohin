@@ -98,26 +98,24 @@
 
 
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            function checkScreenSize() {
-                const screenWidth = window.innerWidth;
+document.addEventListener('DOMContentLoaded', () => {
+    const isCollapsed = @this.isCollapsed; // Initialzustand aus Livewire
 
-                // Sidebar automatisch schließen oder öffnen
-                if (screenWidth <= 768) {
-                    // Event "goOn-Delete" für Einklappen senden
-                    @this.dispatch('goOn-Sidebarstate', { state: true });
-                } else {
-                    // Event "goOn-Delete" für Ausklappen senden
-                    @this.dispatch('goOn-Sidebarstate', { state: false });
-                }
-            }
+    function initializeSidebarState() {
+        const screenWidth = window.innerWidth;
 
-            // Initiale Überprüfung bei Seitenladen
-            checkScreenSize();
+        if (screenWidth <= 768 && !isCollapsed) {
+            // Sidebar schließen, wenn sie offen ist
+            @this.dispatch('goOn-Sidebarstate', { state: true });
+        } else if (screenWidth > 768 && isCollapsed) {
+            // Sidebar öffnen, wenn sie geschlossen ist
+            @this.dispatch('goOn-Sidebarstate', { state: false });
+        }
+    }
 
-            // Überwachung der Fenstergröße bei Änderung
-            window.addEventListener('resize', checkScreenSize);
-        });
+    // Initiale Überprüfung
+    initializeSidebarState();
+});
     </script>
 
 

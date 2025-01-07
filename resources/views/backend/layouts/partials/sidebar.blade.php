@@ -152,7 +152,7 @@
               </li>
 
               <li class="nav-item">
-                <a class="nav-link" href="{{ route('dashboard') }}" >
+                <a class="nav-link" href="{{ route('verwaltung.dashboard') }}" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l-2 0l9 -9l9 9l-2 0" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" /><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" /></svg>
                   </span>
@@ -365,7 +365,7 @@
                 </div>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{{ route('header-manager.header_contents.index') }}" >
+                <a class="nav-link" href="{{ route('verwaltung.header-manager.header_contents.index') }}" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
                   </span>
@@ -377,7 +377,7 @@
 
 
               <li class="nav-item">
-                <a class="nav-link" href="{{ route('location-manager.locations.index') }}" >
+                <a class="nav-link" href="{{ route('verwaltung.location-manager.locations.index') }}" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
                   </span>
@@ -388,7 +388,7 @@
               </li>
 
               <li class="nav-item">
-                <a class="nav-link" href="{{ route('park-manager.index') }}">
+                <a class="nav-link" href="{{ route('verwaltung.park-manager.index') }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                         <!-- Download SVG icon from http://tabler-icons.io/i/tree -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -420,13 +420,13 @@
                     </span>
                 </a>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{{ route('header-manager.header_contents.index') }}">
+                    <a class="dropdown-item" href="{{ route('verwaltung.header-manager.header_contents.index') }}">
                         Header Manager
                     </a>
-                    <a class="dropdown-item" href="{{ route('location-manager.locations.index') }}">
+                    <a class="dropdown-item" href="{{ route('verwaltung.location-manager.locations.index') }}">
                         Location Manager
                     </a>
-                    <a class="dropdown-item" href="{{ route('park-manager.index') }}">
+                    <a class="dropdown-item" href="{{ route('verwaltung.park-manager.index') }}">
                         Park Manager
                     </a>
                 </div>
@@ -434,7 +434,7 @@
             <ul class="nav flex-column">
                 <!-- Other Sidebar Links -->
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('advertisement-manager.advertisement-blocks') ? 'active' : '' }}" href="{{ route('advertisement-manager.advertisement-blocks') }}">
+                    <a class="nav-link {{ request()->routeIs('advertisement-manager.advertisement-blocks') ? 'active' : '' }}" href="{{ route('verwaltung.advertisement-manager.advertisement-blocks') }}">
                         <i class="fas fa-ad"></i> Werbeblöcke
                     </a>
                 </li>

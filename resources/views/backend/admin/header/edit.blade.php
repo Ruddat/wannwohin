@@ -7,7 +7,7 @@
             <h3 class="card-title">Edit Header Content</h3>
         </div>
         <div class="card-body">
-            <form action="{{ route('header-manager.header_contents.update', $headerContent->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('verwaltung.header-manager.header_contents.update', $headerContent->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
@@ -47,7 +47,7 @@
                     @enderror
                 </div>
                 <div class="d-flex justify-content-end">
-                    <a href="{{ route('header-manager.header_contents.index') }}" class="btn btn-secondary me-2">
+                    <a href="{{ route('verwaltung.header-manager.header_contents.index') }}" class="btn btn-secondary me-2">
                         <i class="ti ti-arrow-left"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-success">

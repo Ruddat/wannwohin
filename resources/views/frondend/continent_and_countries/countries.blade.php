@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Länder in {{ $continent->title }}</h1>
+    <h1>Länder in @autotranslate($continent->title, app()->getLocale())</h1>
     <ul>
         @forelse ($countries as $country)
             <li>

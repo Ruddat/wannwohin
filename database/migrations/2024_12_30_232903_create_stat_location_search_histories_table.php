@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('stat_location_search_histories', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('location_id'); // Referenz zur wwde_locations-Tabelle
-            $table->date('month'); // Monat der Statistik
+            $table->unsignedBigInteger('location_id'); // Referenz zu wwde_locations
+            $table->string('month', 7); // Monat im Format YYYY-MM
             $table->integer('search_count')->default(0); // Anzahl der Suchanfragen
             $table->timestamps(); // Zeitstempel
 
             // Fremdschlüssel-Definition
             $table->foreign('location_id')->references('id')->on('wwde_locations')->onDelete('cascade');
+
+            // Indizes
+            $table->index(['location_id', 'month']);
         });
     }
 

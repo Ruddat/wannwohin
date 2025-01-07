@@ -16,21 +16,25 @@ class UpdateLocationHistory extends Command
         $topLocations = DB::table('stat_top_ten_locations')->get();
 
         foreach ($topLocations as $location) {
+            // Update oder Insert in stat_location_search_histories
             DB::table('stat_location_search_histories')->updateOrInsert(
                 [
                     'location_id' => $location->location_id,
-                    'month' => now()->startOfMonth()->toDateString()
+                    'month' => now()->format('Y-m'), // Monat im Format YYYY-MM
                 ],
                 [
                     'search_count' => DB::raw('search_count + ' . $location->search_count),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
 
-        // Löschen der alten Einträge
-        DB::table('stat_top_ten_locations')->where('created_at', '<', now()->subWeeks(4))->delete();
+        // Löschen aller älteren Einträge aus stat_top_ten_locations
+        DB::table('stat_top_ten_locations')
+            ->where('updated_at', '<', now()->subMonth()) // Älter als ein Monat
+            ->delete();
 
-        $this->info('Location history updated and old entries cleaned up.');
+        // Info ausgeben
+        $this->info('Location history archived, and old entries removed.');
     }
 }

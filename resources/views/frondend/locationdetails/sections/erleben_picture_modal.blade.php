@@ -3,7 +3,7 @@
         <!-- Überschrift -->
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h2 class="fw-bold text-uppercase">Urlaubsfotos von {{ $location->title }}</h2>
+                <h2 class="fw-bold text-uppercase">Urlaubsfotos von @autotranslate($location->title, app()->getLocale())</h2>
                 <hr class="w-25 mx-auto" style="border: 2px solid #007bff;">
             </div>
         </div>
@@ -16,7 +16,7 @@
                 @endphp
                 @if (filter_var($imageUrl, FILTER_VALIDATE_URL)) <!-- Sicherstellen, dass die URL gültig ist -->
                     <div class="col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery" data-title="{{ $image['description'] }}">
+                        <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery" data-title="@autotranslate($image['description'], app()->getLocale())">
                             <div
                                 class="figure-img img-fluid custom-border position-relative"
                                 style="background-image: url('{{ $imageUrl }}');
@@ -24,7 +24,7 @@
                                        background-position: center;
                                        height: 250px; border-radius: 8px;">
                                 <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-opacity-50 bg-dark text-white text-center small">
-                                    <span>{{ $image['description'] ?? 'Bild ' . ($index + 1) }}</span>
+                                    <span>{{ app('autotranslate')->trans($image['description'] ?? 'Bild ' . ($index + 1), app()->getLocale()) }}</span>
                                 </div>
                             </div>
                         </a>
@@ -39,8 +39,8 @@
             @foreach ($gallery_images as $index => $image)
             @if (filter_var($image['url'], FILTER_VALIDATE_URL))
             <div class="mx-2">
-                <a href="{{ $image['url'] }}" class="glightbox-thumbnail" data-gallery="gallery" data-title="{{ $image['description'] }}">
-                    <img src="{{ $image['url'] }}" alt="{{ $image['description'] }}" class="img-thumbnail" style="width: 75px; height: 50px; object-fit: cover;">
+                <a href="{{ $image['url'] }}" class="glightbox-thumbnail" data-gallery="gallery" data-title="@autotranslate($image['description'], app()->getLocale())">
+                    <img src="{{ $image['url'] }}" alt="@autotranslate($image['description'], app()->getLocale())" class="img-thumbnail" style="width: 75px; height: 50px; object-fit: cover;">
                 </a>
             </div>
             @endif

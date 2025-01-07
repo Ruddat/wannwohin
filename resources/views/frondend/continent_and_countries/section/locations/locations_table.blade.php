@@ -1,6 +1,6 @@
 <section class="section section-no-border bg-color-light m-0 pb-0" style="background-color: #eaeff5 !important;">
     <div class="container">
-        <h1 class="text-center mb-4">Locations in {{ $country->title }}</h1>
+        <h1 class="text-center mb-4">@autotranslate('Locations in', app()->getLocale()) {{ $country->title }}</h1>
         <div class="row g-4">
             @foreach($locations as $location)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -11,15 +11,15 @@
                     ]) }}" class="text-decoration-none">
                         <div class="card h-100 border-0 shadow-sm custom-card">
                             <div class="card-img-wrapper">
-                                <img src="{{ $location->primaryImage() }}" class="card-img-top" alt="{{ $location->title }}">
+                                <img src="{{ $location->primaryImage() }}" class="card-img-top" alt="@autotranslate($location->title, app()->getLocale())">
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <!-- Titel -->
-                                <h5 class="card-title text-truncate text-center">{{ $location->title }}</h5>
+                                <h5 class="card-title text-truncate text-center">@autotranslate($location->title, app()->getLocale())</h5>
 
                                 <!-- Text -->
                                 <p class="card-text">
-                                    {{ Str::limit(strip_tags($location->text_short), 150) }}
+                                    @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
                                 </p>
                             </div>
                         </div>

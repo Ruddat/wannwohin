@@ -10,8 +10,28 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Handles displaying continents and countries along with their respective locations.
+ *
+ * This controller provides endpoints to fetch and display countries for a given continent
+ * and locations for a specific country within a continent. It also includes logic for
+ * handling fallback images and caching.
+ */
 class ContinentController extends Controller
 {
+    /**
+     * Show a list of countries within a given continent.
+     *
+     * @param string $continentAlias The alias of the continent (e.g., "europe").
+     * @return \Illuminate\View\View
+     *
+     * This function retrieves a continent using its alias and fetches all the countries
+     * associated with it. If the continent does not have defined images, it uses fallback
+     * images stored in the `HeaderContent` table.
+     *
+     * The resulting data is passed to the `frondend.continent_and_countries.index` view.
+     */
+
     public function showCountries($continentAlias)
     {
         // Finde den Kontinent basierend auf dem Alias
@@ -43,6 +63,7 @@ class ContinentController extends Controller
             'panorama_location_text' => $continent->continent_text ?? null,
         ]);
     }
+
 
     public function showLocations($continentAlias, $countryAlias)
     {

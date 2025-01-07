@@ -3,7 +3,9 @@
         <!-- Überschrift -->
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h2 class="fw-bold text-uppercase">{{ $location->title }}: Alles Wichtige auf einen Blick</h2>
+                <h2 class="fw-bold text-uppercase">
+                    @autotranslate("{$location->title}: Alles Wichtige auf einen Blick", app()->getLocale())
+                </h2>
                 <hr class="w-25 mx-auto" style="border: 2px solid #007bff;">
             </div>
         </div>
@@ -27,7 +29,7 @@
                     <!-- Schicker Bildtext im unteren Bereich -->
                     <div class="position-absolute bottom-0 w-100 bg-opacity-75 bg-white text-dark p-3 rounded-top shadow-lg">
                         <p class="mb-0 text-center fw-bold">
-                            {{ $location->text_short ?? 'Kein Beschreibungstext verfügbar' }}
+                            @autotranslate($location->text_short ?? 'Kein Beschreibungstext verfügbar', app()->getLocale())
                         </p>
                         @if(!empty($panorama_text_and_style))
                         <div style="background: {{ $panorama_text_and_style['style']['background'] }};
@@ -35,9 +37,9 @@
                                     font-family: {{ $panorama_text_and_style['style']['font'] }};
                                     padding: 20px;
                                     text-align: center;">
-                            <p>{{ $panorama_text_and_style['text'] }}</p>
+                            <p>@autotranslate($panorama_text_and_style['text'], app()->getLocale())</p>
                         </div>
-                    @endif
+                        @endif
                     </div>
                 </div>
             </div>
@@ -46,57 +48,68 @@
             <div class="col-lg-5 col-md-12">
                 <div class="card">
                     <div class="card-header text-center" style="background-color: #dbdbdb;">
-                        <h4 class="text-uppercase">FAKTENCHECK</h4>
+                        <h4 class="text-uppercase">
+                            @autotranslate('FAKTENCHECK', app()->getLocale())
+                        </h4>
                     </div>
                     <div class="card-body bg-white pt-4 box-shadow-2">
                         <table class="table table-sm text-center">
                             <tr>
                                 <td>
-                                    <strong>Datum & Uhrzeit</strong>
+                                    <strong>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
                                     <div>{{ $current_time ?? 'Nicht verfügbar' }}</div>
                                 </td>
                                 <td>
-                                    <strong>Hauptstadt</strong>
-                                    <div>{{ $location->country->capital ?? 'Unbekannt' }}</div>
+                                    <strong>@autotranslate('Hauptstadt', app()->getLocale())</strong>
+                                    <div>@autotranslate($location->country->capital ?? 'Unbekannt', app()->getLocale())</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Zeitverschiebung</strong>
-                                    <div>{{ $time_offset ?? 'Nicht verfügbar' }} Stunden</div>
+                                    <strong>@autotranslate('Zeitverschiebung', app()->getLocale())</strong>
+                                    <div>{{ $time_offset ?? 'Nicht verfügbar' }} @autotranslate('Stunden', app()->getLocale())</div>
                                 </td>
                                 <td>
-                                    <strong>Sprache</strong>
-                                    <div>{{ $location->country->official_language ?? 'Nicht angegeben' }}</div>
+                                    <strong>@autotranslate('Sprache', app()->getLocale())</strong>
+                                    <div>@autotranslate($location->country->official_language ?? 'Nicht angegeben', app()->getLocale())</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Preistendenz</strong>
+                                    <strong>@autotranslate('Preistendenz', app()->getLocale())</strong>
                                     <div></div>
                                 </td>
                                 <td>
-                                    <strong>Währung</strong>
-                                    <div>{{ $location->country->currency_code ?? 'N/A' }}</div>
+                                    <strong>@autotranslate('Währung', app()->getLocale())</strong>
+                                    <div>@autotranslate($location->country->currency_code ?? 'N/A', app()->getLocale())</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Visum</strong>
-                                    <div>{{ $location->country->country_visum_needed ? 'Nicht nötig' : $location->country->country_visum_max_time }}</div>
+                                    <strong>@autotranslate('Visum', app()->getLocale())</strong>
+                                    <div>
+                                        @autotranslate(
+                                            $location->country->country_visum_needed !== null
+                                                ? ($location->country->country_visum_needed
+                                                    ? 'Nicht nötig'
+                                                    : ($location->country->country_visum_max_time ?? 'N/A'))
+                                                : 'N/A',
+                                            app()->getLocale()
+                                        )
+                                    </div>
                                 </td>
                                 <td>
-                                    <strong>Stromnetz</strong>
+                                    <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
                                     <div>{{ $location->electric->power ?? 'N/A' }}</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Flugzeit</strong>
-                                    <div>{{ ceil($location->flight_hours ?? 0) }} Stunden</div>
+                                    <strong>@autotranslate('Flugzeit', app()->getLocale())</strong>
+                                    <div>{{ ceil($location->flight_hours ?? 0) }} @autotranslate('Stunden', app()->getLocale())</div>
                                 </td>
                                 <td>
-                                    <strong>Entfernung</strong>
+                                    <strong>@autotranslate('Entfernung', app()->getLocale())</strong>
                                     <div>{{ number_format($location->dist_from_FRA, 0, ",", ".") }} km</div>
                                 </td>
                             </tr>
@@ -107,25 +120,25 @@
                 <!-- Preise -->
                 <div class="card mb-3 box-shadow-2">
                     <div class="card-header text-center bg-light">
-                        <h5 class="text-uppercase mb-0">Preise</h5>
+                        <h5 class="text-uppercase">@autotranslate('Preise', app()->getLocale())</h5>
                     </div>
                     <div class="card-body">
                         <table class="table table-borderless text-center mb-0">
                             <tr>
                                 <td>
                                     <i class="fa fa-hotel text-primary fa-1x mb-2"></i>
-                                    <div class="fw-bold">Unterkünfte</div>
-                                    <div>ab {{ number_format($location->price_hotel, 0, ",", ".") }} €</div>
+                                    <div class="fw-bold">@autotranslate('Unterkünfte', app()->getLocale())</div>
+                                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_hotel, 0, ",", ".") }} €</div>
                                 </td>
                                 <td>
                                     <i class="fa fa-plane text-primary fa-1x mb-2"></i>
-                                    <div class="fw-bold">Flüge</div>
-                                    <div>ab {{ number_format($location->price_flight, 0, ",", ".") }} €</div>
+                                    <div class="fw-bold">@autotranslate('Flüge', app()->getLocale())</div>
+                                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_flight, 0, ",", ".") }} €</div>
                                 </td>
                                 <td>
                                     <i class="fa fa-car text-primary fa-1x mb-2"></i>
-                                    <div class="fw-bold">Mietwagen</div>
-                                    <div>ab {{ number_format($location->price_rental, 0, ",", ".") }} €</div>
+                                    <div class="fw-bold">@autotranslate('Mietwagen', app()->getLocale())</div>
+                                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_rental, 0, ",", ".") }} €</div>
                                 </td>
                             </tr>
                         </table>

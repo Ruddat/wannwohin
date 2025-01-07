@@ -53,7 +53,7 @@ class ImportWorldCities extends Command
 
         // Offset-Handling
         $offset = DB::table('job_offsets')->where('job_name', 'import_world_cities')->value('offset') ?? 0;
-        $batchSize = 300;
+        $batchSize = 30;
 
         if ($format === 'csv') {
             $this->importCSV($filePath, $offset, $batchSize);

@@ -2,22 +2,63 @@
 
 namespace App\Repositories;
 
-use App\Models\Location;
-use App\Repositories\LocationRepository;
-use App\Repositories\EloquentLocationRepository;
+use App\Models\WwdeLocation;
 
-class EloquentLocationRepository implements LocationRepository
+class EloquentLocationRepository implements LocationRepositoryInterface
 {
-    public function getTopTenLocations()
+    public function getTopTenLocations($status = 'active')
     {
-        return Location::query()
-            ->orderBy('search_count', 'desc')
-            ->take(10)
-            ->get();
+        return WwdeLocation::with('country')
+            ->where('finished', 1)
+            ->where('status', $status)
+            ->get()
+            ->sortByDesc(function ($location) {
+                return $location->country->popularity ?? 0;
+            })
+            ->take(10);
     }
 
-    public function getTotalFinishedLocations()
+    public function getTotalFinishedLocations($status = 'active')
     {
-        return Location::whereNotNull('finished_at')->count();
+        return WwdeLocation::where('finished', 1)
+            ->where('status', $status)
+            ->count();
+    }
+
+    public function getLocationsByStatus($status)
+    {
+        return WwdeLocation::where('status', $status)->get();
+    }
+
+    public function getLocationsByTypeAndMonth($urlaubType, $monthName)
+    {
+        $urlaubTypeMap = [
+            'strand-reise' => 'list_beach',
+            'staedte-reise' => 'list_citytravel',
+            'sport-reise' => 'list_sports',
+            'insel-reise' => 'list_island',
+            'kultur-reise' => 'list_culture',
+            'natur-reise' => 'list_nature',
+            'wassersport-reise' => 'list_watersport',
+            'wintersport-reise' => 'list_wintersport',
+            'mountainsport-reise' => 'list_mountainsport',
+            'biking-reise' => 'list_biking',
+            'fishing-reise' => 'list_fishing',
+            'amusement-park-reise' => 'list_amusement_park',
+            'water-park-reise' => 'list_water_park',
+            'animal-park-reise' => 'list_animal_park',
+        ];
+
+        if (!array_key_exists($urlaubType, $urlaubTypeMap)) {
+            throw new \InvalidArgumentException("Ungültiger Urlaubstyp: $urlaubType");
+        }
+
+        $column = $urlaubTypeMap[$urlaubType];
+
+        return WwdeLocation::query()
+            ->where('status', 'active')
+            ->where('finished', 1)
+            ->where($column, true)
+            ->get();
     }
 }

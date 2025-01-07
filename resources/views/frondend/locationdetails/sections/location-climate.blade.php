@@ -2,23 +2,24 @@
     <div class="row">
         <!-- Interaktive Karte -->
         <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 article-img d-flex" style="border-radius: 8px;">
-            <svg id="map" viewBox="0 0 100 400" style="width: 100%; height: 300px;"></svg>
+            <svg id="map" viewBox="0 0 100 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; max-height: 300px; overflow: hidden;"></svg>
         </div>
 
         <!-- Beschreibung -->
         <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-4 py-3 rounded-end">
-            <h4 class="text-color-dark font-weight-semibold">Lage und Klima</h4>
+            <h4 class="text-color-dark font-weight-semibold">
+                @autotranslate('Lage und Klima', app()->getLocale())
+            </h4>
             <p class="text-black">
-                Abu Dhabi befindet sich in einer subtropischen Klimazone. Die Sommer sind extrem heiß und trocken. Temperaturen um die 40°C in den Monaten Juli und August sind normal. Nachts sinken sie auf 26°C bis 29°C.
-                Zwischen den Monaten November bis März sind die Temperaturen angenehmer und ab und zu fällt auch Regen. Der Persische Golf lädt allerdings zu jeder Jahreszeit zum Baden ein.
-                Wenn auch im Februar Temperaturen um die 21°C zu erwarten sind, steigen sie jedoch recht schnell in den kommenden Monaten auf ca. 30°C.
+                @autotranslate('Abu Dhabi befindet sich in einer subtropischen Klimazone. Die Sommer sind extrem heiß und trocken. Temperaturen um die 40°C in den Monaten Juli und August sind normal. Nachts sinken sie auf 26°C bis 29°C. Zwischen den Monaten November bis März sind die Temperaturen angenehmer und ab und zu fällt auch Regen. Der Persische Golf lädt allerdings zu jeder Jahreszeit zum Baden ein. Wenn auch im Februar Temperaturen um die 21°C zu erwarten sind, steigen sie jedoch recht schnell in den kommenden Monaten auf ca. 30°C.', app()->getLocale())
             </p>
             <p class="text-black">
-                Die Stadt ist die Hauptstadt des Emirates und der Vereinigten Arabischen Emirate. Über 1,5 Millionen Einwohner leben hier. Abu Dhabi gehört zu den reichsten Städten der Welt.
+                @autotranslate('Die Stadt ist die Hauptstadt des Emirates und der Vereinigten Arabischen Emirate. Über 1,5 Millionen Einwohner leben hier. Abu Dhabi gehört zu den reichsten Städten der Welt.', app()->getLocale())
             </p>
         </div>
     </div>
 </div>
+
 
 
 
@@ -76,33 +77,40 @@ d3.json("https://d3js.org/world-110m.v1.json").then(world => {
         .attr("width", 120) // Größe des Icons (Faktor 4)
         .attr("height", 200) // Größe des Icons (Faktor 4)
 
-    // Tooltip hinzufügen
-    const tooltip = d3.select("body")
-        .append("div")
-        .style("position", "absolute")
-        .style("background-color", "white")
-        .style("border", "1px solid #ccc")
-        .style("padding", "5px")
-        .style("border-radius", "5px")
-        .style("font-size", "12px")
-        .style("visibility", "hidden")
-        .style("z-index", "1000"); // Sicherstellen, dass der Tooltip über anderen Elementen liegt
+        const tooltipContainer = d3.select(".container")
+    .append("div")
+    .attr("class", "tooltip-container") // Verwende die CSS-Klasse
+    .style("visibility", "hidden"); // Standardmäßig versteckt
 
-    marker.on("mouseover", function (event) {
-        console.log("Mouseover event triggered"); // Debugging
-        tooltip.style("visibility", "visible")
-            .text(geoLocation.name);
-    })
-    .on("mousemove", function (event) {
-        console.log("Mousemove event triggered"); // Debugging
-        tooltip.style("top", (event.pageY - 10) + "px")
-            .style("left", (event.pageX + 10) + "px");
-    })
-    .on("mouseout", function () {
-        console.log("Mouseout event triggered"); // Debugging
-        tooltip.style("visibility", "hidden");
-    });
+marker.on("mouseover", function () {
+    console.log("Tooltip sichtbar gemacht");
+    tooltipContainer.style("visibility", "visible").text(geoLocation.name);
+})
+.on("mousemove", function (event) {
+    console.log("Maus bewegt:", { x: event.pageX, y: event.pageY });
+    tooltipContainer.style("top", (event.pageY + 10) + "px")
+                    .style("left", (event.pageX + 10) + "px");
+})
+.on("mouseout", function () {
+    console.log("Tooltip verborgen");
+    tooltipContainer.style("visibility", "hidden");
+});
+
 }).catch(error => {
     console.error("Fehler beim Laden der Weltkarte:", error);
 });
 </script>
+<style>
+.tooltip-container {
+    position: absolute; /* Absolute Positionierung */
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none; /* Verhindert Mausinteraktion */
+    z-index: 1000; /* Sicherstellen, dass der Tooltip oben liegt */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+}
+
+</style>
