@@ -43,6 +43,16 @@ return new class extends Migration
             $table->char('artikel', 50)->nullable();
             $table->integer('travelwarning_id')->nullable();
             $table->char('price_tendency', 10)->nullable();
+
+            // New columns for images and flag
+            $table->string('image1_path')->nullable();
+            $table->string('image2_path')->nullable();
+            $table->string('image3_path')->nullable();
+            $table->boolean('custom_images')->default(false);
+
+            // Status field
+            $table->enum('status', ['active', 'pending', 'inactive'])->default('active');
+
             $table->timestamps();
 
             // Indexes

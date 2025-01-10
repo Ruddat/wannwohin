@@ -29,7 +29,10 @@ class ContinentSelectorComponent extends Component
 
     private function getContinents()
     {
-        // Dynamisch die Kontinente laden
-        return WwdeContinent::select('id', 'title')->orderBy('title')->get();
+        // Nur Kontinente mit Status "active" laden
+        return WwdeContinent::select('id', 'title')
+            ->where('status', 'active')
+            ->orderBy('title')
+            ->get();
     }
 }

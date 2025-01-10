@@ -37,12 +37,18 @@ class ContinentController extends Controller
         // Finde den Kontinent basierend auf dem Alias
         $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
 
-        // Länder des Kontinents abrufen
-        $countries = WwdeCountry::where('continent_id', $continent->id)->get();
+        // Länder des Kontinents abrufen, die aktiv sind
+        $countries = WwdeCountry::where('continent_id', $continent->id)
+        ->where('status', 'active')
+        ->get();
 
         // Prüfe, ob der Kontinent benutzerdefinierte Bilder hat
         $bgImgPath = $continent->image1_path ?? null;
-        $mainImgPath = $continent->image2_path ?? null;
+        $bgImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
+      //  $mainImgPath = $continent->image2_path ?? null;
+        $mainImgPath = $continent->image2_path ? Storage::url($continent->image2_path) : null;
+
+//dd($bgImgPath, $mainImgPath);
 
         // Falls keine Bilder im Kontinent definiert sind, verwende HeaderContent
         if (!$bgImgPath || !$mainImgPath) {
@@ -53,6 +59,7 @@ class ContinentController extends Controller
             $bgImgPath = $bgImgPath ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
             $mainImgPath = $mainImgPath ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
         }
+//        dd($bgImgPath, $mainImgPath);
 
         // Ansicht rendern
         return view('frondend.continent_and_countries.index', [
@@ -60,7 +67,7 @@ class ContinentController extends Controller
             'countries' => $countries,
             'panorama_location_picture' => $bgImgPath,
             'main_location_picture' => $mainImgPath,
-            'panorama_location_text' => $continent->continent_text ?? null,
+            'panorama_location_text' => $continent->continent_header_text ?? null,
         ]);
     }
 
@@ -86,7 +93,12 @@ class ContinentController extends Controller
 
         // Bilder und Texte des Kontinents
         $bgImgPath = $continent->image1_path ?? null;
-        $mainImgPath = $continent->image2_path ?? null;
+        $mainImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
+      //  $mainImgPath = $continent->image2_path ?? null;
+
+        $mainImgPath = $continent->image2_path ? Storage::url($continent->image2_path) : null;
+
+//dd($bgImgPath, $mainImgPath);
 
         // Falls keine Bilder definiert sind, verwende Fallback-Bilder
         if (!$bgImgPath || !$mainImgPath) {

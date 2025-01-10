@@ -2,6 +2,7 @@
 // Im Controller oder direkt in der View zufällige Bilder abrufen
 $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
 ?>
+
 <section id="erleben" class="section section-no-border bg-color-primary m-0 py-5">
     <div class="container">
         <!-- Header -->

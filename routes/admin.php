@@ -6,7 +6,10 @@ use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Http\Controllers\Backend\Location\LocationController;
+use App\Livewire\Backend\CountryManager\CountryManagerComponent;
+use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
 use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
+use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
 use App\Livewire\Backend\AdvertisementManager\AdvertisementBlocksComponent;
 
 
@@ -43,4 +46,20 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     Route::prefix('advertisement-manager')->name('advertisement-manager.')->group(function () {
         Route::get('/advertisement-blocks', AdvertisementBlocksComponent::class)->name('advertisement-blocks');
     });
+
+    // Continent Manager
+    Route::prefix('continent-manager')->name('continent-manager.')->group(function () {
+        Route::get('/', ContinentManagerComponent::class)->name('index');
+    });
+
+    // Country Manager
+    Route::prefix('country-manager')->name('country-manager.')->group(function () {
+        Route::get('/', CountryManagerComponent::class)->name('index');
+    });
+
+    // Translation Manager
+    Route::prefix('translation-manager')->name('translation-manager.')->group(function () {
+        Route::get('/', TranslationManagerComponent::class)->name('index');
+    });
+
 });

@@ -10,12 +10,9 @@
             <h4 class="text-color-dark font-weight-semibold">
                 @autotranslate('Lage und Klima', app()->getLocale())
             </h4>
-            <p class="text-black">
-                @autotranslate('Abu Dhabi befindet sich in einer subtropischen Klimazone. Die Sommer sind extrem heiß und trocken. Temperaturen um die 40°C in den Monaten Juli und August sind normal. Nachts sinken sie auf 26°C bis 29°C. Zwischen den Monaten November bis März sind die Temperaturen angenehmer und ab und zu fällt auch Regen. Der Persische Golf lädt allerdings zu jeder Jahreszeit zum Baden ein. Wenn auch im Februar Temperaturen um die 21°C zu erwarten sind, steigen sie jedoch recht schnell in den kommenden Monaten auf ca. 30°C.', app()->getLocale())
-            </p>
-            <p class="text-black">
-                @autotranslate('Die Stadt ist die Hauptstadt des Emirates und der Vereinigten Arabischen Emirate. Über 1,5 Millionen Einwohner leben hier. Abu Dhabi gehört zu den reichsten Städten der Welt.', app()->getLocale())
-            </p>
+            <div class="formatted-text">
+                {!! app('autotranslate')->trans($location->text_location_climate, app()->getLocale()) !!}
+            </div>
         </div>
     </div>
 </div>

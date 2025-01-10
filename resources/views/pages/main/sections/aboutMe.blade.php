@@ -5,15 +5,18 @@
                 <!-- Linke Spalte: Texte -->
                 <div class="col-lg-6 mb-4">
                     <h2 class="text-color-dark font-weight-extra-bold text-uppercase">@autotranslate('ONLINE REISEFÜHRER', app()->getLocale())</h2>
-                    <p>@autotranslate('Herzlich willkommen bei www.wann-wohin.de – Ihrem Online Reiseführer. Sie haben Urlaub und Lust auf einen Tapetenwechsel – wissen aber nicht wohin die nächste Reise gehen soll? Wir haben auf dieser Seite unterschiedliche Möglichkeiten für Sie zusammengestellt, mit denen Sie schnell und unkompliziert Ihr Traumziel finden.', app()->getLocale())</p>
-                    <p>@autotranslate('Für Unentschlossene haben wir über 150 Urlaubsziele in verschiedene Kategorien eingeteilt. Diese finden Sie etwas weiter unten. Mit einem Klick geht’s auch schon los. Wenn Sie aber schon spezielle Vorstellungen von Ihrem Urlaub haben, können Sie direkt mit der Detailsuche von unserem Reise-Wizard starten. So finden auch Sie garantiert Ihr Traumziel – probieren Sie es einfach aus.', app()->getLocale())</p>
-                    <p>@autotranslate('Das Team von wann-wohin wünscht Ihnen viel Spaß bei der Suche nach Ihrem nächsten Urlaubsziel.', app()->getLocale())</p>
+                    <p>
+                        @autotranslate('Herzlich willkommen bei www.wann-wohin.de – Ihrem Online Reiseführer. Sie haben Urlaub und Lust auf einen Tapetenwechsel – wissen aber nicht wohin die nächste Reise gehen soll? Wir haben auf dieser Seite unterschiedliche Möglichkeiten für Sie zusammengestellt, mit denen Sie schnell und unkompliziert Ihr Traumziel finden.', app()->getLocale())
+                    </p>
+
+                    <p>@autotranslate("Für Unentschlossene haben wir über 150 Urlaubsziele in verschiedene Kategorien eingeteilt. Diese finden Sie etwas weiter unten. Mit einem Klick geht’s auch schon los. Wenn Sie aber schon spezielle Vorstellungen von Ihrem Urlaub haben, können Sie direkt mit der Detailsuche von unserem Reise-Wizard starten. So finden auch Sie garantiert Ihr Traumziel – probieren Sie es einfach aus.", app()->getLocale())</p>
+                    <p>@autotranslate("Das Team von wann-wohin wünscht Ihnen viel Spaß bei der Suche nach Ihrem nächsten Urlaubsziel.", app()->getLocale())</p>
                 </div>
 
                 <!-- Rechte Spalte: Top 10 Box -->
                 <div class="col-lg-6">
                     <div class="custom-box-details bg-color-light custom-box-shadow-1 p-4">
-                        <h4 class="text-center text-color-dark font-weight-bold mb-4">🌍 @autotranslate('Top 10 Reiseziele', app()->getLocale())</h4>
+                        <h4 class="text-center text-color-dark font-weight-bold mb-4">🌍 @autotranslate("Top 10 Reiseziele", app()->getLocale())</h4>
                         @if (!empty($top_ten)) <!-- Prüfen, ob das Array nicht leer ist -->
                         <div class="table-responsive">
                             <table class="table table-borderless align-middle text-center mb-0">
@@ -60,7 +63,9 @@
                                                 @if($location['climate_data']['weather_icon'] ?? false)
                                                     <img src="{{ $location['climate_data']['weather_icon'] }}" alt="@autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())" class="me-2" style="height: 30px; width: auto;">
                                                 @endif
-                                                <span class="custom-text-color-2">@autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())</span>
+                                                <span class="custom-text-color-2">
+                                                    @autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
@@ -78,6 +83,11 @@
             </div>
         </div>
     </section>
+
+    <a href="{{ route('continents.upload') }}" class="btn btn-primary">
+        Kontinente importieren
+    </a>
+
 </div>
 
 

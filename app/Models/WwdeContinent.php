@@ -29,7 +29,13 @@ class WwdeContinent extends Model
         'population',
         'no_countries',
         'no_climate_tables',
+        'continent_header_text',
         'continent_text',
+        'image1_path',
+        'image2_path',
+        'image3_path',
+        'custom_images',
+        'status',
     ];
 
     /**
@@ -52,5 +58,5 @@ class WwdeContinent extends Model
     {
         return $this->countries()->count();
     }
-    
+
 }

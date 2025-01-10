@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('country_id')->nullable();
             $table->string('title', 50)->nullable();
             $table->string('alias', 50)->nullable();
-            $table->string('iata_code', 5)->nullable();
+            $table->string('iata_code', 30)->nullable();
             $table->float('flight_hours')->nullable();
             $table->integer('stop_over')->nullable();
             $table->integer('dist_from_FRA')->nullable();
@@ -46,7 +46,8 @@ return new class extends Migration
             $table->boolean('list_water_park')->default(false);
             $table->boolean('list_animal_park')->default(false);
 
-            $table->string('best_traveltime', 28)->nullable();
+            // Erhöhte Länge für 'best_traveltime'
+            $table->string('best_traveltime', 1000)->nullable();
             $table->string('text_pic1', 300)->nullable();
             $table->string('text_pic2', 300)->nullable();
             $table->string('text_pic3', 300)->nullable();
@@ -67,12 +68,12 @@ return new class extends Migration
             // Pricing and ranges
             $table->integer('price_flight')->nullable();
             $table->integer('range_flight')->nullable();
-            $table->integer('price_hotel', false, true)->nullable();
-            $table->tinyInteger('range_hotel', false, true)->nullable();
-            $table->integer('price_rental', false, true)->nullable();
-            $table->tinyInteger('range_rental', false, true)->nullable();
-            $table->integer('price_travel', false, true)->nullable();
-            $table->tinyInteger('range_travel', false, true)->nullable();
+            $table->integer('price_hotel')->nullable();
+            $table->integer('range_hotel')->nullable();
+            $table->integer('price_rental')->nullable();
+            $table->integer('range_rental')->nullable();
+            $table->integer('price_travel')->nullable();
+            $table->integer('range_travel')->nullable();
 
             $table->boolean('finished')->default(false);
             $table->json('best_traveltime_json')->nullable();

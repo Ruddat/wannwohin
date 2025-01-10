@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\GenerateBreadcrumbs;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\GenerateBreadcrumbs;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,29 +13,25 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            // Admin-Routen zuerst registrieren
-            Route::middleware(['web'])
-               // ->prefix('verwaltung')
+            // Admin-Routen registrieren
+            Route::middleware('web')
                 ->group(base_path('routes/admin.php'));
 
-            // Standard Web-Routen
+            // Standard Web-Routen registrieren
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
-
-            },
-
+        }
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Middleware-Aliase korrekt registrieren
-
+        // Middleware-Aliase registrieren
         $middleware->alias([
-            'breadcrumbs' => \App\Http\Middleware\GenerateBreadcrumbs::class
+            'breadcrumbs' => GenerateBreadcrumbs::class,
         ]);
 
-
+        // Globale Middleware hinzufügen
+        $middleware->append(SetLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-
-
-        //
-    })->create();
+        // Exception-Handling konfigurieren
+    })
+    ->create();

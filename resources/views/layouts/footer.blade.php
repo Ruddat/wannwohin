@@ -1,65 +1,134 @@
-<div id="ex_footer" >
-    <div class="row">
-            <div class="col-6">
-                <div class="footer-ribbon">
-                    @include('layouts.social-icons')
-                </div>
-            </div>
-        <div class="col-2"></div>
-       <div class="col-4">
-            <div class="footer-ribbon-right">
-                <span><a href="{{route('impressum')}}">Impressum und Datenschutz</a></span>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{--<div id="footer" >
-    <div class="col-md-6">
-        <div class="footer-ribbon">
-            @include('layouts.social-icons')
-        </div>
-    </div>
-    <div class="col-md-2">
-
-    </div>
-    <div class="col-md-4">
-        <div class="footer-ribbon-right">
-            --}}{{--            <span><a href="{{ route('pages.impressum') }}"> Impressum und Datenschutz</a></span>--}}{{--
-            <span><a href="https://www.wann-wohin.de/impressum"> Impressum und Datenschutz</a></span>
-        </div>
-    </div>
-</div>--}}
-{{--
-<section class="section bg-color-dark-scale-2 border-0 m-0 py-4">
+<footer class="footer bg-dark text-white py-4">
     <div class="container">
         <div class="row">
-            <div class="col">
-                <ul class="list list-unstyled list-inline d-flex align-items-center justify-content-center flex-column flex-lg-row mb-0">
-                    <li class="list-inline-item mb-lg-0"><a href="{{ route('impressum') }}" class="btn btn-dark btn-modern btn-rounded btn-px-4 py-3 border-0">Impressum und Daten Schutz</a></li>
---}}{{--                    <li class="list-inline-item mb-lg-0"><a href="{{  url('/')  }}/daten-schutz" class="btn btn-dark btn-modern btn-rounded btn-px-4 py-3 border-0">Daten Schutz</a></li>--}}{{--
+            <!-- Navigation Links -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <h5>Navigation</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/impressum" class="footer-link">Impressum</a></li>
+                    <li><a href="/datenschutz" class="footer-link">Datenschutz</a></li>
+                    <li><a href="/kontakt" class="footer-link">Kontakt</a></li>
+                    <li><a href="/verwaltung/login" class="footer-link">Verwaltung</a></li>
                 </ul>
             </div>
-        </div>
-    </div>
-</section>--}}
 
-{{--<footer id="footer" class="bg-color-dark-scale-2 border border-end-0 border-start-0 border-bottom-0 border-color-light-3 mt-0">
-    <div class="container text-center my-3 py-5">
---}}{{--
-        <a href="index.html">
-            <img src="img/landing/logo.png" data-src="img/landing/logo.png" width="102" height="45" class="appear-animation mb-4 animated fadeIn appear-animation-visible ls-is-cached lazyloaded" alt="Porto" data-appear-animation="fadeIn" data-appear-animation-delay="300" style="animation-delay: 300ms;">
-        </a>
---}}{{--
-        <ul class="social-icons social-icons-big social-icons-dark-2">
-            <li class="social-icons-facebook"><a href="http://www.facebook.com/" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-            <li class="social-icons-twitter"><a href="http://www.twitter.com/" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a></li>
-            <li class="social-icons-linkedin"><a href="http://www.linkedin.com/" target="_blank" title="Linkedin"><i class="fab fa-linkedin-in"></i></a></li>
-        </ul>
-    </div>
-    <div class="copyright bg-dark py-4">
-        <div class="container text-center py-2">
-            <p class="mb-0 text-2">Copyright 2022 - All Rights Reserved</p>
+            <!-- Social Links -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <h5>Folge uns</h5>
+                <div class="social-links">
+                    <a href="https://facebook.com" class="social-link" target="_blank">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com" class="social-link" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://instagram.com" class="social-link" target="_blank">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://linkedin.com" class="social-link" target="_blank">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Language Switcher -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <h5>Sprache</h5>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                        {{ config('app.available_locales')[App::getLocale()]['name'] }}
+                    </a>
+                    <ul class="dropdown-menu">
+                        @foreach (config('app.available_locales') as $localeCode => $locale)
+                            <li>
+                                <a href="{{ route('change.lang', ['lang' => $localeCode]) }}">
+                                    {{ $locale['name'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Newsletter Section -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <h5>Newsletter</h5>
+                <form>
+                    <div class="mb-3">
+                        <input type="email" class="form-control" placeholder="Deine Email" />
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">Abonnieren</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom text-center mt-4">
+            <p class="small mb-0">© 2025 Dein Unternehmen. Alle Rechte vorbehalten.</p>
         </div>
     </div>
-</footer>--}}
+</footer>
+
+
+
+<style>
+   /* Footer Styling */
+.footer {
+    background-color: #222;
+    color: #fff;
+}
+
+.footer h5 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.footer a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: #fdd55c;
+    text-decoration: underline;
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-link {
+    color: #fff;
+    font-size: 1.5rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.social-link:hover {
+    transform: scale(1.2);
+    color: #fdd55c;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    border-top: 1px solid #444;
+    padding-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer h5 {
+        text-align: center;
+    }
+
+    .footer .social-links {
+        justify-content: center;
+    }
+
+    .footer .row > div {
+        text-align: center;
+    }
+}
+
+</style>

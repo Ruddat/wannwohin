@@ -20,6 +20,7 @@
                         </div>
 
                         <!-- Best Travel Section -->
+                        @if ($location->text_what_to_do)
                         <div class="timeline-item">
                             <div class="timeline-marker">2</div>
                             <div class="timeline-content">
@@ -27,8 +28,10 @@
                                 @include('frondend.locationdetails.sections.best-travel')
                             </div>
                         </div>
+                        @endif
 
                         <!-- Location Climate Section -->
+                        @if ($location->text_what_to_do)
                         <div class="timeline-item">
                             <div class="timeline-marker">3</div>
                             <div class="timeline-content">
@@ -36,6 +39,7 @@
                                 @include('frondend.locationdetails.sections.location-climate')
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
             </section>
@@ -44,9 +48,12 @@
 
             @include('frondend.locationdetails.sections.amusement_parks')
 
+            @if ($location->text_what_to_do)
             @include('frondend.locationdetails.sections.erleben')
-
+            @endif
+            @if ($gallery_images)
             @include('frondend.locationdetails.sections.erleben_picture_modal')
+            @endif
         </div>
     </div>
 

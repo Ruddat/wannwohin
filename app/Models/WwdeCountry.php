@@ -53,6 +53,11 @@ class WwdeCountry extends Model
         'artikel',
         'travelwarning_id',
         'price_tendency',
+        'image1_path',
+        'image2_path',
+        'image3_path',
+        'custom_images',
+        'status',
     ];
 
     /**

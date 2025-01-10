@@ -1,6 +1,6 @@
 <section class="section section-no-border bg-color-light m-0 pb-0" style="background-color: #eaeff5 !important;">
     <div class="container">
-        <h1 class="text-center mb-4">@autotranslate('Locations in', app()->getLocale()) {{ $country->title }}</h1>
+        <h1 class="text-center mb-4">@autotranslate("Locations in", app()->getLocale()) {{ $country->title }}</h1>
         <div class="row g-4">
             @foreach($locations as $location)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">

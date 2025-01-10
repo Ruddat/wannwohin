@@ -4,6 +4,9 @@
     <link href="{{asset('backend/dist/css/tabler-payments.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/tabler-vendors.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/demo.min.css?1692870487')}}" rel="stylesheet"/>
+
+    <!-- Tabler icons-->
+    <link href="{{asset('assets/css/tabler-icons.css')}}" rel="stylesheet"/>
     <style>
       @import url('https://rsms.me/inter/inter.css');
       :root {

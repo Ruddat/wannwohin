@@ -7,7 +7,6 @@ use App\Models\WwdeLocation;
 use App\Models\HeaderContent;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class SearchResultsComponent extends Component
@@ -30,6 +29,7 @@ class SearchResultsComponent extends Component
 
     public function mount()
     {
+        // Header Content und Bilder laden
         $this->headerContent = Cache::remember('header_content_random', 60 * 60, function () {
             return HeaderContent::inRandomOrder()->first();
         });
@@ -37,6 +37,7 @@ class SearchResultsComponent extends Component
         $this->bgImgPath = $this->headerContent->bg_img ? Storage::url($this->headerContent->bg_img) : null;
         $this->mainImgPath = $this->headerContent->main_img ? Storage::url($this->headerContent->main_img) : null;
 
+        // Suchparameter aus der URL laden
         $this->continent = request('continent');
         $this->price = request('price');
         $this->urlaub = request('urlaub');
@@ -47,17 +48,19 @@ class SearchResultsComponent extends Component
 
     public function updatedSortBy()
     {
-        $this->resetPage(); // Reset pagination when sorting changes
+        $this->resetPage(); // Pagination zurücksetzen, wenn die Sortierung geändert wird
     }
 
     public function render()
     {
+        // Header-Content und Bilder an das Template übergeben
         view()->share([
             'panorama_location_picture' => $this->bgImgPath,
             'main_location_picture' => $this->mainImgPath,
             'panorama_location_text' => $this->headerContent->main_text ?? null,
         ]);
 
+        // Abfrage für die Suchergebnisse
         $query = WwdeLocation::query()
             ->where('status', 'active')
             ->where('finished', 1);
@@ -92,8 +95,10 @@ class SearchResultsComponent extends Component
             }
         }
 
+        // Ergebnisse sortieren und paginieren
         $locations = $query->orderBy($this->sortBy, $this->sortDirection)->paginate(10);
 
+        // Template mit den Suchergebnissen rendern
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
         ]);

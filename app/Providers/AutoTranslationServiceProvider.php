@@ -26,12 +26,13 @@ class AutoTranslationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Blade Directive für AutoTranslationService
         Blade::directive('autotranslate', function ($expression) {
-            Log::info('Blade directive expression:', ['expression' => $expression]);
-            return "<?php echo app('autotranslate')->trans($expression); ?>";
+            return "<?php echo app(\App\Services\AutoTranslationService::class)->trans($expression); ?>";
         });
 
-      //  Log::info("Aktuelle Sprache: " . App::getLocale());
+        // Logging zur Überprüfung der aktuellen Sprache
+        Log::info("Aktuelle Sprache: " . App::getLocale());
 
     }
 }

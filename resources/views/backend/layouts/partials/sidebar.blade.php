@@ -364,93 +364,130 @@
                   </div>
                 </div>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ route('verwaltung.header-manager.header_contents.index') }}" >
-                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
-                  </span>
-                  <span class="nav-link-title">
-                    Header Manager
-                  </span>
-                </a>
-              </li>
 
 
-              <li class="nav-item">
-                <a class="nav-link" href="{{ route('verwaltung.location-manager.locations.index') }}" >
-                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
-                  </span>
-                  <span class="nav-link-title">
-                    Location Manager
-                  </span>
-                </a>
-              </li>
 
-              <li class="nav-item">
-                <a class="nav-link" href="{{ route('verwaltung.park-manager.index') }}">
+
+              <li class="nav-item dropdown {{ request()->is('verwaltung/*') ? 'show active' : '' }}">
+                <a class="nav-link dropdown-toggle" href="#navbar-manager" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button"
+                   aria-expanded="{{ request()->is('verwaltung/*') ? 'true' : 'false' }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
-                        <!-- Download SVG icon from http://tabler-icons.io/i/tree -->
+                        <!-- Manager Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M12 13l-2 -2l-2 2" />
-                            <path d="M16 17l-2 -2l-2 2" />
-                            <path d="M12 3l8 8l-8 8l-8 -8z" />
-                            <path d="M12 3l8 8" />
-                            <path d="M4 11l8 8" />
-                        </svg>
-                    </span>
-                    <span class="nav-link-title">
-                        Park Manager
-                    </span>
-                </a>
-            </li>
-
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#navbar-manager" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
-                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M3 17l3 -2l3 2l3 -2l3 2l3 -2v-6a9 9 0 1 0 -18 0v6" />
-                            <path d="M3 17l3 -2l3 2l3 -2l3 2l3 -2v-6a9 9 0 1 0 -18 0v6" />
+                            <path d="M3 7v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2v-10a2 2 0 0 0 -2 -2h-7l-2 -2h-5a2 2 0 0 0 -2 2z" />
                         </svg>
                     </span>
                     <span class="nav-link-title">
                         Manager
                     </span>
                 </a>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{{ route('verwaltung.header-manager.header_contents.index') }}">
-                        Header Manager
+                <div class="dropdown-menu {{ request()->is('verwaltung/*') ? 'show' : '' }}">
+                    <div class="dropdown-menu-columns">
+                        <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.header-manager.header_contents.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.header-manager.header_contents.index') }}">
+                                Header Manager
+                            </a>
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-manager.locations.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.location-manager.locations.index') }}">
+                                Location Manager
+                            </a>
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.park-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.park-manager.index') }}">
+                                Park Manager
+                            </a>
+                        </div>
+
+                        <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.continent-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.continent-manager.index') }}">
+                                Continent Manager
+                            </a>
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.country-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.country-manager.index') }}">
+                                Country Manager
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Trenner -->
+                    <div class="dropdown-divider"></div>
+
+                    <!-- Zusätzliche Einträge nach dem Trenner -->
+                    <a class="dropdown-item" href="#">
+                        Additional Option 1
                     </a>
-                    <a class="dropdown-item" href="{{ route('verwaltung.location-manager.locations.index') }}">
-                        Location Manager
-                    </a>
-                    <a class="dropdown-item" href="{{ route('verwaltung.park-manager.index') }}">
-                        Park Manager
+                    <a class="dropdown-item" href="#">
+                        Additional Option 2
                     </a>
                 </div>
             </li>
-            <ul class="nav flex-column">
-                <!-- Other Sidebar Links -->
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('advertisement-manager.advertisement-blocks') ? 'active' : '' }}" href="{{ route('verwaltung.advertisement-manager.advertisement-blocks') }}">
-                        <i class="fas fa-ad"></i> Werbeblöcke
+
+
+
+        <!-- Trenner -->
+        <div class="hr-text text-green">Optionen</div>
+
+
+
+
+        <li class="nav-item active dropdown">
+            <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="true" >
+              <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/layout-2 -->
+                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M6 4v4" /><path d="M6 12v8" /><path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M12 4v10" /><path d="M12 18v2" /><path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M18 4v1" /><path d="M18 9v11" /></svg>              </span>
+              <span class="nav-link-title">
+                Addons
+              </span>
+            </a>
+            <div class="dropdown-menu {{ request()->is('verwaltung/*') ? 'show' : '' }}">
+              <div class="dropdown-menu-columns">
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.translation-manager.index') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.translation-manager.index') }}">
+                        Translation Manager
                     </a>
-                </li>
-            </ul>
+                </div>
+
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-blocks') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.advertisement-manager.advertisement-blocks') }}">
+                       Werbeblöcke
+                    </a>
+                </div>
+
+              </div>
+            </div>
+          </li>
 
 
-              <li class="nav-item">
-                <a class="nav-link" href="./form-elements.html" >
-                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
-                  </span>
-                  <span class="nav-link-title">
-                    Forms
-                  </span>
-                </a>
-              </li>
+
+
+
+
+
+          <li class="nav-item">
+            <form action="{{ route('verwaltung.logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="nav-link btn btn-link" style="text-decoration: none;">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-logout">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+                            <path d="M9 12h12l-3 -3" />
+                            <path d="M18 15l3 -3" />
+                        </svg>
+                    </span>
+                    <span class="nav-link-title">Logout</span>
+                </button>
+            </form>
+        </li>
+
+
+
+
+
+
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
@@ -548,64 +585,17 @@
                   </div>
                 </div>
               </li>
-              <li class="nav-item active dropdown">
-                <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="true" >
-                  <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/layout-2 -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M4 13m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M14 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M14 15m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /></svg>
-                  </span>
-                  <span class="nav-link-title">
-                    Layout
-                  </span>
-                </a>
-                <div class="dropdown-menu show">
-                  <div class="dropdown-menu-columns">
-                    <div class="dropdown-menu-column">
-                      <a class="dropdown-item" href="./layout-horizontal.html">
-                        Horizontal
-                      </a>
-                      <a class="dropdown-item" href="./layout-boxed.html">
-                        Boxed
-                        <span class="badge badge-sm bg-green-lt text-uppercase ms-auto">New</span>
-                      </a>
-                      <a class="dropdown-item" href="./layout-vertical.html">
-                        Vertical
-                      </a>
-                      <a class="dropdown-item" href="./layout-vertical-transparent.html">
-                        Vertical transparent
-                      </a>
-                      <a class="dropdown-item" href="./layout-vertical-right.html">
-                        Right vertical
-                      </a>
-                      <a class="dropdown-item" href="./layout-condensed.html">
-                        Condensed
-                      </a>
-                      <a class="dropdown-item" href="./layout-combo.html">
-                        Combined
-                      </a>
-                    </div>
-                    <div class="dropdown-menu-column">
-                      <a class="dropdown-item" href="./layout-navbar-dark.html">
-                        Navbar dark
-                      </a>
-                      <a class="dropdown-item" href="./layout-navbar-sticky.html">
-                        Navbar sticky
-                      </a>
-                      <a class="dropdown-item" href="./layout-navbar-overlap.html">
-                        Navbar overlap
-                      </a>
-                      <a class="dropdown-item" href="./layout-rtl.html">
-                        RTL mode
-                      </a>
-                      <a class="dropdown-item" href="./layout-fluid.html">
-                        Fluid
-                      </a>
-                      <a class="dropdown-item active" href="./layout-fluid-vertical.html">
-                        Fluid vertical
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </li>
+
+
+
+
+
+
+
+
+
+
+
               <li class="nav-item">
                 <a class="nav-link" href="./icons.html" >
                   <span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/ghost -->
@@ -656,3 +646,9 @@
           </div>
         </div>
       </aside>
+<style>
+    .dropdown-item.active {
+    font-weight: bolder;
+    color: #0dfd5d !important;
+}
+</style>

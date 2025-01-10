@@ -2,11 +2,46 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Search\SearchController;
+use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
+use App\Http\Controllers\Backend\Imports\CountryImportController;
+use App\Http\Controllers\Backend\Imports\LocationImportController;
+use App\Http\Controllers\Backend\Imports\ContinentImportController;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
 use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
 use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
+
+
+
+    // Login
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+
+// Home
+
+// Impressum
+Route::view('impressum', 'pages.impressum-neu')
+->name('impressum');
+
+Route::post('/login', [AuthController::class, 'login']);
+
+// Imports
+Route::post('/import-continents', [ContinentImportController::class, 'import'])->name('continents.import');
+Route::get('/continent-import', function () {
+    return view('excel-import/continent-import');
+})->name('continents.upload');
+
+Route::post('/import-countries', [CountryImportController::class, 'import'])->name('countries.import');
+Route::get('/country-import', function () {
+    return view('excel-import/country-import');
+})->name('countries.upload');
+
+Route::post('/import-locations', [LocationImportController::class, 'import'])->name('locations.import');
+Route::get('/location-import', function () {
+    return view('excel-import/location-import');
+})->name('locations.upload');
+
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
@@ -45,11 +80,28 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/{continentAlias}/{countryAlias}/locations', [ContinentController::class, 'showLocations'])
         ->name('list-country-locations');
 
-    Route::view('impressum', 'pages.impressum-neu')
-        ->name('impressum');
-});
+
+    });
 
 // API-Routen (in einer separaten Datei empfohlen)
 Route::get('/api/countries-by-continent/{continent}', function ($continent) {
     return \App\Models\WwdeCountry::where('continent_id', $continent)->get();
 })->name('api.countries-by-continent');
+
+Route::get('/change-language/{lang}', [LanguageController::class, 'switch'])->name('change.lang');
+
+//Route::prefix('localization')
+//    ->middleware(['web', SetLocale::class])
+//    ->group(function() {
+//        // Route zum Wechseln der Sprache über die URL
+//        Route::get('/change-language', [LanguageController::class, 'switch'])
+//            ->name('change.lang');
+//    });
+
+
+// Imports
+// Route to display the upload form
+
+
+
+

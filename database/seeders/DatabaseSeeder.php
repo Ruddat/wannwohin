@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             WwdeContinentsSeeder::class, // Für Kontinente
-            WwdeCountriesSeeder::class,  // Für Länder
-            WwdeLocationsSeeder::class,  // Für Standorte
+          //  WwdeCountriesSeeder::class,  // Für Länder
+          //  WwdeLocationsSeeder::class,  // Für Standorte
             WwdeRangesSeeder::class,     // Für Preisbereiche
             HeaderContentSeeder::class,     // Für Preisbereiche
             ModLanguagesSeeder::class, // Für Sprachen

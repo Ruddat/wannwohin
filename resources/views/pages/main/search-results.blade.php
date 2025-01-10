@@ -29,10 +29,10 @@
                                             <!-- Image Section -->
                                             <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 m-0 overflow-hidden">
                                                 <a href="{{ route('location.details', [
-                                                'continent' => $location->country->continent->alias,
-                                                'country' => $location->country->alias,
-                                                'location' => $location->alias,
-                                            ]) }}" class="p-0 m-0">
+                                                    'continent' => $location->country->continent->alias,
+                                                    'country' => $location->country->alias,
+                                                    'location' => $location->alias,
+                                                ]) }}" class="p-0 m-0">
                                                     <div class="my-zoom" style="background-image: url('{{ asset("{$location->text_pic1}") }}')">
                                                     </div>
                                                 </a>
@@ -42,7 +42,7 @@
                                             <div class="experience-description col-lg-9 col-sm-7 bg-color-light">
 
                                                 <div class="row">
-                                                    <div class="col-4">
+                                                    <div class="col-12 col-md-4">
                                                         <a href="{{ route('location.details', [
                                                 'continent' => $location->country->continent->alias,
                                                 'country' => $location->country->alias,
@@ -50,18 +50,18 @@
                                             ]) }}">
                                             <h4 class="text-7 text-dark mb-4">{{ $location->title }}</h4></a>
                                                     </div>
-                                                    <div class="col-3 mb-3">
-                                                        <div class="d-flex justify-content-start  align-items-start">
+                                                    <div class="col-12 col-md-3 mb-3">
+                                                        <div class="d-flex justify-content-start align-items-start">
                                                             <h5 class="text-5 text-dark d-block mb-4 me-2"> im Januar </h5>
                                                         </div>
                                                     </div>
-                                                    <div class="col-5">
-                                                        <h5 class="text-7 text-dark mb-4 text-end">ab {{ number_format($location->price_flight, 0, ',', '.') }} €</h5>
+                                                    <div class="col-12 col-md-5">
+                                                        <h5 class="text-7 text-dark mb-4 text-md-end">ab {{ number_format($location->price_flight, 0, ',', '.') }} €</h5>
                                                     </div>
                                                 </div>
 
                                                 <div class="row my-3 pb-1">
-                                                    <div class="col-4 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <img src="{{ asset('assets/flags/4x3/' . strtolower($location->country->country_code) . '.svg') }}"
                                                                  alt="{{ $location->country->title ?? 'Unknown Country' }}"
@@ -71,13 +71,13 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-3 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-3 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Tagsüber</div>
                                                             <div class="col-4">{{ intval($location->climate_data['main']['temp'] ?? 'N/A') }}℃</div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-5 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
                                                         @php
                                                         $iconMap = [
                                                             'list_sports' => '<i class="fas fa-biking fa-lg me-1" title="Sport"></i>',
@@ -105,7 +105,7 @@
                                                 </div>
 
                                                 <div class="row my-3">
-                                                    <div class="col-4 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             {{-- Kontinent-Flagge --}}
                                                             @if($location->country && $location->country->continent)
@@ -121,13 +121,13 @@
                                                     </div>
 
 
-                                                    <div class="col-3 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-3 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Wasser</div>
                                                             <div class="col-4">{{ intval($location->climate_data['water_temperature'] ?? 'N/A') }}℃</div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-5 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-5">Regentage</div>
                                                             <div class="col-7">
@@ -138,18 +138,18 @@
                                                 </div>
 
                                                 <div class="row my-3">
-                                                    <div class="col-4 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <i class="fas fa-arrows-alt-h text-6 me-3"></i>{{ $location->flight_hours }} Flugstunden
                                                         </div>
                                                     </div>
-                                                    <div class="col-3 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-3 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Sonne</div>
                                                             <div class="col-4">{{ $location->climate_data['sunshine_per_day'] ?? 'N/A' }} h</div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-5 d-flex align-items-end justify-content-start">
+                                                    <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-5">Beste Reisezeit</div>
                                                             <div class="col-7">{{ $location->best_traveltime ?? 'N/A' }}</div>
@@ -170,10 +170,6 @@
                 </div>
             </div>
         </section>
-
-
-
-
 
         <div class="container py-5">
             <div class="row justify-content-center">
@@ -212,4 +208,33 @@
             };
         </script>
     </div>
+
+
+    <style>
+        .my-zoom {
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
+
+}
+
+@media (max-width: 768px) {
+    .my-zoom {
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
+   
+}
+}
+
+@media (max-width: 568px) {
+    .my-zoom {
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
+    height: 200px; /* Feste Höhe oder flexibel mit min-height */
+}
+}
+
+    </style>
 @endsection

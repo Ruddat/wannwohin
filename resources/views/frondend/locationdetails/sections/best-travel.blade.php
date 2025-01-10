@@ -9,6 +9,11 @@
         <!-- Description Section -->
         <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-4 py-3 rounded-end">
             <h4 class="text-color-dark font-weight-semibold">Beste Reisezeit {{ $location->title }}</h4>
+
+            <div class="formatted-text">
+                {!! app('autotranslate')->trans($location->text_best_traveltime, app()->getLocale()) !!}
+            </div>
+
             <p class="text-black">
                 Die beste Reisezeit {{ $location->title }} kennenzulernen sind die folgenden Monate:
             </p>

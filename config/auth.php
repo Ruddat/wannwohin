@@ -44,6 +44,7 @@ return [
     'admin' => [
         'driver' => 'session',
         'provider' => 'admins',
+        'redirect_to' => 'admin.login', // Hier sicherstellen, dass der Admin auf die richtige Seite umgeleitet wird
     ],
 ],
 

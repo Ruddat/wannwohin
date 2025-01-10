@@ -5,3 +5,8 @@
 <!-- Tabler Core -->
 <script src="{{asset('backend/dist/js/tabler.min.js?1692870487')}}" defer></script>
 <script src="{{asset('backend/dist/js/demo.min.js?1692870487')}}" defer></script>
+
+<!-- Tabler icons -->
+<script src="{{asset('assets/js/tabler-icons.js')}}"></script>
+
+

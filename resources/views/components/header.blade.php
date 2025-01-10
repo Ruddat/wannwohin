@@ -1,9 +1,9 @@
-<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-position-1 custom-xs-bg-size-cover parallax-no-overflow m-0" data-plugin-parallax data-plugin-options="{'speed': 1.5}" data-image-src="{{ $panoramaLocationPicture ?? asset('default-bg.jpg') }}">
+<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-position-1 custom-xs-bg-size-cover parallax-no-overflow m-0" data-plugin-parallax data-plugin-options="{'speed': 1.5}" data-image-src="{{ $panoramaLocationPicture ? url($panoramaLocationPicture) : asset('default-main.jpg') }}">
     <div class="container">
         <div class="row">
             <!-- Hauptbild -->
             <div class="custom-header-img col-lg-4 position-relative custom-sm-margin-bottom-1">
-                <img src="{{ $mainLocationPicture ?? asset('default-main.jpg') }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
+                <img src="{{ $mainLocationPicture ? url($mainLocationPicture) : asset('default-main.jpg') }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
             </div>
             <!-- Header-Text -->
             <div class="col-lg-6 col-xl-5">
@@ -52,6 +52,7 @@
     </div>
 </div>
 <x-breadcrumb />
+<hr class="custom-suggestion">
 
 <style>
 
@@ -112,7 +113,19 @@
     }
 }
 
-
+@media (min-width: 991px) {
+    .custom-image-position-2 {
+        position: absolute;
+        max-width: 90%;
+        top: -60px;
+        z-index: 1;
+        height: 400px;
+    }
+    .custom-section-padding-1 {
+        padding-top: 200px !important;
+        padding-bottom: 70px !important;
+    }
+}
 
 /* Hauptcontainer für die Links */
 .custom-about-links {

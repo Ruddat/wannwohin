@@ -5,7 +5,7 @@
             <div class="col-12 col-lg-7">
                 <div class="card h-100 custom-border continent-card">
                     <div class="card-body p-4">
-                        <h5 class="card-title text-uppercase text-primary">@autotranslate('About', app()->getLocale()) @autotranslate($continent->title, app()->getLocale())</h5>
+                        <h5 class="card-title text-uppercase text-primary">@autotranslate("About", app()->getLocale()) @autotranslate($continent->title, app()->getLocale())</h5>
                         <p class="card-text">
                             @autotranslate($continent->continent_text, app()->getLocale())
                         </p>

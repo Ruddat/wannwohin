@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Services\GeocodeService;
+
+use Illuminate\Support\Facades\App;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use App\Library\WeatherApiClientLibrary;
 use App\Repositories\LocationRepository;
@@ -40,5 +44,11 @@ class AppServiceProvider extends ServiceProvider
     {
     // Verwende Bootstrap für die Paginator-Darstellung
     Paginator::useBootstrap();
+
+
+        // Sprache aus der Session setzen
+        $locale = Session::get('locale', config('app.locale'));
+        App::setLocale($locale);
+
     }
 }

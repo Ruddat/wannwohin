@@ -25,39 +25,41 @@
                         <table class="table table-borderless continent-facts-table">
                             <tr>
                                 <td>
-                                    <span>@autotranslate('Währung', app()->getLocale())</span>
+                                    <span>@autotranslate("Währung", app()->getLocale())</span>
                                     <div><h5>@autotranslate($country->currency_code, app()->getLocale())</h5></div>
                                 </td>
                                 <td>
-                                    <span>@autotranslate('Hauptstadt', app()->getLocale())</span>
+                                    <span>@autotranslate("Hauptstadt", app()->getLocale())</span>
                                     <div><h5>@autotranslate($country->capital, app()->getLocale())</h5></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <span>@autotranslate('Preistendenz', app()->getLocale())</span>
+                                    <span>@autotranslate("Preistendenz", app()->getLocale())</span>
                                     <div><h5></h5></div>
                                 </td>
                                 <td>
-                                    <span>@autotranslate(
-                                        count(explode(',', $country->official_language)) > 1
-                                            ? 'Sprachen'
-                                            : 'Sprache',
-                                        app()->getLocale()
-                                    )</span>
+                                    <span>
+                                        <?php
+                                            $languageLabel = count(explode(',', $country->official_language)) > 1 ? 'Sprachen' : 'Sprache';
+                                            echo app('autotranslate')->trans($languageLabel, app()->getLocale());
+                                        ?>
+                                    </span>
                                     <div><h5>@autotranslate($country->official_language, app()->getLocale())</h5></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <span>@autotranslate('Visum & Reisepass', app()->getLocale())</span>
+                                    <span>@autotranslate("Visum & Reisepass", app()->getLocale())</span>
                                     <div>
-                                        <h5>@autotranslate(
-                                            $country->country_visum_needed
-                                                ? 'Nicht nötig'
-                                                : ($country->country_visum_max_time ?? 'Keine Angaben'),
-                                            app()->getLocale()
-                                        )</h5>
+                                        <h5>
+                                            <?php
+                                                $visumText = $country->country_visum_needed
+                                                    ? 'Nicht nötig'
+                                                    : ($country->country_visum_max_time ?? 'Keine Angaben');
+                                                echo app('autotranslate')->trans($visumText, app()->getLocale());
+                                            ?>
+                                        </h5>
                                     </div>
                                 </td>
                             </tr>

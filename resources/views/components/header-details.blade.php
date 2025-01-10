@@ -44,7 +44,6 @@
         </div>
     </div>
     <x-breadcrumb />
-    <hr class="custom-suggestion">
 </div>
 <style>
 /* Spezifisches Styling nur für die Header-Sektion */

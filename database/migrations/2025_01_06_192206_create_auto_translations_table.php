@@ -13,10 +13,10 @@ class CreateAutoTranslationsTable extends Migration
     {
         Schema::create('auto_translations', function (Blueprint $table) {
             $table->id();
-            $table->string('key', 191)->unique(); // Eindeutiger, kurzer Schlüssel
-            $table->longText('original_text'); // Der vollständige Originaltext
-            $table->string('locale', 10)->index(); // Sprache der Übersetzung
-            $table->longText('text'); // Übersetzter Text für sehr lange Inhalte
+            $table->string('key'); // Erhöhte Zeichenbeschränkung auf 1024
+            $table->string('locale', 5);
+            $table->longText('text'); // Verwendung von longText für längere Übersetzungen
+            $table->unique(['key', 'locale']);
             $table->timestamps();
         });
     }
