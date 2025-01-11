@@ -48,9 +48,9 @@ return new class extends Migration
 
             // Erhöhte Länge für 'best_traveltime'
             $table->string('best_traveltime', 1000)->nullable();
-            $table->string('text_pic1', 300)->nullable();
-            $table->string('text_pic2', 300)->nullable();
-            $table->string('text_pic3', 300)->nullable();
+            $table->string('pic1_text', 300)->nullable();
+            $table->string('pic2_text', 300)->nullable();
+            $table->string('pic3_text', 300)->nullable();
             $table->string('text_headline', 255)->nullable();
             $table->string('text_short', 1000)->nullable();
 
@@ -82,6 +82,11 @@ return new class extends Migration
             $table->string('time_zone', 255)->nullable();
             $table->string('lat_new', 255)->nullable();
             $table->string('lon_new', 255)->nullable();
+            // Bilder locations
+            $table->string('text_pic1', 300)->nullable();
+            $table->string('text_pic2', 300)->nullable();
+            $table->string('text_pic3', 300)->nullable();
+
 
             $table->unique(['title', 'country_id']);
 

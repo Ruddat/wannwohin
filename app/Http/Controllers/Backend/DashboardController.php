@@ -6,7 +6,7 @@ use App\Models\WwdeCountry;
 use App\Models\WwdeLocation;
 use Illuminate\Http\Request;
 use App\Models\AmusementParks;
-use App\Models\LocationGallery;
+use App\Models\ModLocationGalerie;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $totalLocations = WwdeLocation::count();
         $totalCountries = WwdeCountry::count();
         $totalParks = AmusementParks::count();
-        $totalImages = LocationGallery::count();
+        $totalImages = ModLocationGalerie::count();
 
     // Top-10 Location Statistiken
     $topLocations = DB::table('stat_top_ten_locations')

@@ -7,6 +7,8 @@ use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Http\Controllers\Backend\Location\LocationController;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
+use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
 use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
 use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
@@ -28,11 +30,6 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     // Header Manager
     Route::prefix('header-manager')->name('header-manager.')->group(function () {
         Route::resource('header_contents', HeaderContentController::class);
-    });
-
-    // Location Manager
-    Route::prefix('location-manager')->name('location-manager.')->group(function () {
-        Route::resource('locations', LocationController::class);
     });
 
     // Park Manager
@@ -61,5 +58,16 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     Route::prefix('translation-manager')->name('translation-manager.')->group(function () {
         Route::get('/', TranslationManagerComponent::class)->name('index');
     });
+
+// Location Table Manager
+Route::prefix('location-table-manager')->name('location-table-manager.')->group(function () {
+    Route::get('/', LocationTableComponent::class)->name('index');
+    Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
+});
+
+// Location Manager (falls benötigt)
+Route::prefix('location-manager')->name('location-manager.')->group(function () {
+    Route::get('/', LocationManagerComponent::class)->name('index');
+});
 
 });

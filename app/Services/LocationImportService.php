@@ -7,6 +7,8 @@ use App\Models\WwdeLocation;
 use App\Models\WwdeContinent;
 use App\Services\GeocodeService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class LocationImportService
 {
@@ -59,11 +61,21 @@ class LocationImportService
                         continue;
                     }
 
+                    // Verarbeite `best_traveltime_json` und ersetze Zahlen durch Monatsnamen
+                    $bestTravelTime = $this->parseBestTravelTimeJson($row[52]);
+
+                    // Bilder abrufen
+                    $textPic1 = $this->getCityImage($cityName, 1, $status);
+                    $textPic2 = $this->getCityImage($cityName, 2, $status);
+                    $textPic3 = $this->getCityImage($cityName, 3, $status);
+
+
                     // Finde das passende Land in der Datenbank
                     $country = WwdeCountry::where('country_code', strtoupper($countryCode))
                         ->orWhere('title', $countryName)
                         ->first();
-//dd($country);
+                        //dd($country);
+
                     if (!$country) {
                         Log::warning("Kein Land in der Datenbank gefunden für '{$countryName}' (Code: {$countryCode})");
                         continue;
@@ -104,9 +116,14 @@ class LocationImportService
                          //   'list_animal_park' => $listAnimalPark, // Verwende den Standardwert
                             'best_traveltime' => $row[29],
 
-                            'text_pic1' => $row[30],
-                            'text_pic2' => $row[31],
-                            'text_pic3' => $row[32],
+                            'pic1_text' => $row[30],
+                            'pic2_text' => $row[31],
+                            'pic3_text' => $row[32],
+                            // bilder einfuegen
+                            'text_pic1' => $textPic1,
+                            'text_pic2' => $textPic2,
+                            'text_pic3' => $textPic3,
+
 
                             'text_headline' => isset($row[33]) ? substr($row[33], 0, 255) : null,
                             'text_short' => $row[34],
@@ -127,7 +144,9 @@ class LocationImportService
                             'price_travel' => $row[49],
                             'range_travel' => $row[50],
                             'finished' => 1, // Immer auf 1 setzen
-                          //  'best_traveltime_json' => $bestTravelTimeJson, // Verarbeitetes JSON-Array mit Monatsnamen
+                            'best_traveltime_json' => $bestTravelTime['json'], // JSON-Wert speichern
+                            'best_traveltime' => $bestTravelTime['range'], // Bereich der Monate, falls vorhanden
+
                             'panorama_text_and_style' => $row[53],
                             'time_zone' => $row[54],
                             'lat_new' => $result[0]['lat'] ?? null,
@@ -153,4 +172,165 @@ class LocationImportService
             return false;
         }
     }
+
+        /**
+     * Verarbeite den Wert für `best_traveltime_json` und ersetze Zahlen durch Monatsnamen.
+     *
+     * @param mixed $value Der Wert aus der Excel-Datei.
+     * @return string|null Gültiges JSON-Array mit Monatsnamen oder null, falls ungültig.
+     */
+    private function parseBestTravelTimeJson($value): ?array
+    {
+        // Mapping von Zahlen zu Monatsnamen
+        $monthNames = [
+            1 => 'Januar',
+            2 => 'Februar',
+            3 => 'März',
+            4 => 'April',
+            5 => 'Mai',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'August',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Dezember',
+        ];
+
+        $months = [];
+
+        if (is_string($value)) {
+            // Versuche, den Wert als JSON zu dekodieren
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $months = array_map('intval', $decoded);
+            } else {
+                // Wenn der Wert ein String ist, der Zahlen enthält (z. B. "1,2,3,4")
+                $numbers = array_map('intval', explode(',', $value));
+                if (!empty($numbers)) {
+                    $months = $numbers;
+                }
+            }
+        } elseif (is_array($value)) {
+            $months = $value;
+        }
+
+        // Entferne ungültige Werte und sortiere die Monate
+        $months = array_filter($months, function ($monthNumber) use ($monthNames) {
+            return isset($monthNames[$monthNumber]);
+        });
+        sort($months);
+
+        if (empty($months)) {
+            return [
+                'json' => json_encode([]), // Leeres JSON-Array
+                'range' => null, // Kein Bereich verfügbar
+            ];
+        }
+
+        // Ersetze Zahlen durch Monatsnamen
+        $monthNamesList = array_map(function ($monthNumber) use ($monthNames) {
+            return $monthNames[$monthNumber];
+        }, $months);
+
+        // Bereich bestimmen (z. B. "April - Oktober")
+        $firstMonth = reset($months);
+        $lastMonth = end($months);
+
+        $range = null;
+        if ($lastMonth - $firstMonth === count($months) - 1) {
+            // Wenn die Monate zusammenhängend sind
+            $range = "{$monthNames[$firstMonth]} - {$monthNames[$lastMonth]}";
+        }
+
+        return [
+            'json' => json_encode($monthNamesList), // Gültiges JSON-Array mit Monatsnamen
+            'range' => $range, // Bereich der Monate
+        ];
+    }
+
+    private function getCityImage($city, $index, &$status)
+    {
+        // Cache-Schlüssel für das Bild
+        $cacheKey = "city_image_{$city}_{$index}";
+
+        // Überprüfen, ob das Bild bereits im Cache ist
+        if (cache()->has($cacheKey)) {
+            Log::info('Using cached image for city: ' . $city . ', index: ' . $index);
+            return cache($cacheKey);
+        }
+
+        // Pixabay API-Schlüssel aus der Konfiguration holen
+        $apiKey = config('services.pixabay.api_key', env('PIXABAY_API_KEY'));
+
+        if (empty($apiKey)) {
+            Log::error('Pixabay API key is missing.');
+            $status = 'inactive'; // Kein API-Key, also Status auf inactive
+            return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+        }
+
+        // Pixabay API-URL
+        $url = 'https://pixabay.com/api/';
+
+        try {
+            // API-Anfrage senden (nur 1 Bild pro Anfrage)
+            $response = Http::get($url, [
+                'key' => $apiKey,
+                'q' => $city,
+                'image_type' => 'photo',
+                'orientation' => 'horizontal',
+                'safesearch' => 'true',
+                'per_page' => 5, // Maximal 5 Bilder abrufen
+                //'per_page' => $index, // Nur so viele Bilder abrufen, wie der Index angibt
+            ]);
+
+            if ($response->successful()) {
+                $images = $response->json()['hits'] ?? [];
+
+                if (empty($images) || !isset($images[$index - 1])) {
+                    Log::warning("No images found for city: {$city}, index: {$index}");
+                    $status = 'pending'; // Keine Bilder gefunden
+                    return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+                }
+
+                // Bild-URL extrahieren
+                $imageUrl = $images[$index - 1]['webformatURL'];
+
+                // Speicherpfad erstellen (sanitize city name)
+                $safeCityName = str_replace([' ', '/'], ['_', '-'], iconv('UTF-8', 'ASCII//TRANSLIT', $city));
+                $directory = "uploads/images/locations/{$safeCityName}/";
+                $fileName = "city_image_{$index}.jpg";
+
+                // Verzeichnis erstellen, falls nicht vorhanden
+                if (!Storage::exists($directory)) {
+                    Storage::makeDirectory($directory);
+                }
+
+                // Bild speichern
+                $imageContents = Http::get($imageUrl)->body();
+                Storage::put($directory . $fileName, $imageContents);
+
+                // Öffentliche URL generieren
+                $storedImageUrl = Storage::url($directory . $fileName);
+
+                // Bild-URL im Cache speichern (für 24 Stunden)
+                cache([$cacheKey => $storedImageUrl], now()->addDay());
+
+                Log::info("Image found, saved, and cached for city: {$city}, index: {$index}");
+                return $storedImageUrl;
+            } else {
+                Log::error("Failed to fetch images from Pixabay API for city: {$city}, index: {$index}");
+                $status = 'inactive'; // API-Fehler
+                return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+            }
+        } catch (\Exception $e) {
+            Log::error("Error fetching image from Pixabay API for city: {$city}, index: {$index}. Error: {$e->getMessage()}");
+            $status = 'inactive'; // Ausnahme, Status auf inactive
+            return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+        }
+    }
+
+
+
+
 }

@@ -186,6 +186,8 @@ class ContinentManagerComponent extends Component
         $continent->update(['status' => $newStatus]);
         $this->loadContinents();
         $this->dispatch('success', 'Status updated successfully.');
+        session()->flash('status', 'Status updated successfully. Status: ' . $newStatus);
+
     }
 
 

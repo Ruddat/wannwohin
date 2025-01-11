@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\LocationGallery;
-use Illuminate\Support\Facades\Http;
+use App\Models\ModLocationGalerie;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class LocationImageService
@@ -18,6 +18,50 @@ class LocationImageService
         if (empty($this->pixabayApiKey)) {
             throw new \Exception('Pixabay API key is missing.');
         }
+    }
+
+
+
+    /**
+     * Suche nach Bildern bei Pixabay.
+     *
+     * @param string $query
+     * @param int $limit
+     * @return array
+     */
+    public function searchImages(string $query, int $limit = 5): array
+    {
+        $url = 'https://pixabay.com/api/';
+        $results = [];
+
+        try {
+            $response = Http::get($url, [
+                'key' => $this->pixabayApiKey,
+                'q' => $query,
+                'image_type' => 'photo',
+                'orientation' => 'horizontal',
+                'safesearch' => 'true',
+                'per_page' => $limit,
+            ]);
+
+            if ($response->successful()) {
+                $images = $response->json()['hits'] ?? [];
+                foreach ($images as $image) {
+                    $results[] = [
+                        'preview_url' => $image['previewURL'],
+                        'full_url' => $image['largeImageURL'],
+                        'tags' => $image['tags'] ?? '',
+                        'id' => $image['id'],
+                    ];
+                }
+            } else {
+                Log::error("Pixabay API Fehler: {$response->body()}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Pixabay API Exception: {$e->getMessage()}");
+        }
+
+        return $results;
     }
 
     /**
@@ -42,7 +86,7 @@ class LocationImageService
         Storage::disk('public')->makeDirectory($directoryPath);
 
         // Get existing image hashes and activities for the location
-        $existingImages = LocationGallery::where('location_id', $locationId)
+        $existingImages = ModLocationGalerie::where('location_id', $locationId)
             ->pluck('activity', 'image_hash')
             ->toArray();
 
@@ -92,7 +136,7 @@ class LocationImageService
                             Storage::disk('public')->put($fileName, $imageContent);
 
                             // Save the relative path in the database
-                            LocationGallery::create([
+                            ModLocationGalerie::create([
                                 'location_id' => $locationId,
                                 'location_name' => $city,
                                 'image_path' => $fileName,
@@ -136,17 +180,21 @@ class LocationImageService
      */
     public function getGalleryByActivities(int $locationId, string $city, array $activities): array
     {
-        $gallery = LocationGallery::where('location_id', $locationId)->get();
+        $gallery = ModLocationGalerie::where('location_id', $locationId)->get();
 
         if ($gallery->isEmpty()) {
-            // Fetch and save images if not already in database
+            // Fetch and save images if not already in the database
             return $this->fetchImagesByActivities($locationId, $city, $activities);
         }
 
-        return $gallery->map(fn($image) => [
-            'url' => Storage::url($image->image_path),
-            'description' => $image->description,
-        ])->toArray();
+        return $gallery->map(function ($image) {
+            return [
+                'url' => Storage::url($image->image_path),
+                'description' => $image->description ?? 'Keine Beschreibung verfügbar',
+                'activity' => $image->activity ?? 'Allgemein',
+                'image_caption' => $image->image_caption ?? 'Kein Titel verfügbar',
+            ];
+        })->toArray();
     }
 
 

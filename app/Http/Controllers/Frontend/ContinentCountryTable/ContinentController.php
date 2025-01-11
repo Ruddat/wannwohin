@@ -93,7 +93,7 @@ class ContinentController extends Controller
 
         // Bilder und Texte des Kontinents
         $bgImgPath = $continent->image1_path ?? null;
-        $mainImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
+        $bgImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
       //  $mainImgPath = $continent->image2_path ?? null;
 
         $mainImgPath = $continent->image2_path ? Storage::url($continent->image2_path) : null;

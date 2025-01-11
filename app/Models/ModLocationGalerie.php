@@ -6,25 +6,28 @@ use App\Models\WwdeLocation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class WwdeLocationImages extends Model
+class ModLocationGalerie extends Model
 {
+    /** @use HasFactory<\Database\Factories\ModLocationGalerieFactory> */
     use HasFactory;
 
-    protected $table = 'wwde_location_images';
+    protected $table = 'mod_location_galeries';
 
     protected $fillable = [
         'location_id',
-        'location_name', // Feld hinzugefügt
+        'location_name',
         'image_path',
         'image_caption',
+        'activity',
+        'description',
+        'image_hash',
         'image_type',
         'is_primary',
-        'activity',
+
     ];
 
-    // Beziehung zur Location
     public function location()
     {
-        return $this->belongsTo(WwdeLocation::class);
+        return $this->belongsTo(WwdeLocation::class, 'location_id');
     }
 }

@@ -86,9 +86,16 @@ class WwdeCountry extends Model
         return $this->belongsTo(WwdeContinent::class, 'continent_id', 'id');
     }
 
-        // Beziehungen
-        public function locations()
-        {
-            return $this->hasMany(WwdeLocation::class, 'country_id', 'id');
-        }
+    // Beziehungen
+    public function locations()
+    {
+        return $this->hasMany(WwdeLocation::class, 'country_id', 'id');
+    }
+
+    public function primaryImage()
+    {
+        // Priorisiere das erste Bild, falls vorhanden
+        return $this->image1_path ?? $this->image2_path ?? $this->image3_path ?? null;
+    }
+
 }

@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
-use App\Models\LocationGallery;
+use App\Models\ModLocationGalerie;
 use App\Models\WwdeLocationImages;
 use App\Models\MonthlyClimateSummary;
 use Illuminate\Database\Eloquent\Model;
@@ -60,6 +60,9 @@ class WwdeLocation extends Model
         'text_pic1',
         'text_pic2',
         'text_pic3',
+        'pic1_text',
+        'pic2_text',
+        'pic3_text',
         'text_headline',
         'text_short',
         'text_location_climate',
@@ -143,13 +146,13 @@ class WwdeLocation extends Model
 
     public function galleryImages()
     {
-        return $this->hasMany(LocationGallery::class, 'location_id');
+        return $this->hasMany(ModLocationGalerie::class, 'location_id');
     }
 
     // Beziehungen
     public function gallery()
     {
-        return $this->hasMany(LocationGallery::class, 'location_id', 'id');
+        return $this->hasMany(ModLocationGalerie::class, 'location_id', 'id');
     }
 
     public function scopeActive($query)

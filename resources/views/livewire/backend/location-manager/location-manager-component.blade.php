@@ -1,0 +1,89 @@
+
+<div class="page-wrapper">
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+      <div class="container-xl">
+        <div class="row g-2 align-items-center">
+          <div class="col">
+            <h2 class="page-title">
+             Location Manager <span class="text-muted">/ Standort bearbeiten </span>
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page-body">
+        <div class="container-xl">
+          <div class="row row-cards">
+            <div class="col-md-12">
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a href="#tab-texts" class="nav-link {{ $activeTab === 'texts' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('texts')" role="tab">
+                    <!-- Icon für Texte -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7h16M4 12h16M4 17h16"></path>
+                    </svg>
+                    Texte
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tab-images" class="nav-link {{ $activeTab === 'images' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('images')" role="tab">
+                    <!-- Icon für Bilder -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15l-5-5L5 21V15H3v6h6v-2H7z"></path>
+                    </svg>
+                    Bilder
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tab-data" class="nav-link {{ $activeTab === 'data' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('data')" role="tab">
+                    <!-- Icon für Daten -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Daten
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tab-gallery" class="nav-link {{ $activeTab === 'gallery' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('gallery')" role="tab">
+                    <!-- Icon für Galerie -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M14.31 8L20 8M4 8h7.69M5.41 19h13.18M12 5V3M12 21v-2"></path>
+                    </svg>
+                    Galerie
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane {{ $activeTab === 'texts' ? 'active show' : '' }}" id="tab-texts" role="tabpanel">
+                <livewire:backend.location-manager.partials.location-edit-texts :locationId="$locationId" />
+            </div>
+            <div class="tab-pane {{ $activeTab === 'images' ? 'active show' : '' }}" id="tab-images" role="tabpanel">
+                <!-- Bilder-Komponente -->
+                <livewire:backend.location-manager.partials.location-edit-images-component :locationId="$locationId" />
+            </div>
+            <div class="tab-pane {{ $activeTab === 'data' ? 'active show' : '' }}" id="tab-data" role="tabpanel">
+                <livewire:backend.location-manager.partials.location-edit-data-component :locationId="$locationId" />
+            </div>
+            <div class="tab-pane {{ $activeTab === 'gallery' ? 'active show' : '' }}" id="tab-gallery" role="tabpanel">
+                <livewire:backend.location-manager.partials.location-edit-gallery-component :locationId="$locationId" />
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+          </div>
+        </div>
+    </div>
+</div>
+
+

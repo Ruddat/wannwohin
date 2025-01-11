@@ -6,7 +6,7 @@
                     @php
                         // Hole die erste Location des Landes und deren primäres Bild
                         $location = $country->locations()->first();
-                        $primaryImage = $location?->primaryImage()
+                        $primaryImage = $country?->primaryImage()
                             ?? asset('img/default-location.png');
                     @endphp
 

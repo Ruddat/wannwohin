@@ -190,6 +190,8 @@ class CountryManagerComponent extends Component
         $country->update(['status' => $newStatus]);
         $this->loadContinents();
         $this->dispatch('success', 'Status updated successfully.');
+        session()->flash('status', 'Post successfully updated.');
+
     }
 
     public function resetInputFields()

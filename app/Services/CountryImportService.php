@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class CountryImportService
@@ -55,6 +57,13 @@ foreach ($rows as $index => $row) {
         continue;
     }
 
+                    // Bilder abrufen
+                    $image1path = $this->getCityImage($countryName, 1, $status);
+                    $image2path = $this->getCityImage($countryName, 2, $status);
+                    $image3path = $this->getCityImage($countryName, 3, $status);
+//dd($image1path, $image2path, $image3path);
+
+
     WwdeCountry::updateOrCreate(
         ['alias' => $row[3] ?? strtolower(str_replace(' ', '-', $countryName))],
         [
@@ -87,6 +96,9 @@ foreach ($rows as $index => $row) {
             'artikel' => $row[28] ?? null,
             'travelwarning_id' => $row[29] ?? null,
             'price_tendency' => $row[30] ?? null,
+            'image1_path' => $image1path,
+            'image2_path' => $image2path,
+            'image3_path' => $image3path,
         ]
     );
 }
@@ -99,4 +111,93 @@ foreach ($rows as $index => $row) {
             return false;
         }
     }
+
+
+
+
+    private function getCityImage($city, $index, &$status)
+    {
+        // Cache-Schlüssel für das Bild
+        $cacheKey = "country_image_{$city}_{$index}";
+
+        // Überprüfen, ob das Bild bereits im Cache ist
+        if (cache()->has($cacheKey)) {
+            Log::info('Using cached image for city: ' . $city . ', index: ' . $index);
+            return cache($cacheKey);
+        }
+
+        // Pixabay API-Schlüssel aus der Konfiguration holen
+        $apiKey = config('services.pixabay.api_key', env('PIXABAY_API_KEY'));
+
+        if (empty($apiKey)) {
+            Log::error('Pixabay API key is missing.');
+            $status = 'inactive'; // Kein API-Key, also Status auf inactive
+            return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+        }
+
+        // Pixabay API-URL
+        $url = 'https://pixabay.com/api/';
+
+        try {
+            // API-Anfrage senden (nur 1 Bild pro Anfrage)
+            $response = Http::get($url, [
+                'key' => $apiKey,
+                'q' => $city,
+                'image_type' => 'photo',
+                'orientation' => 'horizontal',
+                'safesearch' => 'true',
+                'per_page' => 5, // Maximal 5 Bilder abrufen
+                //'per_page' => $index, // Nur so viele Bilder abrufen, wie der Index angibt
+            ]);
+
+            if ($response->successful()) {
+                $images = $response->json()['hits'] ?? [];
+
+                if (empty($images) || !isset($images[$index - 1])) {
+                    Log::warning("No images found for city: {$city}, index: {$index}");
+                    $status = 'pending'; // Keine Bilder gefunden
+                    return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+                }
+
+                // Bild-URL extrahieren
+                $imageUrl = $images[$index - 1]['webformatURL'];
+
+                // Speicherpfad erstellen (sanitize city name)
+                $safeCityName = str_replace([' ', '/'], ['_', '-'], iconv('UTF-8', 'ASCII//TRANSLIT', $city));
+                $directory = "uploads/images/locations/{$safeCityName}/";
+                $fileName = "country_image_{$index}.jpg";
+
+                // Verzeichnis erstellen, falls nicht vorhanden
+                if (!Storage::exists($directory)) {
+                    Storage::makeDirectory($directory);
+                }
+
+                // Bild speichern
+                $imageContents = Http::get($imageUrl)->body();
+                Storage::put($directory . $fileName, $imageContents);
+
+                // Öffentliche URL generieren
+                $storedImageUrl = Storage::url($directory . $fileName);
+
+                // Bild-URL im Cache speichern (für 24 Stunden)
+                cache([$cacheKey => $storedImageUrl], now()->addDay());
+
+                Log::info("Image found, saved, and cached for city: {$city}, index: {$index}");
+                return $storedImageUrl;
+            } else {
+                Log::error("Failed to fetch images from Pixabay API for city: {$city}, index: {$index}");
+                $status = 'inactive'; // API-Fehler
+                return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+            }
+        } catch (\Exception $e) {
+            Log::error("Error fetching image from Pixabay API for city: {$city}, index: {$index}. Error: {$e->getMessage()}");
+            $status = 'inactive'; // Ausnahme, Status auf inactive
+            return "https://via.placeholder.com/600x400?text=No+Image+for+{$city}";
+        }
+    }
+
+
+
+
+
 }

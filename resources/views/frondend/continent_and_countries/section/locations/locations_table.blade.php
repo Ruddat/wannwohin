@@ -4,6 +4,8 @@
         <div class="row g-4">
             @foreach($locations as $location)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+
+
                     <a href="{{ route('location.details', [
                         'continent' => $location->country->continent->alias,
                         'country' => $location->country->alias,

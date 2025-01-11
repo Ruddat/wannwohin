@@ -389,10 +389,6 @@
                                href="{{ route('verwaltung.header-manager.header_contents.index') }}">
                                 Header Manager
                             </a>
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-manager.locations.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.location-manager.locations.index') }}">
-                                Location Manager
-                            </a>
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.park-manager.index') ? 'active' : '' }}"
                                href="{{ route('verwaltung.park-manager.index') }}">
                                 Park Manager
@@ -408,6 +404,10 @@
                                href="{{ route('verwaltung.country-manager.index') }}">
                                 Country Manager
                             </a>
+
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-table-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.location-table-manager.index') }}">
+                                City Manager
                         </div>
                     </div>
 

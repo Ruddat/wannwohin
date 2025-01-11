@@ -1,4 +1,9 @@
 <div class="page-body">
+    @if (session('status'))
+    <div class="alert alert-success">
+        {{ session('status') }}
+    </div>
+@endif
     <div class="container-xl">
         <div class="row row-cards">
             <!-- Card -->
