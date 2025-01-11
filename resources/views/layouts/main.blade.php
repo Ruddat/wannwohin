@@ -96,7 +96,7 @@
 @else
 
 
-<x-header-details
+<x-header-details-new
     :pic1-text="$pic1_text"
     :pic2-text="$pic2_text"
     :pic3-text="$pic3_text"

@@ -54,7 +54,7 @@
                 <label for="textWhatToDo" class="form-label">Was zu tun ist</label>
                 <livewire:jodit-text-editor
                     wire:model.live="textWhatToDo"
-                    :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', '|', 'link', 'image', 'unorderedList', 'orderedList']"
+                    :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', 'paragraph', 'fontsize', '|', 'link', 'unorderedList', 'orderedList']"
                 />
             </div>
 
@@ -63,7 +63,7 @@
                 <label for="textLocationClimate" class="form-label">Lage und Klima</label>
                 <livewire:jodit-text-editor
                     wire:model.live="textLocationClimate"
-                    :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'table', '|', 'undo', 'redo']"
+                    :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'table', '|', 'undo', 'redo']"
                 />
             </div>
 

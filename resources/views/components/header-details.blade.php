@@ -10,7 +10,6 @@
             <!-- Header-Text -->
             <div class="col-lg-6 col-xl-5">
                 <span class="custom-header-text"> {!! app('autotranslate')->trans($headLine ?? '<h1>Default Header Text</h1>', app()->getLocale()) !!}</span>
-
             </div>
             <!-- Scroll-Icon -->
             <div class="col-lg-2 col-xl-3 d-none d-lg-block">

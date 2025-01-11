@@ -1,10 +1,10 @@
 <div>
     <div class="row mb-3">
         <div class="col-lg-4 col-md-6 col-sm-12">
-            <input wire:model.debounce.300ms="search" type="text" class="form-control" placeholder="Suchen...">
+            <input wire:model.live="search" type="text" class="form-control" placeholder="Suchen...">
         </div>
         <div class="col-lg-2 col-md-3 col-sm-6">
-            <select wire:model="perPage" class="form-select">
+            <select wire:model.change="perPage" class="form-select">
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
@@ -32,7 +32,15 @@
                     @forelse ($locations as $location)
                         <tr>
                             <td>{{ $location->id }}</td>
-                            <td>{{ $location->title }}</td>
+                            <td>
+                                <a href="{{ route('location.details', [
+                                    'continent' => $location->country->continent->alias,
+                                    'country' => $location->country->alias,
+                                    'location' => $location->alias,
+                                ]) }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                                    {{ $location->title }}
+                                </a>
+                            </td>
                             <td>{{ $location->iata_code }}</td>
                             <td>{{ $location->country->title ?? 'N/A' }}</td>
                             <td class="text-end">
@@ -65,4 +73,20 @@
         {{ $locations->links('pagination::bootstrap-5') }}
     </div>
 </div>
+
+
+@assets
+<style>
+    .table a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.table a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+</style>
+@endassets
+
 

@@ -86,7 +86,7 @@ class LocationImportService
 //dd($continentId);
                     // Speichere die Location
                     WwdeLocation::updateOrCreate(
-                        ['iata_code' => $row[4] ?? null], // IATA-Code als eindeutiger Wert
+                        ['iata_code' => $row[5] ?? null], // IATA-Code als eindeutiger Wert
                         [
                             'title' => $cityName,
                             'country_id' => $country->id,
@@ -95,6 +95,13 @@ class LocationImportService
                             'lon' => $result[0]['lon'] ?? null,
                             // Weitere Felder ...
                             'alias' => $row[4],
+
+                            'flight_hours' => $row[6],
+                            'stop_over' => $row[7],
+                            'dist_from_FRA' => $row[8],
+                            'dist_type' => $row[9],
+
+
                             'bundesstaat_long' => $row[12],
                             'bundesstaat_short' => $row[13],
                             'no_city_but' => $row[14],
