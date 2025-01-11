@@ -81,9 +81,9 @@
                                 </div>
                             </article>
                         </a>
+                        <div class="timeline-bar"></div>
                         @endforeach
 
-                        <div class="timeline-bar"></div>
                     </div>
                 </section>
             </div>
@@ -96,16 +96,56 @@
 <style>
 
 /* Grundstruktur */
-.timeline-box {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.timeline-bar {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #007bff; /* Hauptfarbe der Linie */
+    z-index: -1; /* Hinter die Artikel legen */
+    transform: translateX(-50%);
 }
 
+.timeline-box.right .timeline-bar {
+    left: 50%; /* Linker Startpunkt für die Linie */
+}
+
+section.timeline .timeline-box.right {
+    clear: right;
+    float: right;
+    right: 1px;
+    margin-top: 40px;
+}
+
+.timeline-box:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.timeline-box img {
+    transition: transform 0.3s ease-in-out;
+}
+
+.timeline-box:hover img {
+    transform: scale(1.1);
+}
+
+
+.timeline-box:nth-child(even) .experience-description {
+    text-align: left;
+}
+
+.timeline-box:nth-child(odd) .experience-description {
+    text-align: right;
+}
+
+.timeline-box .experience-info img {
+    border-radius: 8px;
+}
+
+
+/* Inhalt */
 .experience-info img {
     max-width: 100%;
     object-fit: cover;
@@ -169,3 +209,27 @@
 }
 
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const timelineBars = document.querySelectorAll('.timeline-bar');
+    timelineBars.forEach((bar, index) => {
+        const parent = bar.closest('.timeline-box');
+        const nextSibling = parent.nextElementSibling;
+        if (nextSibling) {
+            const height = nextSibling.offsetTop - parent.offsetTop;
+            bar.style.height = `${height}px`;
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        timelineBars.forEach((bar) => {
+            const parent = bar.closest('.timeline-box');
+            const nextSibling = parent.nextElementSibling;
+            if (nextSibling) {
+                const height = nextSibling.offsetTop - parent.offsetTop;
+                bar.style.height = `${height}px`;
+            }
+        });
+    });
+});
+</script>

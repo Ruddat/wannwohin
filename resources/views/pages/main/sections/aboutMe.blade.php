@@ -83,11 +83,6 @@
             </div>
         </div>
     </section>
-
-    <a href="{{ route('continents.upload') }}" class="btn btn-primary">
-        Kontinente importieren
-    </a>
-
 </div>
 
 
