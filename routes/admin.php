@@ -8,6 +8,7 @@ use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Http\Controllers\Backend\Location\LocationController;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
 use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
@@ -69,5 +70,16 @@ Route::prefix('location-table-manager')->name('location-table-manager.')->group(
 Route::prefix('location-manager')->name('location-manager.')->group(function () {
     Route::get('/', LocationManagerComponent::class)->name('index');
 });
+
+// Electric Manager (falls benötigt)
+// Electric Manager
+Route::prefix('electric-manager')->name('electric-manager.')->group(function () {
+    Route::get('/', ElectricManagerComponent::class)->name('index');
+});
+
+Route::get('/admin/commands/artisan', function () {
+    return view('backend.admin.commands.command-artisan');
+})->name('admin.commands.view');
+
 
 });

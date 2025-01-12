@@ -7,6 +7,7 @@ use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
 use App\Models\ModLocationGalerie;
 use App\Models\WwdeLocationImages;
+use App\Models\ModElectricStandards;
 use App\Models\MonthlyClimateSummary;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -175,6 +176,18 @@ class WwdeLocation extends Model
                 $q->where('sunshine_per_day', '>=', $minSunHours);
             }
         });
+    }
+
+
+
+    public function electric()
+    {
+        return $this->hasOne(ModElectricStandards::class, 'country_id', 'country_id');
+    }
+
+    public function electricStandard()
+    {
+        return $this->hasOne(ModElectricStandards::class, 'country_id', 'country_id');
     }
 
 

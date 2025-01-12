@@ -408,6 +408,7 @@
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.location-table-manager.index') ? 'active' : '' }}"
                                href="{{ route('verwaltung.location-table-manager.index') }}">
                                 City Manager
+                            </a>
                         </div>
                     </div>
 
@@ -415,9 +416,11 @@
                     <div class="dropdown-divider"></div>
 
                     <!-- Zusätzliche Einträge nach dem Trenner -->
-                    <a class="dropdown-item" href="#">
-                        Additional Option 1
-                    </a>
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.electric-manager.index') ? 'active' : '' }}"
+                        href="{{ route('verwaltung.electric-manager.index') }}">
+                        Electric Manager
+                     </a>
+
                     <a class="dropdown-item" href="#">
                         Additional Option 2
                     </a>
@@ -455,6 +458,15 @@
                        Werbeblöcke
                     </a>
                 </div>
+
+
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-blocks') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.admin.commands.view') }}">
+                       Artisan Command
+                    </a>
+                </div>
+
 
               </div>
             </div>

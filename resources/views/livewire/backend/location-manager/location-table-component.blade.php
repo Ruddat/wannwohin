@@ -1,30 +1,87 @@
-<div>
-    <div class="row mb-3">
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <input wire:model.live="search" type="text" class="form-control" placeholder="Suchen...">
+<div class="page-wrapper">
+    <!-- Page header -->
+    <div class="page-header d-print-none">
+      <div class="container-xl">
+        <div class="row g-2 align-items-center">
+          <div class="col">
+            <h2 class="page-title">
+             Location Manager <span class="text-muted">/ Standort bearbeiten </span>
+            </h2>
+          </div>
         </div>
-        <div class="col-lg-2 col-md-3 col-sm-6">
-            <select wire:model.change="perPage" class="form-select">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
+      </div>
     </div>
+    <div class="page-body">
+        <div class="container-xl">
+          <div class="row row-cards">
 
+
+<div class="col-12">
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Locations</h3>
         </div>
+
+        <!-- Filter und Suche -->
+        <div class="card-body border-bottom py-3">
+            <div class="d-flex flex-wrap">
+                <!-- Anzahl pro Seite -->
+                <div class="text-secondary me-3">
+                    Show
+                    <select wire:model.change="perPage" class="form-select form-select-sm d-inline-block w-auto mx-2">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    entries
+                </div>
+
+                <!-- Suche -->
+                <div class="text-secondary me-3">
+                    Search:
+                    <input wire:model.live="search" type="text" class="form-control form-control-sm d-inline-block w-auto ms-2" placeholder="Search...">
+                </div>
+
+                <!-- Länderfilter -->
+                <div class="text-secondary me-3">
+                    Country:
+                    <select wire:model.change="filterCountry" class="form-select form-select-sm d-inline-block w-auto ms-2">
+                        <option value="">All Countries</option>
+                        @foreach($countries as $country)
+                            <option value="{{ $country->id }}">{{ $country->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Statusfilter -->
+                <div class="text-secondary me-3">
+                    Status:
+                    <select wire:model.change="filterStatus" class="form-select form-select-sm d-inline-block w-auto ms-2">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <!-- Reset-Button -->
+                <div class="ms-auto">
+                    <button wire:click="resetFilters" class="btn btn-secondary btn-sm">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabelle -->
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
+                        <th wire:click="sortBy('id')" style="cursor: pointer;">ID</th>
+                        <th wire:click="sortBy('title')" style="cursor: pointer;">Title</th>
                         <th>IATA Code</th>
-                        <th>Country</th>
+                        <th wire:click="sortBy('country')" style="cursor: pointer;">Country</th>
+                        <th wire:click="sortBy('status')" style="cursor: pointer;">Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -42,37 +99,46 @@
                                 </a>
                             </td>
                             <td>{{ $location->iata_code }}</td>
-                            <td>{{ $location->country->title ?? 'N/A' }}</td>
+                            <td>
+                                <a href="#" wire:click.prevent="$set('filterCountry', {{ $location->country->id }})">
+                                    {{ $location->country->title ?? 'N/A' }}
+                                </a>
+                            </td>
+                            <td>
+                                <span wire:click="toggleStatus({{ $location->id }})"
+                                    class="badge bg-{{ $location->status === 'active' ? 'success' : ($location->status === 'pending' ? 'warning' : 'secondary') }}"
+                                    style="cursor: pointer;">
+                                    {{ ucfirst($location->status) }}
+                                </span>
+                            </td>
                             <td class="text-end">
                                 <a href="{{ route('verwaltung.location-table-manager.edit', ['locationId' => $location->id]) }}" class="btn btn-sm btn-primary">
-                                    <i class="ti ti-edit"></i> Bearbeiten
+                                    <i class="ti ti-edit"></i> Edit
                                 </a>
-
-
-
-<button
-    type="button"
-    wire:click="deleteLocation({{ $location->id }})"
-    wire:confirm="Are you sure you want to delete this City?"
->
-    Delete Location
-</button>
+                                <button type="button" wire:click="deleteLocation({{ $location->id }})" class="btn btn-sm btn-danger">
+                                    <i class="ti ti-trash"></i> Delete
+                                </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">Keine Locations gefunden.</td>
+                            <td colspan="6" class="text-center">No Locations Found.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <div class="mt-3">
-        {{ $locations->links('pagination::bootstrap-5') }}
+        <div class="card-footer">
+            {{ $locations->links() }}
+        </div>
     </div>
 </div>
+          </div>
+        </div>
+    </div>
+
+
+
 
 
 @assets

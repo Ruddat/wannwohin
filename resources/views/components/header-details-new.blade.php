@@ -5,9 +5,8 @@
             <div class="col-md-6">
                 <div class="image-container">
                     <img src="{{ $pic3Text ?? asset('default-main.jpg') }}" alt="Reiseziel" class="img-fluid bordered-image">
-
+                    <x-breadcrumb />
                 </div>
-                <x-breadcrumb />
             </div>
 
             <!-- Text mit Überschrift -->
@@ -51,17 +50,19 @@
 .image-container {
     position: relative;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-bottom: 1rem;
+    max-width: 90%; /* Begrenzen der Breite auf kleinen Geräten */
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* Weißer Rahmen um das Bild */
 .bordered-image {
-    border: 10px solid #fff; /* Weißer Rahmen */
+    border: 10px solid #fff;
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: auto;
+    object-fit: cover;
 }
 
 /* Textcontainer */
@@ -70,29 +71,29 @@
     padding-left: 2rem;
 }
 
-/* Weißer Hintergrund für Überschrift */
 .travel-heading-with-bg {
     font-size: 1.5rem;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #333; /* Dunkler Text */
-    background-color: #fff; /* Weißer Hintergrund */
+    color: #333;
+    background-color: #fff;
     padding: 0.5rem 1rem;
     border-radius: 5px;
     display: inline-block;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
 }
 
 .travel-destination {
     font-size: 3rem;
     font-weight: bold;
     text-transform: uppercase;
-    color: #fff; /* Textfarbe */
-    background-color: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 0.5rem 1rem;
     display: inline-block;
-    transform: translateX(2ch); /* Verschiebung nach rechts */
+    transform: translateX(2ch);
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -100,7 +101,7 @@
 /* Scroll-Indikator */
 .scroll-indicator {
     position: absolute;
-    bottom: 20px;
+    bottom: 10%;
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
@@ -117,13 +118,12 @@
     opacity: 1;
 }
 
-/* CSS-Dreieck als Pfeil */
 .arrow-down {
     width: 0;
     height: 0;
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
-    border-top: 20px solid rgb(236, 233, 18); /* Farbe des Pfeils */
+    border-top: 20px solid rgb(236, 233, 18);
     margin: 0 auto;
 }
 
@@ -146,7 +146,12 @@
 /* Parallax-Fix für Mobilgeräte */
 @media (max-width: 768px) {
     .header-section {
-        background-attachment: scroll; /* Parallax auf Mobilgeräten deaktivieren */
+        background-attachment: scroll; /* Parallax deaktivieren */
+    }
+
+    .text-container {
+        text-align: center; /* Zentrierter Text auf Mobilgeräten */
+        padding-left: 0;
     }
 
     .travel-heading-with-bg {
@@ -157,25 +162,33 @@
     .travel-destination {
         font-size: 2rem;
         padding: 0.4rem 0.8rem;
+        transform: none; /* Verschiebung entfernen */
+    }
+
+    .scroll-indicator {
+        bottom: 5%; /* Position anpassen */
     }
 }
 </style>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Parallax-Effekt
-        const parallaxSection = document.querySelector('.header-section');
-        window.addEventListener('scroll', () => {
+document.addEventListener('DOMContentLoaded', () => {
+    // Parallax-Effekt
+    const parallaxSection = document.querySelector('.header-section');
+    window.addEventListener('scroll', () => {
+        if (window.innerWidth > 768) { // Parallax nur auf größeren Geräten
             const scrollPosition = window.scrollY;
             parallaxSection.style.backgroundPositionY = `${scrollPosition * 0.5}px`;
-        });
-
-        // Smooth-Scroll für den Pfeil
-        const scrollLink = document.querySelector('.scroll-down');
-        if (scrollLink) {
-            scrollLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector('#location_page')?.scrollIntoView({ behavior: 'smooth' });
-            });
         }
     });
+
+    // Smooth-Scroll für den Pfeil
+    const scrollLink = document.querySelector('.scroll-down');
+    if (scrollLink) {
+        scrollLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('#location_page')?.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+});
 </script>

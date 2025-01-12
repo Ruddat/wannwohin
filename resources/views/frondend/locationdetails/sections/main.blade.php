@@ -46,18 +46,34 @@
 
             <!-- Faktenkarte -->
             <div class="col-lg-5 col-md-12">
+
                 <div class="card">
-                    <div class="card-header text-center" style="background-color: #dbdbdb;">
-                        <h4 class="text-uppercase">
+                    <!-- Leicht grauer Card-Header -->
+                    <div class="card-header-fact text-center" style="background-color: #f0f0f0; position: relative;">
+                        <!-- Titel "FAKTENCHECK" -->
+                        <h4 class="text-uppercase mb-0 fw-bold" style="padding-top: 20px;">
                             @autotranslate('FAKTENCHECK', app()->getLocale())
                         </h4>
+                        <!-- Aussparung für die Flagge -->
+<!-- Aussparung für die Flagge -->
+<div class="position-absolute start-50 translate-middle"
+     style="top: 100%; background-color: white; border-radius: 50%; width: 100px; height: 100px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 10;">
+    <img src="{{ asset('assets/flags/4x3/' . strtolower($location->iso2 ?? 'unknown') . '.svg') }}"
+         alt="{{ $location->country->title ?? 'Flagge' }}"
+         class="rounded-circle shadow"
+         style="width: 90px; height: 90px; object-fit: cover; margin: 5px;">
+</div>
                     </div>
-                    <div class="card-body bg-white pt-4 box-shadow-2">
+
+                    <!-- Card-Body -->
+                    <div class="card-body bg-white pt-5 box-shadow-2">
                         <table class="table table-sm text-center">
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
-                                    <div>{{ $current_time ?? 'Nicht verfügbar' }}</div>
+                                    <div>
+                                        {{ $current_time ? \Carbon\Carbon::parse($current_time)->format('d.m.Y H:i') : 'Nicht verfügbar' }}
+                                    </div>
                                 </td>
                                 <td>
                                     <strong>@autotranslate('Hauptstadt', app()->getLocale())</strong>
@@ -70,14 +86,35 @@
                                     <div>{{ $time_offset ?? 'Nicht verfügbar' }} @autotranslate('Stunden', app()->getLocale())</div>
                                 </td>
                                 <td>
-                                    <strong>@autotranslate('Sprache', app()->getLocale())</strong>
-                                    <div>@autotranslate($location->country->official_language ?? 'Nicht angegeben', app()->getLocale())</div>
+                                    @php
+                                        // Überprüfen, ob official_language mehrere Sprachen enthält (z. B. durch Kommas getrennt oder JSON)
+                                        $languages = explode(',', $location->country->official_language ?? ''); // Falls die Sprachen durch Kommas getrennt sind
+                                        $languageCount = count(array_filter($languages)); // Filtert leere Einträge heraus
+                                    @endphp
+
+                                    <strong>
+                                        @if ($languageCount === 1)
+                                            @autotranslate('Sprache', app()->getLocale())
+                                        @elseif ($languageCount > 1)
+                                            @autotranslate('Sprachen', app()->getLocale())
+                                        @else
+                                            @autotranslate('Sprache', app()->getLocale())
+                                        @endif
+                                    </strong>
+
+                                    <div>
+                                        @if ($languageCount > 0)
+                                            @autotranslate(implode(', ', $languages), app()->getLocale())
+                                        @else
+                                            @autotranslate('Nicht angegeben', app()->getLocale())
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Preistendenz', app()->getLocale())</strong>
-                                    <div></div>
+                                    <div>@autotranslate('Durchschnittlich', app()->getLocale())</div>
                                 </td>
                                 <td>
                                     <strong>@autotranslate('Währung', app()->getLocale())</strong>
@@ -101,6 +138,13 @@
                                 <td>
                                     <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
                                     <div>{{ $location->electric->power ?? 'N/A' }}</div>
+                                    <div>
+                                        @foreach (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'] as $type)
+                                            @if($location->electric->{'typ_' . strtolower($type)})
+                                                <span class="badge bg-info">{{ $type }}</span>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -116,6 +160,7 @@
                         </table>
                     </div>
                 </div>
+
 
                 <!-- Preise -->
                 <div class="card mb-3 box-shadow-2">
@@ -151,3 +196,12 @@
         </div>
     </div>
 </section>
+<style>
+    .card-header-fact.text-center {
+    background-color: #d1d1d1;
+    position: relative;
+    height: 110px;
+}
+
+
+</style>

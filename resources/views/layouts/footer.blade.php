@@ -31,24 +31,34 @@
                 </div>
             </div>
 
-            <!-- Language Switcher -->
-            <div class="col-md-6 col-lg-3 mb-3">
-                <h5>Sprache</h5>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
-                        {{ config('app.available_locales')[App::getLocale()]['name'] }}
+<!-- Language Switcher -->
+<div class="col-md-6 col-lg-3 mb-3">
+    <h5>Sprache</h5>
+    <div class="dropdown">
+        <a href="#" class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" style="text-decoration: none; color: #fff;">
+            <!-- Aktuelle Sprache mit Flagge -->
+            @php
+                $currentLocale = config('app.available_locales')[App::getLocale()];
+                $currentFlag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($currentLocale['flag'], -3)) . '.svg');
+            @endphp
+            <img src="{{ $currentFlag }}" alt="{{ $currentLocale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
+            {{ $currentLocale['name'] }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            @foreach (config('app.available_locales') as $localeCode => $locale)
+                @php
+                    $flag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($locale['flag'], -3)) . '.svg');
+                @endphp
+                <li>
+                    <a href="{{ route('change.lang', ['lang' => $localeCode]) }}" class="dropdown-item d-flex align-items-center">
+                        <img src="{{ $flag }}" alt="{{ $locale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
+                        {{ $locale['name'] }}
                     </a>
-                    <ul class="dropdown-menu">
-                        @foreach (config('app.available_locales') as $localeCode => $locale)
-                            <li>
-                                <a href="{{ route('change.lang', ['lang' => $localeCode]) }}">
-                                    {{ $locale['name'] }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
 
             <!-- Newsletter Section -->
             <div class="col-md-6 col-lg-3 mb-3">
@@ -72,7 +82,7 @@
 
 
 <style>
-   /* Footer Styling */
+/* Footer Styling */
 .footer {
     background-color: #222;
     color: #fff;
@@ -91,6 +101,28 @@
 .footer a:hover {
     color: #fdd55c;
     text-decoration: underline;
+}
+
+/* Dropdown Styling */
+.footer .dropdown-menu {
+    background-color: #333; /* Dunkler Hintergrund für den Dropdown */
+    border: 1px solid #444;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.footer .dropdown-item {
+    color: #fff;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.footer .dropdown-item:hover {
+    background-color: #444;
+    color: #fdd55c;
+}
+
+.footer .dropdown-item img {
+    margin-right: 8px;
+    border-radius: 3px;
 }
 
 /* Social Links */
@@ -130,5 +162,6 @@
         text-align: center;
     }
 }
+
 
 </style>

@@ -31,6 +31,7 @@ class LocationDetailsController extends Controller
         $location = WwdeLocation::where('alias', $locationAlias)
             ->whereHas('country', fn($query) => $query->where('alias', $countryAlias))
             ->whereHas('country.continent', fn($query) => $query->where('alias', $continentAlias))
+            ->with('electric') // Electric-Relation laden
             ->firstOrFail();
 
         // Wetterdaten abrufen
@@ -46,6 +47,10 @@ class LocationDetailsController extends Controller
 
         // Freizeitparks im Umkreis abrufen
         $parksWithOpeningTimes = $this->getAmusementParksWithOpeningTimes($location);
+
+
+        // Stromnetz-Daten abrufen
+        $electricStandard = $location->electricStandard;
 
         // Klimadaten und Durchschnittswerte abrufen
         $climates = WwdeClimate::where('location_id', $location->id)
@@ -85,6 +90,7 @@ class LocationDetailsController extends Controller
 
         return view('frondend.locationdetails._index', [
             'location' => $location,
+            'electric_standard' => $electricStandard, // Stromnetz-Daten hinzufügen
             'climates' => $climates,
             'averages' => $averages,
             'main_image_path' => $mainImagePath,
