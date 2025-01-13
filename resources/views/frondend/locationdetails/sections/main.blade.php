@@ -22,6 +22,11 @@
                     $randomImage = $imagePaths ? $imagePaths[array_rand($imagePaths)] : null;
                 @endphp
 
+@php
+    //dd($location);
+
+@endphp
+
                 <div class="figure-img img-fluid custom-border position-relative"
                      style="background-repeat: no-repeat; background-size: cover; background-position: center;
                             background-image: url('{{ $randomImage ? asset($randomImage) : asset("img/placeholders/location-placeholder.jpg") }}');
@@ -29,7 +34,7 @@
                     <!-- Schicker Bildtext im unteren Bereich -->
                     <div class="position-absolute bottom-0 w-100 bg-opacity-75 bg-white text-dark p-3 rounded-top shadow-lg">
                         <p class="mb-0 text-center fw-bold">
-                            @autotranslate($location->text_short ?? 'Kein Beschreibungstext verfügbar', app()->getLocale())
+                            @autotranslate($location->pic1_text ?? 'Kein Beschreibungstext verfügbar', app()->getLocale())
                         </p>
                         @if(!empty($panorama_text_and_style))
                         <div style="background: {{ $panorama_text_and_style['style']['background'] }};
@@ -83,7 +88,13 @@
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Zeitverschiebung', app()->getLocale())</strong>
-                                    <div>{{ $time_offset ?? 'Nicht verfügbar' }} @autotranslate('Stunden', app()->getLocale())</div>
+                                    <div>
+                                        @if ($time_offset !== null)
+                                            {{ number_format($time_offset, 1, ',', '.') }} @autotranslate('Stunden', app()->getLocale())
+                                        @else
+                                            @autotranslate('Nicht verfügbar', app()->getLocale())
+                                        @endif
+                                    </div>
                                 </td>
                                 <td>
                                     @php
@@ -136,15 +147,36 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
-                                    <div>{{ $location->electric->power ?? 'N/A' }}</div>
                                     <div>
-                                        @foreach (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'] as $type)
-                                            @if($location->electric->{'typ_' . strtolower($type)})
-                                                <span class="badge bg-info">{{ $type }}</span>
-                                            @endif
-                                        @endforeach
+                                        <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
+                                        <div>{{ $location->electric->power ?? 'N/A' }}</div>
+                                        <div>
+                                            @php
+                                                // Steckertypen aus `info` extrahieren
+                                                $plugTypes = array_map('trim', explode(',', $location->electric->info ?? ''));
+
+                                                // Bilder aus `plug_images` extrahieren
+                                                $imageUrls = array_map('trim', explode(',', $location->electric->plug_images ?? ''));
+
+                                                // Typen mit Bildern verknüpfen
+                                                $typeImageMap = [];
+                                                foreach ($plugTypes as $index => $type) {
+                                                    $typeImageMap[trim($type)] = $imageUrls[$index] ?? null; // Bild dem Typ zuordnen
+                                                }
+                                            @endphp
+
+                                            @foreach ($typeImageMap as $type => $imageUrl)
+                                                <span class="badge bg-info"
+                                                      data-bs-toggle="tooltip"
+                                                      data-bs-html="true"
+                                                      title="<img src='{{ $imageUrl }}' style='width: 50px; height: auto;'>">
+                                                    {{ $type }}
+                                                </span>
+                                            @endforeach
+                                        </div>
                                     </div>
+
+
                                 </td>
                             </tr>
                             <tr>
@@ -204,4 +236,38 @@
 }
 
 
+
+
 </style>
+<style>
+    /* Tooltip-Container */
+    .tooltip {
+        font-size: 14px;
+        background-color: #fff;
+        color: #000;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        border-radius: 5px;
+        max-width: 200px; /* Maximale Breite des Tooltips */
+        text-align: center;
+    }
+
+    /* Tooltip-Inhalt (Bild) */
+    .tooltip img {
+        max-width: 100%; /* Bild passt sich der Tooltip-Breite an */
+        height: auto;    /* Bild bleibt proportional */
+        display: block;
+        margin: 0 auto;
+        border-radius: 5px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>

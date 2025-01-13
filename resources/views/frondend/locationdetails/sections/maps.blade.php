@@ -7,8 +7,9 @@
 
             <!-- Description Section -->
             <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-3 py-3 rounded-end">
-                <h4 class="text-color-dark font-weight-semibold">{{ $location->title }}</h4>
-                <p class="text-black">{{ $location->description }}</p>
+                <h4 class="text-color-dark font-weight-semibold">{!! app('autotranslate')->trans($location->text_headline, app()->getLocale()) !!}</h4>
+
+                <p class="text-black">{{ $location->text_short }}</p>
                 <p class="text-black">In einer Flugzeit von ca. {{ $location->flight_time }} Stunden von Frankfurt ist man am Ziel.</p>
                 <div class="d-flex">
                     <button class="ms-auto btn btn-primary" data-bs-toggle="modal" data-bs-target="#google_map_modal">

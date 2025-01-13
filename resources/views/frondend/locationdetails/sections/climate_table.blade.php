@@ -5,7 +5,7 @@
             <div class="experience-info col-lg-3 col-sm-5 bg-info p-3 rounded-start">
                 <div class="text-center align-middle mb-4 pt-4">
                     <h4 class="text-color-white">
-                        <i title="Wetter" class="fas fa-sun pe-1"></i> Wetter in {{ $location->continent->alias }}
+                        <i title="Wetter" class="fas fa-sun pe-1"></i> @autotranslate('Wetter', app()->getLocale()) {{ $location->title }}
                     </h4>
                 </div>
 
@@ -19,29 +19,31 @@
   // dd($weather_data);
 @endphp
 
-                <div class="text-center align-middle mb-5">
-                    <h3 class="text-color-white">
-                        {{ $weather_data['description'] ?? 'N/A' }}
-
-
-                    </h3>
-                </div>
+<div class="text-center align-middle mb-5">
+    <h3 class="text-color-white">
+        @if (!empty($weather_data['description']))
+            @autotranslate($weather_data['description'], app()->getLocale())
+        @else
+            @autotranslate('Nicht verfügbar', app()->getLocale())
+        @endif
+    </h3>
+</div>
 
                 <div class="text-center align-middle">
                     <h5 class="text-color-white">
-                        <span class="me-1">Luftfeuchtigkeit:</span>
+                        <span class="me-1">@autotranslate('Luftfeuchtigkeit:', app()->getLocale())</span>
                         {{ $weather_data['humidity'] ?? 'N/A' }} %
                     </h5>
                 </div>
                 <div class="text-center align-middle mb-1">
                     <h5 class="text-color-white">
-                        <span class="me-1">Bewölkung:</span>
+                        <span class="me-1">@autotranslate('Bewölkung:', app()->getLocale())</span>
                         {{ $weather_data['cloudiness'] ?? 'N/A' }} %
                     </h5>
                 </div>
                 <div class="text-center align-middle mb-1">
                     <h5 class="text-color-white">
-                        <span class="me-1">Wind ({{ isset($weather_data['wind_direction']) ? \App\Helpers\WeatherHelper::getWindDirection($weather_data['wind_direction']) : 'Keine Daten' }}):</span>
+                        <span class="me-1">@autotranslate('Wind', app()->getLocale())  ({{ isset($weather_data['wind_direction']) ? \App\Helpers\WeatherHelper::getWindDirection($weather_data['wind_direction']) : 'Keine Daten' }}):</span>
                         {{ \App\Helpers\WeatherHelper::formatWindSpeed($weather_data['wind_speed'] ?? null) }}
                         @if(isset($weather_data['wind_speed']))
                             <small>({{ \App\Helpers\WeatherHelper::getWindDescription($weather_data['wind_speed']) }})</small>
@@ -60,15 +62,19 @@
                 <table class="table table-striped table-bordered table-hover table-condensed location-climate-table climate-table mb-4">
                     <thead>
                         <tr>
-                            <th class="center"><i alt="Monat" title="Monat" class="far fa-calendar-alt"></i></th>
-                            <th class="center"><i class="fas fa-cloud-sun"></i></th>
-                            <th class="center"><i class="fas fa-cloud-moon"></i></th>
+                            <th class="center">
+                                <i alt="@autotranslate('Monat', app()->getLocale())" title="@autotranslate('Monat', app()->getLocale())" class="far fa-calendar-alt"></i>
+                            </th>
+                            <th class="center"><i class="fas fa-cloud-sun" title="@autotranslate('Tagesdurchschnittstemperatur', app()->getLocale())"></i></th>
+                            <th class="center"><i class="fas fa-cloud-moon" title="@autotranslate('Nachtdurchschnittstemperatur', app()->getLocale())"></i></th>
                             @if ($climates->first()?->water_temperature_avg > 1)
-                                <th class="center"><i title="Wassertemperatur" class="fas fa-water"></i></th>
+                                <th class="center">
+                                    <i title="@autotranslate('Wassertemperatur', app()->getLocale())" class="fas fa-water"></i>
+                                </th>
                             @endif
-                            <th class="center"><i title="Luftfeuchtigkeit" class="fas fa-tint"></i></th>
-                            <th class="center"><i class="fas fa-sun"></i></th>
-                            <th class="center"><i class="fas fa-umbrella"></i></th>
+                            <th class="center"><i title="@autotranslate('Luftfeuchtigkeit', app()->getLocale())" class="fas fa-tint"></i></th>
+                            <th class="center"><i title="@autotranslate('Sonnenstunden', app()->getLocale())" class="fas fa-sun"></i></th>
+                            <th class="center"><i title="@autotranslate('Regentage', app()->getLocale())" class="fas fa-umbrella"></i></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,7 +97,7 @@
                 <!-- Button unter der Tabelle -->
                 <div class="text-start">
                     <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}.htm">
-                        Mehr zu Klima & Wetter
+                        @autotranslate('Mehr zu Klima & Wetter', app()->getLocale())
                     </a>
                 </div>
             </div>

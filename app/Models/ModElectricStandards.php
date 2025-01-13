@@ -10,6 +10,10 @@ class ModElectricStandards extends Model
 
     protected $table = 'mod_electric_standards';
 
+    protected $casts = [
+        'plug_images' => 'array', // JSON-Feld als Array casten
+    ];
+
     protected $fillable = [
         'country_id',
         'country_name',
@@ -30,6 +34,7 @@ class ModElectricStandards extends Model
         'typ_l',
         'typ_m',
         'typ_n',
+        'plug_images',
     ];
 
     public function country()

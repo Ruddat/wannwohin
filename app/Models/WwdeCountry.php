@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\WwdeContinent;
+use App\Models\ModTravelWarning;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -97,5 +98,16 @@ class WwdeCountry extends Model
         // Priorisiere das erste Bild, falls vorhanden
         return $this->image1_path ?? $this->image2_path ?? $this->image3_path ?? null;
     }
+
+    /**
+     * Beziehung zu einer Reisewarnung.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function travelWarning()
+    {
+        return $this->hasOne(ModTravelWarning::class, 'iso2', 'country_code');
+    }
+
 
 }

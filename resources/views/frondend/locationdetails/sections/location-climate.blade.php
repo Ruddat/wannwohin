@@ -9,6 +9,7 @@
         <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-4 py-3 rounded-end">
             <h4 class="text-color-dark font-weight-semibold">
                 @autotranslate('Lage und Klima', app()->getLocale())
+                {!! app('autotranslate')->trans($location->text_headline, app()->getLocale()) !!}
             </h4>
             <div class="formatted-text">
                 {!! app('autotranslate')->trans($location->text_location_climate, app()->getLocale()) !!}

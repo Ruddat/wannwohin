@@ -71,7 +71,7 @@ class LocationDetailsController extends Controller
         $pic1Text = $location->text_pic1 ?? 'Standard Text für Bild 1';
         $pic2Text = $location->text_pic2 ?? 'Standard Text für Bild 2';
         $pic3Text = $location->text_pic3 ?? 'Standard Text für Bild 3';
-        $headLine = $location->text_headline ?? 'Standard Headline';
+        $headLine = $location->title ?? 'Standard Headline';
 
 
 
@@ -192,16 +192,16 @@ class LocationDetailsController extends Controller
         $locationTimezone = $location->time_zone ?? 'UTC';
 
         try {
-            // Aktuelle Zeit in der Server-Zeitzone
-            $serverTimezone = new \DateTimeZone(config('app.timezone', 'UTC'));
-            $currentTime = new \DateTime('now', $serverTimezone);
+            // Zeitzone des Nutzers basierend auf der IP
+            $userIp = request()->ip();
+            $userTimezone = $this->getTimezoneFromIp($userIp) ?? config('app.timezone', 'UTC');
 
-            // Zeit in der Zeitzone der Location
-            $locationTimeZone = new \DateTimeZone($locationTimezone);
-            $locationTime = $currentTime->setTimezone($locationTimeZone);
+            // Zeitobjekte für Nutzer- und Location-Zeitzonen
+            $userTime = new \DateTime('now', new \DateTimeZone($userTimezone));
+            $locationTime = new \DateTime('now', new \DateTimeZone($locationTimezone));
 
             // Zeitverschiebung berechnen (in Stunden)
-            $offsetInSeconds = $locationTimeZone->getOffset($currentTime);
+            $offsetInSeconds = $locationTime->getOffset() - $userTime->getOffset();
             $offsetInHours = $offsetInSeconds / 3600;
 
             return [
@@ -216,6 +216,20 @@ class LocationDetailsController extends Controller
             ];
         }
     }
+
+    protected function getTimezoneFromIp(string $ip): ?string
+    {
+        try {
+            $response = Http::get("http://ip-api.com/json/{$ip}");
+            if ($response->successful()) {
+                return $response->json('timezone');
+            }
+        } catch (\Exception $e) {
+            Log::error("Error fetching timezone for IP: {$ip}. Error: {$e->getMessage()}");
+        }
+        return null;
+    }
+
 
 
 

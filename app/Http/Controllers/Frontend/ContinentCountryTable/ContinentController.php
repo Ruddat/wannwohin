@@ -78,7 +78,9 @@ class ContinentController extends Controller
         $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
 
         // Finde das Land basierend auf dem Alias
-        $country = WwdeCountry::where('alias', $countryAlias)->firstOrFail();
+//        $country = WwdeCountry::where('alias', $countryAlias)->firstOrFail();
+        $country = WwdeCountry::where('alias', $countryAlias)->with('travelWarning')->firstOrFail();
+
 
 
 //dd($country);

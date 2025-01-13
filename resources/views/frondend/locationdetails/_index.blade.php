@@ -14,7 +14,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker">1</div>
                             <div class="timeline-content">
-                                <h4 class="timeline-title">Karte</h4>
+                                <h4 class="timeline-title">@autotranslate("Karte & Route: {$location->title}", app()->getLocale())</h4>
                                 @include('frondend.locationdetails.sections.maps')
                             </div>
                         </div>
@@ -24,7 +24,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker">2</div>
                             <div class="timeline-content">
-                                <h4 class="timeline-title">Beste Reisezeit</h4>
+                                <h4 class="timeline-title">@autotranslate("Beste Reisezeit: {$location->title}", app()->getLocale())</h4>
                                 @include('frondend.locationdetails.sections.best-travel')
                             </div>
                         </div>
@@ -35,7 +35,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker">3</div>
                             <div class="timeline-content">
-                                <h4 class="timeline-title">Lage und Klima</h4>
+                                <h4 class="timeline-title">@autotranslate("Lage und Klima: {$location->title}", app()->getLocale())</h4>
                                 @include('frondend.locationdetails.sections.location-climate')
                             </div>
                         </div>

@@ -7,6 +7,7 @@ use App\Models\WwdeCountry;
 use Illuminate\Console\Command;
 use App\Models\ModElectricStandards;
 use Symfony\Component\DomCrawler\Crawler;
+use Illuminate\Support\Facades\Storage;
 
 class ScrapeElectricStandards extends Command
 {
@@ -35,7 +36,7 @@ class ScrapeElectricStandards extends Command
             $crawler = new Crawler($html);
 
             // Länder-Items filtern und iterieren
-            $crawler->filter('.country-item')->each(function (Crawler $node) {
+            $crawler->filter('.country-item')->each(function (Crawler $node) use ($client) {
                 // Country Code aus dem Attribut "data-action-id" extrahieren
                 $countryCode = $node->attr('data-action-id') ?? null;
 
@@ -45,8 +46,30 @@ class ScrapeElectricStandards extends Command
 
                 // Steckertypen extrahieren
                 $plugTypes = $node->filter('.country-content div span')->each(function (Crawler $plugNode) {
-                    return trim($plugNode->text()); // Steckertypen (z. B. D, G)
+                    return trim($plugNode->text()); // Steckertypen (z. B. "A", "B")
                 });
+
+                $baseImageUrl = 'https://www.iec.ch/themes/custom/iec/images/world-plugs/types/';
+
+                // URLs für Bilder basierend auf Typen erstellen
+                $plugImages = array_map(function ($plugType) use ($baseImageUrl, $client) {
+                    $images = [
+                        'plug' => $this->downloadImage($client, "{$baseImageUrl}{$plugType}/{$plugType}_3d_plug_l.png"),
+                        'socket' => $this->downloadImage($client, "{$baseImageUrl}{$plugType}/{$plugType}_3d_sock_l.png"),
+                        'plug_dia' => $this->downloadImage($client, "{$baseImageUrl}{$plugType}/{$plugType}_dia_plug_l.png"),
+                        'socket_dia' => $this->downloadImage($client, "{$baseImageUrl}{$plugType}/{$plugType}_dia_sock_l.png"),
+                    ];
+
+                    return array_filter($images); // Nur vorhandene Bilder zurückgeben
+                }, $plugTypes);
+
+                // Bilder flach in eine Liste umwandeln (lokale Pfade speichern)
+                $flatPlugImages = [];
+                foreach ($plugImages as $images) {
+                    $flatPlugImages = array_merge($flatPlugImages, $images);
+                }
+
+                dump($flatPlugImages); // Debug: Prüfen der gespeicherten lokalen Pfade
 
                 // Debugging
                 dump($countryCode, $countryName, $powerInfo, $plugTypes);
@@ -61,6 +84,7 @@ class ScrapeElectricStandards extends Command
                         'country_name' => $countryName,
                         'power' => trim($powerInfo),
                         'info' => implode(', ', $plugTypes),
+                        'plug_images' => implode(',', $flatPlugImages),
                         'typ_a' => in_array('A', $plugTypes) ? 1 : 0,
                         'typ_b' => in_array('B', $plugTypes) ? 1 : 0,
                         'typ_c' => in_array('C', $plugTypes) ? 1 : 0,
@@ -83,6 +107,34 @@ class ScrapeElectricStandards extends Command
         }
 
         $this->info('Web-Scraping abgeschlossen.');
+    }
+
+    private function getFullUrl($url)
+    {
+        $baseUrl = 'https://www.iec.ch';
+        return parse_url($url, PHP_URL_SCHEME) ? $url : $baseUrl . '/' . ltrim($url, '/');
+    }
+
+    private function downloadImage(Client $client, $url)
+    {
+        try {
+            $response = $client->get($url);
+            $imageName = basename($url);
+            $path = 'plugs/' . $imageName;
+
+            // Bild speichern
+            if (!Storage::disk('public')->exists('plugs')) {
+                Storage::disk('public')->makeDirectory('plugs');
+            }
+
+            $localPath = Storage::disk('public')->put($path, $response->getBody());
+            $this->info("Bild $imageName erfolgreich gespeichert.");
+
+            return Storage::url($path); // Lokaler Pfad zurückgeben
+        } catch (\Exception $e) {
+            $this->warn("Bild konnte nicht heruntergeladen werden: $url");
+            return null;
+        }
     }
 
     private function getCountryIdByName($countryName)
