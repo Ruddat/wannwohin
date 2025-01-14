@@ -13,6 +13,7 @@ Schedule::command('climate:fetch-daily')->dailyAt('14:00');
 //Schedule::command('locations:import-world-cities --format=csv')->hourly();
 Schedule::command('locations:download-continent-images')->dailyAt('00:30');
 Schedule::command('scrape:travel-warnings')->dailyAt('01:30');
+Schedule::command('update:location-details')->dailyAt('02:30');
 Schedule::command('parks:import')->dailyAt('00:30');
 Schedule::command('locations:update-history')->hourly();
 

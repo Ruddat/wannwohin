@@ -189,7 +189,7 @@ class LocationDetailsController extends Controller
     protected function getLocationTimeInfo(WwdeLocation $location)
     {
         // Standard-Zeitzone der Location (z. B. "Europe/Berlin")
-        $locationTimezone = $location->time_zone ?? 'UTC';
+        $locationTimezone = $location->time_zone ?? config('app.timezone', 'UTC');
 
         try {
             // Zeitzone des Nutzers basierend auf der IP
@@ -202,7 +202,7 @@ class LocationDetailsController extends Controller
 
             // Zeitverschiebung berechnen (in Stunden)
             $offsetInSeconds = $locationTime->getOffset() - $userTime->getOffset();
-            $offsetInHours = $offsetInSeconds / 3600;
+            $offsetInHours = round($offsetInSeconds / 3600, 1); // Runde auf eine Nachkommastelle
 
             return [
                 'current_time' => $locationTime->format('Y-m-d H:i:s'),
@@ -219,14 +219,19 @@ class LocationDetailsController extends Controller
 
     protected function getTimezoneFromIp(string $ip): ?string
     {
+        if ($ip === '127.0.0.1' || $ip === '::1') { // Lokale IPs (IPv4 und IPv6)
+            return config('app.timezone', 'Europe/Berlin'); // Standard-Zeitzone für lokale Tests
+        }
+
         try {
             $response = Http::get("http://ip-api.com/json/{$ip}");
-            if ($response->successful()) {
+            if ($response->successful() && $response->json('timezone')) {
                 return $response->json('timezone');
             }
         } catch (\Exception $e) {
             Log::error("Error fetching timezone for IP: {$ip}. Error: {$e->getMessage()}");
         }
+
         return null;
     }
 
