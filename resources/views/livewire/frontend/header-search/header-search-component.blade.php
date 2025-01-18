@@ -15,16 +15,16 @@
         </span>
 
         @if(!empty($suggestions))
-            <ul class="header-search__suggestions list-group">
-                @foreach($suggestions as $index => $suggestion)
-                    <li
-                        class="header-search__suggestion list-group-item {{ $highlightedIndex === $index ? 'active' : '' }}"
-                        wire:click="$set('searchTerm', '{{ $suggestion['title'] }}')"
-                    >
-                        {{ $suggestion['title'] }}
-                    </li>
-                @endforeach
-            </ul>
+        <ul class="header-search__suggestions list-group">
+            @foreach($suggestions as $index => $suggestion)
+                <li
+                    class="header-search__suggestion list-group-item {{ $highlightedIndex === $index ? 'active' : '' }}"
+                    wire:click="selectSuggestion({{ $index }})"
+                >
+                    {{ $suggestion['title'] }}
+                </li>
+            @endforeach
+        </ul>
         @endif
     </div>
 

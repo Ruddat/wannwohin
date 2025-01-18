@@ -40,10 +40,11 @@
                 @livewire('frontend.header-search.header-search-component')
             </div>
 
-            {{-- Location-Suggestion --}}
+            {{-- Location-Suggestion
             <div class="custom-suggestion">
                 @livewire('frontend.location-suggestion.location-suggestion-component')
             </div>
+            --}}
         </div>
     </div>
 </div>

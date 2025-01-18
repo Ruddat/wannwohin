@@ -3,6 +3,7 @@
 namespace App\Livewire\Frontend\HeaderSearch;
 
 use Livewire\Component;
+use Illuminate\Support\Facades\Cache; // Cache hinzufügen
 use App\Models\WwdeLocation;
 
 class HeaderSearchComponent extends Component
@@ -16,24 +17,30 @@ class HeaderSearchComponent extends Component
      */
     public function updatedSearchTerm($value)
     {
-        $this->suggestions = WwdeLocation::query()
-            ->where('title', 'like', '%' . $value . '%')
-            ->orWhere('alias', 'like', '%' . $value . '%')
-            ->with(['country.continent']) // Beziehungen laden
-            ->limit(10)
-            ->get()
-            ->map(function ($location) {
-                return [
-                    'title' => $location->title,
-                    'alias' => $location->alias,
-                    'country_alias' => $location->country->alias ?? null,
-                    'continent_alias' => $location->country->continent->alias ?? null,
-                ];
-            })
-            ->toArray();
+        $cacheKey = 'search_' . md5($value); // Eindeutiger Cache-Schlüssel basierend auf dem Suchbegriff
+
+        // Vorschläge aus dem Cache abrufen oder neu generieren
+        $this->suggestions = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($value) {
+            return WwdeLocation::query()
+                ->where('title', 'like', '%' . $value . '%')
+                ->orWhere('alias', 'like', '%' . $value . '%')
+                ->with(['country.continent']) // Beziehungen laden
+                ->limit(10)
+                ->get()
+                ->map(function ($location) {
+                    return [
+                        'title' => $location->title,
+                        'alias' => $location->alias,
+                        'country_alias' => $location->country->alias ?? null,
+                        'continent_alias' => $location->country->continent->alias ?? null,
+                    ];
+                })
+                ->toArray();
+        });
 
         $this->highlightedIndex = 0; // Index zurücksetzen
     }
+
     /**
      * Pfeiltasten-Navigation: Auswahl nach oben/unten bewegen.
      */
@@ -51,9 +58,6 @@ class HeaderSearchComponent extends Component
      */
     public function search()
     {
-//dd($this->suggestions);
-
-
         if (!empty($this->suggestions)) {
             $selectedSuggestion = $this->suggestions[$this->highlightedIndex];
             return redirect()->route('location.details', [
@@ -63,6 +67,19 @@ class HeaderSearchComponent extends Component
             ]);
         }
     }
+
+
+    /**
+    * Wird ausgelöst, wenn der Benutzer auf ein Suchergebnis klickt.
+    */
+    public function selectSuggestion($index)
+    {
+        if (isset($this->suggestions[$index])) {
+            $this->highlightedIndex = $index; // Markieren des ausgewählten Eintrags
+            $this->search(); // Suche starten
+        }
+    }
+
 
     public function render()
     {
