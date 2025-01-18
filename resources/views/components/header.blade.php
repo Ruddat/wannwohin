@@ -36,12 +36,8 @@
             </div>
 
             {{-- Reiseziele-Link --}}
-            <div class="custom-link">
-                <a data-hash href="#say-hello" class="text-decoration-none">
-                    <span class="custom-nav-button custom-divisors text-color-dark">
-                        <i class="icon-envelope-open icons text-color-primary"></i> Reiseziele im
-                    </span>
-                </a>
+            <div class="custom-suggestion">
+                @livewire('frontend.header-search.header-search-component')
             </div>
 
             {{-- Location-Suggestion --}}
