@@ -158,37 +158,29 @@
                                     </div>
                                 </td>
                                 <td>
+                                    @php
+                                    // Steckertypen aus `info` extrahieren
+                                    $plugTypes = array_map('trim', explode(',', $location->electric->info ?? ''));
+
+                                    // Bilder aus `plug_images` extrahieren
+                                    $imageUrls = array_map('trim', explode(',', $location->electric->plug_images ?? ''));
+
+                                    // Typen mit Bildern verknüpfen
+                                    $typeImageMap = [];
+                                    foreach ($plugTypes as $index => $type) {
+                                        $typeImageMap[trim($type)] = $imageUrls[$index] ?? null; // Bild dem Typ zuordnen
+                                    }
+                                @endphp
+
                                     <div>
                                         <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
-                                        <div>{{ $location->electric->power ?? 'N/A' }}</div>
-                                        <div>
-                                            @php
-                                                // Steckertypen aus `info` extrahieren
-                                                $plugTypes = array_map('trim', explode(',', $location->electric->info ?? ''));
-
-                                                // Bilder aus `plug_images` extrahieren
-                                                $imageUrls = array_map('trim', explode(',', $location->electric->plug_images ?? ''));
-
-                                                // Typen mit Bildern verknüpfen
-                                                $typeImageMap = [];
-                                                foreach ($plugTypes as $index => $type) {
-                                                    $typeImageMap[trim($type)] = $imageUrls[$index] ?? null; // Bild dem Typ zuordnen
-                                                }
-                                            @endphp
-
-                                            @foreach ($typeImageMap as $type => $imageUrl)
-                                                <span class="badge bg-info"
-                                                      data-bs-toggle="tooltip"
-                                                      data-bs-html="true"
-                                                      title="<img src='{{ $imageUrl }}' style='width: 50px; height: auto;'>">
-                                                    {{ $type }}
-                                                </span>
-                                            @endforeach
-                                        </div>
+                                        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#electricPowerModal">
+                                            {{ $location->electric->power ?? 'N/A' }}
+                                        </button>
                                     </div>
-
-
                                 </td>
+
+
                             </tr>
                             <tr>
                                 <td>
@@ -238,6 +230,39 @@
             </div>
         </div>
     </div>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="electricPowerModal" tabindex="-1" aria-labelledby="electricPowerModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="electricPowerModalLabel">@autotranslate('Steckdosen', app()->getLocale())</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+                                                        @foreach ($typeImageMap as $type => $imageUrl)
+                                                            <div class="card" style="width: 18rem;">
+                                                                <div class="card-body text-center">
+                                                                    <h6 class="card-title">@autotranslate('Typ', app()->getLocale()) {{ $type }}</h6>
+                                                                    @if ($imageUrl)
+                                                                        <img src="{{ $imageUrl }}" alt="Plug Type {{ $type }}" class="img-fluid rounded">
+                                                                    @else
+                                                                        <p>@autotranslate('Kein Bild verfügbar', app()->getLocale())</p>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@autotranslate('Schließen', app()->getLocale())</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
 </section>
 <style>
     .card-header-fact.text-center {
@@ -273,6 +298,58 @@
         border-radius: 5px;
     }
 </style>
+
+<style>
+    /* Modal immer im Vordergrund */
+.modal {
+    z-index: 1050; /* Bootstrap-Standardwert für Modals */
+}
+
+.modal-backdrop {
+    z-index: 1040; /* Hintergrundabdeckung */
+}
+
+/* Modal-Header */
+.modal-header {
+    background-color: #f8f9fa; /* Heller Hintergrund */
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Modal-Body-Bilder */
+.modal-body img {
+    max-width: 100%; /* Bild an Containerbreite anpassen */
+    height: auto; /* Proportionen beibehalten */
+    margin: 10px auto; /* Abstand zwischen Bildern */
+    display: block; /* Zentrierung */
+    border-radius: 8px; /* Abgerundete Ecken */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung */
+}
+
+/* Bildkarten im Modal */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.card-body {
+    padding: 1rem;
+    text-align: center;
+}
+
+/* Modal-Footer */
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+</style>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
