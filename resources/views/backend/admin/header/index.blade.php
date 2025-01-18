@@ -37,10 +37,37 @@
                             <tr>
                                 <td>{{ $content->id }}</td>
                                 <td>
-                                    <img src="{{ asset('storage/' . $content->bg_img) }}" alt="Background Image" class="img-thumbnail" style="width: 100px;">
+                                    @php
+                                        $bgImgPath = null;
+                                        if (Storage::exists($content->bg_img)) {
+                                            $bgImgPath = Storage::url($content->bg_img); // Bild aus Storage
+                                        } elseif (file_exists(public_path($content->bg_img))) {
+                                            $bgImgPath = asset($content->bg_img); // Bild aus Public
+                                        }
+                                    @endphp
+
+                                    @if ($bgImgPath)
+                                        <img src="{{ $bgImgPath }}" alt="Background Image" class="img-thumbnail" style="width: 100px;">
+                                    @else
+                                        <span class="text-danger">No Image Found</span>
+                                    @endif
                                 </td>
+
                                 <td>
-                                    <img src="{{ asset('storage/' . $content->main_img) }}" alt="Main Image" class="img-thumbnail" style="width: 100px;">
+                                    @php
+                                        $mainImgPath = null;
+                                        if (Storage::exists($content->main_img)) {
+                                            $mainImgPath = Storage::url($content->main_img); // Bild aus Storage
+                                        } elseif (file_exists(public_path($content->main_img))) {
+                                            $mainImgPath = asset($content->main_img); // Bild aus Public
+                                        }
+                                    @endphp
+
+                                    @if ($mainImgPath)
+                                        <img src="{{ $mainImgPath }}" alt="Main Image" class="img-thumbnail" style="width: 100px;">
+                                    @else
+                                        <span class="text-danger">No Image Found</span>
+                                    @endif
                                 </td>
                                 <td style="max-width: 300px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                                     {!! $content->main_text !!}

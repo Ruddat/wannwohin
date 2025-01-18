@@ -125,7 +125,18 @@
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Preistendenz', app()->getLocale())</strong>
-                                    <div>@autotranslate('Durchschnittlich', app()->getLocale())</div>
+                                    <a href="#" class="text-color-primary" data-bs-toggle="tooltip" data-bs-animation="false" title="Zur Berechnung vergleichen wir das durchschnittliche pro Kopf Einkommen der verschiedenen Länder mit Deutschland">
+                                        <i class="fa fa-question-circle"></i>
+                                    </a>
+                                    <div>
+                                        <span>
+                                            @if($price_trend['factor'])
+                                                {{ number_format($price_trend['factor'], 2) }} (@autotranslate($price_trend['category'], app()->getLocale()))
+                                            @else
+                                                @autotranslate('Keine Daten verfügbar', app()->getLocale())
+                                            @endif
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>
                                     <strong>@autotranslate('Währung', app()->getLocale())</strong>

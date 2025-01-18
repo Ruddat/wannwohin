@@ -13,7 +13,20 @@
                 <div class="mb-3">
                     <label class="form-label">Current Background Image</label>
                     <div class="mb-2">
-                        <img src="{{ asset('storage/' . $headerContent->bg_img) }}" class="img-thumbnail" style="width: 150px;">
+                        @php
+                            $bgImgPath = null;
+                            if (Storage::exists($headerContent->bg_img)) {
+                                $bgImgPath = Storage::url($headerContent->bg_img); // Bild aus Storage
+                            } elseif (file_exists(public_path($headerContent->bg_img))) {
+                                $bgImgPath = asset($headerContent->bg_img); // Bild aus Public
+                            }
+                        @endphp
+
+                        @if ($bgImgPath)
+                            <img src="{{ $bgImgPath }}" class="img-thumbnail" style="width: 150px;">
+                        @else
+                            <span class="text-danger">No Background Image Found</span>
+                        @endif
                     </div>
                     <label class="form-label">New Background Image (Optional)</label>
                     <input type="file" name="bg_img" class="form-control @error('bg_img') is-invalid @enderror">
@@ -21,10 +34,24 @@
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label">Current Main Image</label>
                     <div class="mb-2">
-                        <img src="{{ asset('storage/' . $headerContent->main_img) }}" class="img-thumbnail" style="width: 150px;">
+                        @php
+                            $mainImgPath = null;
+                            if (Storage::exists($headerContent->main_img)) {
+                                $mainImgPath = Storage::url($headerContent->main_img); // Bild aus Storage
+                            } elseif (file_exists(public_path($headerContent->main_img))) {
+                                $mainImgPath = asset($headerContent->main_img); // Bild aus Public
+                            }
+                        @endphp
+
+                        @if ($mainImgPath)
+                            <img src="{{ $mainImgPath }}" class="img-thumbnail" style="width: 150px;">
+                        @else
+                            <span class="text-danger">No Main Image Found</span>
+                        @endif
                     </div>
                     <label class="form-label">New Main Image (Optional)</label>
                     <input type="file" name="main_img" class="form-control @error('main_img') is-invalid @enderror">
@@ -32,6 +59,7 @@
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label">Main Text</label>
                     <textarea name="main_text" id="editor" class="form-control @error('main_text') is-invalid @enderror" rows="4">{{ $headerContent->main_text }}</textarea>

@@ -81,5 +81,10 @@ Route::get('/admin/commands/artisan', function () {
     return view('backend.admin.commands.command-artisan');
 })->name('admin.commands.view');
 
+Route::get('/admin/imports-pics/imports', function () {
+    return view('backend.admin.importimagesandtext.import-images-text-to-db');
+})->name('admin.imports-pics.view');
+
+
 
 });

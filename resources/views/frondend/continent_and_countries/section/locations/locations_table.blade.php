@@ -21,7 +21,9 @@
 
                                 <!-- Text -->
                                 <p class="card-text">
-                                    @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
+                                    @if (!empty($location->text_short))
+                                        @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
+                                    @endif
                                 </p>
                             </div>
                         </div>

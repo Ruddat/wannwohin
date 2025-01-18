@@ -133,6 +133,37 @@
         </div>
     </div>
 </div>
+
+
+<!-- Import Locations Form -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title">Import Locations</h3>
+    </div>
+    <div class="card-body">
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form action="{{ route('locations.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-3">
+                <label for="excel_file" class="form-label">Upload Excel File</label>
+                <input type="file" name="excel_file" id="excel_file" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Import</button>
+        </form>
+    </div>
+</div>
+
           </div>
         </div>
     </div>

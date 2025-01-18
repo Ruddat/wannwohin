@@ -30,12 +30,26 @@ class SearchResultsComponent extends Component
     public function mount()
     {
         // Header Content und Bilder laden
-        $this->headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+        $this->headerContent = Cache::remember('header_content_random', 5 * 60, function () {
             return HeaderContent::inRandomOrder()->first();
         });
 
-        $this->bgImgPath = $this->headerContent->bg_img ? Storage::url($this->headerContent->bg_img) : null;
-        $this->mainImgPath = $this->headerContent->main_img ? Storage::url($this->headerContent->main_img) : null;
+        
+        $this->bgImgPath = $this->headerContent->bg_img
+        ? (Storage::exists($this->headerContent->bg_img)
+            ? Storage::url($this->headerContent->bg_img)
+            : (file_exists(public_path($this->headerContent->bg_img))
+                ? asset($this->headerContent->bg_img)
+                : null))
+        : null;
+
+    $this->mainImgPath = $this->headerContent->main_img
+        ? (Storage::exists($this->headerContent->main_img)
+            ? Storage::url($this->headerContent->main_img)
+            : (file_exists(public_path($this->headerContent->main_img))
+                ? asset($this->headerContent->main_img)
+                : null))
+        : null;
 
         // Suchparameter aus der URL laden
         $this->continent = request('continent');

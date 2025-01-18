@@ -17,8 +17,7 @@
                         >
                             <div class="card-body d-flex align-items-end">
                                 <div class="bg-opacity-75 bg-white rounded text-dark p-3">
-                                    <h4 class="m-0 text-center">@autotranslate($country->title, app()->getLocale())</h4>
-
+                                    <h4 class="m-0 text-center">{{ $country->title }}</h4>
                                 </div>
                             </div>
                         </div>

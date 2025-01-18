@@ -45,6 +45,22 @@ class LocationDetailsController extends Controller
         //dd($activities);
         $galleryImages = $this->imageService->getGalleryByActivities($location->id, $location->title, $activities);
 
+// Bilder überprüfen und ggf. den Storage-Pfad anpassen
+foreach ($galleryImages as &$image) {
+    $imagePath = parse_url($image['url'], PHP_URL_PATH); // Extrahiere den Pfad aus der URL
+    $relativePath = ltrim($imagePath, '/'); // Entferne den führenden Slash
+
+    if (!Storage::exists($relativePath)) {
+        // Entferne 'storage' aus der URL, wenn das Bild nicht im Storage existiert
+        $image['url'] = str_replace('/storage', '', $image['url']);
+    }
+}
+
+// Überprüfte Bilder
+//dd($galleryImages);
+
+
+
         // Freizeitparks im Umkreis abrufen
         $parksWithOpeningTimes = $this->getAmusementParksWithOpeningTimes($location);
 
@@ -73,7 +89,20 @@ class LocationDetailsController extends Controller
         $pic3Text = $location->text_pic3 ?? 'Standard Text für Bild 3';
         $headLine = $location->title ?? 'Standard Headline';
 
+        // Beispiel-Ländercode (ISO Alpha-2)
+//dd($location);
 
+$countryCode = $location->iso2;
+
+// Überprüfen, ob der countryCode ungültig ist
+if (empty($countryCode) || $countryCode === '0') {
+    Log::warning("Country code missing for location ID: {$location->id}. Using fallback.");
+    $countryCode = 'DE'; // Fallback auf Deutschland
+}
+
+$priceTrend = $this->calculatePriceTrend($countryCode);
+
+//dd($priceTrend);
 
         // Beste Reisezeit aus JSON extrahieren und in Monatsindizes umwandeln
         $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
@@ -106,6 +135,7 @@ class LocationDetailsController extends Controller
             'time_offset' => $timeInfo['offset'],
             'panorama_text_and_style' => $panoramaData,
             'best_travel_months' => $bestTravelMonths, // Hinzugefügt
+            'price_trend' => $priceTrend, // Preistendenz hinzufügen
 
         ]);
     }
@@ -156,7 +186,7 @@ class LocationDetailsController extends Controller
                     sin(radians(?)) * sin(radians(latitude))
                 )) AS distance
             ", [$latitude, $longitude, $latitude])
-            ->having('distance', '<=', 300)
+            ->having('distance', '<=', 100)
             ->orderBy('distance', 'asc')
             ->get();
 
@@ -184,6 +214,44 @@ class LocationDetailsController extends Controller
         });
     }
 
+    protected function calculatePriceTrend(string $countryCode, string $referenceCountryCode = 'DE'): ?array
+    {
+        try {
+            // Einkommen für das Land und das Referenzland abrufen
+            $countryIncome = $this->fetchIncomeData($countryCode);
+            $referenceIncome = $this->fetchIncomeData($referenceCountryCode);
+
+            if ($countryIncome && $referenceIncome) {
+                $trendFactor = $countryIncome / $referenceIncome;
+                $trendCategory = $trendFactor < 0.8 ? 'niedrig' : ($trendFactor <= 1.2 ? 'durchschnittlich' : 'hoch');
+                return [
+                    'factor' => $trendFactor,
+                    'category' => $trendCategory,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error("Error calculating price trend: {$e->getMessage()}");
+        }
+
+        return null;
+    }
+
+    protected function fetchIncomeData(string $countryCode): ?float
+    {
+        $url = "https://api.worldbank.org/v2/country/{$countryCode}/indicator/NY.GDP.PCAP.CD?format=json";
+
+        try {
+            $response = Http::get($url);
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data[1][0]['value'] ?? null; // Durchschnittliches Einkommen
+            }
+        } catch (\Exception $e) {
+            Log::error("Error fetching income data for {$countryCode}: {$e->getMessage()}");
+        }
+
+        return null;
+    }
 
 
     protected function getLocationTimeInfo(WwdeLocation $location)

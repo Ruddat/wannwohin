@@ -1,3 +1,5 @@
+
+
 <section class="section section-no-border bg-color-light m-0 pb-5" style="background-color: #f8f9fa;">
     <div class="container">
         <!-- Überschrift -->
@@ -12,49 +14,42 @@
 
         <!-- Galerie -->
         @if ($gallery_images && count($gallery_images) > 0)
-<!-- Galerie -->
-<div class="row g-3">
-    @foreach ($gallery_images as $index => $image)
-        @php
-            $imageUrl = trim($image['url'] ?? '');
-        @endphp
-        @if (filter_var($imageUrl, FILTER_VALIDATE_URL))
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery"
-                    data-title="{{ app('autotranslate')->trans($image['image_caption'] ?? $image['description'] ?? 'Bild ' . ($loop->iteration), app()->getLocale()) }}">
-                    <div
-                        class="figure-img img-fluid custom-border position-relative lazyload"
-                        data-bg="{{ $imageUrl }}"
-                        style="background-size: cover;
-                               background-position: center;
-                               height: 250px; border-radius: 8px;">
-                        <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-opacity-50 bg-dark text-white text-center small">
-                            <span>{{ app('autotranslate')->trans($image['image_caption'] ?? $image['description'] ?? 'Bild ' . ($loop->iteration), app()->getLocale()) }}</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        @endif
-    @endforeach
-</div>
+        <div class="row g-3">
+            @foreach ($gallery_images as $index => $image)
+                @php
+                    $imageUrl = trim($image['url'] ?? '');
+                    $imageCaption = $image['image_caption'] ?? null;
+                    $imageDescription = $image['description'] ?? null;
 
-            <!-- Miniaturansicht -->
-            <div class="mt-4 text-center d-none d-md-flex justify-content-center">
-                @foreach ($gallery_images as $index => $image)
-                    @php
-                        $thumbnailUrl = trim($image['url'] ?? '');
-                    @endphp
-                    @if (filter_var($thumbnailUrl, FILTER_VALIDATE_URL))
-                        <div class="mx-2">
-                            <a href="{{ $thumbnailUrl }}" class="glightbox-thumbnail" data-gallery="gallery"
-                                data-title="{{ app('autotranslate')->trans($image['image_caption'] ?? $image['description'] ?? 'Bild ' . ($loop->iteration), app()->getLocale()) }}">
-                                <img src="{{ $thumbnailUrl }}" alt="{{ app('autotranslate')->trans($image['image_caption'] ?? $image['description'] ?? 'Bild ' . ($loop->iteration), app()->getLocale()) }}"
-                                    class="img-thumbnail" style="width: 75px; height: 50px; object-fit: cover;">
-                            </a>
-                        </div>
-                    @endif
-                @endforeach
-            </div>
+                    // Zeige die Beschriftung nur an, wenn sie nicht "Kein Titel verfügbar", leer oder null ist
+                    $captionText = (!empty($imageCaption) && $imageCaption !== 'Kein Titel verfügbar') ? $imageCaption : null;
+                    $descriptionText = (!empty($imageDescription) && $imageDescription !== 'Keine Beschreibung verfügbar') ? $imageDescription : null;
+
+                    $displayText = $captionText ?? $descriptionText;
+                @endphp
+                @if (filter_var($imageUrl, FILTER_VALIDATE_URL))
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery"
+                            @if ($displayText)
+                            data-title="{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}"
+                            @endif>
+                            <div
+                                class="figure-img img-fluid custom-border position-relative lazyload"
+                                data-bg="{{ $imageUrl }}"
+                                style="background-size: cover;
+                                       background-position: center;
+                                       height: 250px; border-radius: 8px;">
+                                @if ($displayText)
+                                <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-opacity-50 bg-dark text-white text-center small">
+                                    <span>{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        </a>
+                    </div>
+                @endif
+            @endforeach
+        </div>
         @else
             <div class="text-center text-muted py-4">
                 <p>Es sind derzeit keine Bilder verfügbar.</p>

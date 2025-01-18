@@ -466,7 +466,12 @@
                        Artisan Command
                     </a>
                 </div>
-
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-blocks') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.admin.imports-pics.view') }}">
+                       Import Pictures
+                    </a>
+                </div>
 
               </div>
             </div>

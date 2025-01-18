@@ -126,18 +126,19 @@ class IndexController extends Controller
         Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
 
         // 4. Gesamtanzahl der Locations abrufen
-        $totalLocations = Cache::remember('total_finished_locations', 60 * 60, function () {
+        $totalLocations = Cache::remember('total_finished_locations', 5 * 60, function () {
             return DB::table('wwde_locations')->count();
         });
 
         // 5. HeaderContent abrufen
-        $headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+        $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
             return HeaderContent::inRandomOrder()->first();
         });
 
-        // 6. Bildpfade validieren
-        $bgImgPath = $headerContent->bg_img ? Storage::url($headerContent->bg_img) : null;
-        $mainImgPath = $headerContent->main_img ? Storage::url($headerContent->main_img) : null;
+
+        // Bildpfade validieren
+        $bgImgPath = $headerContent->bg_img ? (Storage::exists($headerContent->bg_img) ? Storage::url($headerContent->bg_img) : (file_exists(public_path($headerContent->bg_img)) ? asset($headerContent->bg_img) : null)) : null;
+        $mainImgPath = $headerContent->main_img ? (Storage::exists($headerContent->main_img) ? Storage::url($headerContent->main_img) : (file_exists(public_path($headerContent->main_img)) ? asset($headerContent->main_img) : null)) : null;
 
         // Gesamtladezeit loggen
         Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
@@ -208,7 +209,7 @@ class IndexController extends Controller
 
         // HeaderContent abrufen
         $step4Start = microtime(true);
-        $headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+        $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
             return HeaderContent::inRandomOrder()->first();
         });
         Log::info('Step 4: HeaderContent geladen in ' . (microtime(true) - $step4Start) . ' Sekunden');
@@ -217,6 +218,13 @@ class IndexController extends Controller
         $step5Start = microtime(true);
         $bgImgPath = $headerContent->bg_img ? Storage::url($headerContent->bg_img) : null;
         $mainImgPath = $headerContent->main_img ? Storage::url($headerContent->main_img) : null;
+
+// Bildpfade validieren
+        $bgImgPath = $headerContent->bg_img ? (Storage::exists($headerContent->bg_img) ? Storage::url($headerContent->bg_img) : (file_exists(public_path($headerContent->bg_img)) ? asset($headerContent->bg_img) : null)) : null;
+        $mainImgPath = $headerContent->main_img ? (Storage::exists($headerContent->main_img) ? Storage::url($headerContent->main_img) : (file_exists(public_path($headerContent->main_img)) ? asset($headerContent->main_img) : null)) : null;
+
+
+
         Log::info('Step 5: Bildpfade und Validierung in ' . (microtime(true) - $step5Start) . ' Sekunden');
 
         return view('pages.main.search-results', [
