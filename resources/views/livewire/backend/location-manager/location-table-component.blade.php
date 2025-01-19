@@ -153,11 +153,17 @@
             </div>
         @endif
 
-        <form action="{{ route('locations.import') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('locations.import') }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 rounded shadow">
             @csrf
             <div class="mb-3">
                 <label for="excel_file" class="form-label">Upload Excel File</label>
                 <input type="file" name="excel_file" id="excel_file" class="form-control" required>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="skip_images" id="skip_images">
+                <label class="form-check-label" for="skip_images">
+                    Skip importing images
+                </label>
             </div>
             <button type="submit" class="btn btn-primary">Import</button>
         </form>

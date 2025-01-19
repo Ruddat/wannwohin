@@ -56,6 +56,9 @@
     <!-- Flag Icons CSS -->
     <link rel="stylesheet" href="{{ asset('assets\css\flag-icons.css') }}">
 
+    <!-- AOS CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+
     <!-- Cookies Consent CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/cookie-consent.css') }}">
     @yield('css')
@@ -161,11 +164,18 @@
 
     <!-- Cookies Consent added from hani.masoud@gmx.de -->
     <script src={{ asset('assets/js/cookie-consent.js') }}></script>
+
+
+    <!-- AOS JS -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
 <script>
     let token = '{{ csrf_token() }}';
     let mainUrl = '{{ url('/') }}';
     window.mainUrl = '{{ url('/') }}';
 </script>
+
+
 
 <style>
     /* Animation Styles */

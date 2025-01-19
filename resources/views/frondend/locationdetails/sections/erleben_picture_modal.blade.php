@@ -21,22 +21,21 @@
                     $imageCaption = $image['image_caption'] ?? null;
                     $imageDescription = $image['description'] ?? null;
 
-                    // Zeige die Beschriftung nur an, wenn sie nicht "Kein Titel verfügbar", leer oder null ist
                     $captionText = (!empty($imageCaption) && $imageCaption !== 'Kein Titel verfügbar') ? $imageCaption : null;
                     $descriptionText = (!empty($imageDescription) && $imageDescription !== 'Keine Beschreibung verfügbar') ? $imageDescription : null;
 
                     $displayText = $captionText ?? $descriptionText;
                 @endphp
                 @if (filter_var($imageUrl, FILTER_VALIDATE_URL))
-                    <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up">
                         <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery"
                             @if ($displayText)
                             data-title="{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}"
                             @endif>
                             <div
-                                class="figure-img img-fluid custom-border position-relative lazyload"
-                                data-bg="{{ $imageUrl }}"
-                                style="background-size: cover;
+                                class="figure-img img-fluid custom-border position-relative"
+                                style="background-image: url('{{ $imageUrl }}');
+                                       background-size: cover;
                                        background-position: center;
                                        height: 250px; border-radius: 8px;">
                                 @if ($displayText)
@@ -58,42 +57,17 @@
     </div>
 </section>
 
+
 <!-- GLightbox -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Lazy Load Hintergrundbilder
-    const lazyBackgrounds = document.querySelectorAll('.lazyload');
-
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const element = entry.target;
-                    const bgUrl = element.getAttribute('data-bg');
-                    if (bgUrl) {
-                        element.style.backgroundImage = `url('${bgUrl}')`;
-                        element.classList.add('loaded');
-                        observer.unobserve(element);
-                    }
-                }
-            });
-        });
-
-        lazyBackgrounds.forEach(bg => observer.observe(bg));
-    } else {
-        // Fallback für alte Browser (alle Bilder sofort laden)
-        lazyBackgrounds.forEach(bg => {
-            const bgUrl = bg.getAttribute('data-bg');
-            if (bgUrl) {
-                bg.style.backgroundImage = `url('${bgUrl}')`;
-                bg.classList.add('loaded');
-            }
-        });
-    }
-
+    AOS.init({
+        duration: 1000, // Dauer der Animation in ms
+        once: true,     // Animation nur einmal abspielen
+    });
     // GLightbox Initialisierung
     const lightbox = GLightbox({
         selector: '.glightbox, .glightbox-thumbnail',
@@ -117,16 +91,4 @@ document.addEventListener('DOMContentLoaded', () => {
         transform: scale(1.05);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     }
-    .lazyload {
-    background-color: #f0f0f0; /* Platzhalterfarbe */
-    background-size: cover;
-    background-position: center;
-    height: 250px;
-    transition: opacity 0.3s ease-in-out;
-    opacity: 0;
-}
-
-.lazyload.loaded {
-    opacity: 1;
-}
 </style>

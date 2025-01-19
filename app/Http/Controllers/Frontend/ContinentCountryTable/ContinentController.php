@@ -40,6 +40,7 @@ class ContinentController extends Controller
         // Länder des Kontinents abrufen, die aktiv sind
         $countries = WwdeCountry::where('continent_id', $continent->id)
         ->where('status', 'active')
+        ->orderBy('title', 'asc') // Sort alphabetically
         ->get();
 
         // Prüfe, ob der Kontinent benutzerdefinierte Bilder hat
@@ -89,6 +90,7 @@ class ContinentController extends Controller
         $locations = WwdeLocation::where('country_id', $country->id)
         ->where('status', 'active') // Filter für aktive Locations
         ->where('finished', '1') // Filter für nicht abgeschlossene Locations
+        ->orderBy('title', 'asc') // Sort alphabetically
         ->get();
 
 //dd($locations);

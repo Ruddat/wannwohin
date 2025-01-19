@@ -10,21 +10,20 @@ class LocationImportController extends Controller
 {
     public function import(Request $request, LocationImportService $locationImportService): \Illuminate\Http\RedirectResponse
     {
-        // Validierung der Datei
         $request->validate([
             'excel_file' => 'required|mimes:xlsx,xls',
         ]);
 
         $file = $request->file('excel_file');
+        $skipImages = $request->boolean('skip_images');
 
         if (!$file || !$file->isValid()) {
             return redirect()->back()->with('error', 'Invalid file upload.');
         }
 
         try {
-            // Verarbeite die Datei
             $filePath = $file->getRealPath();
-            $result = $locationImportService->import($filePath);
+            $result = $locationImportService->import($filePath, $skipImages);
 
             if (!$result) {
                 return redirect()->back()->with('error', 'Failed to import locations.');

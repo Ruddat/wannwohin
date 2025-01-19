@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "mantix/livewire-jodit-text-editor": "^1.4",
+        "masmerise/livewire-toaster": "^2.6",
         "mews/purifier": "^3.4",
         "phpoffice/phpspreadsheet": "^3.7",
         "spatie/laravel-data": "^4.11",

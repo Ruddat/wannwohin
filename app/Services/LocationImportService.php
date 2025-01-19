@@ -19,7 +19,7 @@ class LocationImportService
         $this->geocodeService = $geocodeService;
     }
 
-    public function import(string $filePath): bool
+    public function import(string $filePath, bool $skipImages = false): bool
     {
         try {
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
@@ -64,10 +64,10 @@ class LocationImportService
                     // Verarbeite `best_traveltime_json` und ersetze Zahlen durch Monatsnamen
                     $bestTravelTime = $this->parseBestTravelTimeJson($row[52]);
 
-                    // Bilder abrufen
-                    $textPic1 = $this->getCityImage($cityName, 1, $status);
-                    $textPic2 = $this->getCityImage($cityName, 2, $status);
-                    $textPic3 = $this->getCityImage($cityName, 3, $status);
+                    // Fetch images if not skipped
+                    $textPic1 = $skipImages ? null : $this->getCityImage($cityName, 1, $status);
+                    $textPic2 = $skipImages ? null : $this->getCityImage($cityName, 2, $status);
+                    $textPic3 = $skipImages ? null : $this->getCityImage($cityName, 3, $status);
 
 
                     // Finde das passende Land in der Datenbank

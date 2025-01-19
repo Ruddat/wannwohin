@@ -11,7 +11,8 @@
     public/img/location_main_img/europa/deutschland/berlin/urlaubsfotos
     </pre>
 
-    <button wire:click="importLocationImages" class="btn btn-primary">Bilder importieren</button>
+    <button wire:click="importLocationGalleryImages" class="btn btn-primary">Bilder importieren</button>
+    <button wire:click="importMainLocationImages" class="btn btn-primary">Bilder 1-3 importieren</button>
 
     @if ($message)
         <div class="alert alert-info mt-3">

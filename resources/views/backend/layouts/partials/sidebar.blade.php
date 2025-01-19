@@ -420,6 +420,10 @@
                         href="{{ route('verwaltung.electric-manager.index') }}">
                         Electric Manager
                      </a>
+                     <a class="dropdown-item {{ request()->routeIs('verwaltung.gallery-manager.index') ? 'active' : '' }}"
+                        href="{{ route('verwaltung.gallery-manager.index') }}">
+                        Gallery Manager
+                     </a>
 
                     <a class="dropdown-item" href="#">
                         Additional Option 2

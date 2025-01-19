@@ -30,14 +30,14 @@
 <div class="custom-about-links bg-color-light">
     <div class="container">
         <div class="custom-row"> <!-- Benutzerdefinierte Klasse -->
+             {{-- Reiseziele-Link --}}
+             <div class="custom-suggestion col-md-6">
+                @livewire('frontend.header-search.header-search-component')
+            </div>
+
             {{-- Kontinent-Dropdown --}}
             <div class="custom-dropdown">
                 @livewire('frontend.continent-selector.continent-selector-component')
-            </div>
-
-            {{-- Reiseziele-Link --}}
-            <div class="custom-suggestion">
-                @livewire('frontend.header-search.header-search-component')
             </div>
 
             {{-- Location-Suggestion

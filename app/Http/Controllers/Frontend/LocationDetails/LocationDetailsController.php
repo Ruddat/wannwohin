@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Frontend\LocationDetails;
 
 use App\Models\WwdeClimate;
 use App\Models\WwdeLocation;
+use App\Helpers\WeatherHelper;
 use App\Services\WeatherService;
+use App\Models\ModLocationGalerie;
+use App\Models\WwdeLocationImages;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Models\MonthlyClimateSummary;
+use Illuminate\Support\Facades\Cache;
 use App\Services\LocationImageService;
 use Illuminate\Support\Facades\Storage;
-use App\Helpers\WeatherHelper;
 
 class LocationDetailsController extends Controller
 {
@@ -43,27 +46,47 @@ class LocationDetailsController extends Controller
         // Galerie-Bilder abrufen
         $activities = $this->getActivities($location);
         //dd($activities);
-        $galleryImages = $this->imageService->getGalleryByActivities($location->id, $location->title, $activities);
 
-// Bilder überprüfen und ggf. den Storage-Pfad anpassen
-foreach ($galleryImages as &$image) {
-    $imagePath = parse_url($image['url'], PHP_URL_PATH); // Extrahiere den Pfad aus der URL
-    $relativePath = ltrim($imagePath, '/'); // Entferne den führenden Slash
+        // hier werden bilder uber die api automatisch geholt
+        // $galleryImages = $this->imageService->getGalleryByActivities($location->id, $location->title, $activities);
 
-    if (!Storage::exists($relativePath)) {
-        // Entferne 'storage' aus der URL, wenn das Bild nicht im Storage existiert
-        $image['url'] = str_replace('/storage', '', $image['url']);
-    }
-}
+        // hier nur aus der datenbank
+        $galleryImages = ModLocationGalerie::where('location_id', $location->id)
+        ->get()
+        ->map(function ($item) {
+            return [
+                'url' => $item->image_path ? asset('storage/' . $item->image_path) : null,
+                'description' => $item->description ?? 'Keine Beschreibung verfügbar',
+                'activity' => $item->activity ?? 'Allgemein',
+                'image_caption' => $item->image_caption ?? 'Kein Titel verfügbar',
+            ];
+        })
+        ->toArray();
 
-// Überprüfte Bilder
-//dd($galleryImages);
+        // Bilder überprüfen und ggf. den Storage-Pfad anpassen
+        foreach ($galleryImages as &$image) {
+            $imagePath = parse_url($image['url'], PHP_URL_PATH); // Extrahiere den Pfad aus der URL
+            $relativePath = ltrim($imagePath, '/'); // Entferne führenden Slash
 
+            // Cache verwenden, um unnötige Prüfungen zu vermeiden
+            $cacheKey = 'file_exists_' . md5($relativePath);
 
+            $fileExists = Cache::remember($cacheKey, now()->addHours(1), function () use ($relativePath) {
+                return Storage::exists($relativePath); // Prüfe, ob die Datei existiert
+            });
+
+            if (!$fileExists) {
+                // Wenn der Pfad '/storage/img' enthält, entferne '/storage'
+                if (strpos($image['url'], '/storage/img') !== false) {
+                    $image['url'] = str_replace('/storage', '', $image['url']);
+                }
+            }
+        }
+        // Überprüfte Bilder
+     //   dd($galleryImages);
 
         // Freizeitparks im Umkreis abrufen
         $parksWithOpeningTimes = $this->getAmusementParksWithOpeningTimes($location);
-
 
         // Stromnetz-Daten abrufen
         $electricStandard = $location->electricStandard;

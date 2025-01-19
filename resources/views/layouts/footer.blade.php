@@ -62,15 +62,8 @@
 
             <!-- Newsletter Section -->
             <div class="col-md-6 col-lg-3 mb-3">
-                <h5>Newsletter</h5>
-                <form>
-                    <div class="mb-3">
-                        <input type="email" class="form-control" placeholder="Deine Email" />
-                    </div>
-                    <button type="submit" class="btn btn-warning w-100">Abonnieren</button>
-                </form>
+                @livewire('frontend.newsletter-form.newsletter-form-component')
             </div>
-        </div>
 
         <!-- Footer Bottom -->
         <div class="footer-bottom text-center mt-4">
@@ -78,7 +71,6 @@
         </div>
     </div>
 </footer>
-
 
 
 <style>
