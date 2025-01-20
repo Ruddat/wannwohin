@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\WwdeLocation;
 use Illuminate\Console\Command;
+use App\Library\WeatherApiClientLibrary;
 
 class UpdateClimateData extends Command
 {
@@ -11,7 +13,7 @@ class UpdateClimateData extends Command
 
     public function handle()
     {
-        $locations = Location::all();
+        $locations = WwdeLocation::all();
         $weatherClient = new WeatherApiClientLibrary();
 
         foreach ($locations as $location) {

@@ -33,11 +33,11 @@
                             data-title="{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}"
                             @endif>
                             <div
-                                class="figure-img img-fluid custom-border position-relative"
-                                style="background-image: url('{{ $imageUrl }}');
-                                       background-size: cover;
-                                       background-position: center;
-                                       height: 250px; border-radius: 8px;">
+                            class="figure-img img-fluid custom-border position-relative"
+                            style="background-image: url('{{ $imageUrl }}');
+                                   background-size: cover;
+                                   background-position: center;
+                                   height: 250px;">
                                 @if ($displayText)
                                 <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-opacity-50 bg-dark text-white text-center small">
                                     <span>{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}</span>
@@ -87,8 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
         transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
 
-    .custom-border:hover {
-        transform: scale(1.05);
+    /* Abwechselnde Drehung basierend auf den Containern */
+    .col-lg-4:nth-child(odd) .custom-border:hover {
+        transform: scale(1.05) rotate(5deg); /* Dreht nach rechts */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .col-lg-4:nth-child(even) .custom-border:hover {
+        transform: scale(1.05) rotate(-5deg); /* Dreht nach links */
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     }
 </style>
+

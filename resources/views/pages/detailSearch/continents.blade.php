@@ -97,6 +97,12 @@
         height: 20px;
         z-index: 2;
     }
+
+    .continent-card .continent-checkbox:checked + .continent-image {
+        border: 10px solid #007bff;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+
+        }
 </style>
 
 <script>
@@ -115,8 +121,39 @@
                         image.style.backgroundImage = `url('${images[index]}')`;
                         image.style.opacity = 1; // Fade-in
                     }, 1000); // Wartezeit für den Übergang
-                }, 4000); // Alle 4 Sekunden wechseln
+                }, 10000); // Alle 4 Sekunden wechseln
             }
         });
     });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('detailSearchForm');
+    const continentCheckboxes = document.querySelectorAll('.continent-checkbox');
+    const locationCount = document.getElementById('locationCount');
+
+    continentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+
+            fetch(`${form.action}?${queryString}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (locationCount) {
+                    locationCount.textContent = data.count;
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Daten:', error);
+            });
+        });
+    });
+});
+
 </script>

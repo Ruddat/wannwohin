@@ -153,8 +153,7 @@
 
     <!-- Theme Custom -->
     <script src="{{ asset('assets/js/custom.js') }}"></script>
-    <script src="{{ asset('assets/js/quick_search.js') }}"></script>
-    <script src="{{ asset('assets/js/details_search.js') }}"></script>
+
 
     <!-- Theme Initialization Files -->
     <script src="{{ asset('assets/js/theme.init.js') }}"></script>

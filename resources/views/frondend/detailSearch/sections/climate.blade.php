@@ -10,8 +10,8 @@
                 </label>
                 <div id="daily_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="daily_temp_min" class="form-control flex-fill" value="10">
-                    <input type="number" id="daily_temp_max" class="form-control flex-fill" value="30">
+                    <input type="number" name="daily_temp_min" id="daily_temp_min" class="form-control flex-fill filter-input" value="10">
+                    <input type="number" name="daily_temp_max" id="daily_temp_max" class="form-control flex-fill filter-input" value="30">
                 </div>
             </div>
 
@@ -23,8 +23,8 @@
                 </label>
                 <div id="night_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="night_temp_min" class="form-control flex-fill" value="5">
-                    <input type="number" id="night_temp_max" class="form-control flex-fill" value="20">
+                    <input type="number" name="night_temp_min" id="night_temp_min" class="form-control flex-fill filter-input" value="5">
+                    <input type="number" name="night_temp_max" id="night_temp_max" class="form-control flex-fill filter-input" value="20">
                 </div>
             </div>
 
@@ -36,8 +36,8 @@
                 </label>
                 <div id="water_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="water_temp_min" class="form-control flex-fill" value="10">
-                    <input type="number" id="water_temp_max" class="form-control flex-fill" value="25">
+                    <input type="number" name="water_temp_min" id="water_temp_min" class="form-control flex-fill filter-input" value="10">
+                    <input type="number" name="water_temp_max" id="water_temp_max" class="form-control flex-fill filter-input" value="25">
                 </div>
             </div>
         </div>
@@ -51,8 +51,8 @@
                 </label>
                 <div id="sunshine_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="sunshine_min" class="form-control flex-fill" value="4">
-                    <input type="number" id="sunshine_max" class="form-control flex-fill" value="8">
+                    <input type="number" name="sunshine_min" id="sunshine_min" class="form-control flex-fill filter-input" value="4">
+                    <input type="number" name="sunshine_max" id="sunshine_max" class="form-control flex-fill filter-input" value="8">
                 </div>
             </div>
 
@@ -64,8 +64,8 @@
                 </label>
                 <div id="rainy_days_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="rainy_days_min" class="form-control flex-fill" value="5">
-                    <input type="number" id="rainy_days_max" class="form-control flex-fill" value="15">
+                    <input type="number" name="rainy_days_min" id="rainy_days_min" class="form-control flex-fill filter-input" value="5">
+                    <input type="number" name="rainy_days_max" id="rainy_days_max" class="form-control flex-fill filter-input" value="15">
                 </div>
             </div>
 
@@ -77,8 +77,8 @@
                 </label>
                 <div id="humidity_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" id="humidity_min" class="form-control flex-fill" value="30">
-                    <input type="number" id="humidity_max" class="form-control flex-fill" value="70">
+                    <input type="number" name="humidity_min" id="humidity_min" class="form-control flex-fill filter-input" value="30">
+                    <input type="number" name="humidity_max" id="humidity_max" class="form-control flex-fill filter-input" value="70">
                 </div>
             </div>
         </div>
@@ -91,13 +91,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('detailSearchForm');
+    const filterInputs = document.querySelectorAll('.filter-input');
+    let timeoutId;
+
+    // Slider-Konfiguration und Initialisierung
     const slidersConfig = [
-        { id: 'daily_temp', min: 0, max: 50, start: [10, 30] },
-        { id: 'night_temp', min: 0, max: 30, start: [5, 20] },
-        { id: 'water_temp', min: 0, max: 40, start: [10, 25] },
-        { id: 'sunshine', min: 0, max: 12, start: [4, 8] },
-        { id: 'rainy_days', min: 0, max: 30, start: [5, 15] },
-        { id: 'humidity', min: 0, max: 100, start: [30, 70] },
+        { id: 'daily_temp', min: -15, max: 50, start: [-15, 50] },
+        { id: 'night_temp', min: -15, max: 30, start: [-15, 30] },
+        { id: 'water_temp', min: -5, max: 40, start: [-5, 40] },
+        { id: 'sunshine', min: 0, max: 16, start: [0, 16] },
+        { id: 'rainy_days', min: 0, max: 30, start: [0, 30] },
+        { id: 'humidity', min: 0, max: 100, start: [0, 100] },
     ];
 
     slidersConfig.forEach(slider => {
@@ -105,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const minInput = document.getElementById(`${slider.id}_min`);
         const maxInput = document.getElementById(`${slider.id}_max`);
 
-        // Initialize Slider without tooltips
         noUiSlider.create(sliderElement, {
             start: slider.start,
             connect: true,
@@ -119,15 +123,129 @@ document.addEventListener('DOMContentLoaded', function () {
         sliderElement.noUiSlider.on('update', function (values) {
             minInput.value = Math.round(values[0]);
             maxInput.value = Math.round(values[1]);
+
+            // Debug: Zeige die aktualisierten Werte an
+           // console.log(`Slider ${slider.id} geändert:`, { min: minInput.value, max: maxInput.value });
+
+            // Sende die Änderungen an den Controller
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const formData = new FormData(form);
+                const queryString = new URLSearchParams(formData).toString();
+
+                // Debug: Zeige die Formulardaten und Query-Parameter an
+                //console.log('Formulardaten:', Object.fromEntries(formData));
+                //console.log('Query-String:', queryString);
+
+                fetch(`${form.action}?${queryString}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Debug: Zeige die Serverantwort an
+                    //console.log('Serverantwort:', data);
+
+                    const locationCount = document.getElementById('locationCount');
+                    locationCount.textContent = data.count; // Aktualisiere die Anzeige
+                })
+                .catch(error => {
+                    console.error('Fehler beim Abrufen der Daten:', error);
+                    const locationCount = document.getElementById('locationCount');
+                    locationCount.textContent = 'Fehler';
+                });
+            }, 300); // 300ms Verzögerung
         });
 
         // Update slider when inputs change
-        const syncSliderWithInputs = () => {
+        minInput.addEventListener('change', () => {
             sliderElement.noUiSlider.set([minInput.value, maxInput.value]);
-        };
+        });
+        maxInput.addEventListener('change', () => {
+            sliderElement.noUiSlider.set([minInput.value, maxInput.value]);
+        });
+    });
 
-        minInput.addEventListener('change', syncSliderWithInputs);
-        maxInput.addEventListener('change', syncSliderWithInputs);
+    // Filter-Eingaben synchronisieren und senden
+    filterInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const formData = new FormData(form);
+                const queryString = new URLSearchParams(formData).toString();
+
+                // Debug: Zeige die Formulardaten und Query-Parameter an
+                console.log('Formulardaten:', Object.fromEntries(formData));
+                console.log('Query-String:', queryString);
+
+                fetch(`${form.action}?${queryString}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Debug: Zeige die Serverantwort an
+                    console.log('Serverantwort:', data);
+
+                    const locationCount = document.getElementById('locationCount');
+                    locationCount.textContent = data.count; // Aktualisiere die Anzeige
+                })
+                .catch(error => {
+                    console.error('Fehler beim Abrufen der Daten:', error);
+                    const locationCount = document.getElementById('locationCount');
+                    locationCount.textContent = 'Fehler';
+                });
+            }, 300); // 300ms Verzögerung
+        });
+    });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('detailSearchForm');
+    const filterInputs = document.querySelectorAll('.filter-input');
+    let timeoutId;
+
+    filterInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const formData = new FormData(form);
+                const queryString = new URLSearchParams(formData).toString();
+
+                console.log('Formulardaten:', Object.fromEntries(formData)); // Debug
+                console.log('Query-String:', queryString); // Debug
+
+                fetch(`${form.action}?${queryString}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Serverantwort:', data); // Debug
+                    const locationCount = document.getElementById('locationCount');
+                    locationCount.textContent = data.count;
+                })
+                .catch(error => console.error('Fehler beim Abrufen der Daten:', error));
+            }, 300); // 300ms Verzögerung
+        });
     });
 });
 
