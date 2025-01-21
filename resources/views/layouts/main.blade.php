@@ -88,28 +88,32 @@
 
 
 
-@if (Route::is('home', 'impressum', 'search.results', 'detail_search', 'continent.countries', 'list-country-locations', 'search.results'))
+@if (Route::is('home', 'impressum', 'search.results', 'detail_search', 'continent.countries', 'list-country-locations', 'ergebnisse.anzeigen'))
 
-<x-header
-    :panorama-location-picture="$panorama_location_picture ?? null"
-    :main-location-picture="$main_location_picture ?? null"
-    :panorama-location-text="$panorama_location_text ?? null"
-/>
+    @php
+        // Daten aus der Session oder übergebenen Variablen abrufen
+        $panoramaLocationPicture = session('headerData.bgImgPath') ?? $panorama_location_picture ?? null;
+        $mainLocationPicture = session('headerData.mainImgPath') ?? $main_location_picture ?? null;
+        $panoramaLocationText = session('headerData.headerContent.main_text') ?? $panorama_location_text ?? 'Standardtext';
+    @endphp
+
+    <x-header
+        :panorama-location-picture="$panoramaLocationPicture"
+        :main-location-picture="$mainLocationPicture"
+        :panorama-location-text="$panoramaLocationText"
+    />
 
 @else
 
-
-<x-header-details-new
-    :pic1-text="$pic1_text"
-    :pic2-text="$pic2_text"
-    :pic3-text="$pic3_text"
-    :head-line="$head_line"
-    :gallery-images="$gallery_images"
-/>
-
+    <x-header-details-new
+        :pic1-text="$pic1_text ?? 'Standardtext 1'"
+        :pic2-text="$pic2_text ?? 'Standardtext 2'"
+        :pic3-text="$pic3_text ?? 'Standardtext 3'"
+        :head-line="$head_line ?? 'Standardüberschrift'"
+        :gallery-images="$gallery_images ?? []"
+    />
 
 @endif
-
 
 
 <div class="bg-white">

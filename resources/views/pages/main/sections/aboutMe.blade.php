@@ -28,7 +28,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($top_ten as $location)
+                                    @foreach(collect($top_ten)->slice(0, 10) as $location)
                                     <tr class="border-bottom">
                                         <!-- Position -->
                                         <td class="text-primary fw-bold align-middle">{{ $loop->iteration }}.</td>

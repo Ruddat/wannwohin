@@ -40,6 +40,9 @@
             <i class="fas fa-search me-2"></i>
             Ergebnisse anzeigen (<span id="locationCount">{{ $total_locations }}</span>)
         </button>
+
+
+
         </div>
     </form>
 

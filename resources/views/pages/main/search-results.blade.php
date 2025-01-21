@@ -140,7 +140,7 @@
                                                 <div class="row my-3">
                                                     <div class="col-12 col-md-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            <i class="fas fa-arrows-alt-h text-6 me-3"></i>{{ $location->flight_hours }} Flugstunden
+                                                            <i class="fas fa-arrows-alt-h text-6 me-3"></i>{{ number_format(round($location->flight_hours, 1), 1, ',', '.') }} Flugstunden
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 d-flex align-items-end justify-content-start">
@@ -190,28 +190,35 @@
         </div>
 
         <script>
-            document.getElementById('pagination').onchange = function() {
-                const params = new URLSearchParams(window.location.search);
-                params.set('items_per_page', this.value);
-                window.location.search = params.toString();
-            };
-            document.getElementById('search_result_sort').onchange = function() {
-                const params = new URLSearchParams(window.location.search);
-                params.set('sort_by', this.value);
-                window.location.search = params.toString();
-            };
-            document.getElementById('sort_result_direction').onclick = function() {
-                const params = new URLSearchParams(window.location.search);
-                const currentDirection = this.getAttribute("data-sort-direction");
-                params.set('sort_direction', currentDirection === 'desc' ? 'asc' : 'desc');
-                window.location.search = params.toString();
-            };
+const pagination = document.getElementById('pagination');
+if (pagination) {
+    pagination.onchange = function () {
+        const params = new URLSearchParams(window.location.search);
+        params.set('items_per_page', this.value);
+        window.location.search = params.toString();
+    };
+}
+
+const sortSelect = document.getElementById('search_result_sort');
+if (sortSelect) {
+    sortSelect.addEventListener('change', async function () {
+        const params = new URLSearchParams(window.location.search);
+        params.set('sort_by', this.value);
+
+        const response = await fetch(`/update-results?${params.toString()}`);
+        const html = await response.text();
+
+        document.getElementById('timeline').innerHTML = html;
+    });
+}
         </script>
     </div>
 
 
     <style>
-        .my-zoom {
+
+ .my-zoom {
+    aspect-ratio: 16 / 9;
     background-size: cover; /* Bild deckt den Container ab */
     background-position: center; /* Bild wird zentriert */
     width: 100%; /* Container breitet sich über die gesamte Breite aus */
@@ -223,7 +230,7 @@
     background-size: cover; /* Bild deckt den Container ab */
     background-position: center; /* Bild wird zentriert */
     width: 100%; /* Container breitet sich über die gesamte Breite aus */
-   
+
 }
 }
 
@@ -234,6 +241,10 @@
     width: 100%; /* Container breitet sich über die gesamte Breite aus */
     height: 200px; /* Feste Höhe oder flexibel mit min-height */
 }
+
+#pagination {
+        width: 100%;
+    }
 }
 
     </style>

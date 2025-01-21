@@ -58,6 +58,10 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])
         ->name('detail_search_result');
 
+        Route::get('/search-results-alle', [DetailSearchController::class, 'showSearchResults'])
+        ->name('ergebnisse.anzeigen');
+
+
     Route::get('/climate-forecast/{locationId}', [DetailSearchController::class, 'predictFutureClimate']);
 
     Route::get('/search-results', function () {

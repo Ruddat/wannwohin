@@ -1,9 +1,9 @@
-<footer class="footer bg-dark text-white py-4">
+<footer class="footer bg-dark text-white py-5">
     <div class="container">
-        <div class="row">
+        <div class="row gy-4">
             <!-- Navigation Links -->
-            <div class="col-md-6 col-lg-3 mb-3">
-                <h5>Navigation</h5>
+            <div class="col-12 col-md-3 text-center text-md-start">
+                <h5 class="mb-3">Navigation</h5>
                 <ul class="list-unstyled">
                     <li><a href="/impressum" class="footer-link">Impressum</a></li>
                     <li><a href="/datenschutz" class="footer-link">Datenschutz</a></li>
@@ -13,9 +13,9 @@
             </div>
 
             <!-- Social Links -->
-            <div class="col-md-6 col-lg-3 mb-3">
-                <h5>Folge uns</h5>
-                <div class="social-links">
+            <div class="col-12 col-md-3 text-center">
+                <h5 class="mb-3">Folge uns</h5>
+                <div class="d-flex justify-content-center gap-3">
                     <a href="https://facebook.com" class="social-link" target="_blank">
                         <i class="fab fa-facebook"></i>
                     </a>
@@ -31,48 +31,47 @@
                 </div>
             </div>
 
-<!-- Language Switcher -->
-<div class="col-md-6 col-lg-3 mb-3">
-    <h5>Sprache</h5>
-    <div class="dropdown">
-        <a href="#" class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" style="text-decoration: none; color: #fff;">
-            <!-- Aktuelle Sprache mit Flagge -->
-            @php
-                $currentLocale = config('app.available_locales')[App::getLocale()];
-                $currentFlag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($currentLocale['flag'], -3)) . '.svg');
-            @endphp
-            <img src="{{ $currentFlag }}" alt="{{ $currentLocale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
-            {{ $currentLocale['name'] }}
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark">
-            @foreach (config('app.available_locales') as $localeCode => $locale)
-                @php
-                    $flag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($locale['flag'], -3)) . '.svg');
-                @endphp
-                <li>
-                    <a href="{{ route('change.lang', ['lang' => $localeCode]) }}" class="dropdown-item d-flex align-items-center">
-                        <img src="{{ $flag }}" alt="{{ $locale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
-                        {{ $locale['name'] }}
+            <!-- Language Switcher -->
+            <div class="col-12 col-md-3 text-center">
+                <h5 class="mb-3">Sprache</h5>
+                <div class="dropdown d-inline-block">
+                    <a href="#" class="dropdown-toggle d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" style="text-decoration: none; color: #fff;">
+                        @php
+                            $currentLocale = config('app.available_locales')[App::getLocale()];
+                            $currentFlag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($currentLocale['flag'], -3)) . '.svg');
+                        @endphp
+                        <img src="{{ $currentFlag }}" alt="{{ $currentLocale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
+                        {{ $currentLocale['name'] }}
                     </a>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-</div>
-
-            <!-- Newsletter Section -->
-            <div class="col-md-6 col-lg-3 mb-3">
-                @livewire('frontend.newsletter-form.newsletter-form-component')
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        @foreach (config('app.available_locales') as $localeCode => $locale)
+                            @php
+                                $flag = asset('assets/fonts/flag-icons-master/4x3/' . strtolower(substr($locale['flag'], -3)) . '.svg');
+                            @endphp
+                            <li>
+                                <a href="{{ route('change.lang', ['lang' => $localeCode]) }}" class="dropdown-item d-flex align-items-center">
+                                    <img src="{{ $flag }}" alt="{{ $locale['name'] }}" class="me-2" style="width: 24px; height: 16px; border-radius: 3px;">
+                                    {{ $locale['name'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
 
+            <!-- Newsletter Section -->
+            <div class="col-12 col-md-3 text-center text-md-start">
+                <h5 class="mb-3">Newsletter</h5>
+                @livewire('frontend.newsletter-form.newsletter-form-component')
+            </div>
+        </div>
+
         <!-- Footer Bottom -->
-        <div class="footer-bottom text-center mt-4">
+        <div class="footer-bottom text-center mt-5 pt-4 border-top border-secondary">
             <p class="small mb-0">© 2025 Dein Unternehmen. Alle Rechte vorbehalten.</p>
         </div>
     </div>
 </footer>
-
-
 <style>
 /* Footer Styling */
 .footer {
@@ -83,21 +82,22 @@
 .footer h5 {
     font-size: 1.2rem;
     margin-bottom: 1rem;
+    color: #fdd55c; /* Akzentfarbe für Überschriften */
 }
 
 .footer a {
     color: #fff;
     text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 .footer a:hover {
-    color: #fdd55c;
-    text-decoration: underline;
+    color: #fdd55c; /* Akzentfarbe für Hover-Effekte */
 }
 
 /* Dropdown Styling */
 .footer .dropdown-menu {
-    background-color: #333; /* Dunkler Hintergrund für den Dropdown */
+    background-color: #333;
     border: 1px solid #444;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
@@ -110,11 +110,6 @@
 .footer .dropdown-item:hover {
     background-color: #444;
     color: #fdd55c;
-}
-
-.footer .dropdown-item img {
-    margin-right: 8px;
-    border-radius: 3px;
 }
 
 /* Social Links */
@@ -146,14 +141,8 @@
         text-align: center;
     }
 
-    .footer .social-links {
-        justify-content: center;
-    }
-
     .footer .row > div {
         text-align: center;
     }
 }
-
-
 </style>

@@ -7,6 +7,7 @@ use App\Models\WwdeRange;
 use Livewire\Attributes\On;
 use App\Models\WwdeLocation;
 use App\Models\WwdeContinent;
+use App\Repositories\LocationRepository;
 
 class QuickSearchComponent extends Component
 {
@@ -38,12 +39,16 @@ class QuickSearchComponent extends Component
     ];
 
 
-    public function mount()
+    public function mount(LocationRepository $repository)
     {
+        // Header Content und Bilder laden
+        $headerData = $repository->getHeaderContent();
 
-        $this->isCollapsed = filter_var(request()->cookie('isCollapsed', false), FILTER_VALIDATE_BOOLEAN);
+        $this->headerContent = $headerData['headerContent'] ?? null;
+        $this->bgImgPath = $headerData['bgImgPath'] ?? null;
+        $this->mainImgPath = $headerData['mainImgPath'] ?? null;
 
-        // Nur aktive und fertige Einträge laden
+        // Alle Locations laden (wie zuvor)
         $this->allLocations = WwdeLocation::where('status', 'active')
             ->where('finished', 1)
             ->get();
@@ -171,6 +176,16 @@ class QuickSearchComponent extends Component
         }
     }
 
+    public function collapseSidebar()
+    {
+        $this->isCollapsed = true;
+
+        // Optional: Zustand in einem Cookie speichern
+        cookie()->queue('isCollapsed', true, 60 * 24 * 30); // 30 Tage
+
+        // Nach dem Einklappen zur "Detailsuche"-Route umleiten
+        return redirect()->route('detail_search');
+    }
 
     public function render()
     {

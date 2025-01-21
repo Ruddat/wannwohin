@@ -127,31 +127,45 @@
     });
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('detailSearchForm');
     const continentCheckboxes = document.querySelectorAll('.continent-checkbox');
     const locationCount = document.getElementById('locationCount');
 
+    if (!form || !continentCheckboxes.length || !locationCount) {
+        console.error('Formular, Checkboxen oder LocationCount-Element nicht gefunden.');
+        return;
+    }
+
     continentCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
             const formData = new FormData(form);
-            const queryString = new URLSearchParams(formData).toString();
 
+            // Log für Debugging
+            const queryString = new URLSearchParams(formData).toString();
+            console.log('Gesendeter Query-String:', queryString);
+
+            // Sende die Anfrage
             fetch(`${form.action}?${queryString}`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             })
-            .then(response => response.json())
-            .then(data => {
-                if (locationCount) {
-                    locationCount.textContent = data.count;
-                }
-            })
-            .catch(error => {
-                console.error('Fehler beim Abrufen der Daten:', error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Netzwerkfehler: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (locationCount) {
+                        locationCount.textContent = data.count || '0'; // Aktualisiere die Anzahl
+                    }
+                })
+                .catch(error => {
+                    console.error('Fehler bei der Anfrage:', error);
+                });
         });
     });
 });

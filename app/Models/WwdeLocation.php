@@ -9,7 +9,9 @@ use App\Models\ModLocationGalerie;
 use App\Models\WwdeLocationImages;
 use App\Models\ModElectricStandards;
 use App\Models\MonthlyClimateSummary;
+use App\Models\ModDailyClimateAverage;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ModHistoricalClimateData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WwdeLocation extends Model
@@ -189,6 +191,18 @@ class WwdeLocation extends Model
     {
         return $this->hasOne(ModElectricStandards::class, 'country_id', 'country_id');
     }
+
+    public function dailyAverages()
+    {
+        return $this->hasMany(ModDailyClimateAverage::class, 'location_id');
+    }
+
+    public function historicalData()
+    {
+        return $this->hasMany(ModHistoricalClimateData::class, 'location_id');
+    }
+
+
 
 
 }

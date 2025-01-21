@@ -38,7 +38,7 @@ class IndexController extends Controller
 
         // 1. Top 10 Locations abrufen (nach Klicks sortiert)
         $step1Start = microtime(true);
-        $topTenLocationIds = Cache::remember('top_ten_location_ids', 30 * 60, function () {
+        $topTenLocationIds = Cache::remember('top_ten_location_ids', 5 * 60, function () {
             return DB::table('stat_top_ten_locations')
                 ->orderByDesc('search_count') // Nach Suchanfragen sortieren
                 ->limit(10) // Nur die Top 10 IDs holen
@@ -79,20 +79,15 @@ class IndexController extends Controller
         // 3. Erstelle die Variable `TopTenLocationWithClima`
         $TopTenLocationWithClima = [];
 
+        // Schleife bleibt unverändert
         foreach ($topTenLocationsWithClima as $location) {
-            // Prüfe, ob iso2 oder iso3 fehlen
             if (empty($location->iso2) || empty($location->iso3)) {
-                // Ländercode aus den Koordinaten ermitteln
                 $geocodeService = new GeocodeService();
                 $geocodeData = $geocodeService->searchByCoordinates($location->lat, $location->lon);
 
-                // ISO2 aus dem country_code ermitteln
                 $iso2 = strtoupper($geocodeData['address']['country_code'] ?? 'unknown');
-
-                // ISO3 aus der Tabelle iso_codes ermitteln
                 $iso3 = strtoupper($geocodeData['address']['ISO3166-2-lvl4'] ?? 'unknown');
 
-                // Fehlende Felder in der Datenbank aktualisieren
                 DB::table('wwde_locations')
                     ->where('id', $location->location_id)
                     ->update([
@@ -103,12 +98,12 @@ class IndexController extends Controller
 
             $TopTenLocationWithClima[] = [
                 'location_id' => $location->location_id,
-                'location_title' => $location->location_title, // Location-Name
-                'location_alias' => $location->location_alias, // Location-Alias
-                'iso2' => $location->iso2, // ISO2
-                'iso3' => $location->iso3, // ISO3
-                'continent' => $location->continent_alias, // Kontinent-Daten
-                'country' => $location->country_alias, // Land-Daten
+                'location_title' => $location->location_title,
+                'location_alias' => $location->location_alias,
+                'iso2' => $location->iso2,
+                'iso3' => $location->iso3,
+                'continent' => $location->continent_alias,
+                'country' => $location->country_alias,
                 'climate_data' => [
                     'daily_temperature' => $location->daily_temperature,
                     'night_temperature' => $location->night_temperature,
@@ -117,10 +112,14 @@ class IndexController extends Controller
                     'water_temperature' => $location->water_temperature,
                     'weather_description' => $location->weather_description,
                     'weather_icon' => $location->icon,
-                    // Weitere Klimadaten...
                 ],
             ];
         }
+
+        // Begrenzung auf 10 Einträge
+        $TopTenLocationWithClima = array_slice($TopTenLocationWithClima, 0, 10);
+
+        //dd($TopTenLocationWithClima);
 
         // Optional: Logge die Ergebnisse zur Überprüfung
         Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);

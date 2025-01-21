@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\WwdeLocation;
+use Illuminate\Support\Facades\Storage;
+use App\Library\WeatherDataManagerLibrary;
 
 class LocationRepository
 {
@@ -70,6 +72,110 @@ class LocationRepository
     }
 
 
+    public function getLocationsByFilters($filters)
+    {
+        $query = WwdeLocation::query()
+            ->select('wwde_locations.*') // Verhindert Konflikte mit Joins
+            ->join('wwde_climates', 'wwde_locations.id', '=', 'wwde_climates.location_id')
+            ->with(['country', 'continent']) // Beziehungen laden
+            ->where('wwde_locations.status', 'active')
+            ->where('wwde_locations.finished', 1);
 
+        // Filter: Monat
+        if (!empty($filters['month'])) {
+            $query->whereJsonContains('wwde_locations.best_traveltime_json', $filters['month']);
+        }
+
+        // Filter: Kontinent
+        if (!empty($filters['continent'])) {
+            $query->where('wwde_locations.continent_id', $filters['continent']);
+        }
+
+        // Filter: Preis
+        if (!empty($filters['price'])) {
+            $query->where('wwde_locations.price_flight', '<=', $filters['price']);
+        }
+
+        // Filter: Sonnenstunden
+        if (!empty($filters['sonnenstunden'])) {
+            $query->where('wwde_climates.sunshine_per_day', '>=', $filters['sonnenstunden']);
+        }
+
+        // Filter: Wassertemperatur
+        if (!empty($filters['wassertemperatur'])) {
+            $query->where('wwde_climates.water_temperature', '>=', $filters['wassertemperatur']);
+        }
+
+        // Filter: Spezielle Wünsche
+        if (!empty($filters['spezielle'])) {
+            foreach ($filters['spezielle'] as $wish) {
+                $query->where("wwde_locations.$wish", 1);
+            }
+        }
+
+        return $query;
+    }
+
+
+    public function formatLocations($locations, $withWeatherData = false)
+    {
+        $weatherDataManager = new WeatherDataManagerLibrary();
+
+        foreach ($locations as $location) {
+            if ($withWeatherData) {
+                $location->climate_data = $weatherDataManager->fetchAndStoreWeatherData(
+                    $location->lat,
+                    $location->lon,
+                    $location->id
+                );
+            }
+        }
+
+        return $locations;
+    }
+
+    public function getHeaderContent()
+    {
+        $headerContent = \Cache::remember('header_content_random', 5 * 60, function () {
+            return \App\Models\HeaderContent::inRandomOrder()->first();
+        });
+
+        if (!$headerContent) {
+            return [
+                'headerContent' => null,
+                'bgImgPath' => null,
+                'mainImgPath' => null,
+                'mainText' => null,
+            ];
+        }
+
+        $bgImgPath = $this->getValidImagePath($headerContent->bg_img);
+        $mainImgPath = $this->getValidImagePath($headerContent->main_img);
+
+        return [
+            'headerContent' => $headerContent,
+            'bgImgPath' => $bgImgPath,
+            'mainImgPath' => $mainImgPath,
+            'mainText' => $headerContent->main_text ?? null,
+        ];
+    }
+
+    private function getValidImagePath($imagePath)
+    {
+        if (!$imagePath) {
+            return null;
+        }
+
+        // Überprüfen, ob das Bild existiert
+        if (Storage::exists($imagePath)) {
+            return Storage::url($imagePath);
+        }
+
+        if (file_exists(public_path($imagePath))) {
+            return asset($imagePath);
+        }
+
+        return null;
+    }
 
 }

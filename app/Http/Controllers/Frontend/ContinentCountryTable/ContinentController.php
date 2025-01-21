@@ -43,8 +43,17 @@ class ContinentController extends Controller
         ->orderBy('title', 'asc') // Sort alphabetically
         ->get();
 
+
+
+
+
         // Prüfe, ob der Kontinent benutzerdefinierte Bilder hat
         $bgImgPath = $continent->image1_path ?? null;
+
+
+
+      //  dd($bgImgPath);
+
         $bgImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
       //  $mainImgPath = $continent->image2_path ?? null;
         $mainImgPath = $continent->image2_path ? Storage::url($continent->image2_path) : null;
@@ -53,14 +62,15 @@ class ContinentController extends Controller
 
         // Falls keine Bilder im Kontinent definiert sind, verwende HeaderContent
         if (!$bgImgPath || !$mainImgPath) {
-            $headerContent = Cache::remember('header_content_random', 60 * 60, function () {
+            $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
                 return HeaderContent::inRandomOrder()->first();
             });
+//dd($headerContent);
 
             $bgImgPath = $bgImgPath ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
             $mainImgPath = $mainImgPath ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
         }
-//        dd($bgImgPath, $mainImgPath);
+       // dd($bgImgPath, $mainImgPath);
 
         // Ansicht rendern
         return view('frondend.continent_and_countries.index', [

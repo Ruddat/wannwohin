@@ -8,6 +8,8 @@
                                 <i id="sort_result_up" class="fas fa-sort-up fa-lg {{ request()->get('sort_direction') === 'desc' ? 'fa-disabled' : '' }}" style="line-height: 3px"></i>
                                 <i id="sort_result_down" class="fas fa-sort-down fa-lg {{ request()->get('sort_direction') === 'asc' ? 'fa-disabled' : '' }}" style="line-height: 3px"></i>
                             </span>
+
+                            ldskfjsldkfjlskdjflskjdflkjsdflk
                             <label for="search_result_sort" class="pe-1 text-4">Sortieren: </label>
                             <select class="form-select" id="search_result_sort" name="search_result_sort">
                                 <option value="price" {{ request()->get('sort_by') === 'price' ? 'selected' : '' }}>Preis</option>
@@ -138,7 +140,7 @@
                                                 <div class="row my-3">
                                                     <div class="col-12 col-md-4 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            <i class="fas fa-arrows-alt-h text-6 me-3"></i>{{ $location->flight_hours }} Flugstunden
+                                                            <i class="fas fa-arrows-alt-h text-6 me-3"></i>{{ number_format(round($location->flight_hours, 1), 1, ',', '.') }} Flugstunden
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 d-flex align-items-end justify-content-start">
@@ -173,7 +175,7 @@
     <div class="d-flex justify-content-center mt-4">
         {{ $locations->links() }}
     </div>
-    
+
         <script>
             document.getElementById('pagination').onchange = function() {
                 const params = new URLSearchParams(window.location.search);
@@ -196,6 +198,8 @@
 
     <style>
         .my-zoom {
+            aspect-ratio: 16 / 9;
+
             background-size: cover; /* Bild deckt den Container ab */
             background-position: center; /* Bild wird zentriert */
             width: 100%; /* Container breitet sich über die gesamte Breite aus */

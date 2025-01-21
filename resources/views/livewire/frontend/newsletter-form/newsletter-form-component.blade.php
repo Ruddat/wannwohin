@@ -1,5 +1,4 @@
 <div>
-    <h5>Newsletter</h5>
     <form wire:submit.prevent="subscribe">
         <div class="mb-3">
             <input

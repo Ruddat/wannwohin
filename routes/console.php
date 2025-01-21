@@ -9,7 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Schedule::command('climate:fetch-daily')->dailyAt('14:00');
+//Schedule::command('climate:fetch-daily')->dailyAt('14:00');
+Schedule::command('climate:fetch-daily')->cron('0 */4 * * *'); // Alle 4 Stunden
 //Schedule::command('locations:import-world-cities --format=csv')->hourly();
 Schedule::command('locations:download-continent-images')->dailyAt('00:30');
 Schedule::command('scrape:travel-warnings')->dailyAt('01:30');

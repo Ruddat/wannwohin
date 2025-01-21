@@ -8,8 +8,11 @@ use App\Models\WwdeCountry;
 use App\Models\ModLanguages;
 use App\Models\WwdeLocation;
 use Illuminate\Http\Request;
+use App\Models\HeaderContent;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use App\Models\WwdeContinent; // WwdeContinent importieren
 
 class DetailSearchController extends Controller
@@ -19,6 +22,29 @@ class DetailSearchController extends Controller
      */
     public function index()
     {
+
+    // Header Content und Bilder laden
+    $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
+        return HeaderContent::inRandomOrder()->first();
+    });
+
+    $bgImgPath = $headerContent->bg_img
+        ? (Storage::exists($headerContent->bg_img)
+            ? Storage::url($headerContent->bg_img)
+            : (file_exists(public_path($headerContent->bg_img))
+                ? asset($headerContent->bg_img)
+                : null))
+        : null;
+
+    $mainImgPath = $headerContent->main_img
+        ? (Storage::exists($headerContent->main_img)
+            ? Storage::url($headerContent->main_img)
+            : (file_exists(public_path($headerContent->main_img))
+                ? asset($headerContent->main_img)
+                : null))
+        : null;
+
+
         // Länder abrufen
         $countries = WwdeCountry::all();
 
@@ -107,6 +133,9 @@ class DetailSearchController extends Controller
             'flightDuration' => $flightDuration,
             'Destinations' => $Destinations,
             'activities' => $activities,
+            'panorama_location_picture' => $bgImgPath,
+            'main_location_picture' => $mainImgPath,
+            'panorama_location_text' => $headerContent->main_text ?? null,
         ]);
     }
 
@@ -148,6 +177,46 @@ class DetailSearchController extends Controller
             $query->where('wwde_locations.country_id', $request->country);
         }
 
+        if ($request->filled('continents')) {
+            $selectedContinents = array_keys($request->input('continents')); // IDs der ausgewählten Kontinente
+            $query->whereIn('continent_id', $selectedContinents);
+        }
+
+
+
+        // Filter Locations basierend auf ausgewählten Währungen
+        if ($request->filled('currency')) {
+            $countryIds = WwdeCountry::where('currency_code', $request->currency)->pluck('id');
+            $query->whereIn('country_id', $countryIds);
+        }
+
+        // Filtere Locations basierend auf ausgewählten Sprachen
+        if ($request->filled('language')) {
+            $countryIds = WwdeCountry::where('official_language', $request->language)->pluck('id');
+            $query->whereIn('country_id', $countryIds);
+        }
+
+        // Filtere Locations basierend auf ausgewählten Visum-Status
+        if ($request->filled('visum')) {
+            $visumRequired = $request->visum === 'yes' ? 1 : 0;
+
+            // Länder mit passendem Visum-Status abrufen
+            $countryIds = WwdeCountry::where('country_visum_needed', $visumRequired)->pluck('id');
+
+            // Locations basierend auf diesen Ländern filtern
+            $query->whereIn('country_id', $countryIds);
+        }
+
+        if ($request->filled('price_tendency')) {
+            // Länder mit der ausgewählten Preistendenz abrufen
+            $countryIds = WwdeCountry::where('price_tendency', $request->price_tendency)->pluck('id');
+
+            // Locations basierend auf diesen Ländern filtern
+            $query->whereIn('country_id', $countryIds);
+        }
+
+
+
         // Filter: Klimazonen
         if ($request->filled('climate_zone')) {
             $climateZones = explode(',', str_replace(' ', '', $request->climate_zone));
@@ -159,6 +228,18 @@ class DetailSearchController extends Controller
                 })
                 ->pluck('id');
             $query->whereIn('wwde_locations.country_id', $countryIds);
+        }
+
+
+        // Filter für Aktivitäten
+        if ($request->filled('activities')) {
+            $activities = $request->activities;
+
+            $query->where(function ($subQuery) use ($activities) {
+                foreach ($activities as $activity) {
+                    $subQuery->orWhere($activity, 1);
+                }
+            });
         }
 
         // Filter: Flugstunden
@@ -222,9 +303,90 @@ class DetailSearchController extends Controller
         // Anzahl der Ergebnisse
         $count = $query->count();
 
+
+
+        $locations = $query->get();
+        $count = $locations->count();
+
+    if ($request->ajax()) {
+        // Antwort für AJAX-Anfragen (JSON)
+        return response()->json(['count' => $count]);
+    }
+
+
+    $filters = $request->only([
+        'month',
+        'continent',
+        'price',
+        'sonnenstunden',
+        'wassertemperatur',
+        'spezielle',
+    ]);
+
+    $repository = app(\App\Repositories\LocationRepository::class);
+
+    $query = $repository->getLocationsByFilters($filters);
+    $locations = $query->paginate(10);
+
+    $locations = $repository->formatLocations($locations, false);
+
+
+    $headerData = $repository->getHeaderContent();
+//dd($headerData);
+
+$locations = $query->get();
+
+
+// Umleitung zur neuen Route mit Daten als Query-Parameter
+return redirect()->route('ergebnisse.anzeigen', [
+    'locations' => $locations->pluck('id')->toArray(),
+    'urlaubType' => $request->get('urlaubType', 'default'),
+    'monthId' => $request->get('monthId'),
+    'monthName' => $filters['month'] ?? 'Unbekannt',
+    'items_per_page' => 10,
+]);
+
         // Rückgabe der JSON-Antwort
         return response()->json(['count' => $count]);
     }
+
+
+    public function showSearchResults(Request $request)
+    {
+        // Daten aus der Datenbank abrufen (z. B. gefilterte Locations)
+        $locations = WwdeLocation::query()
+            ->with(['country', 'country.continent']) // Eager Loading für Beziehungen
+            ->when($request->filled('month'), function ($query) use ($request) {
+                // Filter nach Monat
+                $query->whereJsonContains('best_traveltime_json', $request->month);
+            })
+            ->when($request->filled('sort_by'), function ($query) use ($request) {
+                // Sortierung
+                $query->orderBy($request->sort_by, $request->sort_direction ?? 'asc');
+            })
+            ->paginate($request->items_per_page ?? 10);
+
+        // Header-Daten (falls benötigt)
+// Header-Daten abrufen
+$repository = app(\App\Repositories\LocationRepository::class);
+$headerData = $repository->getHeaderContent();
+
+// Daten an die View übergeben
+return view('pages.main.search-results', [
+    'locations' => $locations, // Paginierte Suchergebnisse
+    'items_per_page' => $request->items_per_page ?? 10, // Anzahl der Ergebnisse pro Seite
+    'sort_by' => $request->sort_by, // Aktuelles Sortierkriterium
+    'sort_direction' => $request->sort_direction ?? 'asc', // Sortierrichtung
+    'headerContent' => $headerData['headerContent'] ?? null, // Header-Inhalt (falls vorhanden)
+    'panorama_location_picture' => $headerData['bgImgPath'] ?? null, // Panorama-Bild
+    'main_location_picture' => $headerData['mainImgPath'] ?? null, // Haupt-Bild
+    'panorama_location_text' => $headerData['mainText'] ?? null, // Haupt-Text
+]);
+    }
+
+
+
+
 
         /**
      * Berechnet zukünftige Monate basierend auf vorhandenen Klimadaten.

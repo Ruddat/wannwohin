@@ -8,6 +8,8 @@ use App\Models\HeaderContent;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\LocationRepository;
+
 
 class SearchResultsComponent extends Component
 {
@@ -27,29 +29,22 @@ class SearchResultsComponent extends Component
     public $bgImgPath;
     public $mainImgPath;
 
-    public function mount()
+    public function mount(LocationRepository $repository)
     {
         // Header Content und Bilder laden
-        $this->headerContent = Cache::remember('header_content_random', 5 * 60, function () {
-            return HeaderContent::inRandomOrder()->first();
-        });
+        $headerData = $repository->getHeaderContent();
 
-        
-        $this->bgImgPath = $this->headerContent->bg_img
-        ? (Storage::exists($this->headerContent->bg_img)
-            ? Storage::url($this->headerContent->bg_img)
-            : (file_exists(public_path($this->headerContent->bg_img))
-                ? asset($this->headerContent->bg_img)
-                : null))
-        : null;
+        // Header-Daten in der Session speichern
+        session()->put('headerData', [
+            'headerContent' => $headerData['headerContent'] ?? null,
+            'bgImgPath' => $headerData['bgImgPath'] ?? null,
+            'mainImgPath' => $headerData['mainImgPath'] ?? null,
+        ]);
 
-    $this->mainImgPath = $this->headerContent->main_img
-        ? (Storage::exists($this->headerContent->main_img)
-            ? Storage::url($this->headerContent->main_img)
-            : (file_exists(public_path($this->headerContent->main_img))
-                ? asset($this->headerContent->main_img)
-                : null))
-        : null;
+        // Header-Daten in Livewire-Variablen setzen (falls benötigt)
+        $this->headerContent = $headerData['headerContent'] ?? null;
+        $this->bgImgPath = $headerData['bgImgPath'] ?? null;
+        $this->mainImgPath = $headerData['mainImgPath'] ?? null;
 
         // Suchparameter aus der URL laden
         $this->continent = request('continent');
@@ -60,6 +55,7 @@ class SearchResultsComponent extends Component
         $this->spezielle = request('spezielle');
     }
 
+
     public function updatedSortBy()
     {
         $this->resetPage(); // Pagination zurücksetzen, wenn die Sortierung geändert wird
@@ -67,54 +63,53 @@ class SearchResultsComponent extends Component
 
     public function render()
     {
-        // Header-Content und Bilder an das Template übergeben
-        view()->share([
-            'panorama_location_picture' => $this->bgImgPath,
-            'main_location_picture' => $this->mainImgPath,
-            'panorama_location_text' => $this->headerContent->main_text ?? null,
-        ]);
-
-        // Abfrage für die Suchergebnisse
         $query = WwdeLocation::query()
-            ->where('status', 'active')
-            ->where('finished', 1);
+            ->select('wwde_locations.*') // Eindeutige Spaltenauswahl
+            ->join('wwde_climates', 'wwde_locations.id', '=', 'wwde_climates.location_id')
+            ->where('wwde_locations.status', 'active')
+            ->where('wwde_locations.finished', 1);
 
+        // Filter: Kontinent
         if (!empty($this->continent)) {
-            $query->where('continent_id', $this->continent);
+            $query->where('wwde_locations.continent_id', $this->continent);
         }
 
+        // Filter: Preis
         if (!empty($this->price)) {
-            $query->where('price_flight', '<=', $this->price);
+            $query->where('wwde_locations.price_flight', '<=', $this->price);
         }
 
+        // Filter: Reisezeit
         if (!empty($this->urlaub)) {
-            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($this->urlaub)]);
+            $query->whereRaw('JSON_CONTAINS(wwde_locations.best_traveltime_json, ?)', [json_encode($this->urlaub)]);
         }
 
+        // Filter: Sonnenstunden
         if (!empty($this->sonnenstunden)) {
-            $query->whereHas('climates', function ($q) {
-                $q->where('sunshine_per_day', '>=', $this->sonnenstunden);
-            });
+            $query->where('wwde_climates.sunshine_per_day', '>=', $this->sonnenstunden);
         }
 
+        // Filter: Wassertemperatur
         if (!empty($this->wassertemperatur)) {
-            $query->whereHas('climates', function ($q) {
-                $q->where('water_temperature', '>=', $this->wassertemperatur);
-            });
+            $query->where('wwde_climates.water_temperature', '>=', $this->wassertemperatur);
         }
 
+        // Filter: Spezielle Wünsche
         if (!empty($this->spezielle)) {
             foreach ($this->spezielle as $wish) {
-                $query->where($wish, 1);
+                $query->where("wwde_locations.$wish", 1);
             }
         }
 
         // Ergebnisse sortieren und paginieren
-        $locations = $query->orderBy($this->sortBy, $this->sortDirection)->paginate(10);
-
-        // Template mit den Suchergebnissen rendern
+        $locations = $query->orderBy("wwde_locations.{$this->sortBy}", $this->sortDirection)
+            ->paginate(10);
+//dd($locations, $this->headerContent->main_text);
+        // Ergebnisse an die View übergeben
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
+
         ]);
     }
+
 }
