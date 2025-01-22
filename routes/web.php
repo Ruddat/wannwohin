@@ -58,7 +58,7 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])
         ->name('detail_search_result');
 
-        Route::get('/search-results-alle', [DetailSearchController::class, 'showSearchResults'])
+        Route::get('/search-results-alle', [App\Http\Controllers\Frontend\DetailSearch\DetailSearchController::class, 'showSearchResults'])
         ->name('ergebnisse.anzeigen');
 
 

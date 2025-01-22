@@ -9,6 +9,7 @@ use App\Models\WwdeContinent;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\ContinentRepository;
 
 /**
  * Handles displaying continents and countries along with their respective locations.
@@ -32,56 +33,32 @@ class ContinentController extends Controller
      * The resulting data is passed to the `frondend.continent_and_countries.index` view.
      */
 
-    public function showCountries($continentAlias)
-    {
-        // Finde den Kontinent basierend auf dem Alias
-        $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
+     public function showCountries($continentAlias, ContinentRepository $repository)
+     {
+         // Finde den Kontinent basierend auf dem Alias
+         $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
 
-        // Länder des Kontinents abrufen, die aktiv sind
-        $countries = WwdeCountry::where('continent_id', $continent->id)
-        ->where('status', 'active')
-        ->orderBy('title', 'asc') // Sort alphabetically
-        ->get();
+         // Länder des Kontinents abrufen
+         $countries = WwdeCountry::where('continent_id', $continent->id)
+             ->where('status', 'active')
+             ->orderBy('title', 'asc')
+             ->get();
 
+         // Bilder abrufen (mit Fallback)
+     //    $images = $repository->getContinentImages($continent);
+         $images = $repository->getAndStoreContinentImages($continent);
 
+        // dd($images);
 
-
-
-        // Prüfe, ob der Kontinent benutzerdefinierte Bilder hat
-        $bgImgPath = $continent->image1_path ?? null;
-
-
-
-      //  dd($bgImgPath);
-
-        $bgImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
-      //  $mainImgPath = $continent->image2_path ?? null;
-        $mainImgPath = $continent->image2_path ? Storage::url($continent->image2_path) : null;
-
-//dd($bgImgPath, $mainImgPath);
-
-        // Falls keine Bilder im Kontinent definiert sind, verwende HeaderContent
-        if (!$bgImgPath || !$mainImgPath) {
-            $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
-                return HeaderContent::inRandomOrder()->first();
-            });
-//dd($headerContent);
-
-            $bgImgPath = $bgImgPath ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
-            $mainImgPath = $mainImgPath ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
-        }
-       // dd($bgImgPath, $mainImgPath);
-
-        // Ansicht rendern
-        return view('frondend.continent_and_countries.index', [
-            'continent' => $continent,
-            'countries' => $countries,
-            'panorama_location_picture' => $bgImgPath,
-            'main_location_picture' => $mainImgPath,
-            'panorama_location_text' => $continent->continent_header_text ?? null,
-        ]);
-    }
-
+         // Ansicht rendern
+         return view('frondend.continent_and_countries.index', [
+             'continent' => $continent,
+             'countries' => $countries,
+             'panorama_location_picture' => $images['bgImgPath'],
+             'main_location_picture' => $images['mainImgPath'],
+             'panorama_location_text' => $continent->continent_header_text ?? null,
+         ]);
+     }
 
     public function showLocations($continentAlias, $countryAlias)
     {

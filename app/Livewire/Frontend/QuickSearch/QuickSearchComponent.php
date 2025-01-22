@@ -53,6 +53,9 @@ class QuickSearchComponent extends Component
             ->where('finished', 1)
             ->get();
 
+//dd($this->allLocations);
+
+
         $this->totalLocations = $this->allLocations->count();
         $this->filteredLocations = $this->totalLocations;
     }
@@ -70,36 +73,52 @@ class QuickSearchComponent extends Component
         // Scopes für wiederverwendbare Abfragen
         $query->active()->finished();
 
+        // Wenn kein Filter gesetzt ist, alle Locations abrufen
+        if (
+            empty($this->continent) &&
+            empty($this->price) &&
+            empty($this->urlaub) &&
+            empty($this->sonnenstunden) &&
+            empty($this->wassertemperatur) &&
+            empty($this->spezielle)
+        ) {
+            $this->filteredLocations = $this->totalLocations;
+            return; // Keine weiteren Bedingungen anwenden
+        }
+
+        // Filter: Kontinent
         if (!empty($this->continent)) {
             $query->where('continent_id', $this->continent);
         }
 
+        // Filter: Preis
         if (!empty($this->price)) {
             $this->applyPriceFilter($query);
         }
 
-    // Übersetzung der Eingabe von Deutsch nach Englisch
-    if (!empty($this->urlaub)) {
-        $monthMapping = [
-            'Januar' => 'January',
-            'Februar' => 'February',
-            'März' => 'March',
-            'April' => 'April',
-            'Mai' => 'May',
-            'Juni' => 'June',
-            'Juli' => 'July',
-            'August' => 'August',
-            'September' => 'September',
-            'Oktober' => 'October',
-            'November' => 'November',
-            'Dezember' => 'December',
-        ];
+        // Filter: Urlaub (Monat)
+        if (!empty($this->urlaub)) {
+            $monthMapping = [
+                'Januar' => 'January',
+                'Februar' => 'February',
+                'März' => 'March',
+                'April' => 'April',
+                'Mai' => 'May',
+                'Juni' => 'June',
+                'Juli' => 'July',
+                'August' => 'August',
+                'September' => 'September',
+                'Oktober' => 'October',
+                'November' => 'November',
+                'Dezember' => 'December',
+            ];
 
-        $englishMonth = $monthMapping[$this->urlaub] ?? $this->urlaub;
+            $englishMonth = $monthMapping[$this->urlaub] ?? $this->urlaub;
 
-        $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($englishMonth)]);
-    }
+            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($englishMonth)]);
+        }
 
+        // Filter: Sonnenstunden
         if (!empty($this->sonnenstunden)) {
             $query->whereHas('climates', function ($q) {
                 $minHours = (int) str_replace('more_', '', $this->sonnenstunden);
@@ -107,6 +126,7 @@ class QuickSearchComponent extends Component
             });
         }
 
+        // Filter: Wassertemperatur
         if (!empty($this->wassertemperatur)) {
             $query->whereHas('climates', function ($q) {
                 $minTemp = (int) str_replace('more_', '', $this->wassertemperatur);
@@ -114,14 +134,17 @@ class QuickSearchComponent extends Component
             });
         }
 
+        // Filter: Spezielle Wünsche
         if (!empty($this->spezielle)) {
             foreach ($this->spezielle as $wish) {
                 $query->where($wish, 1);
             }
         }
 
+        // Gefilterte Locations zählen
         $this->filteredLocations = $query->count();
     }
+
 
 
     // Livewire-Listener-Methode mit Parameter
@@ -152,6 +175,9 @@ class QuickSearchComponent extends Component
             'wassertemperatur' => $this->wassertemperatur,
             'spezielle' => $this->spezielle,
         ];
+
+//dd($queryParams);
+
 
         return redirect()->route('search.results', array_filter($queryParams));
     }

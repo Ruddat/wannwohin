@@ -1,3 +1,5 @@
+@extends('layouts.main')
+@section('content')
     <div role="main" class="main">
         <section id="experience" class="section section-secondary section-no-border m-0 pb-0 bg-white">
             <div class="container">
@@ -8,7 +10,6 @@
                                 <i id="sort_result_up" class="fas fa-sort-up fa-lg {{ request()->get('sort_direction') === 'desc' ? 'fa-disabled' : '' }}" style="line-height: 3px"></i>
                                 <i id="sort_result_down" class="fas fa-sort-down fa-lg {{ request()->get('sort_direction') === 'asc' ? 'fa-disabled' : '' }}" style="line-height: 3px"></i>
                             </span>
-
                             <label for="search_result_sort" class="pe-1 text-4">Sortieren: </label>
                             <select class="form-select" id="search_result_sort" name="search_result_sort">
                                 <option value="price" {{ request()->get('sort_by') === 'price' ? 'selected' : '' }}>Preis</option>
@@ -22,18 +23,11 @@
 
                         <section class="timeline custom-timeline" id="timeline">
                             <div class="timeline-body">
-
-                                @php
-                              
-                              dd($locations);
-                            @endphp
-
                                 @forelse($locations as $location)
                                     <article class="timeline-box right custom-box-shadow-2">
                                         <div class="row">
-
                                             @php
-                                               // dd($location);
+                                            //    dd($location);
                                             @endphp
                                             <!-- Image Section -->
                                             <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 m-0 overflow-hidden">
@@ -180,55 +174,81 @@
             </div>
         </section>
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-4">
-        {{ $locations->links() }}
-    </div>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    {{ $locations->appends(request()->query())->links() }}
+                </div>
+                <div class="font-weight-bold col-md-2 pt-2 px-0">
+                    <div style="float: right">Ergebnisse pro Seite:</div>
+                </div>
+                <div class="col-md-1">
+                    <select name="pagination" id="pagination" class="form-select d-inline">
+                        <option value="10" @if($items_per_page == 10) selected @endif>10</option>
+                        <option value="25" @if($items_per_page == 25) selected @endif>25</option>
+                        <option value="50" @if($items_per_page == 50) selected @endif>50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
         <script>
-            document.getElementById('pagination').onchange = function() {
-                const params = new URLSearchParams(window.location.search);
-                params.set('items_per_page', this.value);
-                window.location.search = params.toString();
-            };
-            document.getElementById('search_result_sort').onchange = function() {
-                const params = new URLSearchParams(window.location.search);
-                params.set('sort_by', this.value);
-                window.location.search = params.toString();
-            };
-            document.getElementById('sort_result_direction').onclick = function() {
-                const params = new URLSearchParams(window.location.search);
-                const currentDirection = this.getAttribute("data-sort-direction");
-                params.set('sort_direction', currentDirection === 'desc' ? 'asc' : 'desc');
-                window.location.search = params.toString();
-            };
+const pagination = document.getElementById('pagination');
+if (pagination) {
+    pagination.onchange = function () {
+        const params = new URLSearchParams(window.location.search);
+        params.set('items_per_page', this.value);
+        window.location.search = params.toString();
+    };
+}
+
+const sortSelect = document.getElementById('search_result_sort');
+if (sortSelect) {
+    sortSelect.addEventListener('change', async function () {
+        const params = new URLSearchParams(window.location.search);
+        params.set('sort_by', this.value);
+
+        const response = await fetch(`/update-results?${params.toString()}`);
+        const html = await response.text();
+
+        document.getElementById('timeline').innerHTML = html;
+    });
+}
         </script>
+    </div>
 
 
     <style>
-        .my-zoom {
-            aspect-ratio: 16 / 9;
 
-            background-size: cover; /* Bild deckt den Container ab */
-            background-position: center; /* Bild wird zentriert */
-            width: 100%; /* Container breitet sich über die gesamte Breite aus */
-        }
+ .my-zoom {
+    aspect-ratio: 16 / 9;
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
 
-        @media (max-width: 768px) {
-            .my-zoom {
-                background-size: cover; /* Bild deckt den Container ab */
-                background-position: center; /* Bild wird zentriert */
-                width: 100%; /* Container breitet sich über die gesamte Breite aus */
-            }
-        }
+}
 
-        @media (max-width: 568px) {
-            .my-zoom {
-                background-size: cover; /* Bild deckt den Container ab */
-                background-position: center; /* Bild wird zentriert */
-                width: 100%; /* Container breitet sich über die gesamte Breite aus */
-                height: 200px; /* Feste Höhe oder flexibel mit min-height */
-            }
-        }
+@media (max-width: 768px) {
+    .my-zoom {
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
+
+}
+}
+
+@media (max-width: 568px) {
+    .my-zoom {
+    background-size: cover; /* Bild deckt den Container ab */
+    background-position: center; /* Bild wird zentriert */
+    width: 100%; /* Container breitet sich über die gesamte Breite aus */
+    height: 200px; /* Feste Höhe oder flexibel mit min-height */
+}
+
+#pagination {
+        width: 100%;
+    }
+}
+
     </style>
-   </div>
+@endsection

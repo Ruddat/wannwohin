@@ -24,10 +24,13 @@ class IndexController extends Controller
     protected $locationRepository;
     protected $weatherService;
 
-    public function __construct(LocationRepository $locationRepository, WeatherService $weatherService)
+    protected $repository;
+
+    public function __construct(LocationRepository $locationRepository, WeatherService $weatherService, LocationRepository $repository)
     {
         $this->locationRepository = $locationRepository;
         $this->weatherService = $weatherService;
+        $this->repository = $repository; // Neues Repository injizieren
     }
 
     public function __invoke()
@@ -129,18 +132,31 @@ class IndexController extends Controller
             return DB::table('wwde_locations')->count();
         });
 
-        // 5. HeaderContent abrufen
-        $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
-            return HeaderContent::inRandomOrder()->first();
-        });
+         // HeaderContent abrufen
+         $headerContent = HeaderContent::inRandomOrder()->first();
 
+         // Bildpfade validieren
+         $bgImgPath = $headerContent->bg_img ?
+             (Storage::exists($headerContent->bg_img)
+                 ? Storage::url($headerContent->bg_img)
+                 : (file_exists(public_path($headerContent->bg_img))
+                     ? asset($headerContent->bg_img)
+                     : null))
+             : null;
 
-        // Bildpfade validieren
-        $bgImgPath = $headerContent->bg_img ? (Storage::exists($headerContent->bg_img) ? Storage::url($headerContent->bg_img) : (file_exists(public_path($headerContent->bg_img)) ? asset($headerContent->bg_img) : null)) : null;
-        $mainImgPath = $headerContent->main_img ? (Storage::exists($headerContent->main_img) ? Storage::url($headerContent->main_img) : (file_exists(public_path($headerContent->main_img)) ? asset($headerContent->main_img) : null)) : null;
+         $mainImgPath = $headerContent->main_img ?
+             (Storage::exists($headerContent->main_img)
+                 ? Storage::url($headerContent->main_img)
+                 : (file_exists(public_path($headerContent->main_img))
+                     ? asset($headerContent->main_img)
+                     : null))
+             : null;
+
+         // Gesamtladezeit loggen
+         Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
 
         // Gesamtladezeit loggen
-        Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
+        //Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
 
         // Rückgabe der View
         return view('pages.main.index', [
@@ -208,23 +224,26 @@ class IndexController extends Controller
 
         // HeaderContent abrufen
         $step4Start = microtime(true);
-        $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
-            return HeaderContent::inRandomOrder()->first();
-        });
-        Log::info('Step 4: HeaderContent geladen in ' . (microtime(true) - $step4Start) . ' Sekunden');
+         // HeaderContent abrufen
+         $headerContent = HeaderContent::inRandomOrder()->first();
 
-        // Validierung und Bildpfade
-        $step5Start = microtime(true);
-        $bgImgPath = $headerContent->bg_img ? Storage::url($headerContent->bg_img) : null;
-        $mainImgPath = $headerContent->main_img ? Storage::url($headerContent->main_img) : null;
+         // Bildpfade validieren
+         $bgImgPath = $headerContent->bg_img ?
+             (Storage::exists($headerContent->bg_img)
+                 ? Storage::url($headerContent->bg_img)
+                 : (file_exists(public_path($headerContent->bg_img))
+                     ? asset($headerContent->bg_img)
+                     : null))
+             : null;
 
-// Bildpfade validieren
-        $bgImgPath = $headerContent->bg_img ? (Storage::exists($headerContent->bg_img) ? Storage::url($headerContent->bg_img) : (file_exists(public_path($headerContent->bg_img)) ? asset($headerContent->bg_img) : null)) : null;
-        $mainImgPath = $headerContent->main_img ? (Storage::exists($headerContent->main_img) ? Storage::url($headerContent->main_img) : (file_exists(public_path($headerContent->main_img)) ? asset($headerContent->main_img) : null)) : null;
+         $mainImgPath = $headerContent->main_img ?
+             (Storage::exists($headerContent->main_img)
+                 ? Storage::url($headerContent->main_img)
+                 : (file_exists(public_path($headerContent->main_img))
+                     ? asset($headerContent->main_img)
+                     : null))
+             : null;
 
-
-
-        Log::info('Step 5: Bildpfade und Validierung in ' . (microtime(true) - $step5Start) . ' Sekunden');
 
         return view('pages.main.search-results', [
             'locations' => $locations,

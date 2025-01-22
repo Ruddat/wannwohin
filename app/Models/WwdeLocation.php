@@ -117,6 +117,12 @@ class WwdeLocation extends Model
         return $this->hasMany(WwdeClimate::class, 'location_id', 'id');
     }
 
+
+    public function dailyClimates()
+    {
+        return $this->hasMany(ModDailyClimateAverage::class, 'location_id');
+    }
+
     public function monthlyClimateSummaries()
     {
         return $this->hasMany(MonthlyClimateSummary::class, 'location_id', 'id');
@@ -203,6 +209,91 @@ class WwdeLocation extends Model
     }
 
 
+
+
+    // Scope für Kontinent-Filter
+    public function scopeFilterByContinent($query, $continent)
+    {
+        if (!empty($continent)) {
+            $query->where('continent_id', $continent);
+        }
+    }
+
+    // Scope für Preis-Filter
+    public function scopeFilterByPrice($query, $price)
+    {
+        if (!empty($price)) {
+            $query->where('price_flight', '<=', $price);
+        }
+    }
+
+    // Scope für Reisezeit-Filter
+    public function scopeFilterByTravelTime($query, $urlaub)
+    {
+        if (!empty($urlaub)) {
+            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($urlaub)]);
+        }
+    }
+
+    // Scope für Sonnenstunden-Filter
+    public function scopeFilterBySunshine($query, $sonnenstunden)
+    {
+        if (!empty($sonnenstunden)) {
+            $query->whereHas('climates', function ($q) use ($sonnenstunden) {
+                $q->where('sunshine_per_day', '>=', $sonnenstunden);
+            });
+        }
+    }
+
+    // Scope für Wassertemperatur-Filter
+    public function scopeFilterByWaterTemperature($query, $wassertemperatur)
+    {
+        if (!empty($wassertemperatur)) {
+            $query->whereHas('climates', function ($q) use ($wassertemperatur) {
+                $q->where('water_temperature', '>=', $wassertemperatur);
+            });
+        }
+    }
+
+    // Scope für spezielle Wünsche
+    public function scopeFilterBySpecials($query, $spezielle)
+    {
+        if (!empty($spezielle)) {
+            foreach ($spezielle as $wish) {
+                $query->where($wish, 1);
+            }
+        }
+    }
+
+
+    public function scopeFilterByClimateRange($query, $request)
+    {
+        $query->whereHas('climates', function ($q) use ($request) {
+            if ($request->filled('daily_temp_min') && $request->filled('daily_temp_max')) {
+                $q->whereBetween('daily_temperature', [$request->daily_temp_min, $request->daily_temp_max]);
+            }
+
+            if ($request->filled('night_temp_min') && $request->filled('night_temp_max')) {
+                $q->whereBetween('night_temperature', [$request->night_temp_min, $request->night_temp_max]);
+            }
+
+            if ($request->filled('water_temp_min') && $request->filled('water_temp_max')) {
+                $q->whereBetween('water_temperature', [$request->water_temp_min, $request->water_temp_max]);
+            }
+
+            if ($request->filled('sunshine_min') && $request->filled('sunshine_max')) {
+                $q->whereBetween('sunshine_per_day', [$request->sunshine_min, $request->sunshine_max]);
+            }
+
+            if ($request->filled('rainy_days_min') && $request->filled('rainy_days_max')) {
+                $q->whereBetween('rainy_days', [$request->rainy_days_min, $request->rainy_days_max]);
+            }
+
+            if ($request->filled('humidity_min') && $request->filled('humidity_max')) {
+                $q->whereBetween('humidity', [$request->humidity_min, $request->humidity_max]);
+            }
+        });
+    }
 
 
 }

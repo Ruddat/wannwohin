@@ -10,8 +10,9 @@
                 </label>
                 <div id="daily_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="daily_temp_min" id="daily_temp_min" class="form-control flex-fill filter-input" value="10">
-                    <input type="number" name="daily_temp_max" id="daily_temp_max" class="form-control flex-fill filter-input" value="30">
+<!-- Tagestemperatur -->
+<input type="number" name="daily_temp_min" id="daily_temp_min" class="form-control flex-fill filter-input" value="-15">
+<input type="number" name="daily_temp_max" id="daily_temp_max" class="form-control flex-fill filter-input" value="50">
                 </div>
             </div>
 
@@ -23,8 +24,9 @@
                 </label>
                 <div id="night_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="night_temp_min" id="night_temp_min" class="form-control flex-fill filter-input" value="5">
-                    <input type="number" name="night_temp_max" id="night_temp_max" class="form-control flex-fill filter-input" value="20">
+<!-- Nachttemperatur -->
+<input type="number" name="night_temp_min" id="night_temp_min" class="form-control flex-fill filter-input" value="-15">
+<input type="number" name="night_temp_max" id="night_temp_max" class="form-control flex-fill filter-input" value="38">
                 </div>
             </div>
 
@@ -36,8 +38,9 @@
                 </label>
                 <div id="water_temp_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="water_temp_min" id="water_temp_min" class="form-control flex-fill filter-input" value="10">
-                    <input type="number" name="water_temp_max" id="water_temp_max" class="form-control flex-fill filter-input" value="25">
+<!-- Wassertemperatur -->
+<input type="number" name="water_temp_min" id="water_temp_min" class="form-control flex-fill filter-input" value="-5">
+<input type="number" name="water_temp_max" id="water_temp_max" class="form-control flex-fill filter-input" value="40">
                 </div>
             </div>
         </div>
@@ -51,8 +54,9 @@
                 </label>
                 <div id="sunshine_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="sunshine_min" id="sunshine_min" class="form-control flex-fill filter-input" value="4">
-                    <input type="number" name="sunshine_max" id="sunshine_max" class="form-control flex-fill filter-input" value="8">
+<!-- Sonnenstunden -->
+<input type="number" name="sunshine_min" id="sunshine_min" class="form-control flex-fill filter-input" value="0">
+<input type="number" name="sunshine_max" id="sunshine_max" class="form-control flex-fill filter-input" value="20">
                 </div>
             </div>
 
@@ -64,8 +68,9 @@
                 </label>
                 <div id="rainy_days_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="rainy_days_min" id="rainy_days_min" class="form-control flex-fill filter-input" value="5">
-                    <input type="number" name="rainy_days_max" id="rainy_days_max" class="form-control flex-fill filter-input" value="15">
+<!-- Regentage -->
+<input type="number" name="rainy_days_min" id="rainy_days_min" class="form-control flex-fill filter-input" value="0">
+<input type="number" name="rainy_days_max" id="rainy_days_max" class="form-control flex-fill filter-input" value="30">
                 </div>
             </div>
 
@@ -77,8 +82,9 @@
                 </label>
                 <div id="humidity_slider" class="slider mt-3"></div>
                 <div class="d-flex justify-content-between mt-2 gap-2">
-                    <input type="number" name="humidity_min" id="humidity_min" class="form-control flex-fill filter-input" value="30">
-                    <input type="number" name="humidity_max" id="humidity_max" class="form-control flex-fill filter-input" value="70">
+<!-- Luftfeuchtigkeit -->
+<input type="number" name="humidity_min" id="humidity_min" class="form-control flex-fill filter-input" value="0">
+<input type="number" name="humidity_max" id="humidity_max" class="form-control flex-fill filter-input" value="100">
                 </div>
             </div>
         </div>
@@ -97,13 +103,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Slider-Konfiguration und Initialisierung
     const slidersConfig = [
-        { id: 'daily_temp', min: -15, max: 50, start: [-15, 50] },
-        { id: 'night_temp', min: -15, max: 30, start: [-15, 30] },
-        { id: 'water_temp', min: -5, max: 40, start: [-5, 40] },
-        { id: 'sunshine', min: 0, max: 16, start: [0, 16] },
-        { id: 'rainy_days', min: 0, max: 30, start: [0, 30] },
-        { id: 'humidity', min: 0, max: 100, start: [0, 100] },
-    ];
+    { id: 'daily_temp', min: -25, max: 50, start: [-15, 50] },
+    { id: 'night_temp', min: -25, max: 50, start: [-15, 50] },
+    { id: 'water_temp', min: -15, max: 40, start: [-10, 40] },
+    { id: 'sunshine', min: 0, max: 20, start: [0, 20] },
+    { id: 'rainy_days', min: 0, max: 30, start: [0, 30] },
+    { id: 'humidity', min: 0, max: 100, start: [0, 100] },
+];
 
     slidersConfig.forEach(slider => {
         const sliderElement = document.getElementById(`${slider.id}_slider`);
@@ -134,8 +140,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const queryString = new URLSearchParams(formData).toString();
 
                 // Debug: Zeige die Formulardaten und Query-Parameter an
-                //console.log('Formulardaten:', Object.fromEntries(formData));
-                //console.log('Query-String:', queryString);
+                console.log('Formulardaten:', Object.fromEntries(formData));
+                console.log('Query-String:', queryString);
 
                 fetch(`${form.action}?${queryString}`, {
                     method: 'GET',
@@ -186,70 +192,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('Query-String:', queryString);
 
                 fetch(`${form.action}?${queryString}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Debug: Zeige die Serverantwort an
-                    console.log('Serverantwort:', data);
-
-                    const locationCount = document.getElementById('locationCount');
-                    locationCount.textContent = data.count; // Aktualisiere die Anzeige
-                })
-                .catch(error => {
-                    console.error('Fehler beim Abrufen der Daten:', error);
-                    const locationCount = document.getElementById('locationCount');
-                    locationCount.textContent = 'Fehler';
-                });
+    method: 'GET',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+    },
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return response.json();
+})
+.then(data => {
+    console.log('Serverantwort:', data);
+    const locationCount = document.getElementById('locationCount');
+    locationCount.textContent = data.count;
+})
+.catch(error => {
+    console.error('Fehler beim Abrufen der Daten:', error);
+});
             }, 300); // 300ms Verzögerung
         });
     });
 });
 </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('detailSearchForm');
-    const filterInputs = document.querySelectorAll('.filter-input');
-    let timeoutId;
 
-    filterInputs.forEach(input => {
-        input.addEventListener('change', () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                const formData = new FormData(form);
-                const queryString = new URLSearchParams(formData).toString();
-
-                console.log('Formulardaten:', Object.fromEntries(formData)); // Debug
-                console.log('Query-String:', queryString); // Debug
-
-                fetch(`${form.action}?${queryString}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Serverantwort:', data); // Debug
-                    const locationCount = document.getElementById('locationCount');
-                    locationCount.textContent = data.count;
-                })
-                .catch(error => console.error('Fehler beim Abrufen der Daten:', error));
-            }, 300); // 300ms Verzögerung
-        });
-    });
-});
-
-</script>
 
 
 

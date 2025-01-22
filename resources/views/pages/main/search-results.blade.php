@@ -23,6 +23,10 @@
 
                         <section class="timeline custom-timeline" id="timeline">
                             <div class="timeline-body">
+@php
+   // dd($locations);
+
+@endphp
                                 @forelse($locations as $location)
                                     <article class="timeline-box right custom-box-shadow-2">
                                         <div class="row">

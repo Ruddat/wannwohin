@@ -12,7 +12,10 @@ use App\Models\HeaderContent;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use App\Models\ModDailyClimateAverage;
 use Illuminate\Support\Facades\Storage;
+use App\Library\WeatherDataManagerLibrary;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\WwdeContinent; // WwdeContinent importieren
 
 class DetailSearchController extends Controller
@@ -48,8 +51,8 @@ class DetailSearchController extends Controller
         // Länder abrufen
         $countries = WwdeCountry::all();
 
-        // Nur eindeutige Währungen basierend auf `currency_code`
-        $currencies = $countries->unique('currency_code');
+        // Nur eindeutige Währungen basierend auf `currency_code`, sortiert nach `currency_name` aufsteigend
+        $currencies = $countries->unique('currency_code')->sortBy('currency_name');
 
         // Preisspannen abrufen
         $ranges = WwdeRange::where('Type', 'Flight')->orderBy('Sort')->get();
@@ -60,12 +63,20 @@ class DetailSearchController extends Controller
         $languages = WwdeCountry::select('official_language as code')
         ->distinct()
         ->get()
-        ->map(function ($lang) {
+        ->flatMap(function ($lang) {
+            // Trenne die Sprachen durch Kommas, entferne Leerzeichen und filtere doppelte Werte
+            return array_map('trim', explode(',', $lang->code));
+        })
+        ->unique() // Entfernt Duplikate
+        ->map(function ($languageCode) {
             return [
-                'code' => $lang->code,
-                'name' => $this->getLanguageName($lang->code),
+                'code' => $languageCode,
+                'name' => $this->getLanguageName($languageCode),
             ];
-        });
+        })
+        ->sortBy('name') // Sortiere alphabetisch nach dem Namen
+        ->values(); // Reset der Schlüssel, um eine saubere Collection zurückzugeben
+
 
 
         $priceTendencies = WwdeCountry::select('price_tendency')
@@ -84,7 +95,6 @@ class DetailSearchController extends Controller
 
         // Anzahl der Locations (Placeholder, bis eine Suche ausgeführt wird)
         $totalLocations = WwdeLocation::count();
-
 
     // Flugstunden-Optionen (1 bis 10 Stunden, und "> 10 Stunden")
     $flightDuration = [];
@@ -136,6 +146,7 @@ class DetailSearchController extends Controller
             'panorama_location_picture' => $bgImgPath,
             'main_location_picture' => $mainImgPath,
             'panorama_location_text' => $headerContent->main_text ?? null,
+
         ]);
     }
 
@@ -149,7 +160,9 @@ class DetailSearchController extends Controller
 
         // Query mit Join initialisieren
         $query = WwdeLocation::query()
-            ->join('wwde_climates', 'wwde_locations.id', '=', 'wwde_climates.location_id');
+        ->select('wwde_locations.id') // Eindeutig die Tabelle angeben
+        ->join('wwde_climates', 'wwde_locations.id', '=', 'wwde_climates.location_id');
+
 
         // Filter: Reisezeit
         if ($request->filled('month')) {
@@ -295,23 +308,112 @@ class DetailSearchController extends Controller
             $query->whereBetween('wwde_climates.humidity', [$request->humidity_min, $request->humidity_max]);
         }
 
-        // (Weitere Filter wie night_temp, water_temp, usw.)
+
 
         // Debugging-Log der generierten Query
-        Log::info('Generierte Query:', ['query' => $query->toSql()]);
+        Log::info('Generierte Query:', [
+            'query' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
 
         // Anzahl der Ergebnisse
-        $count = $query->count();
+        //$count = $query->count();
+
+       $locations = $query->get();
+      // dd($locations);
+       $count = $locations->count();
 
 
 
-        $locations = $query->get();
-        $count = $locations->count();
 
     if ($request->ajax()) {
         // Antwort für AJAX-Anfragen (JSON)
         return response()->json(['count' => $count]);
     }
+
+    // Gefilterte Ergebnisse abrufen
+    $locations = $query->get();
+
+    $locationIds = $query->pluck('id');
+    session()->put('search_location_ids', $locationIds);
+    session()->put('items_per_page', $request->get('items_per_page', 10));
+
+    // Weiterleitung zur Ergebnisse-Route
+    return redirect()->route('ergebnisse.anzeigen');
+
+
+
+
+//    dd($locations->toArray());
+
+// Anzahl der Ergebnisse pro Seite (Standardwert: 10)
+$items_per_page = $request->get('items_per_page', 10);
+
+// Ergebnisse abrufen und paginieren
+$locations = $query->with(['country.continent'])->paginate($items_per_page);
+
+// Filterparameter sammeln
+$filterParams = [
+    'month' => $request->get('month'),
+    'continent' => $request->get('continent'),
+    'price' => $request->get('price'),
+    'sonnenstunden' => $request->get('sonnenstunden'),
+    'wassertemperatur' => $request->get('wassertemperatur'),
+    'spezielle' => $request->get('spezielle'),
+    'sort_by' => $request->get('sort_by'),
+    'sort_direction' => $request->get('sort_direction'),
+    'items_per_page' => $items_per_page,
+];
+
+// Weiterleitung zur Suchergebnisse-Route
+return redirect()->route('ergebnisse.anzeigen', array_filter($filterParams));
+
+
+
+
+// Ergebnisse abrufen und paginieren
+$locations = $query->with(['country.continent'])->paginate($items_per_page);
+
+// Daten für die View vorbereiten
+$locations->getCollection()->transform(function ($location) {
+    if (!is_object($location->country)) {
+        $location->country = new \App\Models\WwdeCountry([
+            'title' => 'Unbekanntes Land',
+            'alias' => 'unknown-country',
+        ]);
+    }
+
+    if (!is_object($location->country->continent ?? null)) {
+        $location->country->continent = new \App\Models\WwdeContinent([
+            'title' => 'Unbekannter Kontinent',
+            'alias' => 'unknown-continent',
+        ]);
+    }
+
+    return $location;
+});
+
+// Daten an die View übergeben
+return redirect()->route('ergebnisse.anzeigen', [
+    'locations' => $locations,
+    'count' => $locations->total(),
+    'items_per_page' => $items_per_page, // Hier wird die Variable übergeben
+    'month' => $request->get('month'),
+    'continent' => $request->get('continent'),
+    'price' => $request->get('price'),
+    'sonnenstunden' => $request->get('sonnenstunden'),
+    'wassertemperatur' => $request->get('wassertemperatur'),
+    'spezielle' => $request->get('spezielle'),
+]);
+
+
+
+
+
+
+
+
+
 
 
     $filters = $request->only([
@@ -326,6 +428,9 @@ class DetailSearchController extends Controller
     $repository = app(\App\Repositories\LocationRepository::class);
 
     $query = $repository->getLocationsByFilters($filters);
+   dd($query);
+
+
     $locations = $query->paginate(10);
 
     $locations = $repository->formatLocations($locations, false);
@@ -336,6 +441,7 @@ class DetailSearchController extends Controller
 
 $locations = $query->get();
 
+dd($locations);
 
 // Umleitung zur neuen Route mit Daten als Query-Parameter
 return redirect()->route('ergebnisse.anzeigen', [
@@ -353,36 +459,64 @@ return redirect()->route('ergebnisse.anzeigen', [
 
     public function showSearchResults(Request $request)
     {
-        // Daten aus der Datenbank abrufen (z. B. gefilterte Locations)
-        $locations = WwdeLocation::query()
-            ->with(['country', 'country.continent']) // Eager Loading für Beziehungen
-            ->when($request->filled('month'), function ($query) use ($request) {
-                // Filter nach Monat
-                $query->whereJsonContains('best_traveltime_json', $request->month);
-            })
-            ->when($request->filled('sort_by'), function ($query) use ($request) {
-                // Sortierung
-                $query->orderBy($request->sort_by, $request->sort_direction ?? 'asc');
-            })
-            ->paginate($request->items_per_page ?? 10);
+        // IDs aus der Session abrufen
+        $locationIds = session()->get('search_location_ids', []);
+        $items_per_page = session()->get('items_per_page', 10);
 
-        // Header-Daten (falls benötigt)
-// Header-Daten abrufen
-$repository = app(\App\Repositories\LocationRepository::class);
-$headerData = $repository->getHeaderContent();
+        // Aktuelles Datum
+        $currentDate = now()->toDateString();
 
-// Daten an die View übergeben
-return view('pages.main.search-results', [
-    'locations' => $locations, // Paginierte Suchergebnisse
-    'items_per_page' => $request->items_per_page ?? 10, // Anzahl der Ergebnisse pro Seite
-    'sort_by' => $request->sort_by, // Aktuelles Sortierkriterium
-    'sort_direction' => $request->sort_direction ?? 'asc', // Sortierrichtung
-    'headerContent' => $headerData['headerContent'] ?? null, // Header-Inhalt (falls vorhanden)
-    'panorama_location_picture' => $headerData['bgImgPath'] ?? null, // Panorama-Bild
-    'main_location_picture' => $headerData['mainImgPath'] ?? null, // Haupt-Bild
-    'panorama_location_text' => $headerData['mainText'] ?? null, // Haupt-Text
-]);
+        // Modelle laden mit Klimadaten
+        $locationsQuery = \App\Models\WwdeLocation::with([
+            'country.continent',
+            'dailyClimates' => function ($query) use ($currentDate) {
+                $query->whereDate('date', $currentDate);
+            }
+        ])->whereIn('id', $locationIds);
+
+        // Paginierung erstellen
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $locations = $locationsQuery->forPage($currentPage, $items_per_page)->get();
+
+        // Klimadaten vorbereiten
+        foreach ($locations as $location) {
+            $climate = $location->dailyClimates->first(); // Nimmt das erste Element der Beziehung
+            $location->climate_data = [
+                'main' => [
+                    'temp' => $climate->avg_daily_temperature ?? null,
+                ],
+                'water_temperature' => $climate->avg_water_temperature ?? null,
+                'rain' => [
+                    '1h' => $climate->total_rainy_days ?? null,
+                ],
+                'sunshine_per_day' => $climate->avg_sunshine_per_day ?? null,
+            ];
+        }
+
+        $pagedLocations = new LengthAwarePaginator(
+            $locations,
+            count($locationIds), // Gesamtanzahl der Elemente
+            $items_per_page,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        // Debugging (optional)
+        // dd($pagedLocations);
+
+        // View rendern
+        return view('pages.main.search-results', [
+            'locations' => $pagedLocations,
+            'items_per_page' => $items_per_page,
+        ]);
     }
+
+
+
+
+
+
+
 
 
 

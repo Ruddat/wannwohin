@@ -42,7 +42,7 @@ class DownloadContinentImages extends Command
                 $filePath = "uploads/images/continents/{$fileName}";
 
                 if ($this->saveImage($imageUrl, $filePath)) {
-                    $imagePaths[] = Storage::url($filePath); // Öffentlicher URL-Pfad
+                    $imagePaths[] = $filePath; // Nur relativer Pfad
                 } else {
                     $this->error("Failed to save image {$indexIncremented} for {$continent->title}.");
                 }

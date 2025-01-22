@@ -29,7 +29,7 @@ class WwdeClimate extends Model
     // Beziehung zur Location
     public function location()
     {
-        return $this->belongsTo(WwdeLocation::class, 'location_id', 'id');
+        return $this->belongsTo(WwdeLocation::class, 'location_id');
     }
 
 
