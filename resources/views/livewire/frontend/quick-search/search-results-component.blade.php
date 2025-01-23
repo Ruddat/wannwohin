@@ -24,8 +24,8 @@
                             <div class="timeline-body">
 
                                 @php
-                              
-                              dd($locations);
+
+                            //  dd($locations);
                             @endphp
 
                                 @forelse($locations as $location)

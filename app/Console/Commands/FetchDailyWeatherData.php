@@ -21,7 +21,6 @@ class FetchDailyWeatherData extends Command
     {
         $this->info('Starting daily weather data fetching...');
 
-        // Wetterdaten abrufen und speichern
         WwdeLocation::whereNotNull('lat')
             ->whereNotNull('lon')
             ->chunk(50, function ($locations) {
@@ -35,14 +34,12 @@ class FetchDailyWeatherData extends Command
                             ->latest('updated_at')
                             ->first();
 
-//dd($lastUpdate);
-
                         if (!$lastUpdate) {
                             $this->info("Skipping location: {$location->title}, last updated less than 2 hours ago.");
-                            continue;
+                         //   continue;
                         }
 
-                        // Daten abrufen und speichern
+                        // Wetterdaten abrufen und speichern
                         $weatherData = $this->weatherManager->fetchAndStoreWeatherData(
                             $location->lat,
                             $location->lon,
@@ -66,7 +63,7 @@ class FetchDailyWeatherData extends Command
 
         $this->info('Daily weather data fetching completed.');
 
-        // Tägliche Durchschnittswerte speichern
+        // Durchschnittswerte speichern
         $this->storeDailyAverages();
 
         // Historische Daten speichern
@@ -80,12 +77,81 @@ class FetchDailyWeatherData extends Command
         $this->info('Calculating daily averages...');
 
         $locations = WwdeLocation::all();
+        $today = now()->toDateString();
 
         foreach ($locations as $location) {
-            $today = now()->toDateString();
-
-            $averages = $location->climates()
+            // Heutige Klimadaten abrufen
+            $climatesToday = $location->climates()
                 ->whereDate('created_at', $today)
+                ->get();
+
+            if ($climatesToday->isEmpty()) {
+                $this->warn("No climate data for location: {$location->id} today. Skipping.");
+                continue;
+            }
+
+            // Prüfen, ob nur ein Eintrag vorhanden ist
+            if ($climatesToday->count() === 1) {
+                $firstEntry = $climatesToday->first();
+
+                \App\Models\ModDailyClimateAverage::updateOrCreate(
+                    ['location_id' => $location->id, 'date' => $today],
+                    [
+                        'avg_daily_temperature' => $firstEntry->daily_temperature,
+                        'avg_night_temperature' => $firstEntry->night_temperature,
+                        'avg_sunshine_per_day' => $firstEntry->sunshine_per_day,
+                        'avg_humidity' => $firstEntry->humidity,
+                        'total_rainy_days' => $firstEntry->rainy_days,
+                        'avg_water_temperature' => $firstEntry->water_temperature,
+                    ]
+                );
+
+                $this->info("First climate data copied for location: {$location->title}");
+                continue;
+            }
+
+            // Durchschnitt berechnen
+            $averages = $climatesToday
+                ->map(function ($climate) {
+                    return [
+                        'daily_temperature' => $climate->daily_temperature,
+                        'night_temperature' => $climate->night_temperature,
+                        'sunshine_per_day' => $climate->sunshine_per_day,
+                        'humidity' => $climate->humidity,
+                        'rainy_days' => $climate->rainy_days,
+                        'water_temperature' => $climate->water_temperature,
+                    ];
+                })
+                ->reduce(function ($carry, $item) {
+                    foreach ($item as $key => $value) {
+                        $carry[$key] = ($carry[$key] ?? 0) + ($value ?? 0);
+                    }
+                    return $carry;
+                }, []);
+
+            $averages = array_map(fn($value) => round($value / $climatesToday->count(), 2), $averages);
+
+            \App\Models\ModDailyClimateAverage::updateOrCreate(
+                ['location_id' => $location->id, 'date' => $today],
+                $averages
+            );
+
+            $this->info("Daily averages stored for location: {$location->title}");
+        }
+    }
+
+    protected function storeHistoricalData()
+    {
+        $this->info('Storing historical data...');
+
+        $locations = WwdeLocation::all();
+        $year = now()->year;
+        $month = now()->format('F');
+
+        foreach ($locations as $location) {
+            $averages = $location->climates()
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', now()->month)
                 ->selectRaw('
                     AVG(daily_temperature) as avg_daily_temperature,
                     AVG(night_temperature) as avg_night_temperature,
@@ -96,60 +162,19 @@ class FetchDailyWeatherData extends Command
                 ')
                 ->first();
 
-            \App\Models\ModDailyClimateAverage::updateOrCreate(
-                ['location_id' => $location->id, 'date' => $today],
+            \App\Models\ModHistoricalClimateData::updateOrCreate(
+                ['location_id' => $location->id, 'year' => $year, 'month' => $month],
                 [
-                    'avg_daily_temperature' => $averages->avg_daily_temperature,
-                    'avg_night_temperature' => $averages->avg_night_temperature,
-                    'avg_sunshine_per_day' => $averages->avg_sunshine_per_day,
-                    'avg_humidity' => $averages->avg_humidity,
-                    'total_rainy_days' => $averages->total_rainy_days,
-                    'avg_water_temperature' => $averages->avg_water_temperature,
+                    'avg_daily_temperature' => $averages->avg_daily_temperature ?? 0,
+                    'avg_night_temperature' => $averages->avg_night_temperature ?? 0,
+                    'avg_sunshine_per_day' => $averages->avg_sunshine_per_day ?? 0,
+                    'avg_humidity' => $averages->avg_humidity ?? 0,
+                    'total_rainy_days' => $averages->total_rainy_days ?? 0,
+                    'avg_water_temperature' => $averages->avg_water_temperature ?? 0,
                 ]
             );
 
-            $this->info("Daily averages stored for location: {$location->title}");
+            $this->info("Historical data stored for location: {$location->title}");
         }
     }
-
-    protected function storeHistoricalData()
-{
-    $this->info('Storing historical data...');
-
-    $locations = WwdeLocation::all();
-    $year = now()->year;
-    $month = now()->format('F');
-
-    foreach ($locations as $location) {
-        $averages = $location->climates()
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', now()->month)
-            ->selectRaw('
-                AVG(daily_temperature) as avg_daily_temperature,
-                AVG(night_temperature) as avg_night_temperature,
-                AVG(sunshine_per_day) as avg_sunshine_per_day,
-                AVG(humidity) as avg_humidity,
-                SUM(rainy_days) as total_rainy_days,
-                AVG(water_temperature) as avg_water_temperature
-            ')
-            ->first();
-
-        \App\Models\ModHistoricalClimateData::updateOrCreate(
-            ['location_id' => $location->id, 'year' => $year, 'month' => $month],
-            [
-                'avg_daily_temperature' => $averages->avg_daily_temperature,
-                'avg_night_temperature' => $averages->avg_night_temperature,
-                'avg_sunshine_per_day' => $averages->avg_sunshine_per_day,
-                'avg_humidity' => $averages->avg_humidity,
-                'total_rainy_days' => $averages->total_rainy_days,
-                'avg_water_temperature' => $averages->avg_water_temperature,
-            ]
-        );
-
-        $this->info("Historical data stored for location: {$location->title}");
-    }
-}
-
-
-
 }
