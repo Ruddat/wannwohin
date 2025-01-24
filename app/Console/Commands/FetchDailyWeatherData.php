@@ -36,7 +36,7 @@ class FetchDailyWeatherData extends Command
 
                         if (!$lastUpdate) {
                             $this->info("Skipping location: {$location->title}, last updated less than 2 hours ago.");
-                         //   continue;
+                            continue;
                         }
 
                         // Wetterdaten abrufen und speichern
@@ -63,11 +63,11 @@ class FetchDailyWeatherData extends Command
 
         $this->info('Daily weather data fetching completed.');
 
-        // Durchschnittswerte speichern
-        $this->storeDailyAverages();
-
         // Historische Daten speichern
         $this->storeHistoricalData();
+
+        // Durchschnittswerte speichern
+        $this->storeDailyAverages();
 
         $this->info('Daily averages and historical data stored successfully.');
     }

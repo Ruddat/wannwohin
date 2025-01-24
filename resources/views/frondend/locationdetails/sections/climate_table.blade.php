@@ -92,7 +92,12 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+
+
                 </table>
+
+                <livewire:frontend.climate-table.climate-table-component :locationId="$location->id" />
 
                 <!-- Button unter der Tabelle -->
                 <div class="text-start">
@@ -103,4 +108,7 @@
             </div>
         </div>
     </div>
+
+
+
 </section>
