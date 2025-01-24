@@ -17,15 +17,17 @@ return new class extends Migration
             $table->integer('month'); // 1 for January, 12 for December
             $table->string('month_name');
             $table->integer('year');
-            $table->float('temperature_avg')->nullable();
-            $table->float('temperature_max')->nullable();
-            $table->float('temperature_min')->nullable();
-            $table->float('precipitation')->nullable();
-            $table->float('snowfall')->nullable();
-            $table->float('sunshine_hours')->nullable();
+            $table->double('temperature_avg')->nullable();
+            $table->double('temperature_max')->nullable();
+            $table->double('temperature_min')->nullable();
+            $table->double('precipitation')->nullable();
+            $table->double('snowfall')->nullable();
+            $table->double('sunshine_hours')->nullable();
             $table->timestamps();
 
             $table->foreign('location_id')->references('id')->on('wwde_locations')->onDelete('cascade');
+            $table->unique(['location_id', 'year', 'month']);
+            $table->index(['location_id', 'year', 'month']);
         });
     }
 
