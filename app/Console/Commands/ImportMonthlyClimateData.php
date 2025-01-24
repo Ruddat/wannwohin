@@ -48,6 +48,9 @@ class ImportMonthlyClimateData extends Command
                     'end' => $endDate,
                 ]);
 
+                // Verzögerung von 1 Sekunde hinzufügen
+                sleep(1);
+
                 if ($response->failed()) {
                     $this->error("Failed to fetch data for location: {$location->title}");
                     Log::error("RapidAPI request failed for climate data", [
