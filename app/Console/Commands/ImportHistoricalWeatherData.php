@@ -15,6 +15,8 @@ class ImportHistoricalWeatherData extends Command
 
     public function handle()
     {
+        ini_set('memory_limit', '4G'); // Memory-Limit erhöhen
+
         $stations = DB::table('wwde_locations')->whereNotNull('station_id')->get();
 
         if ($stations->isEmpty()) {

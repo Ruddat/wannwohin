@@ -105,7 +105,7 @@
 
 @else
 
-    <x-header-details-new
+    <x-header-details
         :pic1-text="$pic1_text ?? 'Standardtext 1'"
         :pic2-text="$pic2_text ?? 'Standardtext 2'"
         :pic3-text="$pic3_text ?? 'Standardtext 3'"

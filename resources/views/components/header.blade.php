@@ -7,9 +7,15 @@
             </div>
             <!-- Header-Text -->
             <div class="col-lg-6 col-xl-5">
-                <span class="custom-header-text">
-                    {!! app('autotranslate')->trans($panoramaLocationText ?? '<h1>Default Header Text</h1>', app()->getLocale()) !!}
-                </span>
+                <div class="heading-wrapper">
+                    <h2 class="travel-heading-with-bg">
+                        STÄDTEREISE NACH
+                    </h2>
+                    <h1 class="travel-destination">
+                        {!! app('autotranslate')->trans($panoramaLocationText ?? '<h1>Default Header Text</h1>', app()->getLocale()) !!}
+                    </h1>
+                </div>
+
 
                 <!-- Admin-Button nur sichtbar für eingeloggte Admins -->
                 @if(Auth::guard('admin')->check())
@@ -241,5 +247,67 @@
         border-bottom: none; /* Rahmenlinie entfernen */
     }
 }
+
+
+.heading-wrapper {
+    display: flex;
+    flex-direction: column; /* Elemente vertikal ausrichten */
+    align-items: flex-start; /* Beide linksbündig ausrichten */
+    gap: 0; /* Kein Abstand zwischen den Elementen */
+}
+
+.travel-heading-with-bg {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    margin: 0; /* Verhindert zusätzlichen Abstand */
+    line-height: 1; /* Zeilenhöhe anpassen */
+}
+
+.travel-destination {
+    font-size: 3rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    letter-spacing: 0.2rem;
+    margin: 0; /* Kein zusätzlicher Abstand */
+    line-height: 1; /* Zeilenhöhe anpassen */
+    transform: translateX(3ch); /* Verschiebung nach rechts */
+}
+
+.travel-destination p {
+    color: #fff;
+    line-height: 44px;
+    margin: 0 0 20px;
+}
+
+@media (max-width: 768px) {
+    .travel-heading-with-bg {
+        font-size: 1.2rem;
+        padding: 0.4rem 0.8rem;
+        text-align: center; /* Zentriere den Text */
+        letter-spacing: 0.1rem; /* Weniger Buchstabenabstand */
+        margin-top: 4px;
+    }
+
+    .travel-destination {
+        font-size: 2rem;
+        padding: 0.4rem 0.8rem;
+        transform: none; /* Verschiebung entfernen */
+        text-align: center; /* Zentriere den Text */
+        letter-spacing: 0.1rem; /* Weniger Buchstabenabstand */
+        margin-top: -12px;
+    }
+}
+
+
 
 </style>

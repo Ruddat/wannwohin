@@ -1,23 +1,20 @@
 <div>
     <!-- Fahne (Button) -->
-    <div id="sidebarButton"
-         class="p-2 bg-black text-color-white"
-         wire:click="toggleCollapse"
-         style="position: fixed; top: 20px; {{ $isCollapsed ? 'left: 0;' : 'left: 300px;' }}">
+    <div id="sidebarButton" class="p-2 bg-black text-color-white" wire:click="toggleCollapse"
+        style="position: fixed; top: 20px; {{ $isCollapsed ? 'left: 0;' : 'left: 300px;' }}">
         <i id="sidebar-arrow" class="fas {{ $isCollapsed ? 'fa-arrow-right' : 'fa-arrow-left' }}"></i>
     </div>
 
     <!-- Sidebar -->
-    <div id="sidebar"
-         class="sidebar-left-nav bg-black text-color-white p-4"
-         style="{{ $isCollapsed ? 'transform: translateX(-100%);' : 'transform: translateX(0);' }}">
+    <div id="sidebar" class="sidebar-left-nav bg-black text-color-white p-4"
+        style="{{ $isCollapsed ? 'transform: translateX(-100%);' : 'transform: translateX(0);' }}">
         <h4 class="text-center text-color-white">Suche anpassen</h4>
         <form wire:submit.prevent="redirectToResults">
             <div class="form-group">
                 <label for="continent">Kontinent</label>
                 <select wire:model.change="continent" class="form-select py-1">
                     <option value="">Beliebig</option>
-                    @foreach($continents as $continent)
+                    @foreach ($continents as $continent)
                         <option value="{{ $continent->id }}">{{ $continent->title }}</option>
                     @endforeach
                 </select>
@@ -27,7 +24,7 @@
                 <label for="price">Preis pro Person bis</label>
                 <select wire:model.change="price" class="form-select">
                     <option value="">Beliebig</option>
-                    @foreach($ranges as $range)
+                    @foreach ($ranges as $range)
                         <option value="{{ $range->id }}">{{ $range->Range_to_show }}</option>
                     @endforeach
                 </select>
@@ -37,11 +34,7 @@
                 <label for="urlaub">Urlaub im</label>
                 <select wire:model.change="urlaub" class="form-select py-1">
                     <option value="">Beliebig</option>
-                    @foreach([
-                        'Januar', 'Februar', 'März', 'April', 'Mai',
-                        'Juni', 'Juli', 'August', 'September',
-                        'Oktober', 'November', 'Dezember'
-                    ] as $month)
+                    @foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $month)
                         <option value="{{ $month }}">{{ $month }}</option>
                     @endforeach
                 </select>
@@ -51,9 +44,9 @@
                 <label for="sonnenstunden">Sonnenstunden</label>
                 <select wire:model.change="sonnenstunden" class="form-select py-1">
                     <option value="">Beliebig</option>
-                    @for($i = 3; $i <= 12; $i++)
-                    <option value="more_{{ $i }}">Mindestens {{ $i }} Stunden</option>
-                @endfor
+                    @for ($i = 3; $i <= 12; $i++)
+                        <option value="more_{{ $i }}">Mindestens {{ $i }} Stunden</option>
+                    @endfor
                 </select>
             </div>
 
@@ -61,26 +54,27 @@
                 <label for="wassertemperatur">Wassertemperatur</label>
                 <select wire:model.change="wassertemperatur" class="form-select py-1">
                     <option value="">Beliebig</option>
-                    @for($i = 16; $i <= 27; $i++)
+                    @for ($i = 16; $i <= 27; $i++)
                         <option value="more_{{ $i }}">Mindestens {{ $i }}°C</option>
                     @endfor
                 </select>
             </div>
 
             <h5 class="text-white">Spezielle Wünsche</h5>
-            @foreach([
-                'list_beach' => 'Strandurlaub',
-                'list_citytravel' => 'Städtereise',
-                'list_sports' => 'Sporturlaub',
-                'list_culture' => 'Kulturreise',
-                'list_nature' => 'Natururlaub',
-                'list_watersport' => 'Wassersport',
-                'list_wintersport' => 'Wintersport',
-                'list_mountainsport' => 'Bergsport',
-                'list_amusement_park' => 'Freizeitpark',
-            ] as $field => $label)
+            @foreach ([
+        'list_beach' => 'Strandurlaub',
+        'list_citytravel' => 'Städtereise',
+        'list_sports' => 'Sporturlaub',
+        'list_culture' => 'Kulturreise',
+        'list_nature' => 'Natururlaub',
+        'list_watersport' => 'Wassersport',
+        'list_wintersport' => 'Wintersport',
+        'list_mountainsport' => 'Bergsport',
+        'list_amusement_park' => 'Freizeitpark',
+    ] as $field => $label)
                 <div>
-                    <input wire:model.change="spezielle" id="{{ $field }}" type="checkbox" value="{{ $field }}" class="form-check-input">
+                    <input wire:model.change="spezielle" id="{{ $field }}" type="checkbox"
+                        value="{{ $field }}" class="form-check-input">
                     <label for="{{ $field }}">{{ $label }}</label>
                 </div>
             @endforeach
@@ -92,32 +86,37 @@
         </form>
 
         <div class="mt-2">
-            <a class="text-decoration-underline text-white" href="{{ route('detail_search') }}"><i class="fas fa-arrow-circle-right text-warning rounded-circle me-1 bg-white"></i>Detailsuche</a>
+            <a class="text-decoration-underline text-white" href="{{ route('detail_search') }}"><i
+                    class="fas fa-arrow-circle-right text-warning rounded-circle me-1 bg-white"></i>Detailsuche</a>
         </div>
     </div>
 
+    @script
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const isCollapsed = @this.isCollapsed; // Initialzustand aus Livewire
 
-    <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const isCollapsed = @this.isCollapsed; // Initialzustand aus Livewire
+                function initializeSidebarState() {
+                    const screenWidth = window.innerWidth;
 
-    function initializeSidebarState() {
-        const screenWidth = window.innerWidth;
+                    if (screenWidth <= 768 && !isCollapsed) {
+                        // Sidebar schließen, wenn sie offen ist
+                        @this.dispatch('goOn-Sidebarstate', {
+                            state: true
+                        });
+                    } else if (screenWidth > 768 && isCollapsed) {
+                        // Sidebar öffnen, wenn sie geschlossen ist
+                        @this.dispatch('goOn-Sidebarstate', {
+                            state: false
+                        });
+                    }
+                }
 
-        if (screenWidth <= 768 && !isCollapsed) {
-            // Sidebar schließen, wenn sie offen ist
-            @this.dispatch('goOn-Sidebarstate', { state: true });
-        } else if (screenWidth > 768 && isCollapsed) {
-            // Sidebar öffnen, wenn sie geschlossen ist
-            @this.dispatch('goOn-Sidebarstate', { state: false });
-        }
-    }
-
-    // Initiale Überprüfung
-    initializeSidebarState();
-});
-    </script>
-
+                // Initiale Überprüfung
+                initializeSidebarState();
+            });
+        </script>
+    @endscript
 
 
     <style>
@@ -157,7 +156,5 @@ document.addEventListener('DOMContentLoaded', () => {
         .btn {
             width: 100%;
         }
-
-
-</style>
+    </style>
 </div>

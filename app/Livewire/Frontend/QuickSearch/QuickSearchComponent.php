@@ -41,6 +41,13 @@ class QuickSearchComponent extends Component
 
     public function mount(LocationRepository $repository)
     {
+
+
+// Cookie-Wert auslesen und sicherstellen, dass es ein Boolean ist
+$this->isCollapsed = filter_var(cookie('isCollapsed', false), FILTER_VALIDATE_BOOLEAN);
+
+$this->isCollapsed = session('isCollapsed', false); // Standard: false
+
         // Header Content und Bilder laden
         $headerData = $repository->getHeaderContent();
 
@@ -155,14 +162,21 @@ class QuickSearchComponent extends Component
 
         // Zustand im Cookie aktualisieren
         cookie()->queue('isCollapsed', $state, 60 * 24 * 30); // 30 Tage
+
+        // Zustand in der Session speichern
+        session(['isCollapsed' => $this->isCollapsed]);
     }
 
     public function toggleCollapse()
     {
         $this->isCollapsed = !$this->isCollapsed;
 
-        // Zustand in einem Cookie speichern
+        // Zustand im Cookie speichern
         cookie()->queue('isCollapsed', $this->isCollapsed, 60 * 24 * 30); // 30 Tage
+
+        // Zustand in der Session speichern
+        session(['isCollapsed' => $this->isCollapsed]);
+
     }
 
     public function redirectToResults()
@@ -208,6 +222,9 @@ class QuickSearchComponent extends Component
 
         // Optional: Zustand in einem Cookie speichern
         cookie()->queue('isCollapsed', true, 60 * 24 * 30); // 30 Tage
+
+        // Zustand in der Session speichern
+        session(['isCollapsed' => $this->isCollapsed]);
 
         // Nach dem Einklappen zur "Detailsuche"-Route umleiten
         return redirect()->route('detail_search');

@@ -37,6 +37,7 @@ class ContinentController extends Controller
      {
          // Finde den Kontinent basierend auf dem Alias
          $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
+//dd($continent);
 
          // Länder des Kontinents abrufen
          $countries = WwdeCountry::where('continent_id', $continent->id)
@@ -47,6 +48,16 @@ class ContinentController extends Controller
          // Bilder abrufen (mit Fallback)
      //    $images = $repository->getContinentImages($continent);
          $images = $repository->getAndStoreContinentImages($continent);
+
+    // Header-Daten in der Session speichern
+    session()->put('headerData', [
+        'bgImgPath' => $images['bgImgPath'],
+        'mainImgPath' => $images['mainImgPath'],
+        'headerContent' => [
+            'main_text' => $continent->continent_header_text ?? 'Standardtext',
+        ],
+    ]);
+
 
         // dd($images);
 
@@ -60,7 +71,7 @@ class ContinentController extends Controller
          ]);
      }
 
-    public function showLocations($continentAlias, $countryAlias)
+    public function showLocations($continentAlias, $countryAlias, ContinentRepository $repository)
     {
         // Finde den Kontinent basierend auf dem Alias
         $continent = WwdeContinent::where('alias', $continentAlias)->firstOrFail();
@@ -84,6 +95,7 @@ class ContinentController extends Controller
 
         // Bilder und Texte des Kontinents
         $bgImgPath = $continent->image1_path ?? null;
+       //dd($bgImgPath);
         $bgImgPath = $continent->image1_path ? Storage::url($continent->image1_path) : null;
       //  $mainImgPath = $continent->image2_path ?? null;
 
@@ -101,6 +113,18 @@ class ContinentController extends Controller
             $mainImgPath = $mainImgPath ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
         }
 
+        $images = $repository->getAndStoreContinentImages($continent);
+
+    // Header-Daten in der Session speichern
+    session()->put('headerData', [
+        'bgImgPath' => $images['bgImgPath'],
+        'mainImgPath' => $images['mainImgPath'],
+        'headerContent' => [
+            'main_text' => $continent->continent_header_text ?? 'Standardtext',
+        ],
+    ]);
+
+
         // Ansicht rendern
         return view('frondend.continent_and_countries.locations', [
             'continent' => $continent,
@@ -108,7 +132,7 @@ class ContinentController extends Controller
             'locations' => $locations,
             'panorama_location_picture' => $bgImgPath,
             'main_location_picture' => $mainImgPath,
-            'panorama_location_text' => $continent->continent_text ?? null,
+            'panorama_location_text' => $continent->continent_header_text ?? null,
         ]);
     }
 
