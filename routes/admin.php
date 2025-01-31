@@ -5,10 +5,13 @@ use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
+use App\Livewire\Backend\WeatherManager\ClimateDataManager;
 use App\Http\Controllers\Backend\Location\LocationController;
+use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
@@ -27,6 +30,38 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     // Dashboard
     Route::middleware('auth:admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/admin/imports-stuff/imports', function () {
+            return view('backend.admin.importstuff.import-stuff-to-db');
+        })->name('admin.imports-stuff.view');
+
+
+
+
+    // ----------------------------------------------------------------
+    // Addons
+
+    Route::get('/addons/imports-pics/imports', function () {
+        return view('backend.admin.importimagesandtext.import-images-text-to-db');
+    })->name('addons.imports-pics.view');
+
+    // ----------------------------------------------------------------
+    // Weather
+    
+    // Weather Manager
+    Route::prefix('weather-manager')->name('weather-manager.')->group(function () {
+        Route::get('/', WeatherStationsComponent::class)->name('index');
+    });
+    // Weather Importer
+    Route::prefix('weather-importer')->name('weather-importer.')->group(function () {
+        Route::get('/', WeatherStationImporter::class)->name('index');
+    });
+
+    Route::prefix('weather-climate-manager')->name('weather-climate-manager.')->group(function () {
+        Route::get('/', ClimateDataManager::class)->name('index');
+    });
+
+
     });
 
     // Header Manager
@@ -55,11 +90,20 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     Route::prefix('country-manager')->name('country-manager.')->group(function () {
         Route::get('/', CountryManagerComponent::class)->name('index');
     });
+    Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('country-manager.edit');
+
 
     // Translation Manager
     Route::prefix('translation-manager')->name('translation-manager.')->group(function () {
         Route::get('/', TranslationManagerComponent::class)->name('index');
     });
+
+
+
+
+
+
+
 
 // Location Table Manager
 Route::prefix('location-table-manager')->name('location-table-manager.')->group(function () {
@@ -88,9 +132,10 @@ Route::get('/admin/commands/artisan', function () {
     return view('backend.admin.commands.command-artisan');
 })->name('admin.commands.view');
 
-Route::get('/admin/imports-pics/imports', function () {
-    return view('backend.admin.importimagesandtext.import-images-text-to-db');
-})->name('admin.imports-pics.view');
+
+
+
+
 
 
 

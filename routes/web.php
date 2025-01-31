@@ -6,8 +6,10 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
+use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Http\Controllers\Backend\Imports\CountryImportController;
 use App\Http\Controllers\Backend\Imports\LocationImportController;
+use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Http\Controllers\Backend\Imports\ContinentImportController;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
 use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
@@ -107,5 +109,7 @@ Route::get('/change-language/{lang}', [LanguageController::class, 'switch'])->na
 // Route to display the upload form
 
 
+Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('country-manager.edit');
 
+Route::get('/location-manager/edit/{id}', LocationManagerComponent::class)->name('location-manager.edit');
 

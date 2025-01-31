@@ -229,4 +229,37 @@
     <!-- Include the Jodit JS Library -->
     <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('livewire:init', () => {
+    Livewire.on('confirmDelete', ({ id, message }) => {
+        Swal.fire({
+            title: 'Confirm Deletion',
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Livewire.dispatch('confirmDelete', { id: id }); // Parameter als Objekt
+            }
+        });
+    });
+
+    Livewire.on('success', (message) => {
+        Swal.fire('Success', message, 'success');
+    });
+
+    Livewire.on('error', (message) => {
+        Swal.fire('Error', message, 'error');
+    });
+});
+
+</script>
+
+
+
 </div>

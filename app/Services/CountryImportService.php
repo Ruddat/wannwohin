@@ -58,9 +58,9 @@ foreach ($rows as $index => $row) {
     }
 
                     // Bilder abrufen
-                    $image1path = $this->getCityImage($countryName, 1, $status);
-                    $image2path = $this->getCityImage($countryName, 2, $status);
-                    $image3path = $this->getCityImage($countryName, 3, $status);
+                 //   $image1path = $this->getCityImage($countryName, 1, $status);
+                 //   $image2path = $this->getCityImage($countryName, 2, $status);
+                 //   $image3path = $this->getCityImage($countryName, 3, $status);
 //dd($image1path, $image2path, $image3path);
 
 
@@ -96,9 +96,9 @@ foreach ($rows as $index => $row) {
             'artikel' => $row[28] ?? null,
             'travelwarning_id' => $row[29] ?? null,
             'price_tendency' => $row[30] ?? null,
-            'image1_path' => $image1path,
-            'image2_path' => $image2path,
-            'image3_path' => $image3path,
+            'image1_path' => $image1path ?? null,
+            'image2_path' => $image2path ?? null,
+            'image3_path' => $image3path ?? null,
         ]
     );
 }

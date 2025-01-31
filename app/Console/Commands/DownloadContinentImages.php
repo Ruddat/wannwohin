@@ -39,10 +39,10 @@ class DownloadContinentImages extends Command
             foreach ($images as $index => $imageUrl) {
                 $indexIncremented = $index + 1; // Index inkrementieren
                 $fileName = "{$continent->alias}_image{$indexIncremented}.jpg"; // Dateiname erstellen
-                $filePath = "uploads/images/continents/{$fileName}";
+                $filePath = "uploads/images/continents/{$fileName}"; // Nur relativer Pfad
 
                 if ($this->saveImage($imageUrl, $filePath)) {
-                    $imagePaths[] = $filePath; // Nur relativer Pfad
+                    $imagePaths[] = $filePath;
                 } else {
                     $this->error("Failed to save image {$indexIncremented} for {$continent->title}.");
                 }

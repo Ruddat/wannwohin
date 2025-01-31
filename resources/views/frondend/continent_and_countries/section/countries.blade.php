@@ -2,28 +2,34 @@
     <div class="container">
         <div class="row g-4">
             @foreach($countries as $country)
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    @php
-                        // Hole die erste Location des Landes und deren primäres Bild
-                        $location = $country->locations()->first();
-                        $primaryImage = $country?->primaryImage()
-                            ?? asset('img/default-location.png');
-                    @endphp
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
+                @php
+                    $location = $country->locations()->first();
+                    //dd($location);
+                    $primaryImage = $country?->primaryImage() ?? asset('img/default-location.png');
+                //dd($primaryImage);
+                @endphp
 
-                    <a href="{{ route('list-country-locations', ['continentAlias' => $continent->alias, 'countryAlias' => $country->alias]) }}" class="text-decoration-none">
-                        <div
-                            class="card border-0 shadow-lg custom-card"
-                            style="background-image: url('{{ $primaryImage }}');"
-                        >
-                            <div class="card-body d-flex align-items-end">
-                                <div class="bg-opacity-75 bg-white rounded text-dark p-3">
-                                    <h4 class="m-0 text-center">{{ $country->title }}</h4>
-                                </div>
+                <a href="{{ route('list-country-locations', ['continentAlias' => $continent->alias, 'countryAlias' => $country->alias]) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-lg custom-card" style="background-image: url('{{ $primaryImage }}');">
+                        <div class="card-body d-flex align-items-end">
+                            <div class="bg-opacity-75 bg-white rounded text-dark p-3">
+                                <h4 class="m-0 text-center">{{ $country->title }}</h4>
                             </div>
                         </div>
+                    </div>
+                </a>
+
+                <!-- Bearbeiten-Button nur für Admins -->
+                @if(Auth::guard('admin')->check())
+                <div class="mt-2 text-center">
+                    <a href="{{ route('country-manager.edit', $country->id) }}" target="_blank" class="btn btn-sm btn-warning">
+                        <i class="ti ti-edit"></i> Admin eingeloggt! Bearbeiten
                     </a>
                 </div>
-            @endforeach
+            @endif
+            </div>
+        @endforeach
         </div>
     </div>
 </section>

@@ -26,7 +26,9 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        $remember = $request->has('remember'); // Prüfen, ob das Checkbox-Feld aktiviert wurde
+
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('verwaltung.dashboard'));

@@ -21,8 +21,7 @@
 
     <!-- Import-Button -->
     <button wire:click="importImagesAndText" class="btn btn-primary">Bilder importieren</button>
-    <button wire:click="importImagesAndText" class="btn btn-primary">Bilder importieren</button>
-    
+
     <!-- Statusmeldung -->
     @if ($message)
         <div class="alert alert-info mt-3">

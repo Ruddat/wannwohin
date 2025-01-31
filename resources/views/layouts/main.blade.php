@@ -66,7 +66,7 @@
     <!-- Head Libs -->
     <script src="{{ asset('assets/vendor/modernizr/modernizr.min.js') }}"></script>
 </head>
-<body data-plugin-scroll-spy data-plugin-options="{'target': '.wrapper-spy'}">
+<body>
     <livewire:frontend.quick-search.quick-search-component />
                     {{--
     @include('layouts.search')
@@ -81,12 +81,131 @@
         </svg>
     </div>
     <p style="color: #fff; font-size: 1.5rem; margin-top: 20px;">Laden... Wir bereiten alles für Sie vor!</p>
-    <div class="loading-bar" style="width: 80%; margin-top: 20px;">
-        <div class="progress"></div>
+    <div class="loading-bar" style="width: 80%; height: 10px; background: rgba(255, 255, 255, 0.3); border-radius: 5px; overflow: hidden; margin-top: 20px;">
+        <div class="progress" style="width: 0%; height: 100%; background: #fff; transition: width 0.3s ease;"></div>
     </div>
 </div>
 
 
+<!-- Go-to-Top Button -->
+<button id="goTopButton" class="go-top">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="currentColor" d="M12 2l-7 7h4v7h6v-7h4l-7-7z"></path>
+    </svg>
+    <svg class="progress-ring" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle class="progress-ring__background" cx="50" cy="50" r="45" />
+      <circle class="progress-ring__progress" cx="50" cy="50" r="45" />
+    </svg>
+  </button>
+
+
+  <style>
+    /* General Button Styling */
+    .go-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 4rem;
+      height: 4rem;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4caf50, #81c784);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .go-top:hover {
+      background: linear-gradient(135deg, #388e3c, #66bb6a);
+      transform: scale(1.1);
+    }
+
+    .go-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Progress Ring */
+    .progress-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      z-index: 0; /* Below the button content */
+    }
+
+    .progress-ring__background,
+    .progress-ring__progress {
+      fill: none;
+      stroke-width: 5;
+      r: 45; /* Radius */
+      cx: 50; /* Center x */
+      cy: 50; /* Center y */
+    }
+
+    .progress-ring__background {
+      stroke: rgba(255, 255, 255, 0.2);
+    }
+
+    .progress-ring__progress {
+      stroke: white;
+      stroke-dasharray: 283; /* Circumference: 2 * π * r */
+      stroke-dashoffset: 283; /* Start fully hidden */
+      transition: stroke-dashoffset 0.2s ease;
+    }
+
+
+    @media (max-width: 768px) {
+        #goTopButton {
+            display: none !important;
+        }
+    }
+  </style>
+
+<script>
+const progressCircle = document.querySelector(".progress-ring__progress");
+const button = document.getElementById("goTopButton");
+const radius = progressCircle.r.baseVal.value;
+const circumference = 2 * Math.PI * radius;
+
+// Set initial attributes
+progressCircle.style.strokeDasharray = `${circumference}`;
+progressCircle.style.strokeDashoffset = circumference;
+
+// Scroll Event
+document.addEventListener("scroll", () => {
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPosition = window.scrollY;
+
+  // Fortschrittsberechnung
+  const progress = scrollPosition / scrollHeight;
+  const offset = circumference - progress * circumference;
+
+  progressCircle.style.strokeDashoffset = offset;
+
+  // Button sichtbar machen
+  if (scrollPosition > 200) {
+    button.classList.add("visible");
+  } else {
+    button.classList.remove("visible");
+  }
+});
+
+// Smooth Scroll
+button.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+
+</script>
 
 @if (Route::is('home', 'impressum', 'search.results', 'detail_search', 'continent.countries', 'list-country-locations', 'ergebnisse.anzeigen'))
 
@@ -239,39 +358,29 @@
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const loadingScreen = document.getElementById("loading-screen");
+    document.addEventListener("DOMContentLoaded", () => {
+      const progress = document.querySelector(".loading-bar .progress");
+      const loadingScreen = document.getElementById("loading-screen");
 
-    // Funktion zum Aktivieren der Ladeanzeige
-    const showLoadingScreen = () => {
-        loadingScreen.style.display = "flex";
-    };
+      let progressValue = 0;
+      const interval = setInterval(() => {
+        progressValue += 10; // Fortschritt in % erhöhen
+        progress.style.width = progressValue + "%";
 
-    // Ladeanzeige ausblenden, wenn die neue Seite vollständig geladen ist
-    window.addEventListener("load", () => {
-        loadingScreen.style.display = "none";
-    });
-
-    // Ladeanzeige bei Klick auf Links
-    document.addEventListener("click", (e) => {
-        const target = e.target.closest("a"); // Nächsten <a>-Tag finden
-        if (target && target.getAttribute("href") && target.getAttribute("href") !== "#" && !target.hasAttribute('data-no-loading')) {
-            showLoadingScreen();
+        if (progressValue >= 100) {
+          clearInterval(interval); // Fortschrittsanimation stoppen
+          setTimeout(() => {
+            loadingScreen.style.opacity = "0"; // Sanft ausblenden
+            loadingScreen.style.transition = "opacity 0.5s ease";
+            setTimeout(() => {
+              loadingScreen.style.display = "none"; // Entfernen nach dem Ausblenden
+            }, 500);
+          }, 300);
         }
+      }, 200); // Intervall alle 200 ms
+
     });
-
-    // Ladeanzeige bei Formular-Submit
-    document.addEventListener("submit", (e) => {
-        const target = e.target; // Aktuelles Formular
-        if (target.tagName === "FORM") {
-            showLoadingScreen();
-        }
-    });
-});
-
-
-
-</script>
+  </script>
 
 
 

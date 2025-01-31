@@ -6,7 +6,7 @@
           </button>
           <h1 class="navbar-brand navbar-brand-autodark">
             <a href=".">
-              <img src="./static/logo.svg" width="110" height="32" alt="Tabler" class="navbar-brand-image">
+                <img src="{{ asset('backend/static/wannwohin-small.jpg') }}" width="110" height="84" alt="WannWoHin">
             </a>
           </h1>
           <div class="navbar-nav flex-row d-lg-none">
@@ -471,19 +471,71 @@
                     </a>
                 </div>
                 <div class="dropdown-menu-column">
-                    <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-blocks') ? 'active' : '' }}"
-                       href="{{ route('verwaltung.admin.imports-pics.view') }}">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.addons.imports-pics.view') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.addons.imports-pics.view') }}">
                        Import Pictures
                     </a>
                 </div>
 
-              </div>
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.admin.imports-stuff.view') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.admin.imports-stuff.view') }}">
+                       Stuff
+                    </a>
+                </div>
+
+            </div>
             </div>
           </li>
 
+          <li class="nav-item dropdown {{ request()->is('verwaltung/weather*') ? 'show' : '' }}">
+            <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->is('verwaltung/weather*') ? 'true' : 'false' }}">
+              <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-cloud-sun">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M12 3v2" />
+                    <path d="M16.25 5.75l-1.5 1.5" />
+                    <path d="M18 10h2" />
+                    <path d="M16.25 14.25l1.5 1.5" />
+                    <path d="M12 17v2" />
+                    <path d="M7.75 14.25l-1.5 1.5" />
+                    <path d="M6 10h-2" />
+                    <path d="M7.75 5.75l1.5 1.5" />
+                    <path d="M12 10a4 4 0 1 0 4 4" />
+                    <path d="M16 16a4 4 0 1 0 -4 -4" />
+                  </svg>
+              </span>
+              <span class="nav-link-title">
+                Weather
+              </span>
+            </a>
+            <div class="dropdown-menu {{ request()->is('verwaltung/weather*') ? 'show' : '' }}">
+                <div class="dropdown-menu-columns">
+                    <div class="dropdown-menu-column">
+                        <a class="dropdown-item {{ request()->routeIs('verwaltung.weather-climate-manager.index') ? 'active' : '' }}"
+                           href="{{ route('verwaltung.weather-climate-manager.index') }}">
+                           Clima Data Manager
+                        </a>
+                      </div>
 
 
 
+                    <div class="dropdown-menu-column">
+                  <a class="dropdown-item {{ request()->routeIs('verwaltung.weather-manager.index') ? 'active' : '' }}"
+                     href="{{ route('verwaltung.weather-manager.index') }}">
+                     Weather Stations
+                  </a>
+                </div>
+
+                <div class="dropdown-menu-column">
+                  <a class="dropdown-item {{ request()->routeIs('verwaltung.weather-importer.index') ? 'active' : '' }}"
+                     href="{{ route('verwaltung.weather-importer.index') }}">
+                     Stations Importer
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
 
 
 

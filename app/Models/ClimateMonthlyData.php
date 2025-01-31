@@ -36,6 +36,6 @@ class ClimateMonthlyData extends Model
      */
     public function location()
     {
-        return $this->belongsTo(WwdeLocation::class);
+        return $this->belongsTo(WwdeLocation::class, 'location_id');
     }
 }

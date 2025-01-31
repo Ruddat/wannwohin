@@ -4,30 +4,39 @@
         <div class="row g-4">
             @foreach($locations as $location)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm custom-card position-relative">
+                        <!-- Bearbeiten-Button (nur für Admins sichtbar) -->
+                        @if(Auth::guard('admin')->check())
+                        <!-- Debug-Ausgabe -->
+                        <a href="{{ route('location-manager.edit', $location->id) }}" target="_blank" class="btn btn-sm btn-warning position-absolute top-0 end-0 m-2 card-edit-button">
+                            <i class="ti ti-edit"></i> Bearbeiten
+                        </a>
+                    @endif
 
-
-                    <a href="{{ route('location.details', [
-                        'continent' => $location->country->continent->alias,
-                        'country' => $location->country->alias,
-                        'location' => $location->alias,
-                    ]) }}" class="text-decoration-none">
-                        <div class="card h-100 border-0 shadow-sm custom-card">
+                        <!-- Bild -->
+                        <a href="{{ route('location.details', [
+                            'continent' => $location->country->continent->alias,
+                            'country' => $location->country->alias,
+                            'location' => $location->alias,
+                        ]) }}" class="text-decoration-none">
                             <div class="card-img-wrapper">
                                 <img src="{{ $location->primaryImage() }}" class="card-img-top" alt="@autotranslate($location->title, app()->getLocale())">
                             </div>
-                            <div class="card-body d-flex flex-column">
-                                <!-- Titel -->
-                                <h5 class="card-title text-truncate text-center">@autotranslate($location->title, app()->getLocale())</h5>
+                        </a>
 
-                                <!-- Text -->
-                                <p class="card-text">
-                                    @if (!empty($location->text_short))
-                                        @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
-                                    @endif
-                                </p>
-                            </div>
+                        <!-- Inhalt -->
+                        <div class="card-body d-flex flex-column">
+                            <!-- Titel -->
+                            <h5 class="card-title text-truncate text-center">@autotranslate($location->title, app()->getLocale())</h5>
+
+                            <!-- Text -->
+                            <p class="card-text">
+                                @if (!empty($location->text_short))
+                                    @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
+                                @endif
+                            </p>
                         </div>
-                    </a>
+                    </div>
                 </div>
             @endforeach
             <div class="mb-6"></div>
@@ -110,6 +119,17 @@
 .custom-card a:hover {
     text-decoration: none;
     color: #007bff; /* Farbe beim Hover */
+}
+
+/* Bearbeiten-Button mit Hover-Effekt */
+.card-edit-button {
+    transition: opacity 0.3s ease;
+    z-index: 10; /* Im Vordergrund */
+    width: fit-content;
+}
+
+.custom-card:hover .card-edit-button {
+    opacity: 3;
 }
 
 /* Responsiv */

@@ -3,11 +3,12 @@
 namespace App\Livewire\Backend\ContinentManager;
 
 use Livewire\Component;
-use Livewire\WithFileUploads;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use App\Models\WwdeContinent;
-use Illuminate\Support\Facades\Storage;
+use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class ContinentManagerComponent extends Component
 {
@@ -22,7 +23,7 @@ class ContinentManagerComponent extends Component
 
     public $searchKeyword = ''; // Neues Attribut für das Keyword
     public $pixabayImages = []; // Zum Speichern der geladenen Bilder
-
+    protected $listeners = ['confirmDelete'];
 
     protected $rules = [
         'title' => 'required|string|max:120',
@@ -101,6 +102,22 @@ class ContinentManagerComponent extends Component
     {
         $continent = WwdeContinent::findOrFail($id);
 
+        if ($continent->no_countries > 0) {
+            $this->dispatch('error', 'This continent cannot be deleted because it has associated countries.');
+            return;
+        }
+//dd('hierarchical');
+        // Show confirmation dialog
+        $this->dispatch('confirmDelete', [
+            'id' => $id,
+            'message' => 'Are you sure you want to delete this continent?',
+        ]);
+    }
+    #[On('confirmDelete')]
+    public function confirmDelete($id)
+    {
+        $continent = WwdeContinent::findOrFail($id);
+
         for ($i = 1; $i <= 3; $i++) {
             $imageField = "image{$i}_path";
             if ($continent->$imageField && Storage::exists($continent->$imageField)) {
@@ -111,6 +128,8 @@ class ContinentManagerComponent extends Component
         $continent->delete();
         $this->dispatch('success', 'Continent deleted successfully.');
     }
+
+
 
     public function uploadImages()
     {
@@ -158,6 +177,8 @@ class ContinentManagerComponent extends Component
 
     public function selectPixabayImage($index)
     {
+
+        dd('hierarchical');
         if (isset($this->pixabayImages[$index])) {
             $imageData = $this->pixabayImages[$index];
             $path = "uploads/images/continents/" . uniqid() . ".jpg";

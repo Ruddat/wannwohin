@@ -143,19 +143,132 @@
 
                             <!-- Country Code -->
                             <div class="mb-3">
-                                <label for="country_code" class="form-label">Country Code</label>
+                                <label for="country_code" class="form-label">Country Code (ISO2)</label>
                                 <input wire:model="country_code" type="text" id="country_code" class="form-control" placeholder="Country Code (e.g., US)">
                                 @error('country_code') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
+                            <!-- Country ISO3 Code -->
                             <div class="mb-3">
-                                <livewire:jodit-text-editor wire:model.live="country_text" :buttons="['bold', 'italic', 'underline', 'strikeThrough', '|', 'left', 'center', 'right', '|', 'link', 'image']" />
+                                <label for="country_iso_3" class="form-label">Country ISO3 Code</label>
+                                <input wire:model="country_iso_3" type="text" id="country_iso_3" class="form-control" placeholder="Country ISO3 Code (e.g., USA)">
+                                @error('country_iso_3') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
-                            <livewire:jodit-text-editor wire:model.live="content" :buttons="['bold', 'italic', 'underline', 'strikeThrough', '|', 'left', 'center', 'right', '|', 'link', 'image']" />
+                            <!-- Currency Code -->
+                            <div class="mb-3">
+                                <label for="currency_code" class="form-label">Currency Code</label>
+                                <input wire:model="currency_code" type="text" id="currency_code" class="form-control" placeholder="Currency Code (e.g., USD)">
+                                @error('currency_code') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
 
+                            <!-- Currency Name -->
+                            <div class="mb-3">
+                                <label for="currency_name" class="form-label">Currency Name</label>
+                                <input wire:model="currency_name" type="text" id="currency_name" class="form-control" placeholder="Currency Name (e.g., US Dollar)">
+                                @error('currency_name') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
 
+                            <!-- Currency Conversion -->
+                            <div class="mb-3">
+                                <label for="currency_conversion" class="form-label">Currency Conversion</label>
+                                <input wire:model="currency_conversion" type="text" id="currency_conversion" class="form-control" placeholder="Currency Conversion (e.g., 1 USD = 0.85 EUR)">
+                                @error('currency_conversion') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
 
+                            <!-- Population -->
+                            <div class="mb-3">
+                                <label for="population" class="form-label">Population</label>
+                                <input wire:model="population" type="number" id="population" class="form-control" placeholder="Population">
+                                @error('population') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Capital -->
+                            <div class="mb-3">
+                                <label for="capital" class="form-label">Capital</label>
+                                <input wire:model="capital" type="text" id="capital" class="form-control" placeholder="Capital">
+                                @error('capital') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Population Capital -->
+                            <div class="mb-3">
+                                <label for="population_capital" class="form-label">Population Capital</label>
+                                <input wire:model="population_capital" type="number" id="population_capital" class="form-control" placeholder="Population Capital">
+                                @error('population_capital') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Area -->
+                            <div class="mb-3">
+                                <label for="area" class="form-label">Area (in km²)</label>
+                                <input wire:model="area" type="number" id="area" class="form-control" placeholder="Area">
+                                @error('area') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Official Language -->
+                            <div class="mb-3">
+                                <label for="official_language" class="form-label">Official Language</label>
+                                <input wire:model="official_language" type="text" id="official_language" class="form-control" placeholder="Official Language">
+                                @error('official_language') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Language EZMZ -->
+                            <div class="mb-3">
+                                <label for="language_ezmz" class="form-label">Language EZMZ</label>
+                                <input wire:model="language_ezmz" type="text" id="language_ezmz" class="form-control" placeholder="Language EZMZ">
+                                @error('language_ezmz') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- BSP in USD -->
+                            <div class="mb-3">
+                                <label for="bsp_in_USD" class="form-label">BSP in USD</label>
+                                <input wire:model="bsp_in_USD" type="number" id="bsp_in_USD" class="form-control" placeholder="BSP in USD">
+                                @error('bsp_in_USD') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Life Expectancy (Men) -->
+                            <div class="mb-3">
+                                <label for="life_expectancy_m" class="form-label">Life Expectancy (Men)</label>
+                                <input wire:model="life_expectancy_m" type="number" step="0.1" id="life_expectancy_m" class="form-control" placeholder="Life Expectancy (Men)">
+                                @error('life_expectancy_m') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Life Expectancy (Women) -->
+                            <div class="mb-3">
+                                <label for="life_expectancy_w" class="form-label">Life Expectancy (Women)</label>
+                                <input wire:model="life_expectancy_w" type="number" step="0.1" id="life_expectancy_w" class="form-control" placeholder="Life Expectancy (Women)">
+                                @error('life_expectancy_w') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Population Density -->
+                            <div class="mb-3">
+                                <label for="population_density" class="form-label">Population Density</label>
+                                <input wire:model="population_density" type="number" step="0.1" id="population_density" class="form-control" placeholder="Population Density">
+                                @error('population_density') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Visum benötigt -->
+                            <div class="mb-3">
+                                <label for="country_visum_needed" class="form-label">Visum benötigt</label>
+                                <select wire:model="country_visum_needed" id="country_visum_needed" class="form-select">
+                                    <option value="0">Nein</option>
+                                    <option value="1">Ja</option>
+                                </select>
+                                @error('country_visum_needed') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Maximale Visumdauer -->
+                            <div class="mb-3">
+                                <label for="country_visum_max_time" class="form-label">Maximale Visumdauer</label>
+                                <input wire:model="country_visum_max_time" type="text" id="country_visum_max_time" class="form-control" placeholder="Maximale Visumdauer">
+                                @error('country_visum_max_time') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Preis-Tendenz -->
+                            <div class="mb-3">
+                                <label for="price_tendency" class="form-label">Preis-Tendenz</label>
+                                <input wire:model="price_tendency" type="text" id="price_tendency" class="form-control" placeholder="Preis-Tendenz">
+                                @error('price_tendency') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
 
                             <!-- Custom Images -->
                             <div class="mb-3">
@@ -164,48 +277,75 @@
                                 <span>Use custom image uploads instead of Pixabay images</span>
                             </div>
 
+                            <div class="mb-3">
+                                <livewire:jodit-text-editor wire:model.live="country_text" :buttons="['bold', 'italic', 'underline', 'strikeThrough', '|', 'left', 'center', 'right', '|', 'link', 'image']" />
+                            </div>
+
+                            <!-- Custom Images -->
+                            <div class="mb-3">
+                                <label for="custom_images" class="form-label">Enable Custom Images</label>
+                                <input wire:model.change="custom_images" type="checkbox" id="custom_images">
+                                <span>Use custom image uploads instead of Pixabay images</span>
+                            </div>
+
 
                             @if ($custom_images)
-                                <div class="row">
-                                    @for ($i = 1; $i <= 3; $i++)
-                                        <div class="col-md-4 mb-3 text-center">
-                                            <label for="image{{ $i }}_path" class="form-label">Custom Image {{ $i }}</label>
-                                            <input wire:model="image{{ $i }}_path" type="file" id="image{{ $i }}_path" class="form-control">
-                                            <div class="mt-2 position-relative">
-                                                @if (${"image{$i}_path"} instanceof \Livewire\TemporaryUploadedFile)
-                                                    <img src="{{ ${"image{$i}_path"}->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
-                                                    <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                            @error("image{$i}_path") <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
-                                        </div>
-                                    @endfor
-                                </div>
-                            @else
-                                <div class="mb-3">
-                                    <label for="searchKeyword" class="form-label">Search Images on Pixabay</label>
-                                    <div class="input-group">
-                                        <input wire:model="searchKeyword" type="text" id="searchKeyword" class="form-control" placeholder="Enter keyword">
-                                        <button wire:click="fetchImagesFromPixabay" class="btn btn-outline-secondary">Search</button>
-                                    </div>
-                                </div>
-
-                                @if ($pixabayImages)
-                                    <div class="row">
-                                        <h5 class="text-center">Pixabay Images</h5>
-                                        @foreach ($pixabayImages as $index => $image)
-                                            <div class="col-md-3 mb-3 text-center">
-                                                <img src="{{ $image['previewURL'] }}" alt="Pixabay Image {{ $index }}" class="img-thumbnail" style="max-width: 100px;">
-                                                <button wire:click="selectPixabayImage({{ $index }})" class="btn btn-sm btn-primary mt-2">
-                                                    Select
+                            <div class="row">
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <div class="col-md-4 mb-3 text-center">
+                                        <label for="image{{ $i }}_path" class="form-label">Custom Image {{ $i }}</label>
+                                        <input wire:model="image{{ $i }}_path" type="file" id="image{{ $i }}_path" class="form-control">
+                                        <div class="mt-2 position-relative">
+                                            @if (${"image{$i}_path"} instanceof \Livewire\TemporaryUploadedFile)
+                                                <img src="{{ ${"image{$i}_path"}->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                                                <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
+                                                    <i class="ti ti-trash"></i>
                                                 </button>
-                                            </div>
-                                        @endforeach
+                                            @endif
+                                        </div>
                                     </div>
-                                @endif
+                                @endfor
+                            </div>
+                            @else
+
+                            <div class="row">
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <div class="col-md-4 mb-3 text-center">
+                                        <label>Pixabay Image {{ $i }}</label>
+                                        <div class="mt-2 position-relative">
+                                            @if (!empty(${"image{$i}_path"}))
+                                                <img src="{{ asset('storage/' . ${"image{$i}_path"}) }}" alt="Pixabay Image {{ $i }}" class="img-thumbnail" style="max-width: 150px;">
+                                                <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="searchKeyword" class="form-label">Search Images on Pixabay</label>
+                                <div class="input-group">
+                                    <input wire:model="searchKeyword" type="text" id="searchKeyword" class="form-control" placeholder="Enter keyword">
+                                    <button wire:click="fetchImagesFromPixabay" class="btn btn-outline-secondary">Search</button>
+                                </div>
+                            </div>
+
+                            @if ($pixabayImages)
+                                <div class="row">
+                                    <h5 class="text-center">Pixabay Images</h5>
+                                    @foreach ($pixabayImages as $index => $image)
+                                        <div class="col-md-3 mb-3 text-center">
+                                            <img src="{{ $image['previewURL'] }}" alt="Pixabay Image {{ $index }}" class="img-thumbnail" style="max-width: 100px;">
+                                            <button wire:click="selectPixabayImage({{ $index }})" class="btn btn-sm btn-primary mt-2">
+                                                Select
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endif
+                        @endif
                         </div>
                         <div class="modal-footer">
                             <button wire:click="save" class="btn btn-primary">Save</button>

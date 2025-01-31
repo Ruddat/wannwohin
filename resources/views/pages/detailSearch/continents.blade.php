@@ -18,14 +18,14 @@
                         >
                         <!-- Hintergrundbild -->
                         <div
-                            class="continent-image"
-                            data-images='[
-                                "{{ asset($continent->image1_path) }}",
-                                "{{ asset($continent->image2_path) }}",
-                                "{{ asset($continent->image3_path) }}"
-                            ]'
-                            style="background-image: url('{{ asset($continent->image1_path) }}')"
-                        ></div>
+                        class="continent-image"
+                        data-images='[
+                            "{{ Storage::url($continent->image1_path) }}",
+                            "{{ Storage::url($continent->image2_path) }}",
+                            "{{ Storage::url($continent->image3_path) }}"
+                        ]'
+                        style="background-image: url('{{ Storage::url($continent->image1_path) }}')"
+                    ></div>
                         <!-- Overlay mit Titel -->
                         <div class="continent-overlay">
                             <span class="continent-title">{{ $continent->title }}</span>

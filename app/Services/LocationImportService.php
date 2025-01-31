@@ -40,25 +40,27 @@ class LocationImportService
 
                 if (empty($cityName)) {
                     Log::warning("Fehlender Stadtname in Zeile {$index}");
-                    continue; // Überspringe, wenn kein Stadtname vorhanden ist
+                   continue; // Überspringe, wenn kein Stadtname vorhanden ist
                 }
 
                 try {
                     // Verwende den GeocodeService, um das Land basierend auf dem Stadtnamen zu finden
-                    $result = $this->geocodeService->searchByAddress($cityName);
+                   $result = $this->geocodeService->searchByAddress($cityName);
 //dd($result);
                     if (empty($result)) {
                         Log::warning("Kein Ergebnis für Stadt '{$cityName}' in Zeile {$index}");
-                        continue;
+                  //      continue;
                     }
 
                     // Hole Land und Länder-Code aus dem Ergebnis
                     $countryName = $result[0]['address']['country'] ?? null;
                     $countryCode = $result[0]['address']['country_code'] ?? null;
-//dd($countryName, $countryCode);
+                    $countryCodeIso3 = $result[0]['address']['ISO3166-2-lvl4'] ?? null;
+
+                   // dd($countryName, $countryCode, $countryCodeIso3, $result);
                     if (!$countryName) {
                         Log::warning("Kein Land gefunden für Stadt '{$cityName}' in Zeile {$index}");
-                        continue;
+                  //      continue;
                     }
 
                     // Verarbeite `best_traveltime_json` und ersetze Zahlen durch Monatsnamen
@@ -93,6 +95,11 @@ class LocationImportService
                             'continent_id' => $continentId,
                             'lat' => $result[0]['lat'] ?? null,
                             'lon' => $result[0]['lon'] ?? null,
+
+                            // neue Felder
+                            'iso2' => $countryCode ?? null,
+                            'iso3' => $countryCodeIso3 ?? null,
+                            'currency_code' => $row[10],
                             // Weitere Felder ...
                             'alias' => $row[4],
 
@@ -100,7 +107,6 @@ class LocationImportService
                             'stop_over' => $row[7],
                             'dist_from_FRA' => $row[8],
                             'dist_type' => $row[9],
-
 
                             'bundesstaat_long' => $row[12],
                             'bundesstaat_short' => $row[13],

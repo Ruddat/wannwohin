@@ -93,11 +93,24 @@ class WwdeCountry extends Model
         return $this->hasMany(WwdeLocation::class, 'country_id', 'id');
     }
 
+
+    // Beziehungen and Additions
     public function primaryImage()
     {
-        // Priorisiere das erste Bild, falls vorhanden
-        return $this->image1_path ?? $this->image2_path ?? $this->image3_path ?? null;
+        $images = array_filter([
+            $this->image1_path,
+            $this->image2_path,
+            $this->image3_path
+        ]);
+
+        if (!empty($images)) {
+            $randomImage = $images[array_rand($images)]; // Zufälliges Bild auswählen
+            return asset('storage/' . $randomImage);
+        }
+
+        return asset('img/default-location.png'); // Fallback-Bild, falls kein Bild vorhanden ist
     }
+
 
     /**
      * Beziehung zu einer Reisewarnung.
