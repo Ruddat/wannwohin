@@ -178,7 +178,7 @@ class ContinentManagerComponent extends Component
     public function selectPixabayImage($index)
     {
 
-        dd('hierarchical');
+        //dd('hierarchical');
         if (isset($this->pixabayImages[$index])) {
             $imageData = $this->pixabayImages[$index];
             $path = "uploads/images/continents/" . uniqid() . ".jpg";
