@@ -43,7 +43,7 @@ class CountryManagerComponent extends Component
             'currency_code' => 'nullable|string|max:3',
             'currency_name' => 'nullable|string|max:50',
             'country_code' => 'required|string|max:3',
-            'country_text' => 'nullable|string|max:500',
+            'country_text' => 'nullable|string|max:3000',
             //'currency_conversion' => 'nullable|string|max:255',
             'population' => 'nullable|integer',
             'capital' => 'nullable|string|max:255',

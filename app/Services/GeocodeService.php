@@ -168,6 +168,63 @@ class GeocodeService
         return null;
     }
 
+
+/**
+ * Suche nach Adressdaten basierend auf Koordinaten (Breitengrad und Längengrad).
+ */
+public function searchByCoordinates(float $lat, float $lon): array
+{
+    // Cache-Schlüssel für die Koordinaten
+    $cacheKey = 'geocode_coords_' . md5("{$lat}_{$lon}");
+
+    // Überprüfen, ob die Daten bereits im Cache sind
+    if (Cache::has($cacheKey)) {
+        Log::info("Using cached geocode data for coordinates: {$lat}, {$lon}");
+        return Cache::get($cacheKey);
+    }
+
+    // URL für die Nominatim-API (Reverse Geocoding)
+    $url = "https://nominatim.openstreetmap.org/reverse";
+    $params = [
+        'query' => [
+            'lat' => $lat,
+            'lon' => $lon,
+            'format' => 'json',
+            'addressdetails' => 1,
+        ],
+        'headers' => $this->getDefaultHeaders(),
+    ];
+
+    // Anfrage senden
+    $result = $this->sendRequestWithRetries($url, $params);
+
+    // Ergebnis validieren und cachen
+    if ($result && isset($result['address'])) {
+        $addressData = [
+            'address' => $result['address'],
+            'lat' => $lat,
+            'lon' => $lon,
+        ];
+
+        // Daten im Cache speichern
+        Cache::put($cacheKey, $addressData, now()->addDays(7));
+
+        return $addressData;
+    }
+
+    // Fallback, falls keine Daten gefunden wurden
+    return [
+        'address' => [
+            'country' => 'Unknown',
+            'country_code' => 'unknown',
+            'ISO3166-2-lvl4' => 'unknown',
+        ],
+        'lat' => $lat,
+        'lon' => $lon,
+    ];
+}
+
+
     /**
      * Standard-Header für HTTP-Anfragen.
      */

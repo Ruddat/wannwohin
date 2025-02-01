@@ -2,14 +2,13 @@
     <div class="container">
         <div class="row g-4 align-items-center">
             <!-- Textbereich -->
-            <div class="col-12 col-lg-7">
+            <div class="col-12 col-lg-7" data-aos="fade-right" data-aos-duration="1000">
                 <div class="card custom-border continent-facts-card position-relative placeholder-image">
-
                     <div class="card-body p-4 bg-overlay">
                         @if (!empty($country->country_text))
-                            <p class="card-text text-white">
+                            <div class="card-text text-white">
                                 @autotranslate($country->country_text, app()->getLocale())
-                            </p>
+                            </div>
                         @else
                             <div class="placeholder-image d-flex align-items-center justify-content-center">
                                 <h4 class="text-uppercase text-white">
@@ -22,7 +21,7 @@
             </div>
 
             <!-- Info-Karte -->
-            <div class="col-12 col-lg-5">
+            <div class="col-12 col-lg-5" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
                 <div class="card h-100 continent-facts-card">
                     <div class="card-header">
                         <h4 class="text-uppercase mb-0">@autotranslate($country->title, app()->getLocale())</h4>
@@ -267,6 +266,53 @@
 }
 
 
+
+.continent-facts-card .card-body.bg-overlay .card-text.text-white {
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    font-weight: 400 !important;
+    color: #fff !important;
+}
+
+.continent-facts-card .card-body.bg-overlay .card-text.text-white p {
+    margin-bottom: 1rem !important;
+    color: #fff !important;
+}
+
+.continent-facts-card .card-body.bg-overlay .card-text.text-white strong {
+    font-weight: bold !important;
+    color: #fff !important;
+}
+
+.continent-facts-card .card-body.bg-overlay .card-text.text-white em {
+    font-style: italic !important;
+}
+
+.continent-facts-card .card-body.bg-overlay .card-text.text-white a {
+    color: #fff !important;
+    text-decoration: underline !important;
+}
+
+.continent-facts-card {
+    overflow: visible; /* Standardwert, falls es überschrieben wurde */
+}
+
+.card-text.text-white {
+    white-space: normal; /* Standardwert */
+    text-overflow: clip; /* Standardwert */
+}
+
+
+@media (max-width: 768px) {
+    .continent-facts-card .card-body.bg-overlay .card-text.text-white {
+        font-size: 1rem !important;
+    }
+
+    .continent-facts-card .card-body.bg-overlay .card-text.text-white p {
+        margin-bottom: 0.75rem !important;
+    }
+}
+
     /* Platzhalterbild */
     .placeholder-image {
         background-image: url('{{ $country->primaryImage() }}');
@@ -300,3 +346,18 @@
 
     }
 </style>
+
+
+<!-- AOS CSS -->
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<!-- AOS JS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true
+    });
+</script>
