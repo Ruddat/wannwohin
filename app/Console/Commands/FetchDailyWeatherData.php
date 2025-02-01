@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use App\Library\WeatherDataManagerLibrary;
 use App\Models\WwdeLocation;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class FetchDailyWeatherData extends Command
 {
@@ -23,41 +25,40 @@ class FetchDailyWeatherData extends Command
 
         WwdeLocation::whereNotNull('lat')
             ->whereNotNull('lon')
-            ->chunk(50, function ($locations) {
+            ->chunkById(50, function ($locations) {
                 foreach ($locations as $location) {
-                    try {
-                        $this->info("Processing location: {$location->title} (ID: {$location->id})");
+                    DB::transaction(function () use ($location) {
+                        try {
+                            $this->info("Processing location: {$location->title} (ID: {$location->id})");
 
-                        // Prüfen, ob der letzte Eintrag älter als 2 Stunden ist
-                        $lastUpdate = $location->climates()
-                            ->where('updated_at', '<', now()->subHours(2))
-                            ->latest('updated_at')
-                            ->first();
+                            // Prüfen, ob der letzte Eintrag älter als 2 Stunden ist oder kein Eintrag vorhanden ist
+                            $lastUpdate = $location->climates()
+                                ->latest('updated_at')
+                                ->first();
 
-                        if (!$lastUpdate) {
-                            $this->info("Skipping location: {$location->title}, last updated less than 2 hours ago.");
-                            continue;
+                            // Wenn ein Eintrag vorhanden ist und dieser weniger als 2 Stunden alt ist, überspringen
+                            if ($lastUpdate && $lastUpdate->updated_at->gt(now()->subHours(2))) {
+                                $this->info("Skipping location: {$location->title}, last updated less than 2 hours ago.");
+                                return;
+                            }
+
+                            // Wetterdaten abrufen und speichern
+                            $weatherData = $this->weatherManager->fetchAndStoreWeatherData(
+                                $location->lat,
+                                $location->lon,
+                                $location->id
+                            );
+
+                            if ($weatherData) {
+                                $this->info("Weather data successfully updated for location: {$location->title}");
+                            } else {
+                                $this->warn("No weather data available for location: {$location->title}");
+                            }
+                        } catch (\Exception $e) {
+                            $this->error("Failed to process location: {$location->title}. Error: {$e->getMessage()}");
+                            Log::error("Weather data fetching error for location ID {$location->id}: {$e->getMessage()}");
                         }
-
-                        // Wetterdaten abrufen und speichern
-                        $weatherData = $this->weatherManager->fetchAndStoreWeatherData(
-                            $location->lat,
-                            $location->lon,
-                            $location->id
-                        );
-
-                        if ($weatherData) {
-                            $this->info("Weather data successfully updated for location: {$location->title}");
-                        } else {
-                            $this->warn("No weather data available for location: {$location->title}");
-                        }
-                    } catch (\Exception $e) {
-                        $this->error("Failed to process location: {$location->title}. Error: {$e->getMessage()}");
-                        Log::error("Weather data fetching error for location ID {$location->id}: {$e->getMessage()}");
-                    }
-
-                    // Delay zwischen den Anfragen
-                    usleep(1000000); // 1 Sekunde
+                    });
                 }
             });
 
@@ -76,8 +77,8 @@ class FetchDailyWeatherData extends Command
     {
         $this->info('Calculating daily averages...');
 
-        $locations = WwdeLocation::all();
-        $today = now()->toDateString();
+        $locations = WwdeLocation::with('climates')->get();
+        $today = Carbon::today()->toDateString();
 
         foreach ($locations as $location) {
             // Heutige Klimadaten abrufen
@@ -94,7 +95,7 @@ class FetchDailyWeatherData extends Command
             if ($climatesToday->count() === 1) {
                 $firstEntry = $climatesToday->first();
 
-                \App\Models\ModDailyClimateAverage::updateOrCreate(
+                \App\Models\ModDailyClimateAverage::firstOrCreate(
                     ['location_id' => $location->id, 'date' => $today],
                     [
                         'avg_daily_temperature' => $firstEntry->daily_temperature,
@@ -131,7 +132,7 @@ class FetchDailyWeatherData extends Command
 
             $averages = array_map(fn($value) => round($value / $climatesToday->count(), 2), $averages);
 
-            \App\Models\ModDailyClimateAverage::updateOrCreate(
+            \App\Models\ModDailyClimateAverage::firstOrCreate(
                 ['location_id' => $location->id, 'date' => $today],
                 $averages
             );
@@ -144,14 +145,14 @@ class FetchDailyWeatherData extends Command
     {
         $this->info('Storing historical data...');
 
-        $locations = WwdeLocation::all();
-        $year = now()->year;
-        $month = now()->format('F');
+        $locations = WwdeLocation::with('climates')->get();
+        $year = Carbon::now()->year;
+        $month = Carbon::now()->format('F');
 
         foreach ($locations as $location) {
             $averages = $location->climates()
                 ->whereYear('created_at', $year)
-                ->whereMonth('created_at', now()->month)
+                ->whereMonth('created_at', Carbon::now()->month)
                 ->selectRaw('
                     AVG(daily_temperature) as avg_daily_temperature,
                     AVG(night_temperature) as avg_night_temperature,
@@ -162,7 +163,7 @@ class FetchDailyWeatherData extends Command
                 ')
                 ->first();
 
-            \App\Models\ModHistoricalClimateData::updateOrCreate(
+            \App\Models\ModHistoricalClimateData::firstOrCreate(
                 ['location_id' => $location->id, 'year' => $year, 'month' => $month],
                 [
                     'avg_daily_temperature' => $averages->avg_daily_temperature ?? 0,

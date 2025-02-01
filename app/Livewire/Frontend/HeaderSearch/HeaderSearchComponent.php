@@ -22,8 +22,12 @@ class HeaderSearchComponent extends Component
         // Vorschläge aus dem Cache abrufen oder neu generieren
         $this->suggestions = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($value) {
             return WwdeLocation::query()
-                ->where('title', 'like', '%' . $value . '%')
-                ->orWhere('alias', 'like', '%' . $value . '%')
+                ->where('status', 'active') // Nur aktive Einträge
+                ->where('finished', 1) // Nur abgeschlossene Einträge
+                ->where(function ($query) use ($value) {
+                    $query->where('title', 'like', '%' . $value . '%')
+                          ->orWhere('alias', 'like', '%' . $value . '%');
+                })
                 ->with(['country.continent']) // Beziehungen laden
                 ->limit(10)
                 ->get()
@@ -68,7 +72,6 @@ class HeaderSearchComponent extends Component
         }
     }
 
-
     /**
     * Wird ausgelöst, wenn der Benutzer auf ein Suchergebnis klickt.
     */
@@ -79,7 +82,6 @@ class HeaderSearchComponent extends Component
             $this->search(); // Suche starten
         }
     }
-
 
     public function render()
     {

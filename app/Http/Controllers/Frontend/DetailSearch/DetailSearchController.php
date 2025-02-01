@@ -153,6 +153,9 @@ class DetailSearchController extends Controller
     /**
      * Verarbeitet die Suchanfrage.
      */
+    /**
+     * Verarbeitet die Suchanfrage.
+     */
     public function search(Request $request)
     {
         // Monatsnamen aus der Config laden

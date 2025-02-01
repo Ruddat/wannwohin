@@ -91,18 +91,22 @@
                             <td>{{ $location->id }}</td>
                             <td>
                                 <a href="{{ route('location.details', [
-                                    'continent' => $location->country->continent->alias,
-                                    'country' => $location->country->alias,
-                                    'location' => $location->alias,
+    'continent' => $location->country?->continent?->alias ?? 'unknown',
+    'country' => $location->country?->alias ?? 'unknown',
+    'location' => $location->alias,
                                 ]) }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
                                     {{ $location->title }}
                                 </a>
                             </td>
                             <td>{{ $location->iata_code }}</td>
                             <td>
-                                <a href="#" wire:click.prevent="$set('filterCountry', {{ $location->country->id }})">
-                                    {{ $location->country->title ?? 'N/A' }}
-                                </a>
+                                @if ($location->country)
+                                    <a href="#" wire:click.prevent="$set('filterCountry', {{ $location->country->id }})">
+                                        {{ $location->country->title }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </td>
                             <td>
                                 <span wire:click="toggleStatus({{ $location->id }})"
@@ -155,16 +159,29 @@
 
         <form action="{{ route('locations.import') }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 rounded shadow">
             @csrf
+            <!-- Datei-Upload -->
             <div class="mb-3">
                 <label for="excel_file" class="form-label">Upload Excel File</label>
                 <input type="file" name="excel_file" id="excel_file" class="form-control" required>
             </div>
+
+            <!-- Option: Bilder überspringen -->
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" name="skip_images" id="skip_images">
                 <label class="form-check-label" for="skip_images">
                     Skip importing images
                 </label>
             </div>
+
+            <!-- Option: Fehlgeschlagene Zeilen exportieren -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="export_failed" id="export_failed">
+                <label class="form-check-label" for="export_failed">
+                    Export failed rows to Excel
+                </label>
+            </div>
+
+            <!-- Import-Button -->
             <button type="submit" class="btn btn-primary">Import</button>
         </form>
     </div>

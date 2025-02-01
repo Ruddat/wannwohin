@@ -13,7 +13,7 @@ class TranslationRepository
         return AutoTranslations::where('key', $key)
                               ->where('locale', $locale)
                               ->first();
-                              Log::info('Locale used for translation:', ['locale' => $locale]);
+        //                      Log::info('Locale used for translation:', ['locale' => $locale]);
 
     }
 
@@ -25,7 +25,7 @@ class TranslationRepository
             ['text' => $text]
         );
 
-        Log::info('Locale used for translation:', ['locale' => $locale]);
+      //  Log::info('Locale used for translation:', ['locale' => $locale]);
 
     }
 }

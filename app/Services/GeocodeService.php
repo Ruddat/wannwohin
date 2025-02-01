@@ -125,6 +125,24 @@ class GeocodeService
         return $result;
     }
 
+    public function searchByParkName($query)
+    {
+        $url = "https://nominatim.openstreetmap.org/search";
+        $params = [
+            'query' => [
+                'q' => $query, // Nur der Parkname
+                'format' => 'json',
+                'addressdetails' => 1,
+                'limit' => 1, // Nur das erste Ergebnis
+            ],
+            'headers' => $this->getDefaultHeaders(),
+        ];
+
+        // Replace sendRequest with sendRequestWithRetries
+        return $this->sendRequestWithRetries($url, $params);
+    }
+
+
     /**
      * Sende eine HTTP-Anfrage mit automatischer Wiederholung bei Fehlern.
      */

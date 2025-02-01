@@ -29,7 +29,7 @@
 
 
 
-            @include('frondend.detailSearch.sections.climate', ['defaultDailyTempMin' => -15, 'defaultDailyTempMax' => 50])
+            @include('frondend.detailSearch.sections.climate')
 
 
             <!-- Submit Button -->

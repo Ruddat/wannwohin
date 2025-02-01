@@ -32,7 +32,7 @@ class AutoTranslationServiceProvider extends ServiceProvider
         });
 
         // Logging zur Überprüfung der aktuellen Sprache
-        Log::info("Aktuelle Sprache: " . App::getLocale());
+        // Log::info("Aktuelle Sprache: " . App::getLocale());
 
     }
 }
