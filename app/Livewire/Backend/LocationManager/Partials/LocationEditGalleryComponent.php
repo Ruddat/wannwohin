@@ -36,8 +36,12 @@ class LocationEditGalleryComponent extends Component
 
     public function loadGallery()
     {
-        $this->galleryImages = ModLocationGalerie::where('location_id', $this->locationId)->get();
+        $this->galleryImages = ModLocationGalerie::where('location_id', $this->locationId)->get()->map(function ($image) {
+            $image->full_url = asset($image->image_path); // Stellt sicher, dass der URL korrekt ist
+            return $image;
+        });
     }
+
 
     public function searchImages()
     {

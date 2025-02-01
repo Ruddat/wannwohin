@@ -9,7 +9,7 @@ class LocationManagerComponent extends Component
 {
     public $locationId;
     public $location;
-    public $activeTab = 'texts';
+    public $activeTab = 'info';
 
     public function mount($id = null)
     {

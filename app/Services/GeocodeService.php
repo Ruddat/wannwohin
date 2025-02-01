@@ -224,6 +224,52 @@ public function searchByCoordinates(float $lat, float $lon): array
     ];
 }
 
+/**
+ * Suche nach einer Stadt über Nominatim (OpenStreetMap) und gib die Koordinaten und ISO-Codes zurück.
+ */
+public function searchByNominatimOnly(string $cityName): array
+{
+    $url = "https://nominatim.openstreetmap.org/search";
+    $params = [
+        'query' => [
+            'q' => $cityName,
+            'format' => 'json',
+            'addressdetails' => 1,
+            'limit' => 1, // Nur das erste Ergebnis
+        ],
+        'headers' => $this->getDefaultHeaders(),
+    ];
+
+    $result = $this->sendRequestWithRetries($url, $params);
+
+    if ($result && !empty($result[0])) {
+        $data = $result[0];
+
+        return [
+            'address' => [
+                'country' => $data['address']['country'] ?? 'Unknown',
+                'country_code' => strtolower($data['address']['country_code'] ?? 'unknown'),
+                'ISO3166-2-lvl4' => strtoupper($data['address']['ISO3166-2-lvl4'] ?? 'unknown'),
+                'state' => $data['address']['state'] ?? null, // Bundesstaat
+                'county' => $data['address']['county'] ?? null, // Landkreis oder Region
+            ],
+            'lat' => $data['lat'] ?? null,
+            'lon' => $data['lon'] ?? null,
+        ];
+    }
+
+    return [
+        'address' => [
+            'country' => 'Unknown',
+            'country_code' => 'unknown',
+            'ISO3166-2-lvl4' => 'unknown',
+            'state' => null,
+            'county' => null,
+        ],
+        'lat' => null,
+        'lon' => null,
+    ];
+}
 
     /**
      * Standard-Header für HTTP-Anfragen.

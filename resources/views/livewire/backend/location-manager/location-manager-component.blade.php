@@ -21,6 +21,16 @@
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
             <li class="nav-item" role="presentation">
+                <a href="#tab-info" class="nav-link {{ $activeTab === 'info' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('info')" role="tab">
+                    <!-- Icon für Standortinformationen -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    Standortinfo
+                </a>
+            </li>
+
+            <li class="nav-item" role="presentation">
                 <a href="#tab-texts" class="nav-link {{ $activeTab === 'texts' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('texts')" role="tab">
                     <!-- Icon für Texte -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,9 +74,16 @@
     </div>
     <div class="card-body">
         <div class="tab-content">
+
+
             <div class="tab-pane {{ $activeTab === 'texts' ? 'active show' : '' }}" id="tab-texts" role="tabpanel">
                 <livewire:backend.location-manager.partials.location-edit-texts :locationId="$locationId" />
             </div>
+
+            <div class="tab-pane {{ $activeTab === 'info' ? 'active show' : '' }}" id="tab-info" role="tabpanel">
+                <livewire:backend.location-manager.partials.location-edit-info :locationId="$locationId" />
+            </div>
+
             <div class="tab-pane {{ $activeTab === 'images' ? 'active show' : '' }}" id="tab-images" role="tabpanel">
                 <!-- Bilder-Komponente -->
                 <livewire:backend.location-manager.partials.location-edit-images-component :locationId="$locationId" />
@@ -77,6 +94,8 @@
             <div class="tab-pane {{ $activeTab === 'gallery' ? 'active show' : '' }}" id="tab-gallery" role="tabpanel">
                 <livewire:backend.location-manager.partials.location-edit-gallery-component :locationId="$locationId" />
             </div>
+
+
         </div>
     </div>
 </div>
