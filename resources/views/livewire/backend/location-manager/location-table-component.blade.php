@@ -90,13 +90,17 @@
                         <tr>
                             <td>{{ $location->id }}</td>
                             <td>
-                                <a href="{{ route('location.details', [
-    'continent' => $location->country?->continent?->alias ?? 'unknown',
-    'country' => $location->country?->alias ?? 'unknown',
-    'location' => $location->alias,
-                                ]) }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
-                                    {{ $location->title }}
-                                </a>
+                                @if ($location->country?->continent?->alias && $location->country?->alias && $location->alias)
+                                    <a href="{{ route('location.details', [
+                                        'continent' => $location->country->continent->alias,
+                                        'country' => $location->country->alias,
+                                        'location' => $location->alias,
+                                    ]) }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                                        {{ $location->title }} <i class="ti ti-external-link"></i>
+                                    </a>
+                                @else
+                                    <span class="text-muted">{{ $location->title }} (Unbekannte Daten)</span>
+                                @endif
                             </td>
                             <td>{{ $location->iata_code }}</td>
                             <td>

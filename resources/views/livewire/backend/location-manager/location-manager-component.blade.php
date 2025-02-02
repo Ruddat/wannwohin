@@ -6,7 +6,8 @@
         <div class="row g-2 align-items-center">
           <div class="col">
             <h2 class="page-title">
-             Location Manager <span class="text-muted">/ Standort bearbeiten </span>
+                Location Manager
+                <span class="text-muted">/ Standort bearbeiten: {{ $location && $location->title ? $location->title : 'Unbekannter Standort' }}</span>
             </h2>
           </div>
         </div>

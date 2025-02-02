@@ -11,18 +11,24 @@ class LocationManagerComponent extends Component
     public $location;
     public $activeTab = 'info';
 
-    public function mount($id = null)
+    public function mount($locationId = null)
     {
-        if ($id) {
-            $this->edit($id);
+        \Log::info("LocationManagerComponent mount() aufgerufen mit locationId: " . ($locationId ?? 'NULL'));
+
+        if ($locationId) {
+            $this->edit($locationId);
         }
     }
 
     public function edit($id)
     {
         $this->locationId = $id;
-        $this->location = WwdeLocation::findOrFail($id);
-        $this->activeTab = 'edit'; // Setzt den Tab auf "Edit"
+        $this->location = WwdeLocation::find($id);
+
+        \Log::info("edit() aufgerufen mit ID: " . $id);
+        \Log::info("Gefundene Location: " . ($this->location ? $this->location->title : 'NICHT GEFUNDEN'));
+
+        $this->activeTab = 'info';
     }
 
     public function setActiveTab($tab)
@@ -35,6 +41,7 @@ class LocationManagerComponent extends Component
         return view('livewire.backend.location-manager.location-manager-component', [
             'locationId' => $this->locationId,
             'location' => $this->location,
+
             'activeTab' => $this->activeTab,
         ])->layout('backend.layouts.livewiere-main');
     }

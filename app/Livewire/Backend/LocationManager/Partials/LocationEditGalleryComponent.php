@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use App\Models\ModLocationGalerie;
 use App\Services\ImageSearchService;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class LocationEditGalleryComponent extends Component
 {
@@ -20,6 +21,7 @@ class LocationEditGalleryComponent extends Component
     public $captions = [];
     public $query = '';
     public $searchResults = [];
+    public $perPage = 10;
 
     protected $imageSearchService;
 
@@ -31,22 +33,47 @@ class LocationEditGalleryComponent extends Component
     public function mount($locationId)
     {
         $this->locationId = $locationId;
+       // $this->authorize('update', WwdeLocation::findOrFail($this->locationId));
         $this->loadGallery();
     }
 
     public function loadGallery()
     {
-        $this->galleryImages = ModLocationGalerie::where('location_id', $this->locationId)->get()->map(function ($image) {
-            $image->full_url = asset($image->image_path); // Stellt sicher, dass der URL korrekt ist
-            return $image;
-        });
+        $this->galleryImages = ModLocationGalerie::where('location_id', $this->locationId)->get();
+
+        foreach ($this->galleryImages as $image) {
+            // Überprüfe, ob das Bild aus `storage` oder `public` kommt
+            if (str_starts_with($image->image_path, 'uploads/')) {
+                // Falls es ein hochgeladenes Bild ist, füge `storage/` hinzu
+                $image->full_url = asset('storage/' . $image->image_path);
+            } else {
+                // Falls es ein importiertes Bild ist, nutze den direkten public-Pfad
+                $image->full_url = asset($image->image_path);
+            }
+
+            // Initialisiere das captions-Array
+            if (!isset($this->captions[$image->id])) {
+                $this->captions[$image->id] = $image->image_caption ?? '';
+            }
+        }
     }
+
 
 
     public function searchImages()
     {
         $this->validate(['query' => 'required|string|max:255']);
-        $this->searchResults = $this->imageSearchService->searchImages($this->query, 30);
+        try {
+            $this->searchResults = $this->imageSearchService->searchImages($this->query, $this->perPage);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Fehler bei der Bildersuche: ' . $e->getMessage());
+        }
+    }
+
+    public function loadMore()
+    {
+        $this->perPage += 10;
+        $this->searchImages();
     }
 
     public function uploadImage()
@@ -81,7 +108,6 @@ class LocationEditGalleryComponent extends Component
         $this->loadGallery();
         session()->flash('success', 'Bild erfolgreich hochgeladen.');
     }
-
 
     public function selectImage($imageUrl, $description = null, $imageType = 'gallery')
     {
@@ -154,6 +180,23 @@ class LocationEditGalleryComponent extends Component
         session()->flash('success', 'Bild erfolgreich hochgeladen.');
     }
 
+    public function updateCaption($imageId, $caption)
+    {
+        $this->validate([
+            "captions.$imageId" => 'nullable|string|max:255',
+        ]);
+
+        $image = ModLocationGalerie::findOrFail($imageId);
+        if ($image) {
+            $image->update(['image_caption' => $caption]);
+            session()->flash('success', 'Bildunterschrift erfolgreich aktualisiert.');
+        }
+    }
+
+    public function confirmDelete($imageId)
+    {
+        $this->dispatch('confirmDelete', $imageId);
+    }
 
     public function deleteImage($imageId)
     {
@@ -167,6 +210,7 @@ class LocationEditGalleryComponent extends Component
         $this->loadGallery();
         session()->flash('success', 'Bild erfolgreich gelöscht.');
     }
+
 
     public function render()
     {

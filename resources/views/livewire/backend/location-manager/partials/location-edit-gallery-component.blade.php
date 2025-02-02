@@ -22,6 +22,7 @@
                 </div>
             @endforeach
         </div>
+        <button wire:click="loadMore" class="btn btn-primary mt-2">Mehr laden</button>
     @endif
 
     <!-- Hochladen eines neuen Bildes -->
@@ -29,6 +30,9 @@
         <label for="newImage" class="form-label">Neues Bild hochladen</label>
         <input type="file" wire:model="newImage" class="form-control">
         @error('newImage') <span class="text-danger">{{ $message }}</span> @enderror
+        @if ($newImage)
+            <img src="{{ $newImage->temporaryUrl() }}" alt="Preview" class="img-thumbnail mt-2">
+        @endif
         <button wire:click="uploadImage" class="btn btn-primary mt-2">Hochladen</button>
     </div>
 
@@ -55,25 +59,31 @@
         @endforeach
     </div>
 
-
     <!-- Galerie anzeigen -->
-    <h4>Galerie</h4>
     <h4>Galerie</h4>
     @if ($galleryImages->isNotEmpty())
         <div class="row">
             @foreach ($galleryImages as $image)
-                <div class="col-md-3 mb-4">
-                    <a href="{{ $image->full_url }}" target="_blank">
-                        <img src="{{ $image->full_url }}" class="img-thumbnail" alt="Gallery Image">
-                    </a>
-                    <input type="text" wire:model.lazy="captions[{{ $image->id }}]" class="form-control mt-2"
-                           placeholder="Bildunterschrift"
-                           wire:change="updateCaption({{ $image->id }}, $event.target.value)">
-                    <button wire:click="deleteImage({{ $image->id }})" class="btn btn-danger btn-sm mt-2">Löschen</button>
-                </div>
-            @endforeach
+            <div class="col-md-3 mb-4" wire:key="image-{{ $image->id }}">
+                <a href="{{ $image->full_url }}" target="_blank">
+                    <img src="{{ $image->full_url }}" class="img-thumbnail" alt="Gallery Image">
+                </a>
+                <input type="text" wire:model.defer="captions.{{ $image->id }}" class="form-control mt-2"
+                       placeholder="Bildunterschrift"
+                       wire:change="updateCaption({{ $image->id }}, $event.target.value)">
+                <button wire:click="deleteImage({{ $image->id }})" class="btn btn-danger btn-sm mt-2">Löschen</button>
+            </div>
+        @endforeach
         </div>
     @else
         <p class="text-muted">Keine Bilder vorhanden.</p>
     @endif
 </div>
+
+<script>
+    Livewire.on('confirmDelete', imageId => {
+        if (confirm('Möchten Sie dieses Bild wirklich löschen?')) {
+            Livewire.dispatch('deleteImage', imageId);
+        }
+    });
+</script>
