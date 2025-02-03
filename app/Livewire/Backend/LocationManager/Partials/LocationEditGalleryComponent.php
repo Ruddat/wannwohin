@@ -21,7 +21,7 @@ class LocationEditGalleryComponent extends Component
     public $captions = [];
     public $query = '';
     public $searchResults = [];
-    public $perPage = 10;
+    public $perPage = 32;
 
     protected $imageSearchService;
 

@@ -47,7 +47,7 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 
     // ----------------------------------------------------------------
     // Weather
-    
+
     // Weather Manager
     Route::prefix('weather-manager')->name('weather-manager.')->group(function () {
         Route::get('/', WeatherStationsComponent::class)->name('index');
@@ -62,7 +62,7 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     });
 
 
-    });
+
 
     // Header Manager
     Route::prefix('header-manager')->name('header-manager.')->group(function () {
@@ -125,6 +125,9 @@ Route::prefix('electric-manager')->name('electric-manager.')->group(function () 
 // Gallerie Manager
 Route::prefix('gallery-manager')->name('gallery-manager.')->group(function () {
     Route::get('/', GalleryManagerComponent::class)->name('index');
+});
+
+
 });
 
 

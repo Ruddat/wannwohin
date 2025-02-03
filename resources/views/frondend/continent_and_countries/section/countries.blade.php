@@ -1,13 +1,11 @@
 <section id="experience" class="section section-secondary section-no-border mt-5 mb-5 pt-0">
     <div class="container">
         <div class="row g-4">
-            @foreach($countries as $country)
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
+            @foreach($countries as $index => $country)
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="{{ $index * 100 }}">
                 @php
                     $location = $country->locations()->first();
-                    //dd($location);
                     $primaryImage = $country?->primaryImage() ?? asset('img/default-location.png');
-                //dd($primaryImage);
                 @endphp
 
                 <a href="{{ route('list-country-locations', ['continentAlias' => $continent->alias, 'countryAlias' => $country->alias]) }}" class="text-decoration-none">
@@ -27,13 +25,24 @@
                         <i class="ti ti-edit"></i> Admin eingeloggt! Bearbeiten
                     </a>
                 </div>
-            @endif
+                @endif
             </div>
-        @endforeach
+            @endforeach
         </div>
     </div>
 </section>
 
+<!-- AOS CSS & JS einbinden -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        AOS.init({
+            duration: 1000,  // Standard Animationsdauer
+            once: true       // Animation nur einmal pro Scrollvorgang
+        });
+    });
+</script>
 
 <style>
 #experience .card {

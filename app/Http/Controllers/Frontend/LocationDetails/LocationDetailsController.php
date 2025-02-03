@@ -127,13 +127,33 @@ $priceTrend = $this->calculatePriceTrend($countryCode);
 
 //dd($priceTrend);
 
-        // Beste Reisezeit aus JSON extrahieren und in Monatsindizes umwandeln
-        $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
-        ->mapWithKeys(function ($month) {
-            $index = date('n', strtotime($month)); // Index (1–12)
-            return [$index => $month];
-        });
+// Deutsche zu Englische Monatsnamen mappen
+$germanToEnglishMonths = [
+    "Januar" => "January",
+    "Februar" => "February",
+    "März" => "March",
+    "April" => "April",
+    "Mai" => "May",
+    "Juni" => "June",
+    "Juli" => "July",
+    "August" => "August",
+    "September" => "September",
+    "Oktober" => "October",
+    "November" => "November",
+    "Dezember" => "December",
+];
 
+// Beste Reisezeit aus JSON extrahieren und in Monatsindizes umwandeln
+$bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
+    ->mapWithKeys(function ($month) use ($germanToEnglishMonths) {
+        $englishMonth = $germanToEnglishMonths[$month] ?? $month;
+        $index = date('n', strtotime($englishMonth)); // Index (1–12)
+        return [$index => $englishMonth];
+    })
+    ->sortKeys(); // Sortiert nach Monatsindex (1–12)
+
+
+//dd($bestTravelMonths);
 
         //dd($location);
 

@@ -123,14 +123,14 @@
                                         <i class="fa fa-question-circle"></i>
                                     </a>
                                     <div>
-                                        @if($price_trend['factor'])
+                                        @if(isset($price_trend['factor']) && isset($price_trend['category']))
                                             <!-- Pipette-ähnliche Anzeige -->
                                             <div class="price-trend-container" style="width: 100%; background: linear-gradient(to right, green, yellow, red); border-radius: 10px; position: relative; height: 20px;">
                                                 <div class="price-trend-indicator"
                                                      style="position: absolute;
                                                             top: -5px;
                                                             left: {{ max(0, min(100, ($price_trend['factor'] / 2) * 100)) }}%;
-                                                            width: 10px;
+                                                            width: 8px;
                                                             height: 30px;
                                                             background-color: black;
                                                             border-radius: 5px;
@@ -142,7 +142,8 @@
                                                 {{ number_format($price_trend['factor'], 2) }} (@autotranslate($price_trend['category'], app()->getLocale()))
                                             </span>
                                         @else
-                                            @autotranslate('Keine Daten verfügbar', app()->getLocale())
+                                            <!-- Fallback-Anzeige für fehlende Daten -->
+                                            <span class="text-muted">@autotranslate('Keine Daten verfügbar', app()->getLocale())</span>
                                         @endif
                                     </div>
                                 </td>

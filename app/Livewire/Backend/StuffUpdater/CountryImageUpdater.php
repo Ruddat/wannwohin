@@ -14,19 +14,19 @@ class CountryImageUpdater extends Component
     public $currentIndex = 0;
     public $progress = 0;
     public $statusMessage = '';
+    public $currentCountry; // Neu: Speichert das aktuelle Land
 
     public function mount()
     {
         $this->countriesWithoutImages = WwdeCountry::whereNull('image1_path')->get();
         $this->totalCountries = $this->countriesWithoutImages->count();
         $this->statusMessage = "Found {$this->totalCountries} countries without images.";
+
+        // Falls es Länder gibt, das erste direkt setzen
+        if ($this->totalCountries > 0) {
+            $this->currentCountry = $this->countriesWithoutImages[0];
+        }
     }
-
-    public function updateImages1()
-    {
-
-    }
-
 
     public function updateImages()
     {
@@ -35,27 +35,22 @@ class CountryImageUpdater extends Component
             return;
         }
 
-        $country = $this->countriesWithoutImages[$this->currentIndex];
-        $this->statusMessage = "Updating image for: {$country->title}";
+        $this->currentCountry = $this->countriesWithoutImages[$this->currentIndex]; // Aktualisiert das aktuelle Land
+        $this->statusMessage = "Updating image for: {$this->currentCountry->title}";
 
         // Abruf des Bildes
         $status = '';
-        $imagePath = $this->getCityImage($country->title, 1, $status);
+        $imagePath = $this->getCityImage($this->currentCountry->title, 1, $status);
 
         if ($status === 'inactive' || !$imagePath) {
-            $this->statusMessage = "Failed to update image for: {$country->title}";
+            $this->statusMessage = "Failed to update image for: {$this->currentCountry->title}";
         } else {
-            $country->update(['image1_path' => str_replace('storage/', '', $imagePath)]); // Nur relativen Pfad speichern
-            $this->statusMessage = "Image updated for: {$country->title}";
+            $this->currentCountry->update(['image1_path' => str_replace('storage/', '', $imagePath)]);
+            $this->statusMessage = "Image updated for: {$this->currentCountry->title}";
         }
 
         $this->currentIndex++;
         $this->progress = round(($this->currentIndex / $this->totalCountries) * 100);
-    }
-
-    public function render()
-    {
-        return view('livewire.backend.stuff-updater.country-image-updater');
     }
 
     private function getCityImage($city, $index, &$status)
@@ -104,5 +99,14 @@ class CountryImageUpdater extends Component
         $city = preg_replace('/[^A-Za-z0-9_\-]/', '', $city);
         $city = str_replace(' ', '_', $city);
         return $city;
+    }
+
+
+
+    public function render()
+    {
+        return view('livewire.backend.stuff-updater.country-image-updater', [
+            'currentCountry' => $this->currentCountry, // Neu: Übergeben an das Blade
+        ]);
     }
 }

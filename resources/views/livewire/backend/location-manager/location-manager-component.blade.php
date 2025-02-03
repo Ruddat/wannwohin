@@ -71,6 +71,17 @@
                     Galerie
                 </a>
             </li>
+
+            <li class="nav-item" role="presentation">
+                <a href="#tab-tags" class="nav-link {{ $activeTab === 'tags' ? 'active' : '' }}" data-bs-toggle="tab" wire:click.prevent="setActiveTab('tags')" role="tab">
+                    <!-- Icon für Tags -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12l18-9-9 18-3-6-6-3z"></path>
+                    </svg>
+                    Tags & Reisezeiten
+                </a>
+            </li>
+            
         </ul>
     </div>
     <div class="card-body">
@@ -95,7 +106,9 @@
             <div class="tab-pane {{ $activeTab === 'gallery' ? 'active show' : '' }}" id="tab-gallery" role="tabpanel">
                 <livewire:backend.location-manager.partials.location-edit-gallery-component :locationId="$locationId" />
             </div>
-
+            <div class="tab-pane {{ $activeTab === 'tags' ? 'active show' : '' }}" id="tab-tags" role="tabpanel">
+                <livewire:backend.location-manager.partials.location-edit-tags-component :locationId="$locationId" />
+            </div>
 
         </div>
     </div>

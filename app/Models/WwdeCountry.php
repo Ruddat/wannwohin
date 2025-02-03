@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\WwdeContinent;
 use App\Models\ModTravelWarning;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WwdeCountry extends Model
@@ -121,6 +122,23 @@ class WwdeCountry extends Model
     {
         return $this->hasOne(ModTravelWarning::class, 'iso2', 'country_code');
     }
+
+    public function getThumbnailAttribute()
+    {
+        // Falls das Bild existiert und sich im "storage/app/public" Verzeichnis befindet
+        if ($this->image1_path && Storage::exists($this->image1_path)) {
+            return Storage::url($this->image1_path);
+        }
+
+        // Falls das Bild im "public" Ordner liegt
+        if ($this->image1_path && file_exists(public_path($this->image1_path))) {
+            return asset($this->image1_path);
+        }
+
+        // Falls kein Bild vorhanden ist, Standardbild verwenden
+        return asset('img/default-country-thumbnail.png');
+    }
+
 
 
 }

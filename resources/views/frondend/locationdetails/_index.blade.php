@@ -30,6 +30,48 @@
                         </div>
                         @endif
 
+                        @if ($location->text_sports)
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary text-white">⚽</div>
+                            <div class="timeline-content border rounded shadow-sm p-4">
+                                <h4 class="timeline-title d-flex align-items-center">
+                                    <i class="fa-solid fa-dumbbell me-2 text-primary"></i>
+                                    @autotranslate("Sport & Aktivitäten in {$location->title}", app()->getLocale())
+                                </h4>
+                                <div class="text-muted">
+                                    {!! $location->text_sports !!}
+                                </div>
+                                <div class="d-flex flex-wrap mt-3">
+                                    @foreach(['⚽ Fußball', '🏀 Basketball', '🏎️ Motorsport', '🚴‍♂️ Radfahren', '🎿 Wintersport', '🏊‍♂️ Wassersport'] as $sport)
+                                        <span class="badge bg-primary text-white me-2 mb-2">{{ $sport }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+
+                        @if ($location->text_amusement_parks)
+<div class="timeline-item">
+    <div class="timeline-marker bg-success text-white">🎡</div>
+    <div class="timeline-content border rounded shadow-sm p-4">
+        <h4 class="timeline-title d-flex align-items-center">
+            <i class="fa-solid fa-ticket-alt me-2 text-success"></i>
+            @autotranslate("Freizeitparks & Attraktionen in {$location->title}", app()->getLocale())
+        </h4>
+        <div class="text-muted">
+            {!! $location->text_amusement_parks !!}
+        </div>
+        <div class="d-flex flex-wrap mt-3">
+            @foreach(['🎢 Achterbahnen', '🎡 Riesenrad', '🎠 Karussells', '🎭 Shows & Events', '🍔 Freizeitpark-Gastronomie'] as $attraction)
+                <span class="badge bg-success text-white me-2 mb-2">{{ $attraction }}</span>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
+
                         <!-- Location Climate Section -->
                         @if ($location->text_what_to_do)
                         <div class="timeline-item">

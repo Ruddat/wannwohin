@@ -12,6 +12,7 @@
     <link href="{{asset('backend/dist/css/tabler-payments.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/tabler-vendors.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/demo.min.css?1692870487')}}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <!-- Tabler icons-->
     <link href="{{asset('assets/css/tabler-icons.css')}}" rel="stylesheet"/>
