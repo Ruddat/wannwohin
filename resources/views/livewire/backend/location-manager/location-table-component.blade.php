@@ -37,7 +37,7 @@
                                 </div>
 
                                 <!-- Suche -->
-                                <div class="col-md-auto">
+                                <div class="col-md-auto ms-auto">
                                     <label class="form-label text-muted">Search</label>
                                     <div class="input-icon">
                                         <span class="input-icon-addon">
@@ -49,7 +49,7 @@
                                 </div>
 
                                 <!-- Länderfilter -->
-                                <div class="col-md-auto">
+                                <div class="col-md-auto ms-auto">
                                     <label class="form-label text-muted">Country</label>
                                     <select wire:model.change="filterCountry" class="form-select form-select-sm">
                                         <option value="">All Countries</option>
@@ -60,7 +60,7 @@
                                 </div>
 
                                 <!-- Statusfilter -->
-                                <div class="col-md-auto">
+                                <div class="col-md-auto ms-auto">
                                     <label class="form-label text-muted">Status</label>
                                     <select wire:model.change="filterStatus" class="form-select form-select-sm">
                                         <option value="">All Status</option>
@@ -69,6 +69,14 @@
                                         <option value="inactive">Inactive</option>
                                     </select>
                                 </div>
+
+                                <div class="col-md-auto ms-auto">
+                                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                                    <button wire:click="exportLocations" class="btn btn-success btn-sm">
+                                        <i class="ti ti-file-export"></i> Export to Excel
+                                    </button>
+                                </div>
+
 
                                 <!-- Reset-Button -->
                                 <div class="col-md-auto ms-auto">
