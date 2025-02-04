@@ -31,6 +31,7 @@ class WwdeLocation extends Model
      * @var array
      */
     protected $fillable = [
+        'old_id',
         'continent_id',
         'country_id',
         'title',

@@ -3,10 +3,10 @@
 
 	'use strict';
 
-	// Scroll to Top Button.
-	if (typeof theme.PluginScrollToTop !== 'undefined') {
-		theme.PluginScrollToTop.initialize();
-	}
+// // Scroll to Top Button. (deaktiviert)
+// if (typeof theme.PluginScrollToTop !== 'undefined') {
+//     theme.PluginScrollToTop.initialize();
+// }
 
 	// Tooltips
 	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))

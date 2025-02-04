@@ -24,14 +24,14 @@
                                         <th>#</th>
                                         <th>@autotranslate('Reiseziel', app()->getLocale())</th>
                                         <th>@autotranslate('Temp', app()->getLocale())</th>
-                                        <th>@autotranslate('Wetter', app()->getLocale())</th>
+                                        <th>Wetter</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach(collect($top_ten)->slice(0, 10) as $location)
                                     <tr class="border-bottom">
                                         <!-- Position -->
-                                        <td class="text-primary fw-bold align-middle">{{ $loop->iteration }}.</td>
+                                        <td style="color: black;" class="fw-bold align-middle">{{ $loop->iteration }}.</td>
 
                                         <!-- Flagge und Reiseziel -->
                                         <td class="align-middle">
@@ -63,7 +63,7 @@
                                                     <img src="{{ $location['climate_data']['weather_icon'] }}" alt="@autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())" class="me-2 weather-icon">
                                                 @endif
                                                 <span class="text-muted">
-                                                    @autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())
+                                                    {{ $location['climate_data']['weather_description'] ?? 'N/A' }}
                                                 </span>
                                             </div>
                                         </td>

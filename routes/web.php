@@ -12,6 +12,7 @@ use App\Http\Controllers\Backend\Imports\LocationImportController;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Http\Controllers\Backend\Imports\ContinentImportController;
 use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
+use App\Http\Controllers\Backend\Imports\FilterLocationImportController;
 use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
 use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
 
@@ -43,6 +44,11 @@ Route::post('/import-locations', [LocationImportController::class, 'import'])->n
 Route::get('/location-import', function () {
     return view('excel-import/location-import');
 })->name('locations.upload');
+
+
+Route::get('/location-text-import', [FilterLocationImportController::class, 'index'])->name('location-text-import-form');
+Route::post('/location-text-import', [FilterLocationImportController::class, 'import'])->name('location-text-import');
+
 
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {
@@ -112,4 +118,5 @@ Route::get('/change-language/{lang}', [LanguageController::class, 'switch'])->na
 Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('country-manager.edit');
 
 Route::get('/location-manager/edit/{id}', LocationManagerComponent::class)->name('location-manager.edit');
+
 

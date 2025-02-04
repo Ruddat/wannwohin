@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row g-4 align-items-center">
             <!-- Textbereich -->
-            <div class="col-12 col-lg-7" data-aos="fade-right" data-aos-duration="1000">
+            <div class="col-12 col-lg-7" data-aos="fade-right" data-aos-duration="500">
                 <div class="card custom-border continent-facts-card position-relative placeholder-image">
                     <div class="card-body p-4 bg-overlay">
                         @if (!empty($country->country_text))

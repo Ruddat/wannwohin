@@ -106,6 +106,7 @@ class LocationImportService
                             'lon' => $result[0]['lon'] ?? null,
                             'iso2' => $countryCode ?? null,
                             'iso3' => $countryCodeIso3 ?? null,
+                            'old_id' => $row[0],
                             'currency_code' => $row[10],
                             'alias' => $row[4],
                             'flight_hours' => $row[6],
@@ -202,7 +203,7 @@ class LocationImportService
         $textPic1 = $skipImages ? null : $this->getCityImage($cityName, 1, $status);
         $textPic2 = $skipImages ? null : $this->getCityImage($cityName, 2, $status);
         $textPic3 = $skipImages ? null : $this->getCityImage($cityName, 3, $status);
-
+//dd($row);
         // Speichere die Location mit Status "pending"
         WwdeLocation::updateOrCreate(
             ['iata_code' => $row[5] ?? null], // IATA-Code als eindeutiger Wert
@@ -214,6 +215,7 @@ class LocationImportService
                 'lon' => null,
                 'iso2' => null,
                 'iso3' => null,
+                'old_id' => $row[0],
                 'currency_code' => $row[10],
                 'alias' => $row[4],
                 'flight_hours' => $row[6],

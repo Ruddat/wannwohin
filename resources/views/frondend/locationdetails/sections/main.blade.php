@@ -118,6 +118,28 @@
                             </tr>
                             <tr>
                                 <td>
+                                    <strong>@autotranslate('Visum', app()->getLocale())</strong>
+                                    <div>
+                                        @autotranslate(
+                                            $location->country->country_visum_needed !== null
+                                                ? ($location->country->country_visum_needed
+                                                    ? 'Nicht nötig'
+                                                    : ($location->country->country_visum_max_time ?? 'N/A'))
+                                                : 'N/A',
+                                            app()->getLocale()
+                                        )
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <strong>@autotranslate('Währung', app()->getLocale())</strong>
+                                    <div>@autotranslate($location->country->currency_code ?? 'N/A', app()->getLocale())</div>
+                                </td>
+                            </tr>
+                            <tr>
+
+
+                                <td>
                                     <strong>@autotranslate('Preistendenz', app()->getLocale())</strong>
                                     <a href="#" class="text-color-primary" data-bs-toggle="tooltip" data-bs-animation="false" title="Zur Berechnung vergleichen wir das durchschnittliche pro Kopf Einkommen der verschiedenen Länder mit Deutschland">
                                         <i class="fa fa-question-circle"></i>
@@ -147,25 +169,8 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
-                                    <strong>@autotranslate('Währung', app()->getLocale())</strong>
-                                    <div>@autotranslate($location->country->currency_code ?? 'N/A', app()->getLocale())</div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>@autotranslate('Visum', app()->getLocale())</strong>
-                                    <div>
-                                        @autotranslate(
-                                            $location->country->country_visum_needed !== null
-                                                ? ($location->country->country_visum_needed
-                                                    ? 'Nicht nötig'
-                                                    : ($location->country->country_visum_max_time ?? 'N/A'))
-                                                : 'N/A',
-                                            app()->getLocale()
-                                        )
-                                    </div>
-                                </td>
+                                
+
                                 <td>
                                     @php
                                         // Steckertypen aus info extrahieren
@@ -181,12 +186,19 @@
                                         }
                                     @endphp
 
-                                    <div>
-                                        <strong>@autotranslate('Stromnetz', app()->getLocale())</strong>
-                                        <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#electricPowerModal" title="Klicken Sie, um Steckertypen anzuzeigen" style="background-color: #007bff; border: none; border-radius: 5px; padding: 10px 20px; transition: background-color 0.3s;">
+                                    <div class="text-center">
+                                        <strong class="d-block">@autotranslate('Stromnetz', app()->getLocale())</strong>
+
+                                        <button class="electric-button mt-2" data-bs-toggle="modal" data-bs-target="#electricPowerModal" title="Klicken Sie, um Steckertypen anzuzeigen">
                                             <i class="fa fa-plug"></i> {{ $location->electric->power ?? 'N/A' }}
+                                            <span class="arrow-container">
+                                                <span class="arrow-icon">➜</span>
+                                            </span>
                                         </button>
-                                        <p class="text-muted mt-1">@autotranslate('Verfügbare Steckertypen:', app()->getLocale()) {{ implode(', ', $plugTypes) }}</p>
+
+                                        <p class="text-muted mt-1">
+                                            @autotranslate('Verfügbare Steckertypen:', app()->getLocale()) {{ implode(', ', $plugTypes) }}
+                                        </p>
                                     </div>
                                 </td>
                             </tr>
@@ -322,7 +334,72 @@
             height: 25px;
         }
     }
+
+
+
 </style>
+
+
+<style>
+    .electric-button {
+        background: linear-gradient(to bottom, #007bff, #0056b3);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 25px;
+        font-weight: bold;
+        font-size: 16px;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .electric-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .electric-button i {
+        margin-right: 8px;
+    }
+
+    /* Pfeil-Container (weißer Kreis) */
+    .arrow-container {
+        width: 28px;
+        height: 28px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 12px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        top: -2px; /* Pfeil leicht nach oben verschieben */
+        transform: rotate(5deg); /* ❗ Pfeil-Container um 5° drehen */
+    }
+
+    /* Pfeil-Styling */
+    .arrow-icon {
+        font-size: 16px;
+        color: #007bff;
+        transition: transform 0.3s ease-in-out;
+        display: inline-block;
+    }
+
+    /* Animation bei Hover */
+    .electric-button:hover .arrow-container {
+        transform: translateX(5px) rotate(5deg); /* ❗ Dreht sich weiter mit der Bewegung */
+        box-shadow: 0px 5px 8px rgba(0, 0, 0, 0.3);
+    }
+</style>
+
 
 <!-- Scripts -->
 <script>
