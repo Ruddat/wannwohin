@@ -94,9 +94,16 @@
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
-                                    <div id="live-clock">
+                                    <div id="live-clock" data-offset="{{ $time_offset ?? 0 }}">
                                         {{ \Carbon\Carbon::now()->format('d.m.Y H:i:s') }}
                                     </div>
+                                    <small class="text-muted">
+                                        @if ($time_offset !== null && round($time_offset, 1) != 0.0)
+                                            ({{ number_format($time_offset, 1, ',', '.') }} @autotranslate('Stunden Zeitverschiebung', app()->getLocale()))
+                                        @else
+                                            @autotranslate('Keine Zeitverschiebung', app()->getLocale())
+                                        @endif
+                                    </small>
                                 </td>
 
                                 <td>
@@ -455,7 +462,12 @@
 </script>
 <script>
     function updateClock() {
+        let clockElement = document.getElementById('live-clock');
+        let offset = parseFloat(clockElement.getAttribute('data-offset')) || 0; // Hole Zeitverschiebung
+
         let now = new Date();
+        now.setHours(now.getHours() + offset); // Zeitverschiebung hinzufügen
+
         let formattedTime = now.toLocaleString('de-DE', {
             year: 'numeric',
             month: '2-digit',
@@ -465,9 +477,9 @@
             second: '2-digit'
         });
 
-        document.getElementById('live-clock').innerHTML = formattedTime.replace(',', '');
+        clockElement.innerHTML = formattedTime.replace(',', '');
     }
 
-    setInterval(updateClock, 1000); // Aktualisiert die Uhr jede Sekunde
-    updateClock(); // Startet direkt nach Laden der Seite
+    setInterval(updateClock, 1000); // Jede Sekunde aktualisieren
+    updateClock(); // Direkt starten
 </script>
