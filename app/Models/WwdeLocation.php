@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
 use App\Models\WwdeContinent;
+use App\Models\ModLocationFilter;
 use App\Models\ModLocationGalerie;
 use App\Models\WwdeLocationImages;
 use App\Models\ModElectricStandards;
@@ -296,5 +297,9 @@ class WwdeLocation extends Model
         });
     }
 
+    public function filters()
+    {
+        return $this->hasMany(ModLocationFilter::class, 'location_id', 'id');
+    }
 
 }

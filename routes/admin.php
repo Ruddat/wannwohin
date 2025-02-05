@@ -7,9 +7,11 @@ use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Livewire\Backend\WeatherManager\ClimateDataManager;
 use App\Http\Controllers\Backend\Location\LocationController;
+use App\Livewire\Backend\LocationFilters\LocationFilterTable;
 use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
+use App\Livewire\Backend\LocationFilters\AdvancedLocationFilter;
 use App\Livewire\Backend\LocationManager\LocationTableComponent;
 use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
@@ -126,6 +128,18 @@ Route::prefix('electric-manager')->name('electric-manager.')->group(function () 
 Route::prefix('gallery-manager')->name('gallery-manager.')->group(function () {
     Route::get('/', GalleryManagerComponent::class)->name('index');
 });
+
+
+// Gallerie Manager
+Route::prefix('filters-table-manager')->name('filters-table-manager.')->group(function () {
+    Route::get('/', LocationFilterTable::class)->name('index');
+});
+
+// Gallerie Manager
+Route::prefix('filters-advanced-location')->name('filters-advanced-location.')->group(function () {
+    Route::get('/', AdvancedLocationFilter::class)->name('index');
+});
+
 
 
 });

@@ -15,4 +15,9 @@ class ModLocationFilter extends Model
         'uschrift',
         'text',
     ];
+
+    public function location()
+    {
+        return $this->belongsTo(WwdeLocation::class, 'location_id');
+    }
 }
