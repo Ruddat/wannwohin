@@ -48,21 +48,45 @@
             <!-- Faktenkarte -->
             <div class="col-lg-5 col-md-12" data-aos="fade-left" data-aos-delay="300">
                 <div class="card">
-                    <!-- Leicht grauer Card-Header -->
-                    <div class="card-header-fact text-center" style="background-color: #f0f0f0; position: relative;">
-                        <!-- Titel "FAKTENCHECK" -->
-                        <h4 class="text-uppercase mb-0 fw-bold" style="padding-top: 20px;">
-                            @autotranslate('FAKTENCHECK', app()->getLocale())
-                        </h4>
-                        <!-- Aussparung für die Flagge -->
-                        <div class="position-absolute start-50 translate-middle"
-                             style="top: 100%; background-color: white; border-radius: 50%; width: 100px; height: 100px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 10;">
-                            <img src="{{ asset('assets/flags/4x3/' . strtolower($location->iso2 ?? 'unknown') . '.svg') }}"
-                                 alt="{{ $location->country->title ?? 'Flagge' }}"
-                                 class="rounded-circle shadow"
-                                 style="width: 90px; height: 90px; object-fit: cover; margin: 5px;">
-                        </div>
-                    </div>
+<!-- Card-Header mit Flagge, Name, Standort und Land -->
+<div class="card-header-fact text-center" style="background-color: #f0f0f0; position: relative; padding: 20px;">
+
+    <!-- Titel "FAKTENCHECK" -->
+    <h4 class="text-uppercase mb-3 fw-bold">
+        @autotranslate('FAKTENCHECK', app()->getLocale())
+    </h4>
+
+    <!-- Flex-Container für Name, Flagge und Land -->
+    <div class="d-flex justify-content-center align-items-center position-relative" style="gap: 20px;">
+
+        <!-- Linke Seite: Name und Standort -->
+        <div class="text-end flex-grow-1">
+            <h5 class="mb-0 fw-bold">
+                @autotranslate($location->title ?? 'Unbekannter Standort', app()->getLocale())
+            </h5>
+        </div>
+
+        <!-- Mitte: Flagge -->
+        <div class="position-relative" style="z-index: 10;">
+            <div class="rounded-circle shadow"
+                 style="width: 100px; height: 100px; background-color: white; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ asset('assets/flags/4x3/' . strtolower($location->iso2 ?? 'unknown') . '.svg') }}"
+                     alt="{{ $location->country->title ?? 'Flagge' }}"
+                     class="rounded-circle"
+                     style="width: 85px; height: 85px; object-fit: cover;">
+            </div>
+        </div>
+
+        <!-- Rechte Seite: Land -->
+        <div class="text-start flex-grow-1">
+            <h5 class="mb-0 fw-bold">
+                @autotranslate($location->country->title ?? 'Unbekanntes Land', app()->getLocale())
+            </h5>
+        </div>
+
+    </div>
+</div>
+
 
                     <!-- Card-Body -->
                     <div class="card-body bg-white pt-5 box-shadow-2">
@@ -70,10 +94,11 @@
                             <tr>
                                 <td>
                                     <strong>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
-                                    <div>
-                                        {{ $current_time ? \Carbon\Carbon::parse($current_time)->format('d.m.Y H:i') : 'Nicht verfügbar' }}
+                                    <div id="live-clock">
+                                        {{ \Carbon\Carbon::now()->format('d.m.Y H:i:s') }}
                                     </div>
                                 </td>
+
                                 <td>
                                     <strong>@autotranslate('Hauptstadt', app()->getLocale())</strong>
                                     <div>@autotranslate($location->country->capital ?? 'Unbekannt', app()->getLocale())</div>
@@ -83,10 +108,10 @@
                                 <td>
                                     <strong>@autotranslate('Zeitverschiebung', app()->getLocale())</strong>
                                     <div>
-                                        @if ($time_offset !== null)
+                                        @if ($time_offset !== null && round($time_offset, 1) != 0.0)
                                             {{ number_format($time_offset, 1, ',', '.') }} @autotranslate('Stunden', app()->getLocale())
                                         @else
-                                            @autotranslate('Nicht verfügbar', app()->getLocale())
+                                            @autotranslate('Keine Zeitverschiebung', app()->getLocale())
                                         @endif
                                     </div>
                                 </td>
@@ -118,28 +143,6 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>@autotranslate('Visum', app()->getLocale())</strong>
-                                    <div>
-                                        @autotranslate(
-                                            $location->country->country_visum_needed !== null
-                                                ? ($location->country->country_visum_needed
-                                                    ? 'Nicht nötig'
-                                                    : ($location->country->country_visum_max_time ?? 'N/A'))
-                                                : 'N/A',
-                                            app()->getLocale()
-                                        )
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <strong>@autotranslate('Währung', app()->getLocale())</strong>
-                                    <div>@autotranslate($location->country->currency_code ?? 'N/A', app()->getLocale())</div>
-                                </td>
-                            </tr>
-                            <tr>
-
-
-                                <td>
                                     <strong>@autotranslate('Preistendenz', app()->getLocale())</strong>
                                     <a href="#" class="text-color-primary" data-bs-toggle="tooltip" data-bs-animation="false" title="Zur Berechnung vergleichen wir das durchschnittliche pro Kopf Einkommen der verschiedenen Länder mit Deutschland">
                                         <i class="fa fa-question-circle"></i>
@@ -169,7 +172,38 @@
                                         @endif
                                     </div>
                                 </td>
-                                
+
+                                <td class="text-center">
+                                    <strong>@autotranslate('Währung', app()->getLocale())</strong>
+                                    <div class="fw-bold text-uppercase">
+                                        @autotranslate(strtoupper($location->country->currency_code ?? 'N/A'), app()->getLocale())
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+
+
+
+
+                                <td class="text-center">
+                                    <strong>@autotranslate('Visum', app()->getLocale())</strong>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        @if ($location->country->country_visum_needed !== null)
+                                            @if ($location->country->country_visum_needed)
+                                                <i class="fas fa-passport text-success me-2 fs-5"></i>
+                                                <span class="fw-bold">@autotranslate('Kein Visum erforderlich', app()->getLocale())</span>
+                                            @else
+                                                <i class="fas fa-plane-departure text-danger me-2 fs-5"></i>
+                                                <span class="fw-bold">{{ $location->country->country_visum_max_time ?? 'N/A' }}</span>
+                                            @endif
+                                        @else
+                                            <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
+                                            <span class="fw-bold">@autotranslate('Keine Angaben', app()->getLocale())</span>
+                                        @endif
+                                    </div>
+                                </td>
+
+
 
                                 <td>
                                     @php
@@ -201,6 +235,8 @@
                                         </p>
                                     </div>
                                 </td>
+
+
                             </tr>
                             <tr>
                                 <td>
@@ -289,7 +325,7 @@
     .card-header-fact.text-center {
         background-color: #d1d1d1;
         position: relative;
-        height: 110px;
+        height: 130px;
     }
 
     .price-trend-container {
@@ -346,7 +382,7 @@
         color: white;
         border: none;
         border-radius: 10px;
-        padding: 12px 25px;
+        padding: 12px 8px;
         font-weight: bold;
         font-size: 16px;
         text-transform: uppercase;
@@ -416,4 +452,22 @@
             once: true,
         });
     });
+</script>
+<script>
+    function updateClock() {
+        let now = new Date();
+        let formattedTime = now.toLocaleString('de-DE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        document.getElementById('live-clock').innerHTML = formattedTime.replace(',', '');
+    }
+
+    setInterval(updateClock, 1000); // Aktualisiert die Uhr jede Sekunde
+    updateClock(); // Startet direkt nach Laden der Seite
 </script>

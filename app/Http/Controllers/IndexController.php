@@ -79,16 +79,26 @@ class IndexController extends Controller
 //dd($topTenLocationsWithClima);
 
 
-        // 3. Erstelle die Variable `TopTenLocationWithClima`
-        $TopTenLocationWithClima = [];
+// 3. Erstelle die Variable `TopTenLocationWithClima`
+$TopTenLocationWithClima = [];
 
-        // Schleife bleibt unverändert
-        foreach ($topTenLocationsWithClima as $location) {
-            if (empty($location->iso2) || empty($location->iso3)) {
-                $geocodeService = new GeocodeService();
-                $geocodeData = $geocodeService->searchByCoordinates($location->lat, $location->lon);
+// Schleife bleibt unverändert
+foreach ($topTenLocationsWithClima as $location) {
 
-                $iso2 = strtoupper($geocodeData['address']['country_code'] ?? 'unknown');
+    // Prüfe, ob lat oder lon null sind
+    if (empty($location->lat) || empty($location->lon)) {
+        Log::warning("GeocodeService kann nicht aufgerufen werden: Ungültige Koordinaten für Location ID {$location->location_id}");
+        continue; // Überspringt diesen Eintrag und fährt mit dem nächsten fort
+    }
+
+    if (empty($location->iso2) || empty($location->iso3)) {
+        try {
+            $geocodeService = new GeocodeService();
+            $geocodeData = $geocodeService->searchByCoordinates((float) $location->lat, (float) $location->lon);
+
+            // Prüfe, ob gültige Daten zurückkommen
+            if (!empty($geocodeData['address']['country_code'])) {
+                $iso2 = strtoupper($geocodeData['address']['country_code']);
                 $iso3 = strtoupper($geocodeData['address']['ISO3166-2-lvl4'] ?? 'unknown');
 
                 DB::table('wwde_locations')
@@ -97,30 +107,46 @@ class IndexController extends Controller
                         'iso2' => $iso2,
                         'iso3' => $iso3,
                     ]);
+
+                Log::info("ISO-Codes aktualisiert für Location ID {$location->location_id}: {$iso2} / {$iso3}");
+            } else {
+                Log::warning("GeocodeService konnte keine Daten für Location ID {$location->location_id} liefern.");
             }
-
-            $TopTenLocationWithClima[] = [
-                'location_id' => $location->location_id,
-                'location_title' => $location->location_title,
-                'location_alias' => $location->location_alias,
-                'iso2' => $location->iso2,
-                'iso3' => $location->iso3,
-                'continent' => $location->continent_alias,
-                'country' => $location->country_alias,
-                'climate_data' => [
-                    'daily_temperature' => $location->daily_temperature,
-                    'night_temperature' => $location->night_temperature,
-                    'humidity' => $location->humidity,
-                    'sunshine_per_day' => $location->sunshine_per_day,
-                    'water_temperature' => $location->water_temperature,
-                    'weather_description' => $location->weather_description,
-                    'weather_icon' => $location->icon,
-                ],
-            ];
+        } catch (\Exception $e) {
+            Log::error("Fehler beim Abrufen der Geodaten für Location ID {$location->location_id}: " . $e->getMessage());
         }
+    }
 
-        // Begrenzung auf 10 Einträge
-        $TopTenLocationWithClima = array_slice($TopTenLocationWithClima, 0, 10);
+    // Sicherstellen, dass Climate-Daten ein Array sind, um Fehler zu vermeiden
+    $climateData = [
+        'daily_temperature' => $location->daily_temperature ?? 'N/A',
+        'night_temperature' => $location->night_temperature ?? 'N/A',
+        'humidity' => $location->humidity ?? 'N/A',
+        'sunshine_per_day' => $location->sunshine_per_day ?? 'N/A',
+        'water_temperature' => $location->water_temperature ?? 'N/A',
+        'weather_description' => $location->weather_description ?? 'N/A',
+        'weather_icon' => $location->icon ?? 'default.png',
+    ];
+
+    // Daten in das Array einfügen
+    $TopTenLocationWithClima[] = [
+        'location_id' => $location->location_id,
+        'location_title' => $location->location_title ?? 'Unbekannte Location',
+        'location_alias' => $location->location_alias ?? '',
+        'iso2' => $location->iso2 ?? 'N/A',
+        'iso3' => $location->iso3 ?? 'N/A',
+        'continent' => $location->continent_alias ?? 'Unbekannt',
+        'country' => $location->country_alias ?? 'Unbekannt',
+        'climate_data' => $climateData,
+    ];
+}
+
+// Begrenzung auf 10 Einträge
+$TopTenLocationWithClima = array_slice($TopTenLocationWithClima, 0, 10);
+
+// Optional: Logge die Ergebnisse zur Überprüfung
+Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
+
 
         //dd($TopTenLocationWithClima);
 

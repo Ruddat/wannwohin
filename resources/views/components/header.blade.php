@@ -81,7 +81,6 @@
 
 /* Styling für Bilder */
 .custom-header-section img {
-    border-radius: 10px; /* Abgerundete Ecken */
 }
 
 /* Animation für Scroll-Icon */

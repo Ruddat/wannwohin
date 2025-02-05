@@ -64,13 +64,12 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Textschatten */
     background: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
     padding: 15px; /* Innenabstand */
-    border-radius: 8px; /* Abgerundete Ecken */
     display: inline-block; /* Block für den Hintergrund */
 }
 
 /* Styling für Bilder */
 .custom-header-section img {
-    border-radius: 10px; /* Abgerundete Ecken */
+
 }
 
 /* Animation für Scroll-Icon */
