@@ -92,12 +92,17 @@
                     <div class="card-body bg-white pt-5 box-shadow-2">
                         <table class="table table-sm text-center">
                             <tr>
-                                <td>
+                                <td class="text-center">
                                     <strong>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
-                                    <div id="live-clock" data-offset="{{ $time_offset ?? 0 }}">
-                                        {{ \Carbon\Carbon::now()->format('d.m.Y H:i:s') }}
+                                    <div id="live-clock" class="d-flex flex-column align-items-center" data-offset="{{ $time_offset ?? 0 }}">
+                                        <span id="live-date" style="font-size: 14px; font-weight: bold; min-width: 110px;">
+                                            {{ \Carbon\Carbon::now()->format('d.m.Y') }}
+                                        </span>
+                                        <span id="live-time" class="font-monospace" style="font-size: 16px; font-weight: bold; min-width: 80px;">
+                                            {{ \Carbon\Carbon::now()->format('H:i:s') }}
+                                        </span>
                                     </div>
-                                    <small class="text-muted">
+                                    <small class="text-muted d-block mt-1">
                                         @if ($time_offset !== null && round($time_offset, 1) != 0.0)
                                             ({{ number_format($time_offset, 1, ',', '.') }} @autotranslate('Stunden Zeitverschiebung', app()->getLocale()))
                                         @else
@@ -162,7 +167,7 @@
                                                      style="position: absolute;
                                                             top: -5px;
                                                             left: {{ max(0, min(100, ($price_trend['factor'] / 2) * 100)) }}%;
-                                                            width: 8px;
+                                                            width: 6px;
                                                             height: 30px;
                                                             background-color: black;
                                                             border-radius: 5px;
@@ -350,7 +355,7 @@
     .price-trend-indicator {
         position: absolute;
         top: -5px;
-        width: 10px;
+        width: 6px;
         height: 30px;
         background-color: black;
         border-radius: 5px;
@@ -464,25 +469,25 @@
     });
 </script>
 <script>
-    function updateClock() {
-        let clockElement = document.getElementById('live-clock');
-        let offset = parseFloat(clockElement.getAttribute('data-offset')) || 0; // Hole Zeitverschiebung
+    document.addEventListener("DOMContentLoaded", function () {
+        function updateClock() {
+            let clockElement = document.getElementById("live-clock");
+            if (!clockElement) return;
 
-        let now = new Date();
-        now.setHours(now.getHours() + offset); // Zeitverschiebung hinzufügen
+            let timeOffset = parseFloat(clockElement.dataset.offset) || 0;
+            let now = new Date();
 
-        let formattedTime = now.toLocaleString('de-DE', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
+            // Zeitverschiebung hinzufügen
+            now.setHours(now.getHours() + timeOffset);
 
-        clockElement.innerHTML = formattedTime.replace(',', '');
-    }
+            let dateStr = now.toLocaleDateString("de-DE");
+            let timeStr = now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-    setInterval(updateClock, 1000); // Jede Sekunde aktualisieren
-    updateClock(); // Direkt starten
-</script>
+            document.getElementById("live-date").textContent = dateStr;
+            document.getElementById("live-time").textContent = timeStr;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    });
+    </script>
