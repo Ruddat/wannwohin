@@ -185,6 +185,9 @@
                                     <div class="fw-bold text-uppercase">
                                         @autotranslate(strtoupper($location->country->currency_code ?? 'N/A'), app()->getLocale())
                                     </div>
+                                    <livewire:backend.currency-converter.currency-converter-component
+                                    :toCurrency="$location->country->currency_code ?? 'USD'"
+                                />
                                 </td>
                             </tr>
                             <tr>
