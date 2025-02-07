@@ -36,7 +36,10 @@
                         <table class="table table-borderless continent-facts-table">
                             <tr>
                                 <td>
-                                    <span>@autotranslate('Währung', app()->getLocale())</span>
+                                    <span>
+                                        <i class="fas fa-coins me-2"></i>
+                                        @autotranslate('Währung', app()->getLocale())
+                                    </span>
                                     <div>
                                         <h5>@autotranslate($country->currency_code, app()->getLocale())</h5>
                                     </div>
@@ -68,17 +71,26 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="2">
-                                    <span>@autotranslate('Visum & Reisepass', app()->getLocale())</span>
-                                    <div>
-                                        <h5>
-                                            <?php
-                                            $visumText = $country->country_visum_needed ? 'Nicht nötig' : $country->country_visum_max_time ?? 'Keine Angaben';
-                                            echo app('autotranslate')->trans($visumText, app()->getLocale());
-                                            ?>
-                                        </h5>
+                                <td colspan="2" class="text-center">
+                                    <strong>{{ __('Visum & Reisepass') }}</strong>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        @if ($country->country_visum_needed !== null)
+                                            @if ($country->country_visum_needed)
+                                                <i class="fas fa-passport text-success me-2 fs-5"></i>
+                                                <span class="fw-bold">{{ __('Kein Visum erforderlich') }}</span>
+                                            @else
+                                                <i class="fas fa-plane-departure text-danger me-2 fs-5"></i>
+                                                <span class="fw-bold">
+                                                    {{ $country->country_visum_max_time ?? __('Keine Angaben') }}
+                                                </span>
+                                            @endif
+                                        @else
+                                            <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
+                                            <span class="fw-bold">{{ __('Keine Angaben') }}</span>
+                                        @endif
                                     </div>
                                 </td>
+
                                 <!-- Travel Warning -->
                                 @if ($country->travelWarning)
 <!-- Verbesserte Reisewarnung mit farbigem Hintergrund und Icons -->

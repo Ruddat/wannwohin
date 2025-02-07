@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\NewSearchController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
@@ -49,7 +50,8 @@ Route::get('/location-import', function () {
 Route::get('/location-text-import', [FilterLocationImportController::class, 'index'])->name('location-text-import-form');
 Route::post('/location-text-import', [FilterLocationImportController::class, 'import'])->name('location-text-import');
 
-
+Route::get('/search-locations', [NewSearchController::class, 'search'])->name('search.locations');
+Route::get('/random-destination', [NewSearchController::class, 'randomDestination'])->name('search.random');
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
