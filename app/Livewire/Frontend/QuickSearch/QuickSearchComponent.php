@@ -121,8 +121,9 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
             ];
 
             $englishMonth = $monthMapping[$this->urlaub] ?? $this->urlaub;
-
+dd($englishMonth);
             $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($englishMonth)]);
+
         }
 
         // Filter: Sonnenstunden

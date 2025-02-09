@@ -12,6 +12,7 @@ class CurrencyConverterComponent extends Component
     public $toCurrency;  // Zielwährung aus der Location
     public $convertedAmount = null;
     public $currencies = [];
+    public $showModal = false;  // Steuert die Sichtbarkeit des Modals
 
     public function mount($toCurrency = 'USD') // Standard: USD, falls keine Währung übergeben wird
     {
@@ -34,6 +35,16 @@ class CurrencyConverterComponent extends Component
         } else {
             $this->convertedAmount = null;
         }
+    }
+
+    public function openModal()
+    {
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
     }
 
     public function render()

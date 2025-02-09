@@ -95,33 +95,37 @@
                                     <strong><i class="fas fa-clock me-2"></i>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
                                     <div id="live-clock" class="d-flex flex-column align-items-center"
                                         data-offset="{{ $time_offset ?? 0 }}">
-                                        <span id="live-date"
-                                            style="font-size: 14px; font-weight: bold; min-width: 110px;">
+                                        <span id="live-date" class="text-muted" style="font-weight: normal;">
                                             {{ \Carbon\Carbon::now()->format('d.m.Y') }}
                                         </span>
-                                        <span id="live-time" class="font-monospace"
-                                            style="font-size: 16px; font-weight: bold; min-width: 80px;">
+                                        <span id="live-time" class="font-monospace text-muted" style="font-weight: normal;">
                                             {{ \Carbon\Carbon::now()->format('H:i:s') }}
                                         </span>
                                     </div>
                                 </td>
-
                                 <td>
                                     <strong><i class="fas fa-city me-2"></i>@autotranslate('Hauptstadt', app()->getLocale())</strong>
-                                    <div>@autotranslate($location->country->capital ?? 'Unbekannt', app()->getLocale())</div>
+                                    <div class="text-muted" style="font-weight: normal;">
+                                        @autotranslate($location->country->capital ?? 'Unbekannt', app()->getLocale())
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <strong><i class="fas fa-globe me-2"></i>@autotranslate('Zeitverschiebung', app()->getLocale())</strong>
-                                    <div>
+                                    <div class="d-inline-flex align-items-center">
+                                        <i class="fas fa-globe me-2"></i>
+                                        <strong>@autotranslate('Zeitverschiebung', app()->getLocale())</strong>
+                                    </div>
+                                    <div class="text-muted" style="font-weight: normal;">
                                         @if ($time_offset !== null && round($time_offset, 1) != 0.0)
-                                            {{ number_format($time_offset, 1, ',', '.') }} @autotranslate('Stunden', app()->getLocale())
+                                            {{ number_format($time_offset, 1, ',', '.') }}
+                                            {{ trans_choice('Stunde|Stunden', round($time_offset, 1), [], app()->getLocale()) }}
                                         @else
                                             @autotranslate('Keine', app()->getLocale())
                                         @endif
                                     </div>
                                 </td>
+
                                 <td>
                                     <strong><i class="fas fa-language me-2"></i>
                                     @php
@@ -140,7 +144,7 @@
                                         @endif
                                     </strong>
 
-                                    <div>
+                                    <div class="text-muted" style="font-weight: normal;">
                                         @if ($languageCount > 0)
                                             @autotranslate(implode(', ', $languages), app()->getLocale())
                                         @else
@@ -171,13 +175,13 @@
                                                             left: {{ max(0, min(100, ($price_trend['factor'] / 2) * 100)) }}%;
                                                             width: 6px;
                                                             height: 30px;
-                                                            background-color: black;
+                                                            background-color: green transparent;
                                                             border-radius: 5px;
                                                             transform: translateX(-50%);">
                                                 </div>
                                             </div>
                                             <!-- Tooltip direkt beim Wert -->
-                                            <span data-bs-toggle="tooltip" data-bs-animation="false"
+                                            <span class="text-muted" data-bs-toggle="tooltip" data-bs-animation="false"
                                                 title="Grün = Sehr günstig, Gelb = Durchschnitt (1.0), Rot = Sehr teuer">
                                                 {{ number_format($price_trend['factor'], 2) }} (@autotranslate($price_trend['category'], app()->getLocale()))
                                             </span>
@@ -191,7 +195,7 @@
 
                                 <td class="text-center">
                                     <strong><i class="fas fa-coins me-2"></i>@autotranslate('Währung', app()->getLocale())</strong>
-                                    <div class="fw-bold text-uppercase">
+                                    <div class="text-muted text-uppercase" style="font-weight: normal;">
                                         @autotranslate(strtoupper($location->country->currency_code ?? 'N/A'), app()->getLocale())
                                     </div>
                                     <livewire:backend.currency-converter.currency-converter-component
@@ -203,23 +207,22 @@
 
 
 
-                                <td class="text-center">
-                                    <strong><i class="fas fa-passport me-2"></i>@autotranslate('Visum', app()->getLocale())</strong>
-                                    <div class="d-flex justify-content-center align-items-center mt-2">
-                                        @if ($location->country->country_visum_needed !== null)
-                                            @if ($location->country->country_visum_needed)
-                                                <i class="fas fa-passport text-success me-2 fs-5"></i>
-                                                <span class="fw-bold">@autotranslate('Kein Visum erforderlich', app()->getLocale())</span>
-                                            @else
-                                                <span
-                                                    class="fw-bold">{{ $location->country->country_visum_max_time ?? 'N/A' }}</span>
-                                            @endif
-                                        @else
-                                            <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
-                                            <span class="fw-bold">@autotranslate('Keine Angaben', app()->getLocale())</span>
-                                        @endif
-                                    </div>
-                                </td>
+    <td>
+        <!-- Überschrift (fett) -->
+        <strong><i class="fas fa-passport me-2"></i>@autotranslate('Visum', app()->getLocale())</strong>
+        <!-- Text unter der Überschrift (normal und muted) -->
+        <div class="text-muted" style="font-weight: normal; margin-top: 4px;">
+            @if ($location->country->country_visum_needed !== null)
+                @if ($location->country->country_visum_needed)
+                    @autotranslate('Kein Visum erforderlich', app()->getLocale())
+                @else
+                    {{ $location->country->country_visum_max_time ?? 'N/A' }}
+                @endif
+            @else
+                @autotranslate('Keine Angaben', app()->getLocale())
+            @endif
+        </div>
+    </td>
 
 
 
@@ -262,12 +265,18 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong><i class="fas fa-plane me-2"></i>@autotranslate('Flugzeit', app()->getLocale())</strong>
-                                    <div>{{ ceil($location->flight_hours ?? 0) }} @autotranslate('Stunden', app()->getLocale())</div>
+                                    <div class="d-inline-flex align-items-center">
+                                        <i class="fas fa-plane me-2"></i>
+                                        <strong>@autotranslate('Flugzeit', app()->getLocale())</strong>
+                                    </div>
+                                    <div class="text-muted" style="font-weight: normal;">
+                                        {{ ceil($location->flight_hours ?? 0) }} {{ trans_choice('Stunde|Stunden', ceil($location->flight_hours ?? 0), [], app()->getLocale()) }}
+                                    </div>
                                 </td>
+
                                 <td>
                                     <strong><i class="fas fa-ruler-horizontal me-2"></i>@autotranslate('Entfernung', app()->getLocale())</strong>
-                                    <div>{{ number_format($location->dist_from_FRA, 0, ',', '.') }} km</div>
+                                    <div class="text-muted" style="font-weight: normal;">{{ number_format($location->dist_from_FRA, 0, ',', '.') }} km</div>
                                 </td>
                             </tr>
                         </table>
@@ -285,17 +294,17 @@
                 <td>
                     <i class="fa fa-hotel"></i>
                     <div class="fw-bold">@autotranslate('Unterkünfte', app()->getLocale())</div>
-                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_hotel, 0, ',', '.') }} €</div>
+                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_hotel, 0, ',', '.') }} €</div>
                 </td>
                 <td>
                     <i class="fa fa-plane"></i>
                     <div class="fw-bold">@autotranslate('Flüge', app()->getLocale())</div>
-                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_flight, 0, ',', '.') }} €</div>
+                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_flight, 0, ',', '.') }} €</div>
                 </td>
                 <td>
                     <i class="fa fa-car"></i>
                     <div class="fw-bold">@autotranslate('Mietwagen', app()->getLocale())</div>
-                    <div>@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_rental, 0, ',', '.') }} €</div>
+                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_rental, 0, ',', '.') }} €</div>
                 </td>
             </tr>
         </table>

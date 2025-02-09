@@ -2,15 +2,15 @@
     <article class="timeline-box right custom-box-shadow-2 box-shadow-2">
         <div class="row">
             <!-- OpenStreetMap Section -->
-            <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 article-map" id="openstreetmap" style="height: 200px; border-radius: 8px;">
+            <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 article-map" id="openstreetmap" style="height: auto; border-radius: 8px;">
             </div>
 
             <!-- Description Section -->
             <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-3 py-3 rounded-end">
                 <h4 class="text-color-dark font-weight-semibold">{!! app('autotranslate')->trans($location->text_headline, app()->getLocale()) !!}</h4>
 
-                <p class="text-black">{{ $location->text_short }}</p>
-                <p class="text-black">In einer Flugzeit von ca. {{ $location->flight_time }} Stunden von Frankfurt ist man am Ziel.</p>
+                <p class="text-black">{!! $location->text_short !!}</p>
+                <p class="text-black">In einer Flugzeit von ca. {{ $location->flight_hours }} Stunden von Frankfurt ist man am Ziel.</p>
                 <div class="d-flex">
                     <button class="ms-auto btn btn-primary" data-bs-toggle="modal" data-bs-target="#google_map_modal">
                         Position auf der Karte

@@ -266,7 +266,7 @@ $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
 
             if ($countryIncome && $referenceIncome) {
                 $trendFactor = $countryIncome / $referenceIncome;
-                $trendCategory = $trendFactor < 0.8 ? 'niedrig' : ($trendFactor <= 1.2 ? 'durchschnittlich' : 'hoch');
+                $trendCategory = $trendFactor < 0.8 ? 'niedrig' : ($trendFactor <= 1.2 ? 'mittel' : 'hoch');
                 return [
                     'factor' => $trendFactor,
                     'category' => $trendCategory,

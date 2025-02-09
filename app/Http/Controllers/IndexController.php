@@ -119,14 +119,17 @@ foreach ($topTenLocationsWithClima as $location) {
 
     // Sicherstellen, dass Climate-Daten ein Array sind, um Fehler zu vermeiden
     $climateData = [
-        'daily_temperature' => $location->daily_temperature ?? 'N/A',
-        'night_temperature' => $location->night_temperature ?? 'N/A',
-        'humidity' => $location->humidity ?? 'N/A',
-        'sunshine_per_day' => $location->sunshine_per_day ?? 'N/A',
-        'water_temperature' => $location->water_temperature ?? 'N/A',
+        'daily_temperature' => isset($location->daily_temperature) ? intval($location->daily_temperature) : 'N/A',
+        'night_temperature' => isset($location->night_temperature) ? intval($location->night_temperature) : 'N/A',
+        'humidity' => isset($location->humidity) ? intval($location->humidity) : 'N/A',
+        'sunshine_per_day' => isset($location->sunshine_per_day) ? intval($location->sunshine_per_day) : 'N/A',
+        'water_temperature' => isset($location->water_temperature) ? intval($location->water_temperature) : 'N/A',
         'weather_description' => $location->weather_description ?? 'N/A',
         'weather_icon' => $location->icon ?? 'default.png',
     ];
+
+//dd($climateData);
+
 
     // Daten in das Array einfügen
     $TopTenLocationWithClima[] = [
@@ -143,6 +146,8 @@ foreach ($topTenLocationsWithClima as $location) {
 
 // Begrenzung auf 10 Einträge
 $TopTenLocationWithClima = array_slice($TopTenLocationWithClima, 0, 10);
+
+//dd($TopTenLocationWithClima);
 
 // Optional: Logge die Ergebnisse zur Überprüfung
 Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);

@@ -53,9 +53,9 @@ d3.json("https://d3js.org/world-110m.v1.json").then(world => {
         .attr("fill", "#e0e0e0")
         .attr("stroke", "#999");
 
-    // Marker hinzufügen
-    const [x, y] = projection([geoLocation.lon, geoLocation.lat]);
-    console.log("Marker-Koordinaten:", x, y);
+// Berechnete Koordinaten aus der Projektion verwenden
+const [x, y] = projection([geoLocation.lon, geoLocation.lat]);
+console.log("Marker-Koordinaten:", x, y);
 
     // Schatten-Filter für die Nadel
     svg.append("defs").append("filter")
@@ -66,13 +66,13 @@ d3.json("https://d3js.org/world-110m.v1.json").then(world => {
         .attr("stdDeviation", 3) // Weichheit des Schattens
         .attr("result", "blur");
 
-    // Nadel-Icon hinzufügen (Faktor 4 vergrößert)
-    const marker = svg.append("image")
-        .attr("xlink:href", "/assets/img/push-pin-svgrepo-com.png") // Pfad zum Nadel-Icon
-        .attr("x", width / 2 - 60) // Zentrieren in der Mitte der viewBox
-        .attr("y", height / 2 - 200) // Zentrieren in der Mitte der viewBox
-        .attr("width", 120) // Größe des Icons (Faktor 4)
-        .attr("height", 200) // Größe des Icons (Faktor 4)
+// Nadel-Icon hinzufügen (Kleinere Größe und exakte Position)
+const marker = svg.append("image")
+    .attr("xlink:href", "/assets/img/push-pin-svgrepo-com.png") // Pfad zum Nadel-Icon
+    .attr("x", x - 15) // Zentrieren des Icons basierend auf der tatsächlichen Position
+    .attr("y", y - 50) // Höhe anpassen, damit der Pin korrekt zeigt
+    .attr("width", 30) // Kleinere Größe
+    .attr("height", 50);
 
         const tooltipContainer = d3.select(".container")
     .append("div")
@@ -85,8 +85,8 @@ marker.on("mouseover", function () {
 })
 .on("mousemove", function (event) {
     console.log("Maus bewegt:", { x: event.pageX, y: event.pageY });
-    tooltipContainer.style("top", (event.pageY + 10) + "px")
-                    .style("left", (event.pageX + 10) + "px");
+    tooltipContainer.style("top", (event.pageY - 60) + "px") // Nach oben versetzen
+    .style("left", (event.pageX + 10) + "px");
 })
 .on("mouseout", function () {
     console.log("Tooltip verborgen");

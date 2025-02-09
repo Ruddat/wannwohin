@@ -11,7 +11,7 @@
                             @autotranslate('Finde dein Traumziel', app()->getLocale())
                         </h4>
 
-                        <!-- 🌍 Suchfeld & Zufallsbutton -->
+                        <!-- Suchfeld & Zufallsbutton -->
                         <div class="input-group search-bar">
                             <input type="text" class="form-control"
                                 placeholder="@autotranslate('Wohin möchtest du reisen?', app()->getLocale())"
@@ -21,7 +21,7 @@
                             </button>
                         </div>
 
-                        <!-- 🎛️ Filter für Aktivitäten -->
+                        <!-- Filter für Aktivitäten -->
                         <div class="filter-container mt-3">
                             <label for="filter-activity" class="form-label">
                                 @autotranslate('Aktivität wählen:', app()->getLocale())
@@ -34,7 +34,7 @@
                             </select>
                         </div>
 
-                        <!-- 📋 Suchergebnisse -->
+                        <!-- Suchergebnisse -->
                         <ul id="search-results" class="list-group search-results mt-2"></ul>
                     </div>
 
@@ -59,6 +59,7 @@
                 <div class="col-lg-6">
                     <div class="custom-box-details bg-color-light custom-box-shadow-1 p-4">
                         <h4 class="text-center text-color-dark font-weight-bold mb-4">🌍 @autotranslate("Top 10 Reiseziele", app()->getLocale())</h4>
+
                         @if (!empty($top_ten))
                         <div class="table-responsive">
                             <table class="table table-borderless align-middle text-center mb-0">
@@ -71,57 +72,75 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach(collect($top_ten)->slice(0, 10) as $location)
+                                    @forelse(collect($top_ten)->slice(0, 10) as $location)
                                     <tr class="border-bottom">
                                         <!-- Position -->
-                                        <td style="color: black;" class="fw-bold align-middle">{{ $loop->iteration }}.</td>
+                                        <td class="fw-bold align-middle">{{ $loop->iteration }}.</td>
 
                                         <!-- Flagge und Reiseziel -->
                                         <td class="align-middle">
                                             <a href="{{ route('location.details', [
-                                                'continent' => $location['continent'] ?? 'unknown',
-                                                'country' => $location['country'] ?? 'unknown',
-                                                'location' => $location['location_alias'] ?? 'unknown',
-                                            ]) }}" data-bs-toggle="tooltip" title="@autotranslate($location['location_title'], app()->getLocale())" class="d-flex align-items-center text-decoration-none">
-                                                <img src="{{ asset('assets/flags/4x3/' . strtolower($location['iso2']) . '.svg') }}" alt="{{ $location['location_title'] }}" class="me-2 flag-icon">
-                                                <span class="location-title">@autotranslate($location['location_title'], app()->getLocale())</span>
+                                                'continent' => $location['continent'] ?? null,
+                                                'country' => $location['country'] ?? null,
+                                                'location' => $location['location_alias'] ?? null,
+                                            ]) }}"
+                                               class="d-flex align-items-center text-decoration-none text-dark"
+                                               data-bs-toggle="tooltip"
+                                               title="{{ $location['location_title'] }}">
+                                                <img src="{{ asset('assets/flags/4x3/' . strtolower($location['iso2']) . '.svg') }}"
+                                                     alt="{{ $location['location_title'] }}"
+                                                     class="me-2 flag-icon">
+                                                <span class="location-title">
+                                                    @autotranslate($location['location_title'], app()->getLocale())
+                                                </span>
                                             </a>
                                         </td>
 
                                         <!-- Temperatur -->
                                         <td class="align-middle">
-                                            <span class="text-muted text-nowrap fw-bold">
-                                                @if(isset($location['climate_data']['daily_temperature']))
-                                                    {{ intval($location['climate_data']['daily_temperature']) }}°C
-                                                @else
-                                                    @autotranslate('N/A', app()->getLocale())
-                                                @endif
+                                            <span class="text-muted fw-bold">
+                                                {{ $location['climate_data']['daily_temperature'] ?? $translateNA }}°C
                                             </span>
                                         </td>
 
-                                        <!-- Wetterbeschreibung und Icon -->
-                                        <td class="align-middle">
-                                            <div class="d-flex align-items-left flex-nowrap">
-                                                @if($location['climate_data']['weather_icon'] ?? false)
-                                                    <img src="{{ $location['climate_data']['weather_icon'] }}" alt="@autotranslate($location['climate_data']['weather_description'] ?? 'N/A', app()->getLocale())" class="me-2 weather-icon">
-                                                @endif
-                                                <span class="text-muted">
-                                                    {{ $location['climate_data']['weather_description'] ?? 'N/A' }}
-                                                </span>
+                                        <!-- Wetter -->
+<!-- Wetterbeschreibung mit Tooltip -->
+<td class="align-middle">
+    <div class="d-flex align-items-center">
+        @if(!empty($location['climate_data']['weather_icon']))
+            <img src="{{ $location['climate_data']['weather_icon'] }}"
+                 alt="{{ $location['climate_data']['weather_description'] ?? '-' }}"
+                 class="me-2 weather-icon">
+        @endif
+        <span class="weather-description" data-bs-toggle="tooltip"
+              title="{{ $location['climate_data']['weather_description'] ?? '-' }}">
+            {{ $location['climate_data']['weather_description'] ?? '-' }}
+        </span>
+    </div>
+</td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="alert alert-warning text-center">
+                                                <strong>@autotranslate('Keine Daten verfügbar', app()->getLocale()):</strong>
+                                                @autotranslate('Derzeit sind keine Top-10-Reiseziele mit gültigen Wetterdaten verfügbar.', app()->getLocale())
                                             </div>
                                         </td>
                                     </tr>
-                                    @endforeach
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
                         @else
                         <div class="alert alert-warning text-center">
-                            <strong>@autotranslate('Keine Daten verfügbar:', app()->getLocale())</strong> @autotranslate('Derzeit sind keine Top-10-Reiseziele mit gültigen Wetterdaten verfügbar.', app()->getLocale())
+                            <strong>@autotranslate('Keine Daten verfügbar:', app()->getLocale())</strong>
+                            @autotranslate('Derzeit sind keine Top-10-Reiseziele mit gültigen Wetterdaten verfügbar.', app()->getLocale())
                         </div>
                         @endif
                     </div>
                 </div>
+
 
 
 
@@ -421,3 +440,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </style>
 
+<style>
+    /* 🌍 Verhindert Umbrüche bei langen Reisezielnamen */
+.table .location-title {
+    max-width: 150px; /* Maximale Breite */
+    white-space: nowrap; /* Kein Zeilenumbruch */
+    overflow: hidden; /* Überlauf verstecken */
+    text-overflow: ellipsis; /* "..." am Ende */
+    display: inline-block; /* Notwendig für max-width */
+    vertical-align: middle;
+}
+
+/* 🌦️ Verhindert Umbrüche bei langen Wetterbeschreibungen */
+.table .weather-description {
+    max-width: 120px; /* Maximale Breite */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 🏁 Flaggen & Wetter-Icons */
+.flag-icon {
+    width: 24px;
+    height: auto;
+}
+
+.weather-icon {
+    width: 24px;
+    height: auto;
+}
+</style>
