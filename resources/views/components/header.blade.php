@@ -1,21 +1,40 @@
-<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-position-1 custom-xs-bg-size-cover parallax-no-overflow m-0" data-plugin-parallax data-plugin-options="{'speed': 1.5}" data-image-src="{{ $panoramaLocationPicture ? url($panoramaLocationPicture) : asset('default-main.jpg') }}">
+@php
+    // Daten aus der Session oder übergebene Variablen abrufen
+    $headerData = session('headerData', []);
+
+    $panoramaLocationPicture = $headerData['bgImgPath'] ?? ($panorama_location_picture ?? asset('default-panorama.jpg'));
+    $mainLocationPicture = $headerData['mainImgPath'] ?? ($main_location_picture ?? asset('default-main.jpg'));
+
+    $headerTitle = $headerData['title'] ?? ($headerTitle ?? 'Standard Titel');
+    $headerTitleText = $headerData['title_text'] ?? ($headerTitleText ?? 'Standard Titel-Text');
+    $panoramaLocationText = $headerData['main_text'] ?? ($panorama_location_text ?? 'Standardbeschreibung');
+@endphp
+
+<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-position-1 custom-xs-bg-size-cover parallax-no-overflow m-0"
+    data-plugin-parallax
+    data-plugin-options="{'speed': 1.5}"
+    data-image-src="{{ url($panoramaLocationPicture) }}">
+
     <div class="container">
         <div class="row">
             <!-- Hauptbild -->
             <div class="custom-header-img col-lg-4 position-relative custom-sm-margin-bottom-1">
-                <img src="{{ $mainLocationPicture ? url($mainLocationPicture) : asset('default-main.jpg') }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
+                <img src="{{ url($mainLocationPicture) }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
             </div>
+
             <!-- Header-Text -->
             <div class="col-lg-6 col-xl-5">
                 <div class="heading-wrapper">
                     <h2 class="travel-heading-with-bg">
-                        STÄDTEREISE NACH
+                        {!! app('autotranslate')->trans($headerTitle, app()->getLocale()) !!}
                     </h2>
                     <h1 class="travel-destination">
-                        {!! app('autotranslate')->trans($panoramaLocationText ?? '<h1>Default Header Text</h1>', app()->getLocale()) !!}
+                        {!! app('autotranslate')->trans($headerTitleText, app()->getLocale()) !!}
                     </h1>
+                    <p class="custom-text">
+                        {!! app('autotranslate')->trans($panoramaLocationText, app()->getLocale()) !!}
+                    </p>
                 </div>
-
 
                 <!-- Admin-Button nur sichtbar für eingeloggte Admins -->
                 @if(Auth::guard('admin')->check())
@@ -24,6 +43,7 @@
                     </a>
                 @endif
             </div>
+
             <!-- Scroll-Icon -->
             <div class="col-lg-2 col-xl-3 d-none d-lg-block">
                 <img src="{{ asset('assets/img/pages/main/mouse.png') }}" class="img-fluid custom-image-pos-1" alt="Scroll Icon" />
@@ -31,6 +51,7 @@
         </div>
     </div>
 </section>
+
 
 
 <div class="custom-about-links bg-color-light">

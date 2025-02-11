@@ -9,6 +9,7 @@ use App\Models\HeaderContent;
 use App\Services\ClimateService;
 use App\Services\GeocodeService;
 use App\Services\WeatherService;
+use App\Models\ModQuickFilterItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -222,6 +223,10 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
             abort(400, "Ungültiger Monat: $monthId");
         }
 
+
+        // Monatsname aus monthId generieren
+        $monthName = \Carbon\Carbon::create()->month((int) $monthId)->translatedFormat('F');
+
         // Mapping der Urlaubstypen zu Datenbank-Feldern
         $urlaubTypeMap = [
             'strand-reise' => 'list_beach',
@@ -298,25 +303,42 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
             );
         }
 
-        // HeaderContent abrufen
-        $headerContent = HeaderContent::inRandomOrder()->first();
+    // 🟢 **Holen der QuickFilter-Daten passend zum Urlaubstyp (Slug)**
+    $headerContent = ModQuickFilterItem::where('slug', $urlaubType)->first();
 
-        // Bildpfade validieren
-        $bgImgPath = $headerContent->bg_img ?
-            (Storage::exists($headerContent->bg_img)
-                ? Storage::url($headerContent->bg_img)
-                : (file_exists(public_path($headerContent->bg_img))
-                    ? asset($headerContent->bg_img)
-                    : null))
-            : null;
+    // ✅ Fallback, falls kein passender Eintrag gefunden wird
+    if (!$headerContent) {
+        abort(404, "Kein passender QuickFilter-Eintrag für $urlaubType gefunden.");
+    }
 
-        $mainImgPath = $headerContent->main_img ?
-            (Storage::exists($headerContent->main_img)
-                ? Storage::url($headerContent->main_img)
-                : (file_exists(public_path($headerContent->main_img))
-                    ? asset($headerContent->main_img)
-                    : null))
-            : null;
+    // 🟢 **Bildpfade validieren**
+    $bgImgPath = $headerContent->panorama
+        ? (Storage::exists($headerContent->panorama)
+            ? Storage::url($headerContent->panorama)
+            : (file_exists(public_path($headerContent->panorama))
+                ? asset($headerContent->panorama)
+                : null))
+        : null;
+
+    $mainImgPath = $headerContent->image
+        ? (Storage::exists($headerContent->image)
+            ? Storage::url($headerContent->image)
+            : (file_exists(public_path($headerContent->image))
+                ? asset($headerContent->image)
+                : null))
+        : null;
+
+//dd($bgImgPath, $mainImgPath);
+    // 🟢 **Session speichern**
+    session([
+        'headerData' => [
+            'bgImgPath' => $bgImgPath,
+            'mainImgPath' => $mainImgPath,
+            'title' => $headerContent->title,
+            'title_text' => $headerContent->title_text,
+            'main_text' => $headerContent->content,
+        ]
+    ]);
 
             foreach ($locations as $location) {
                 $icons = [];
@@ -329,16 +351,26 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
             }
 
 
-        return view('pages.main.search-results', [
-            'locations' => $locations,
-            'urlaubType' => $urlaubType,
-            'urlaubTypeIcon' => $urlaubTypeIcon, // Icon an die View übergeben
-            'monthId' => $monthId,
-            'items_per_page' => $itemsPerPage,
-            'sort_by_criteria' => $sort_by_criteria,
-            'panorama_location_picture' => $bgImgPath,
-            'main_location_picture' => $mainImgPath,
-        ]);
+    // **View zurückgeben mit den neuen Header-Daten**
+    return view('pages.main.search-results', [
+        'locations' => $locations,
+        'urlaubType' => $urlaubType,
+        'monthId' => $monthId,
+        'monthName' => $monthName, // 🟢 Monatsname in View übergeben
+        'items_per_page' => $itemsPerPage,
+        'sort_by_criteria' => [
+            'title' => ['title' => 'Name'],
+            'price_flight' => ['title' => 'Preis'],
+            'flight_hours' => ['title' => 'Flugzeit'],
+            'country_title' => ['title' => 'Land'],
+        ],
+        // 🟢 **Neue Header-Werte aus `mod_quick_filter_items`**
+        'header_title' => $headerContent->title,
+        'header_title_text' => $headerContent->title_text,
+        'panorama_location_picture' => $bgImgPath,
+        'main_location_picture' => $mainImgPath,
+    ]);
+
     }
 
 

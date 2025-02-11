@@ -56,7 +56,10 @@
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <div class="d-flex justify-content-start align-items-start">
-                                                            <h5 class="text-5 text-dark d-block mb-4 me-2"> im Januar </h5>
+                                                            <h5 class="text-5 text-dark d-block mb-4 me-2">
+                                                                {{ app('autotranslate')->trans('im', app()->getLocale()) }}
+                                                                {{ app('autotranslate')->trans($monthName ?? 'aktuellen Monat', app()->getLocale()) }}
+                                                            </h5>
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-5">
