@@ -45,6 +45,7 @@ class SearchResultsComponent extends Component
         $this->continent = request('continent');
         $this->price = request('price');
         $this->urlaub = request('urlaub');
+        //dd($this->urlaub);
         $this->sonnenstunden = request('sonnenstunden');
         $this->wassertemperatur = request('wassertemperatur');
         $this->spezielle = request('spezielle');
@@ -55,13 +56,22 @@ class SearchResultsComponent extends Component
         $this->resetPage(); // Pagination zurücksetzen, wenn die Sortierung geändert wird
     }
 
+    public function scopeFilterByTravelTime($query, $month)
+    {
+        if (!empty($month) && is_numeric($month)) {
+            return $query->whereJsonContains('best_traveltime_json', (int) $month);
+        }
+        return $query;
+    }
+
+
     public function render()
     {
         $query = WwdeLocation::query()
             ->active() // Filter: Nur aktive und fertige Locations
             ->filterByContinent($this->continent)
             ->filterByPrice($this->price)
-            ->filterByTravelTime($this->urlaub)
+            ->filterByTravelTime((int) $this->urlaub)
             ->filterBySunshine($this->sonnenstunden)
             ->filterByWaterTemperature($this->wassertemperatur)
             ->filterBySpecials($this->spezielle);

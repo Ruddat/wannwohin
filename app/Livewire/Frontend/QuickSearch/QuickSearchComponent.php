@@ -103,27 +103,14 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
             $this->applyPriceFilter($query);
         }
 
-        // Filter: Urlaub (Monat)
-        if (!empty($this->urlaub)) {
-            $monthMapping = [
-                'Januar' => 'January',
-                'Februar' => 'February',
-                'März' => 'March',
-                'April' => 'April',
-                'Mai' => 'May',
-                'Juni' => 'June',
-                'Juli' => 'July',
-                'August' => 'August',
-                'September' => 'September',
-                'Oktober' => 'October',
-                'November' => 'November',
-                'Dezember' => 'December',
-            ];
-
-            $englishMonth = $monthMapping[$this->urlaub] ?? $this->urlaub;
-dd($englishMonth);
-            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($englishMonth)]);
-
+        // Filter: Urlaub (Monat) mit direkten Zahlenwerten (1–12)
+        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+            $monthNumber = (int) $this->urlaub;
+//dd($monthNumber);
+            // Stelle sicher, dass der Monat zwischen 1 und 12 liegt
+            if ($monthNumber >= 1 && $monthNumber <= 12) {
+                $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+            }
         }
 
         // Filter: Sonnenstunden
@@ -152,7 +139,6 @@ dd($englishMonth);
         // Gefilterte Locations zählen
         $this->filteredLocations = $query->count();
     }
-
 
 
     // Livewire-Listener-Methode mit Parameter

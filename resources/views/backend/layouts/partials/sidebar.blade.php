@@ -174,6 +174,10 @@
                                href="{{ route('verwaltung.header-manager.header_contents.index') }}">
                                 Header Manager
                             </a>
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.header-manager.header_contents.index') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.quickfilter-manager.index') }}">
+                                 QuickFilter Manager
+                             </a>
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.park-manager.index') ? 'active' : '' }}"
                                href="{{ route('verwaltung.park-manager.index') }}">
                                 Park Manager

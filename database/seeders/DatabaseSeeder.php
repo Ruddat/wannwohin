@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             HeaderContentSeeder::class,     // Für Preisbereiche
             ModLanguagesSeeder::class, // Für Sprachen
             AdminSeeder::class, // Für Admins
+            TravelTypesSeeder::class, // Für Reisetypen
         ]);
 
 

@@ -32,44 +32,46 @@ class LocationRepository
         return WwdeLocation::where('status', $status)->get();
     }
 
-        /**
-     * Holt Locations basierend auf Urlaubstyp und Monat.
-     *
-     * @param string $urlaubType
-     * @param int $monthId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getLocationsByTypeAndMonth($urlaubType, $monthName)
-    {
-        $urlaubTypeMap = [
-            'strand-reise' => 'list_beach',
-            'staedte-reise' => 'list_citytravel',
-            'sport-reise' => 'list_sports',
-            'insel-reise' => 'list_island',
-            'kultur-reise' => 'list_culture',
-            'natur-reise' => 'list_nature',
-            'wassersport-reise' => 'list_watersport',
-            'wintersport-reise' => 'list_wintersport',
-            'mountainsport-reise' => 'list_mountainsport',
-            'biking-reise' => 'list_biking',
-            'fishing-reise' => 'list_fishing',
-            'amusement-park-reise' => 'list_amusement_park',
-            'water-park-reise' => 'list_water_park',
-            'animal-park-reise' => 'list_animal_park',
-        ];
+/**
+ * Holt Locations basierend auf Urlaubstyp und Monat.
+ *
+ * @param string $urlaubType
+ * @param int $monthId
+ * @return \Illuminate\Database\Eloquent\Builder
+ */
+public function getLocationsByTypeAndMonth($urlaubType, $monthId)
+{
+    // Mapping von Urlaubstypen zu Datenbank-Feldern
+    $urlaubTypeMap = [
+        'strand-reise' => 'list_beach',
+        'staedte-reise' => 'list_citytravel',
+        'sport-reise' => 'list_sports',
+        'insel-reise' => 'list_island',
+        'kultur-reise' => 'list_culture',
+        'natur-reise' => 'list_nature',
+        'wassersport-reise' => 'list_watersport',
+        'wintersport-reise' => 'list_wintersport',
+        'mountainsport-reise' => 'list_mountainsport',
+        'biking-reise' => 'list_biking',
+        'fishing-reise' => 'list_fishing',
+        'amusement-park-reise' => 'list_amusement_park',
+        'water-park-reise' => 'list_water_park',
+        'animal-park-reise' => 'list_animal_park',
+    ];
 
-        if (!array_key_exists($urlaubType, $urlaubTypeMap)) {
-            throw new \InvalidArgumentException("Ungültiger Urlaubstyp: $urlaubType");
-        }
-
-        $column = $urlaubTypeMap[$urlaubType];
-
-        return WwdeLocation::query()
-            ->where('status', 'active')
-            ->where('finished', 1)
-            ->where($column, true);
-
+    if (!array_key_exists($urlaubType, $urlaubTypeMap)) {
+        throw new \InvalidArgumentException("Ungültiger Urlaubstyp: $urlaubType");
     }
+
+    $column = $urlaubTypeMap[$urlaubType];
+
+    return WwdeLocation::query()
+        ->where('status', 'active')
+        ->where('finished', 1)
+        ->where($column, true)
+        ->whereRaw("JSON_CONTAINS(best_traveltime_json, ?)", ["[{$monthId}]"]); // JSON-Suche nach Monat
+}
+
 
 
     public function getLocationsByFilters($filters)
@@ -82,8 +84,8 @@ class LocationRepository
             ->where('wwde_locations.finished', 1);
 
         // Filter: Monat
-        if (!empty($filters['month'])) {
-            $query->whereJsonContains('wwde_locations.best_traveltime_json', $filters['month']);
+        if (!empty($filters['month']) && is_numeric($filters['month'])) {
+            $query->whereRaw("JSON_CONTAINS(wwde_locations.best_traveltime_json, ?)", [json_encode((int) $filters['month'])]);
         }
 
         // Filter: Kontinent

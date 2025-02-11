@@ -82,30 +82,11 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
-                                                        @php
-                                                        $iconMap = [
-                                                            'list_sports' => '<i class="fas fa-biking fa-lg me-1" title="Sport"></i>',
-                                                            'list_island' => '<img style="margin-top: -3px;height: 30px;" src="' . asset('img/insel-icon.png') . '" alt="Insel" title="Insel">',
-                                                            'list_culture' => '<i class="fa fa-theater-masks fa-lg me-1" title="Kultur"></i>',
-                                                            'list_nature' => '<i class="fas fa-tree fa-lg me-1" title="Natur"></i>',
-                                                            'list_watersport' => '<i class="fas fa-swimmer fa-lg me-1" title="Wassersport"></i>',
-                                                            'list_wintersport' => '<i class="fas fa-snowflake fa-lg me-1" title="Wintersport"></i>',
-                                                            'list_mountainsport' => '<i class="fas fa-mountain fa-lg me-1" title="Bergsport"></i>',
-                                                            'list_biking' => '<i class="fas fa-biking fa-lg me-1" title="Radfahren"></i>',
-                                                            'list_fishing' => '<i class="fas fa-fish fa-lg me-1" title="Angeln"></i>',
-                                                            'list_amusement_park' => '<i class="fas fa-ticket-alt fa-lg me-1" title="Freizeitpark"></i>',
-                                                            'list_water_park' => '<i class="fas fa-water fa-lg me-1" title="Wasserpark"></i>',
-                                                            'list_animal_park' => '<i class="fas fa-paw fa-lg me-1" title="Tierpark"></i>',
-                                                        ];
-                                                        @endphp
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            @foreach($iconMap as $flag => $icon)
-                                                            @if($location->$flag)
-                                                            {!! $icon !!}
-                                                            @endif
-                                                            @endforeach
+                                                            {!! $location->icons !!}
                                                         </div>
                                                     </div>
+
                                                 </div>
 
                                                 <div class="row my-3">

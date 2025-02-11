@@ -312,22 +312,7 @@ class LocationImportService
      */
     private function parseBestTravelTimeJson($value): ?array
     {
-        // Mapping von Zahlen zu Monatsnamen
-        $monthNames = [
-            1 => 'Januar',
-            2 => 'Februar',
-            3 => 'März',
-            4 => 'April',
-            5 => 'Mai',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'August',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Dezember',
-        ];
-
+        $validMonths = range(1, 12); // Erlaubte Werte von 1 bis 12
         $months = [];
 
         if (is_string($value)) {
@@ -336,49 +321,40 @@ class LocationImportService
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $months = array_map('intval', $decoded);
             } else {
-                // Wenn der Wert ein String ist, der Zahlen enthält (z. B. "1,2,3,4")
-                $numbers = array_map('intval', explode(',', $value));
-                if (!empty($numbers)) {
-                    $months = $numbers;
-                }
+                // Falls der Wert eine durch Komma getrennte Liste ist ("1,2,3,4")
+                $months = array_map('intval', explode(',', $value));
             }
         } elseif (is_array($value)) {
-            $months = $value;
+            $months = array_map('intval', $value);
         }
 
-        // Entferne ungültige Werte und sortiere die Monate
-        $months = array_filter($months, function ($monthNumber) use ($monthNames) {
-            return isset($monthNames[$monthNumber]);
+        // Filtere ungültige Werte und sortiere die Monate
+        $months = array_filter($months, function ($month) use ($validMonths) {
+            return in_array($month, $validMonths, true);
         });
+
         sort($months);
 
         if (empty($months)) {
             return [
-                'json' => json_encode([]), // Leeres JSON-Array
+                'json' => json_encode([]), // Leeres JSON-Array mit Zahlen
                 'range' => null, // Kein Bereich verfügbar
             ];
         }
 
-        // Ersetze Zahlen durch Monatsnamen
-        $monthNamesList = array_map(function ($monthNumber) use ($monthNames) {
-            return $monthNames[$monthNumber];
-        }, $months);
-
-        // Bereich bestimmen (z. B. "April - Oktober")
+        // Bereich bestimmen (z. B. "4 - 10" für April bis Oktober)
         $firstMonth = reset($months);
         $lastMonth = end($months);
-
-        $range = null;
-        if ($lastMonth - $firstMonth === count($months) - 1) {
-            // Wenn die Monate zusammenhängend sind
-            $range = "{$monthNames[$firstMonth]} - {$monthNames[$lastMonth]}";
-        }
+        $range = (count($months) > 1 && ($lastMonth - $firstMonth === count($months) - 1))
+            ? "$firstMonth - $lastMonth"
+            : implode(', ', $months);
 
         return [
-            'json' => json_encode($monthNamesList), // Gültiges JSON-Array mit Monatsnamen
-            'range' => $range, // Bereich der Monate
+            'json' => json_encode(array_values($months)), // JSON-Array mit reinen Zahlen
+            'range' => $range, // Bereich der Monate in Zahlen
         ];
     }
+
 
     private function getCityImage($city, $index, &$status)
     {

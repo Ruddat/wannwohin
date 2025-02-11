@@ -31,14 +31,30 @@
             </div>
 
             <div class="form-group">
-                <label for="urlaub">Urlaub im</label>
+                <label for="urlaub">@autotranslate('Urlaub im', app()->getLocale())</label>
                 <select wire:model.change="urlaub" class="form-select py-1">
-                    <option value="">Beliebig</option>
-                    @foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $month)
-                        <option value="{{ $month }}">{{ $month }}</option>
+                    <option value="">@autotranslate('Beliebig', app()->getLocale())</option>
+                    @foreach ([
+                        1 => 'January',
+                        2 => 'February',
+                        3 => 'März',
+                        4 => 'April',
+                        5 => 'May',
+                        6 => 'June',
+                        7 => 'July',
+                        8 => 'August',
+                        9 => 'September',
+                        10 => 'October',
+                        11 => 'November',
+                        12 => 'December'
+                    ] as $number => $englishMonth)
+                        <option value="{{ $number }}">@autotranslate($englishMonth, app()->getLocale())</option>
                     @endforeach
                 </select>
             </div>
+
+
+
 
             <div class="form-group">
                 <label for="sonnenstunden">Sonnenstunden</label>

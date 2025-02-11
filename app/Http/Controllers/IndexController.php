@@ -217,12 +217,57 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
 
     public function searchResults($urlaubType, $monthId)
     {
-        // Konvertiere numerischen `monthId` in den Monatsnamen
-        try {
-            $monthName = \Carbon\Carbon::create()->month((int) $monthId)->translatedFormat('F');
-        } catch (\Exception $e) {
+        // Sicherstellen, dass monthId eine gültige Zahl zwischen 1 und 12 ist
+        if (!is_numeric($monthId) || $monthId < 1 || $monthId > 12) {
             abort(400, "Ungültiger Monat: $monthId");
         }
+
+        // Mapping der Urlaubstypen zu Datenbank-Feldern
+        $urlaubTypeMap = [
+            'strand-reise' => 'list_beach',
+            'staedte-reise' => 'list_citytravel',
+            'sport-reise' => 'list_sports',
+            'insel-reise' => 'list_island',
+            'kultur-reise' => 'list_culture',
+            'natur-reise' => 'list_nature',
+            'wassersport-reise' => 'list_watersport',
+            'wintersport-reise' => 'list_wintersport',
+            'mountainsport-reise' => 'list_mountainsport',
+            'biking-reise' => 'list_biking',
+            'fishing-reise' => 'list_fishing',
+            'amusement-park-reise' => 'list_amusement_park',
+            'water-park-reise' => 'list_water_park',
+            'animal-park-reise' => 'list_animal_park',
+        ];
+
+        // Mapping der Urlaubstypen zu Icons
+        $iconMap = [
+            'list_beach' => '<i class="fas fa-umbrella-beach fa-lg me-1" title="Strand"></i>',
+            'list_citytravel' => '<i class="fas fa-city fa-lg me-1" title="Städtereise"></i>',
+            'list_sports' => '<i class="fas fa-biking fa-lg me-1" title="Sport"></i>',
+            'list_island' => '<img style="margin-top: -3px;height: 30px;" src="' . asset('img/insel-icon.png') . '" alt="Insel" title="Insel">',
+            'list_culture' => '<i class="fas fa-theater-masks fa-lg me-1" title="Kultur"></i>',
+            'list_nature' => '<i class="fas fa-tree fa-lg me-1" title="Natur"></i>',
+            'list_watersport' => '<i class="fas fa-swimmer fa-lg me-1" title="Wassersport"></i>',
+            'list_wintersport' => '<i class="fas fa-snowflake fa-lg me-1" title="Wintersport"></i>',
+            'list_mountainsport' => '<i class="fas fa-mountain fa-lg me-1" title="Bergsport"></i>',
+            'list_biking' => '<i class="fas fa-biking fa-lg me-1" title="Radfahren"></i>',
+            'list_fishing' => '<i class="fas fa-fish fa-lg me-1" title="Angeln"></i>',
+            'list_amusement_park' => '<i class="fas fa-ticket-alt fa-lg me-1" title="Freizeitpark"></i>',
+            'list_water_park' => '<i class="fas fa-water fa-lg me-1" title="Wasserpark"></i>',
+            'list_animal_park' => '<i class="fas fa-paw fa-lg me-1" title="Tierpark"></i>',
+        ];
+
+        // Sicherstellen, dass der Urlaubstyp existiert
+        if (!isset($urlaubTypeMap[$urlaubType])) {
+            abort(400, "Ungültiger Urlaubstyp: $urlaubType");
+        }
+
+        // Das entsprechende Datenbankfeld für diesen Urlaubstyp abrufen
+        $column = $urlaubTypeMap[$urlaubType];
+
+        // Das passende Icon für den Urlaubstyp abrufen (falls vorhanden)
+        $urlaubTypeIcon = $iconMap[$column] ?? null;
 
         // Items pro Seite aus der URL abrufen oder Standardwert setzen
         $itemsPerPage = request()->get('items_per_page', 10);
@@ -237,8 +282,8 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
             'country_title' => ['title' => 'Land'],
         ];
 
-        // Abfrage mit Pagination
-        $locations = $this->locationRepository->getLocationsByTypeAndMonth($urlaubType, $monthName)
+        // Abfrage mit Pagination (ohne Umwandlung des Monatsnamens)
+        $locations = $this->locationRepository->getLocationsByTypeAndMonth($urlaubType, (int) $monthId)
             ->with('country') // Country-Daten laden
             ->orderBy($sortBy, $sortDirection)
             ->paginate($itemsPerPage);
@@ -254,39 +299,48 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
         }
 
         // HeaderContent abrufen
-        $step4Start = microtime(true);
-         // HeaderContent abrufen
-         $headerContent = HeaderContent::inRandomOrder()->first();
+        $headerContent = HeaderContent::inRandomOrder()->first();
 
-         // Bildpfade validieren
-         $bgImgPath = $headerContent->bg_img ?
-             (Storage::exists($headerContent->bg_img)
-                 ? Storage::url($headerContent->bg_img)
-                 : (file_exists(public_path($headerContent->bg_img))
-                     ? asset($headerContent->bg_img)
-                     : null))
-             : null;
+        // Bildpfade validieren
+        $bgImgPath = $headerContent->bg_img ?
+            (Storage::exists($headerContent->bg_img)
+                ? Storage::url($headerContent->bg_img)
+                : (file_exists(public_path($headerContent->bg_img))
+                    ? asset($headerContent->bg_img)
+                    : null))
+            : null;
 
-         $mainImgPath = $headerContent->main_img ?
-             (Storage::exists($headerContent->main_img)
-                 ? Storage::url($headerContent->main_img)
-                 : (file_exists(public_path($headerContent->main_img))
-                     ? asset($headerContent->main_img)
-                     : null))
-             : null;
+        $mainImgPath = $headerContent->main_img ?
+            (Storage::exists($headerContent->main_img)
+                ? Storage::url($headerContent->main_img)
+                : (file_exists(public_path($headerContent->main_img))
+                    ? asset($headerContent->main_img)
+                    : null))
+            : null;
+
+            foreach ($locations as $location) {
+                $icons = [];
+                foreach ($iconMap as $flag => $icon) {
+                    if ($location->$flag) {
+                        $icons[] = $icon;
+                    }
+                }
+                $location->icons = implode(' ', $icons);
+            }
 
 
         return view('pages.main.search-results', [
             'locations' => $locations,
             'urlaubType' => $urlaubType,
+            'urlaubTypeIcon' => $urlaubTypeIcon, // Icon an die View übergeben
             'monthId' => $monthId,
-            'monthName' => $monthName,
             'items_per_page' => $itemsPerPage,
             'sort_by_criteria' => $sort_by_criteria,
             'panorama_location_picture' => $bgImgPath,
             'main_location_picture' => $mainImgPath,
         ]);
     }
+
 
 
 }

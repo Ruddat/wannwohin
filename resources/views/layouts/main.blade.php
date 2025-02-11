@@ -127,6 +127,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1;
         }
 
         .go-top:hover {
@@ -176,7 +177,6 @@
             transition: stroke-dashoffset 0.2s ease;
         }
 
-
         @media (max-width: 768px) {
             #goTopButton {
                 display: none !important;
@@ -184,10 +184,21 @@
         }
     </style>
 
-    <script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
         const progressCircle = document.querySelector(".progress-ring__progress");
         const button = document.getElementById("goTopButton");
-        const radius = progressCircle.r.baseVal.value;
+
+        if (!progressCircle || !button) return; // Falls die Elemente fehlen, beende das Script
+
+        // Versuche, den Radius zu holen (Fehlertoleranz für nicht unterstützte Browser)
+        let radius = 0;
+        try {
+            radius = progressCircle.r.baseVal.value;
+        } catch (error) {
+            console.warn("Fehler beim Laden des Fortschrittskreises:", error);
+        }
+
         const circumference = 2 * Math.PI * radius;
 
         // Set initial attributes
@@ -213,14 +224,37 @@
             }
         });
 
-        // Smooth Scroll
+        // Smooth Scroll (alternative Methode für bessere Firefox-Kompatibilität)
         button.addEventListener("click", () => {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
+            smoothScrollTo(0, 500); // 500ms Scroll-Zeit
         });
-    </script>
+
+        function smoothScrollTo(targetPosition, duration) {
+            const startPosition = window.scrollY;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+
+                window.scrollTo(0, startPosition + distance * easeInOutQuad(progress));
+
+                if (timeElapsed < duration) {
+                    requestAnimationFrame(animation);
+                }
+            }
+
+            function easeInOutQuad(t) {
+                return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            }
+
+            requestAnimationFrame(animation);
+        }
+    });
+</script>
+
 
     @if (Route::is(
             'home',

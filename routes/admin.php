@@ -13,6 +13,7 @@ use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
 use App\Livewire\Backend\LocationFilters\AdvancedLocationFilter;
 use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\QuickFilterManager\QuickFilterComponent;
 use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
@@ -102,7 +103,10 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 
 
 
-
+    // Translation Manager
+    Route::prefix('quickfilter-manager')->name('quickfilter-manager.')->group(function () {
+        Route::get('/', QuickFilterComponent::class)->name('index');
+    });
 
 
 
