@@ -98,7 +98,7 @@
                                         <span id="live-date" class="text-muted" style="font-weight: normal;">
                                             {{ \Carbon\Carbon::now()->format('d.m.Y') }}
                                         </span>
-                                        <span id="live-time" class="font-monospace text-muted" style="font-weight: normal;">
+                                        <span id="live-time" class="text-muted" style="font-weight: normal;">
                                             {{ \Carbon\Carbon::now()->format('H:i:s') }}
                                         </span>
                                     </div>
@@ -376,7 +376,7 @@
         top: -5px;
         width: 6px;
         height: 30px;
-        background-color: black;
+        background-color: #999595;
         border-radius: 5px;
         transform: translateX(-50%);
         transition: left 0.5s ease-in-out;

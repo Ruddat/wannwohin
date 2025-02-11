@@ -256,6 +256,23 @@
 </script>
 
 
+@php
+    // Daten aus der Session abrufen oder Standardwerte setzen
+    $headerData = session('headerData', []);
+    $panoramaLocationPicture = $headerData['bgImgPath'] ?? null;
+    $mainLocationPicture = $headerData['mainImgPath'] ?? null;
+    $headerTitle = $headerData['title'] ?? 'Standard Titel';
+    $headerTitleText = $headerData['title_text'] ?? 'Standard Titel-Text';
+    $panoramaLocationText = $headerData['main_text'] ?? 'Standardbeschreibung';
+
+    // Falls kein Header-Content vorhanden ist, alternative Bilder und Texte verwenden
+    $pic1_text = $pic1_text ?? 'Standardtext 1';
+    $pic2_text = $pic2_text ?? 'Standardtext 2';
+    $pic3_text = $pic3_text ?? 'Standardtext 3';
+    $head_line = $head_line ?? 'Standardüberschrift';
+    $gallery_images = $gallery_images ?? [];
+@endphp
+
 @if (Route::is(
         'home',
         'impressum',
@@ -264,23 +281,6 @@
         'continent.countries',
         'list-country-locations',
         'ergebnisse.anzeigen'))
-
-    @php
-        // Daten aus der Session abrufen oder Standardwerte setzen
-        $headerData = session('headerData', []);
-        $panoramaLocationPicture = $headerData['bgImgPath'] ?? null;
-        $mainLocationPicture = $headerData['mainImgPath'] ?? null;
-        $headerTitle = $headerData['title'] ?? 'Standard Titel';
-        $headerTitleText = $headerData['title_text'] ?? 'Standard Titel-Text';
-        $panoramaLocationText = $headerData['main_text'] ?? 'Standardbeschreibung';
-
-        // Falls kein Header-Content vorhanden ist, alternative Bilder und Texte verwenden
-        $pic1_text = $pic1_text ?? 'Standardtext 1';
-        $pic2_text = $pic2_text ?? 'Standardtext 2';
-        $pic3_text = $pic3_text ?? 'Standardtext 3';
-        $head_line = $head_line ?? 'Standardüberschrift';
-        $gallery_images = $gallery_images ?? [];
-    @endphp
 
     @if($panoramaLocationPicture || $mainLocationPicture)
         <x-header
@@ -298,7 +298,17 @@
         />
     @endif
 
+@else
+    {{-- **Fallback für alle anderen Routen** --}}
+    <x-header-details
+        :pic1-text="$pic1_text"
+        :pic2-text="$pic2_text"
+        :pic3-text="$pic3_text"
+        :head-line="$head_line"
+        :gallery-images="$gallery_images"
+    />
 @endif
+
 
 
 
