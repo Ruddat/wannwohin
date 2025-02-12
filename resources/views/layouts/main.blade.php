@@ -263,7 +263,7 @@
     $mainLocationPicture = $headerData['mainImgPath'] ?? null;
     $headerTitle = $headerData['title'] ?? 'Standard Titel';
     $headerTitleText = $headerData['title_text'] ?? 'Standard Titel-Text';
-    $panoramaLocationText = $headerData['main_text'] ?? 'Standardbeschreibung';
+    $panoramaLocationText = $headerData['main_text'] ?? null;
 
     // Falls kein Header-Content vorhanden ist, alternative Bilder und Texte verwenden
     $pic1_text = $pic1_text ?? 'Standardtext 1';

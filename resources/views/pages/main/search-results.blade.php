@@ -21,6 +21,8 @@
                             </select>
                         </div>
 
+
+                        
                         <section class="timeline custom-timeline" id="timeline">
                             <div class="timeline-body">
 @php
@@ -57,7 +59,7 @@
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <div class="d-flex justify-content-start align-items-start">
                                                             <h5 class="text-5 text-dark d-block mb-4 me-2">
-                                                                {{ app('autotranslate')->trans('im', app()->getLocale()) }}
+                                                                {{ app('autotranslate')->trans('Reisen im ', app()->getLocale()) }}
                                                                 {{ app('autotranslate')->trans($monthName ?? 'aktuellen Monat', app()->getLocale()) }}
                                                             </h5>
                                                         </div>
@@ -137,12 +139,41 @@
                                                             <div class="col-4">{{ $location->climate_data['sunshine_per_day'] ?? 'N/A' }} h</div>
                                                         </div>
                                                     </div>
+
+                                                    @php
+                                                    // JSON in Array umwandeln
+                                                    $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
+                                                        ->map(function ($month) {
+                                                            return DateTime::createFromFormat('!m', $month)->format('M'); // Abkürzungen (Jan, Feb, ...)
+                                                        })
+                                                        ->implode(', '); // Liste als String
+
+                                                    // Deutsche Monatsabkürzungen (falls erforderlich)
+                                                    $germanMonths = [
+                                                        "Jan" => "Jan", "Feb" => "Feb", "Mar" => "Mär", "Apr" => "Apr",
+                                                        "May" => "Mai", "Jun" => "Jun", "Jul" => "Jul", "Aug" => "Aug",
+                                                        "Sep" => "Sep", "Oct" => "Okt", "Nov" => "Nov", "Dec" => "Dez"
+                                                    ];
+
+                                                    // Falls deutsche Monatsnamen benötigt werden
+                                                    $bestTravelMonths = str_replace(array_keys($germanMonths), array_values($germanMonths), $bestTravelMonths);
+                                                    @endphp
+
                                                     <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">
-                                                            <div class="col-5">Beste Reisezeit</div>
-                                                            <div class="col-7">{{ $location->best_traveltime ?? 'N/A' }}</div>
+                                                            <div class="col-5">
+                                                                Beste Reisezeit
+                                                                <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" title="Empfohlene Monate für eine Reise"></i>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                {{ $bestTravelMonths ?? 'N/A' }}
+                                                            </div>
                                                         </div>
                                                     </div>
+
+
+
+
                                                 </div>
                                             </div>
                                             <!-- Content Section End -->

@@ -26,7 +26,7 @@
                              alt="Reisezeit Monat {{ $month }}"
                              class="img-fluid"
                              style="max-width: 70px;">
-                        <p>{{ $month }}</p>
+                        <p>@autotranslate($month, app()->getLocale())</p>
                     </div>
                 @endforeach
             </div>

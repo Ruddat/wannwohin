@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend\LocationDetails;
 
+use DateTime;
 use App\Models\WwdeClimate;
 use App\Models\WwdeLocation;
 use App\Helpers\WeatherHelper;
@@ -16,6 +17,7 @@ use App\Models\MonthlyClimateSummary;
 use Illuminate\Support\Facades\Cache;
 use App\Services\LocationImageService;
 use Illuminate\Support\Facades\Storage;
+use App\Library\WeatherDataManagerLibrary;
 
 class LocationDetailsController extends Controller
 {
@@ -127,37 +129,28 @@ $priceTrend = $this->calculatePriceTrend($countryCode);
 
 //dd($priceTrend);
 
-// Deutsche zu Englische Monatsnamen mappen
-$germanToEnglishMonths = [
-    "Januar" => "January",
-    "Februar" => "February",
-    "März" => "March",
-    "April" => "April",
-    "Mai" => "May",
-    "Juni" => "June",
-    "Juli" => "July",
-    "August" => "August",
-    "September" => "September",
-    "Oktober" => "October",
-    "November" => "November",
-    "Dezember" => "December",
-];
-
-// Beste Reisezeit aus JSON extrahieren und in Monatsindizes umwandeln
+// Beste Reisezeit aus JSON extrahieren (direkt als numerische Werte)
 $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
-    ->mapWithKeys(function ($month) use ($germanToEnglishMonths) {
-        $englishMonth = $germanToEnglishMonths[$month] ?? $month;
-        $index = date('n', strtotime($englishMonth)); // Index (1–12)
-        return [$index => $englishMonth];
+    ->filter(function ($month) {
+        return is_numeric($month) && $month >= 1 && $month <= 12; // Nur gültige Monate (1-12) zulassen
     })
-    ->sortKeys(); // Sortiert nach Monatsindex (1–12)
+    ->sort()
+    ->mapWithKeys(function ($month) {
+        return [$month => DateTime::createFromFormat('!m', $month)->format('F')]; // Umwandlung in englische Monatsnamen
+    });
+
+
 
 
 //dd($bestTravelMonths);
 
-        //dd($location);
+     //   dd($location);
 
 
+        $weatherManager = new WeatherDataManagerLibrary();
+        $forecast = $weatherManager->fetchEightDayForecast($location['lat'], $location['lon'], $location['id']);
+
+//dd($forecast);
 
 
         return view('frondend.locationdetails._index', [
@@ -169,6 +162,7 @@ $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
             'gallery_images' => $galleryImages,
             'parks_with_opening_times' => $parksWithOpeningTimes,
             'panorama_location_picture' => $panoramaImagePath,
+            'forecast' => $forecast,
             'pic1_text' => $pic1Text,
             'pic2_text' => $pic2Text,
             'pic3_text' => $pic3Text,

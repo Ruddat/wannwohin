@@ -5,8 +5,9 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
 
 ?>
 
-<section id="erleben" class="section section-no-border bg-color-primary m-0 py-5">
-    <div class="container">
+<section id="erleben" class="section section-no-border bg-color-primary m-0 py-5 position-relative">
+    <div class="background-overlay"></div>
+    <div class="container position-relative">
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12 text-end">
@@ -76,3 +77,24 @@ $randomImages = $location->gallery()->inRandomOrder()->take(2)->get();
     </div>
 @endforeach
 
+<style>
+    .background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/assets/img/slider.jpg') no-repeat center center;
+    background-size: cover;
+    opacity: 0.3; /* Hier die Transparenz einstellen */
+    z-index: 1;
+}
+
+#erleben .container {
+    position: relative;
+    z-index: 2; /* Stellt sicher, dass der Inhalt über dem Bild bleibt */
+   // background: rgba(255, 255, 255, 0.8); /* Optional: leichtes Weiß für bessere Lesbarkeit */
+    padding: 20px;
+    border-radius: 10px;
+}
+</style>

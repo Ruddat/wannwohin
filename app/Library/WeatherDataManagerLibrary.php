@@ -214,4 +214,141 @@ class WeatherDataManagerLibrary
     {
         return $this->fetchAndStoreWeatherData($latitude, $longitude, $location_id);
     }
+
+
+/**
+ * Holt die 7-Tage-Wettervorhersage von Open-Meteo API und gibt sie als Array zurück.
+ *
+ * @param float $latitude
+ * @param float $longitude
+ * @param int $location_id
+ * @return array|null
+ */
+public function fetchEightDayForecast($latitude, $longitude, $location_id)
+{
+    if (!$latitude || !$longitude || !$location_id) {
+        return null;
+    }
+
+    // Cache-Schlüssel für die Wettervorhersage
+    $cacheKey = "weather_forecast_{$location_id}";
+
+    // Falls bereits gecachte Daten existieren, diese zurückgeben
+    if (Cache::has($cacheKey)) {
+        return Cache::get($cacheKey);
+    }
+
+    // API-Aufruf für die Wettervorhersage (Open-Meteo)
+    $response = Http::get("https://api.open-meteo.com/v1/forecast", [
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+        'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode',
+        'timezone' => 'Europe/Berlin'
+    ]);
+
+   // dd($response->json());
+    if ($response->successful()) {
+        $forecastData = $response->json();
+        $sevenDayForecast = [];
+
+        foreach ($forecastData['daily']['time'] as $key => $date) {
+            $weatherCode = $forecastData['daily']['weathercode'][$key];
+            $sevenDayForecast[] = [
+                'date' => Carbon::parse($date)->format('d.m.Y'),
+                'temp_max' => $forecastData['daily']['temperature_2m_max'][$key],
+                'temp_min' => $forecastData['daily']['temperature_2m_min'][$key],
+                'precipitation' => $forecastData['daily']['precipitation_sum'][$key],
+                'weather' => $this->getWeatherDescription($weatherCode),
+                'icon' => $this->getWeatherIcon($weatherCode)
+            ];
+        }
+
+        // Speichert das Ergebnis im Cache für 6 Stunden
+        Cache::put($cacheKey, $sevenDayForecast, 21600);
+
+        return $sevenDayForecast;
+    }
+
+    return null;
+}
+
+
+
+/**
+ * Gibt das passende Wetter-Icon für den WMO-Wettercode zurück.
+ *
+ * @param int $weatherCode
+ * @return string
+ */
+private function getWeatherIcon($weatherCode)
+{
+    $icons = [
+        0  => "☀️",  // Klarer Himmel
+        1  => "🌤️",  // Meist sonnig
+        2  => "⛅",  // Teilweise bewölkt
+        3  => "☁️",  // Bewölkt
+        45 => "🌫️",  // Nebel
+        48 => "🌫️",  // Gefrierender Nebel
+        51 => "🌦️",  // Leichter Nieselregen
+        53 => "🌦️",  // Mäßiger Nieselregen (fehlender Code)
+        55 => "🌧️",  // Starker Nieselregen
+        61 => "🌧️",  // Leichter Regen
+        63 => "🌧️",  // Mäßiger Regen
+        65 => "🌧️",  // Starker Regen
+        66 => "🌨️",  // Gefrierender Regen (leicht)
+        67 => "🌨️",  // Gefrierender Regen (stark)
+        71 => "🌨️",  // Leichter Schneefall
+        73 => "🌨️",  // Mäßiger Schneefall
+        75 => "❄️",  // Starker Schneefall
+        77 => "🌨️",  // Schneekörner
+        80 => "⛈️",  // Gewitter mit leichtem Regen
+        81 => "⛈️",  // Gewitter mit mäßigem Regen
+        82 => "⛈️",  // Starkes Gewitter mit Regen
+        85 => "🌨️",  // Leichter Schneeschauer
+        86 => "🌨️",  // Starker Schneeschauer
+    ];
+
+    return $icons[$weatherCode] ?? "❓"; // Falls kein Icon vorhanden ist
+}
+
+
+/**
+ * Gibt die Wetterbeschreibung für den WMO-Wettercode zurück.
+ *
+ * @param int $weatherCode
+ * @return string
+ */
+private function getWeatherDescription($weatherCode)
+{
+    $descriptions = [
+        0  => "Klarer Himmel",
+        1  => "Meist sonnig",
+        2  => "Teilweise bewölkt",
+        3  => "Bewölkt",
+        45 => "Nebel",
+        48 => "Gefrierender Nebel",
+        51 => "Leichter Nieselregen",
+        53 => "Mäßiger Nieselregen", // Fehlender Code ergänzt
+        55 => "Starker Nieselregen",
+        61 => "Leichter Regen",
+        63 => "Mäßiger Regen",
+        65 => "Starker Regen",
+        66 => "Gefrierender Regen (leicht)",
+        67 => "Gefrierender Regen (stark)",
+        71 => "Leichter Schneefall",
+        73 => "Mäßiger Schneefall",
+        75 => "Starker Schneefall",
+        77 => "Schneekörner",
+        80 => "Gewitter mit leichtem Regen",
+        81 => "Gewitter mit mäßigem Regen",
+        82 => "Starkes Gewitter mit Regen",
+        85 => "Leichter Schneeschauer",
+        86 => "Starker Schneeschauer",
+    ];
+
+    return $descriptions[$weatherCode] ?? "Unbekanntes Wetter";
+}
+
+
+
 }

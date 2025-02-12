@@ -184,6 +184,17 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
                      : null))
              : null;
 
+             session([
+                'headerData' => [
+                    'bgImgPath' => $bgImgPath,
+                    'mainImgPath' => $mainImgPath,
+                    'title' => $headerContent->title,
+                    'title_text' => $headerContent->main_text,
+                    'main_text' => $headerContent->content,
+                ]
+            ]);
+
+
          // Gesamtladezeit loggen
          Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
 

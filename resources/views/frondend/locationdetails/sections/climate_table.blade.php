@@ -1,11 +1,12 @@
+
 <section class="timeline-box right custom-box-shadow-2 box-shadow-2 py-4">
     <div class="container" style="background-color: #eaeff5; border-radius: 8px; padding: 20px;">
         <div class="row">
             <!-- Wetterinformationen -->
-            <div class="experience-info col-lg-3 col-sm-5 bg-info p-3 rounded-start">
+            <div class="experience-info col-lg-3 col-sm-5 bg-info p-3 rounded-start weather-box">
                 <div class="text-center align-middle mb-4 pt-4">
                     <h4 class="text-color-white">
-                        <i title="Wetter" class="fas fa-sun pe-1"></i> @autotranslate('Wetter', app()->getLocale()) {{ $location->title }}
+                        Wetter {{ $location->title }}
                     </h4>
                 </div>
 
@@ -22,7 +23,7 @@
 <div class="text-center align-middle mb-5">
     <h3 class="text-color-white">
         @if (!empty($weather_data['description']))
-            @autotranslate($weather_data['description'], app()->getLocale())
+        Beschreibung
         @else
             @autotranslate('Nicht verfügbar', app()->getLocale())
         @endif
@@ -93,9 +94,25 @@
                         @endforeach
                     </tbody>
 
+            </table>
 
+            <!-- Wettervorhersage -->
+            <div class="container">
+                <h4 class="text-color-dark font-weight-semibold mb-4">7-Tage-Wettervorhersage für {{ $location->title }}</h4>
 
-                </table>
+                <div class="weather-forecast">
+                    @foreach ($forecast as $day)
+                        <div class="weather-forecast-day">
+                            <p class="fw-bold">{{ $day['date'] }}</p>
+                            <p class="fs-2">{{ $day['icon'] }}</p>
+                            <p class="weather-description">{{ $day['weather'] }}</p>
+                            <p class="temp-text">🌡️ Max: {{ $day['temp_max'] }}°C</p>
+                            <p class="temp-text">🌡️ Min: {{ $day['temp_min'] }}°C</p>
+                            <p class="precipitation-text">🌧️ Regen: {{ $day['precipitation'] }} mm</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
 
                 <livewire:frontend.climate-table.climate-table-component :locationId="$location->id" />
 
@@ -112,3 +129,72 @@
 
 
 </section>
+
+
+<style>
+/* Wetterbox: Farbverlauf & Modernes Design */
+.weather-box {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-radius: 12px 0 0 12px; /* Nur links abgerundet */
+    padding: 25px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.weather-forecast {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: space-between;
+    }
+
+    .weather-forecast-day {
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        flex: 1 1 calc(25% - 1.5rem);
+        min-width: 200px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .weather-forecast-day:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .weather-forecast-day p {
+        margin: 0.5rem 0;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .weather-forecast-day p.fw-bold {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .weather-forecast-day p.fs-2 {
+        font-size: 2rem;
+        margin: 1rem 0;
+    }
+
+    .weather-description {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #34495e;
+    }
+
+    .temp-text {
+        font-size: 1rem;
+        color: #e74c3c;
+    }
+
+    .precipitation-text {
+        font-size: 1rem;
+        color: #3498db;
+    }
+</style>
