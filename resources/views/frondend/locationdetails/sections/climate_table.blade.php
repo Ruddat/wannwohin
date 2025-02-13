@@ -96,23 +96,23 @@
 
             </table>
 
-            <!-- Wettervorhersage -->
-            <div class="container">
-                <h4 class="text-color-dark font-weight-semibold mb-4">7-Tage-Wettervorhersage für {{ $location->title }}</h4>
-
-                <div class="weather-forecast">
-                    @foreach ($forecast as $day)
-                        <div class="weather-forecast-day">
-                            <p class="fw-bold">{{ $day['date'] }}</p>
-                            <p class="fs-2">{{ $day['icon'] }}</p>
-                            <p class="weather-description">{{ $day['weather'] }}</p>
-                            <p class="temp-text">🌡️ Max: {{ $day['temp_max'] }}°C</p>
-                            <p class="temp-text">🌡️ Min: {{ $day['temp_min'] }}°C</p>
-                            <p class="precipitation-text">🌧️ Regen: {{ $day['precipitation'] }} mm</p>
-                        </div>
-                    @endforeach
-                </div>
+<!-- Wettervorhersage -->
+<div class="weather-container">
+    <h4 class="weather-title">7-Tage-Wettervorhersage für {{ $location->title }}</h4>
+    <div class="weather-forecast">
+        @foreach ($forecast as $day)
+            <div class="weather-day">
+                <p class="date">{{ $day['date'] }}</p>
+                <p class="icon">{{ $day['icon'] }}</p>
+                <p class="weather-description">{{ $day['weather'] }}</p>
+                <p class="temp">🌡️ {{ $day['temp_max'] }}°C / {{ $day['temp_min'] }}°C</p>
+                <p class="precipitation">🌧️ {{ $day['precipitation'] }} mm</p>
             </div>
+        @endforeach
+    </div>
+</div>
+
+
 
                 <livewire:frontend.climate-table.climate-table-component :locationId="$location->id" />
 
@@ -130,10 +130,8 @@
 
 </section>
 
-
 <style>
-/* Wetterbox: Farbverlauf & Modernes Design */
-.weather-box {
+    .weather-box {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
     border-radius: 12px 0 0 12px; /* Nur links abgerundet */
@@ -141,60 +139,72 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     text-align: center;
 }
+</style>
 
-.weather-forecast {
+
+<style>
+    /* Wetterbox mit Blauverlauf & modernem Design */
+    .weather-container {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+
+    .weather-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .weather-forecast {
         display: flex;
         flex-wrap: wrap;
-        gap: 1.5rem;
-        justify-content: space-between;
+        gap: 1rem;
+        justify-content: center;
     }
 
-    .weather-forecast-day {
-        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        flex: 1 1 calc(25% - 1.5rem);
-        min-width: 200px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+    .weather-day {
+        background: rgb(22,221,223);
+        background: linear-gradient(0deg, rgba(22,221,223,1) 21%, rgba(241,253,45,0.9360119047619048) 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    min-width: 150px;
+    flex: 1 1 calc(20% - 1rem);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .weather-forecast-day:hover {
+
+    .weather-day:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 6px 12px rgba(255, 255, 255, 0.3);
     }
 
-    .weather-forecast-day p {
-        margin: 0.5rem 0;
+    .date {
         font-size: 1rem;
-        color: #333;
-    }
-
-    .weather-forecast-day p.fw-bold {
-        font-size: 1.2rem;
         font-weight: 600;
-        color: #2c3e50;
     }
 
-    .weather-forecast-day p.fs-2 {
+    .icon {
         font-size: 2rem;
-        margin: 1rem 0;
+        margin: 10px 0;
     }
 
     .weather-description {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 500;
-        color: #34495e;
     }
 
-    .temp-text {
+    .temp {
         font-size: 1rem;
-        color: #e74c3c;
+        color: #3c3a35;
     }
 
-    .precipitation-text {
+    .precipitation {
         font-size: 1rem;
-        color: #3498db;
+        color: #0573cc;
     }
-</style>
+    </style>

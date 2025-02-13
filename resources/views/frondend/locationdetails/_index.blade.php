@@ -20,7 +20,7 @@
                         </div>
 
                         <!-- Best Travel Section -->
-                        @if ($location->text_what_to_do)
+                        @if ($location->text_best_traveltime)
                         <div class="timeline-item">
                             <div class="timeline-marker">2</div>
                             <div class="timeline-content">

@@ -38,22 +38,29 @@
         </div>
     </div>
 
-    <!-- Beste Reisezeit Auswahl -->
-    <div class="mb-4">
-        <label class="form-label fw-bold">Beste Reisezeit</label>
-        <div class="row g-2">
-            @foreach ($travel_time_options as $option)
-                <div class="col-6 col-sm-2">
-                    <label class="form-imagecheck d-flex flex-column align-items-center p-2 border rounded shadow-sm w-100">
-                        <i class="fa-solid fa-calendar-days text-primary mb-2" style="font-size: 1.5rem;"></i>
-                        <img src="{{ asset('img/best_travel_time/' . $option . '.png') }}" alt="{{ $option }}" class="form-imagecheck-image rounded mb-2">
-                        <input type="checkbox" wire:model="best_traveltime" value="{{ $option }}" class="form-check-input">
-                        <span class="mt-2">{{ $option }}</span>
-                    </label>
-                </div>
-            @endforeach
-        </div>
+<!-- Beste Reisezeit Auswahl -->
+<div class="mb-4">
+    <label class="form-label fw-bold">Beste Reisezeit</label>
+    <div class="row g-2">
+        @foreach ($travel_time_options as $option)
+            <div class="col-6 col-sm-2">
+                <label class="form-imagecheck d-flex flex-column align-items-center p-2 border rounded shadow-sm w-100">
+                    <i class="fa-solid fa-calendar-days text-primary mb-2" style="font-size: 1.5rem;"></i>
+                    <!-- Bilddateiname basierend auf der Monatszahl generieren -->
+                    <img src="{{ asset('img/best_travel_time/' . $months[$option] . '.png') }}" alt="{{ $option }}" class="form-imagecheck-image rounded mb-2">
+                    <input
+                        type="checkbox"
+                        wire:model="best_traveltime"
+                        value="{{ $option }}"
+                        class="form-check-input"
+                        {{ in_array($option, $best_traveltime) ? 'checked' : '' }}
+                    >
+                    <span class="mt-2">{{ $option }}</span>
+                </label>
+            </div>
+        @endforeach
     </div>
+</div>
 
     <!-- Beste Reisezeit Editor -->
     <div class="mb-4">

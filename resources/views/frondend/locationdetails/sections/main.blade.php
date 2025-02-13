@@ -128,29 +128,29 @@
 
                                 <td>
                                     <strong><i class="fas fa-language me-2"></i>
-                                    @php
-                                        // Überprüfen, ob official_language mehrere Sprachen enthält
-                                        $languages = explode(',', $location->country->official_language ?? '');
-                                        $languageCount = count(array_filter($languages));
-                                    @endphp
+                                        @php
+                                            // Überprüfen, ob official_language mehrere Sprachen enthält
+                                            $languages = explode(',', $location->country->official_language ?? '');
+                                            $languageCount = count(array_filter($languages));
+                                        @endphp
 
-                                    <strong>
-                                        @if ($languageCount === 1)
-                                            @autotranslate('Sprache', app()->getLocale())
-                                        @elseif ($languageCount > 1)
-                                            @autotranslate('Sprachen', app()->getLocale())
-                                        @else
-                                            @autotranslate('Sprache', app()->getLocale())
-                                        @endif
-                                    </strong>
+                                        <strong>
+                                            @if ($languageCount === 1)
+                                                @autotranslate('Sprache', app()->getLocale())
+                                            @elseif ($languageCount > 1)
+                                                @autotranslate('Sprachen', app()->getLocale())
+                                            @else
+                                                @autotranslate('Sprache', app()->getLocale())
+                                            @endif
+                                        </strong>
 
-                                    <div class="text-muted" style="font-weight: normal;">
-                                        @if ($languageCount > 0)
-                                            @autotranslate(implode(', ', $languages), app()->getLocale())
-                                        @else
-                                            @autotranslate('Nicht angegeben', app()->getLocale())
-                                        @endif
-                                    </div>
+                                        <div class="text-muted" style="font-weight: normal;">
+                                            @if ($languageCount > 0)
+                                                @autotranslate(implode(', ', $languages), app()->getLocale())
+                                            @else
+                                                @autotranslate('Nicht angegeben', app()->getLocale())
+                                            @endif
+                                        </div>
                                 </td>
                             </tr>
                             <tr>
@@ -158,8 +158,8 @@
                                     <strong><i class="fas fa-chart-line me-2"></i>@autotranslate('Preistendenz', app()->getLocale())</strong>
 
                                     <!-- Tooltip-Fragezeichen mit verbessertem Design -->
-                                    <a href="#" class="text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="top"
-                                        data-bs-animation="false"
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" data-bs-animation="false"
                                         title="Zur Berechnung vergleichen wir das durchschnittliche pro Kopf Einkommen der verschiedenen Länder mit Deutschland">
                                         <i class="fa fa-question-circle tooltip-icon"></i>
                                     </a>
@@ -207,22 +207,22 @@
 
 
 
-    <td>
-        <!-- Überschrift (fett) -->
-        <strong><i class="fas fa-passport me-2"></i>@autotranslate('Visum', app()->getLocale())</strong>
-        <!-- Text unter der Überschrift (normal und muted) -->
-        <div class="text-muted" style="font-weight: normal; margin-top: 4px;">
-            @if ($location->country->country_visum_needed !== null)
-                @if ($location->country->country_visum_needed)
-                    @autotranslate('Kein Visum erforderlich', app()->getLocale())
-                @else
-                    {{ $location->country->country_visum_max_time ?? 'N/A' }}
-                @endif
-            @else
-                @autotranslate('Keine Angaben', app()->getLocale())
-            @endif
-        </div>
-    </td>
+                                <td>
+                                    <!-- Überschrift (fett) -->
+                                    <strong><i class="fas fa-passport me-2"></i>@autotranslate('Visum', app()->getLocale())</strong>
+                                    <!-- Text unter der Überschrift (normal und muted) -->
+                                    <div class="text-muted" style="font-weight: normal; margin-top: 4px;">
+                                        @if ($location->country->country_visum_needed !== null)
+                                            @if ($location->country->country_visum_needed)
+                                                @autotranslate('Kein Visum erforderlich', app()->getLocale())
+                                            @else
+                                                {{ $location->country->country_visum_max_time ?? 'N/A' }}
+                                            @endif
+                                        @else
+                                            @autotranslate('Keine Angaben', app()->getLocale())
+                                        @endif
+                                    </div>
+                                </td>
 
 
 
@@ -232,7 +232,10 @@
                                         $plugTypes = array_map('trim', explode(',', $location->electric->info ?? ''));
 
                                         // Bilder aus plug_images extrahieren
-                                        $imageUrls = array_map('trim', explode(',', $location->electric->plug_images ?? ''));
+                                        $imageUrls = array_map(
+                                            'trim',
+                                            explode(',', $location->electric->plug_images ?? ''),
+                                        );
 
                                         // Typen mit Bildern verknüpfen
                                         $typeImageMap = [];
@@ -256,12 +259,6 @@
                                     </div>
                                 </td>
 
-
-
-
-
-
-
                             </tr>
                             <tr>
                                 <td>
@@ -270,51 +267,79 @@
                                         <strong>@autotranslate('Flugzeit', app()->getLocale())</strong>
                                     </div>
                                     <div class="text-muted" style="font-weight: normal;">
-                                        {{ ceil($location->flight_hours ?? 0) }} {{ trans_choice('Stunde|Stunden', ceil($location->flight_hours ?? 0), [], app()->getLocale()) }}
+                                        {{ ceil($location->flight_hours ?? 0) }}
+                                        {{ trans_choice('Stunde|Stunden', ceil($location->flight_hours ?? 0), [], app()->getLocale()) }}
                                     </div>
                                 </td>
 
                                 <td>
                                     <strong><i class="fas fa-ruler-horizontal me-2"></i>@autotranslate('Entfernung', app()->getLocale())</strong>
-                                    <div class="text-muted" style="font-weight: normal;">{{ number_format($location->dist_from_FRA, 0, ',', '.') }} km</div>
+                                    <div class="text-muted" style="font-weight: normal;">
+                                        {{ number_format($location->dist_from_FRA, 0, ',', '.') }} km</div>
                                 </td>
                             </tr>
                         </table>
                     </div>
                 </div>
 
-<!-- Preise -->
-<div class="card mb-3 box-shadow-2 price-section" data-aos="fade-up" data-aos-delay="400">
-    <div class="card-header text-center bg-light">
-        <h5 class="text-uppercase">@autotranslate('Preise', app()->getLocale())</h5>
-    </div>
-    <div class="card-body">
-        <table class="table table-borderless text-center mb-0 price-section-icons">
-            <tr>
-                <td>
-                    <i class="fa fa-hotel"></i>
-                    <div class="fw-bold">@autotranslate('Unterkünfte', app()->getLocale())</div>
-                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_hotel, 0, ',', '.') }} €</div>
-                </td>
-                <td>
-                    <i class="fa fa-plane"></i>
-                    <div class="fw-bold">@autotranslate('Flüge', app()->getLocale())</div>
-                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_flight, 0, ',', '.') }} €</div>
-                </td>
-                <td>
-                    <i class="fa fa-car"></i>
-                    <div class="fw-bold">@autotranslate('Mietwagen', app()->getLocale())</div>
-                    <div class="text-muted text-uppercase" style="font-weight: normal;">@autotranslate('ab', app()->getLocale()) {{ number_format($location->price_rental, 0, ',', '.') }} €</div>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-
-                <!-- Aktivitäten -->
-                <div data-aos="fade-up" data-aos-delay="500">
-                    <x-location-activities :locationId="$location->id" />
+                <!-- Preise -->
+                <div class="card mb-3 box-shadow-2 price-section" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card-header text-center bg-light">
+                        <h5 class="text-uppercase">@autotranslate('Preise', app()->getLocale())</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless text-center mb-0 price-section-icons">
+                            <tr>
+                                <td>
+                                    <i class="fa fa-hotel"></i>
+                                    <div class="fw-bold">@autotranslate('Unterkünfte', app()->getLocale())</div>
+                                    <div class="text-muted text-uppercase" style="font-weight: normal;">
+                                        @autotranslate('ab', app()->getLocale()) {{ number_format($location->price_hotel, 0, ',', '.') }} €
+                                    </div>
+                                </td>
+                                <td>
+                                    <i class="fa fa-plane"></i>
+                                    <div class="fw-bold">@autotranslate('Flüge', app()->getLocale())</div>
+                                    <div class="text-muted text-uppercase" style="font-weight: normal;">
+                                        @autotranslate('ab', app()->getLocale()) {{ number_format($location->price_flight, 0, ',', '.') }} €
+                                    </div>
+                                </td>
+                                <td>
+                                    <i class="fa fa-car"></i>
+                                    <div class="fw-bold">@autotranslate('Mietwagen', app()->getLocale())</div>
+                                    <div class="text-muted text-uppercase" style="font-weight: normal;">
+                                        @autotranslate('ab', app()->getLocale()) {{ number_format($location->price_rental, 0, ',', '.') }} €
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
+
+                @php
+                    $hasActivities =
+                        $location->list_beach ||
+                        $location->list_citytravel ||
+                        $location->list_sports ||
+                        $location->list_island ||
+                        $location->list_culture ||
+                        $location->list_nature ||
+                        $location->list_watersport ||
+                        $location->list_wintersport ||
+                        $location->list_mountainsport ||
+                        $location->list_biking ||
+                        $location->list_fishing ||
+                        $location->list_amusement_park ||
+                        $location->list_water_park ||
+                        $location->list_animal_park;
+                @endphp
+
+                @if ($hasActivities)
+                    <!-- Aktivitäten -->
+                    <div data-aos="fade-up" data-aos-delay="500">
+                        <x-location-activities :locationId="$location->id" />
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -408,82 +433,92 @@
 
 
 <style>
-.electric-button {
-    background: linear-gradient(to bottom, #007bff, #0056b3);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 6px;
-    font-weight: bold;
-    font-size: 12px; /* Kleinere Schrift */
-    text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Weniger dominanter Schatten */
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    position: relative;
-    overflow: hidden;
-}
+    .electric-button {
+        background: linear-gradient(to bottom, #007bff, #0056b3);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 6px;
+        font-weight: bold;
+        font-size: 12px;
+        /* Kleinere Schrift */
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        /* Weniger dominanter Schatten */
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
 
-.electric-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
-}
+    .electric-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
+    }
 
-.electric-button i {
-    margin-right: 5px;
-    font-size: 14px; /* Kleinere Icon-Größe */
-}
+    .electric-button i {
+        margin-right: 5px;
+        font-size: 14px;
+        /* Kleinere Icon-Größe */
+    }
 
-/* Pfeil-Container */
-.arrow-container {
-    width: 22px; /* Kleinere Kreisgröße */
-    height: 22px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
-    position: relative;
-    top: -1px;
-    transform: rotate(5deg);
-}
+    /* Pfeil-Container */
+    .arrow-container {
+        width: 22px;
+        /* Kleinere Kreisgröße */
+        height: 22px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
+        position: relative;
+        top: -1px;
+        transform: rotate(5deg);
+    }
 
-/* Pfeil-Styling */
-.arrow-icon {
-    font-size: 12px; /* Kleinere Pfeilgröße */
-    color: #007bff;
-    transition: transform 0.3s ease-in-out;
-    display: inline-block;
-}
+    /* Pfeil-Styling */
+    .arrow-icon {
+        font-size: 12px;
+        /* Kleinere Pfeilgröße */
+        color: #007bff;
+        transition: transform 0.3s ease-in-out;
+        display: inline-block;
+    }
 
-/* Animation bei Hover */
-.electric-button:hover .arrow-container {
-    transform: translateX(3px) rotate(5deg);
-    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
-}
-
+    /* Animation bei Hover */
+    .electric-button:hover .arrow-container {
+        transform: translateX(3px) rotate(5deg);
+        box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
+    }
 </style>
 
 <style>
     .price-section-icons i {
-        color: #007bff !important; /* Blau */
-        font-size: 1.2rem; /* Größer für bessere Sichtbarkeit */
+        color: #007bff !important;
+        /* Blau */
+        font-size: 1.2rem;
+        /* Größer für bessere Sichtbarkeit */
         margin-bottom: 0.5rem;
     }
 
     .tooltip-icon {
-    color: #007bff !important; /* Blau */
-    font-size: 1rem; /* Größe anpassen */
-    background: rgba(0, 123, 255, 0.1); /* Leichter blauer Hintergrund */
-    border-radius: 50%; /* Runde Form */
-    cursor: help; /* Zeigt an, dass es sich um einen Tooltip handelt */
-}
-
+        color: #007bff !important;
+        /* Blau */
+        font-size: 1rem;
+        /* Größe anpassen */
+        background: rgba(0, 123, 255, 0.1);
+        /* Leichter blauer Hintergrund */
+        border-radius: 50%;
+        /* Runde Form */
+        cursor: help;
+        /* Zeigt an, dass es sich um einen Tooltip handelt */
+    }
 </style>
 
 <!-- Scripts -->
