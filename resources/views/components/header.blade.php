@@ -119,9 +119,9 @@
 
     /* Styling für Bilder */
     .custom-header-section img {
-        height: auto;
-        /* Automatische Höhe */
-    }
+    width: 100%;  /* Bild an die Breite des Containers anpassen */
+    height: auto;  /* Höhe automatisch proportional skalieren */
+}
 
     /* Animation für Scroll-Icon */
     .custom-header-section .custom-image-pos-1 {
@@ -160,6 +160,13 @@
             padding: 10px;
             /* Weniger Innenabstand */
         }
+
+    /* Styling für Bilder */
+    .custom-header-section img {
+    width: 100%;  /* Bild an die Breite des Containers anpassen */
+    height: auto;  /* Höhe automatisch proportional skalieren */
+}
+
     }
 
     @media (min-width: 991px) {
@@ -175,6 +182,13 @@
             padding-top: 200px !important;
             padding-bottom: 70px !important;
         }
+    /* Styling für Bilder */
+    .custom-header-section img {
+    width: 100%;  /* Bild an die Breite des Containers anpassen */
+    height: auto;  /* Höhe automatisch proportional skalieren */
+}
+
+
     }
 
     /* Hauptcontainer für die Links */
@@ -306,11 +320,7 @@
         line-height: 20px;
     }
 
-    p {
-        color: #eeebeb;
-        line-height: 20px;
-        margin: 0 0 20px;
-    }
+
 
     /* Responsive Anpassungen */
     @media (max-width: 768px) {
