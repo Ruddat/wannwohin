@@ -290,8 +290,10 @@ private function getWeatherIcon($weatherCode)
         45 => "🌫️",  // Nebel
         48 => "🌫️",  // Gefrierender Nebel
         51 => "🌦️",  // Leichter Nieselregen
-        53 => "🌦️",  // Mäßiger Nieselregen (fehlender Code)
+        53 => "🌦️",  // Mäßiger Nieselregen
         55 => "🌧️",  // Starker Nieselregen
+        56 => "🌧️",  // Leichter gefrierender Nieselregen
+        57 => "🌧️",  // Starker gefrierender Nieselregen
         61 => "🌧️",  // Leichter Regen
         63 => "🌧️",  // Mäßiger Regen
         65 => "🌧️",  // Starker Regen
@@ -301,16 +303,18 @@ private function getWeatherIcon($weatherCode)
         73 => "🌨️",  // Mäßiger Schneefall
         75 => "❄️",  // Starker Schneefall
         77 => "🌨️",  // Schneekörner
-        80 => "⛈️",  // Gewitter mit leichtem Regen
-        81 => "⛈️",  // Gewitter mit mäßigem Regen
-        82 => "⛈️",  // Starkes Gewitter mit Regen
+        80 => "⛈️",  // Leichter Regenschauer
+        81 => "⛈️",  // Mäßiger Regenschauer
+        82 => "⛈️",  // Starker Regenschauer
         85 => "🌨️",  // Leichter Schneeschauer
         86 => "🌨️",  // Starker Schneeschauer
+        95 => "⛈️",  // Gewitter
+        96 => "⛈️",  // Gewitter mit leichtem Hagel
+        99 => "⛈️",  // Gewitter mit starkem Hagel
     ];
 
     return $icons[$weatherCode] ?? "❓"; // Falls kein Icon vorhanden ist
 }
-
 
 /**
  * Gibt die Wetterbeschreibung für den WMO-Wettercode zurück.
@@ -328,8 +332,10 @@ private function getWeatherDescription($weatherCode)
         45 => "Nebel",
         48 => "Gefrierender Nebel",
         51 => "Leichter Nieselregen",
-        53 => "Mäßiger Nieselregen", // Fehlender Code ergänzt
+        53 => "Mäßiger Nieselregen",
         55 => "Starker Nieselregen",
+        56 => "Leichter gefrierender Nieselregen",
+        57 => "Starker gefrierender Nieselregen",
         61 => "Leichter Regen",
         63 => "Mäßiger Regen",
         65 => "Starker Regen",
@@ -339,11 +345,14 @@ private function getWeatherDescription($weatherCode)
         73 => "Mäßiger Schneefall",
         75 => "Starker Schneefall",
         77 => "Schneekörner",
-        80 => "Gewitter mit leichtem Regen",
-        81 => "Gewitter mit mäßigem Regen",
-        82 => "Starkes Gewitter mit Regen",
+        80 => "Leichter Regenschauer",
+        81 => "Mäßiger Regenschauer",
+        82 => "Starker Regenschauer",
         85 => "Leichter Schneeschauer",
         86 => "Starker Schneeschauer",
+        95 => "Gewitter",
+        96 => "Gewitter mit leichtem Hagel",
+        99 => "Gewitter mit starkem Hagel",
     ];
 
     return $descriptions[$weatherCode] ?? "Unbekanntes Wetter";
