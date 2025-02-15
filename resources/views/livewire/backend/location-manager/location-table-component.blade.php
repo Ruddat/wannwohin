@@ -70,6 +70,16 @@
                                     </select>
                                 </div>
 
+                                <!-- Soft-Delete-Filter -->
+                                <div class="col-md-auto ms-auto">
+                                    <label class="form-label text-muted">Deleted Locations</label>
+                                    <select wire:model.change="filterDeleted" class="form-select form-select-sm">
+                                        <option value="">Active Only</option>
+                                        <option value="only_deleted">Only Deleted</option>
+                                        <option value="with_deleted">All (Including Deleted)</option>
+                                    </select>
+                                </div>
+
                                 <div class="col-md-auto ms-auto">
                                     <label class="form-label d-none d-md-block">&nbsp;</label>
                                     <button wire:click="exportLocations" class="btn btn-success btn-sm">
@@ -142,14 +152,26 @@
                                                 </span>
                                             </td>
                                             <td class="text-end">
-                                                <a href="{{ route('verwaltung.location-table-manager.edit', ['locationId' => $location->id]) }}"
-                                                    class="btn btn-sm btn-primary">
-                                                    <i class="ti ti-edit"></i> Edit
-                                                </a>
-                                                <button type="button" wire:click="deleteLocation({{ $location->id }})"
-                                                    class="btn btn-sm btn-danger">
-                                                    <i class="ti ti-trash"></i> Delete
-                                                </button>
+                                                @if ($location->deleted_at)
+                                                    <button type="button" wire:click="restoreLocation({{ $location->id }})"
+                                                        class="btn btn-sm btn-warning">
+                                                        <i class="ti ti-arrow-back"></i> Restore
+                                                    </button>
+
+                                                    <button type="button" onclick="confirmForceDelete({{ $location->id }})"
+                                                        class="btn btn-sm btn-danger">
+                                                        <i class="ti ti-trash"></i> Permanently Delete
+                                                    </button>
+                                                @else
+                                                    <a href="{{ route('verwaltung.location-table-manager.edit', ['locationId' => $location->id]) }}"
+                                                        class="btn btn-sm btn-primary">
+                                                        <i class="ti ti-edit"></i> Edit
+                                                    </a>
+                                                    <button type="button" wire:click="confirmDelete({{ $location->id }})"
+                                                        class="btn btn-sm btn-danger">
+                                                        <i class="ti ti-trash"></i> Delete
+                                                    </button>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -224,16 +246,68 @@
 </div>
 
 
-    @assets
-        <style>
-            .table a {
-                color: #007bff;
-                text-decoration: none;
-            }
+@assets
+    <style>
+        .table a {
+            color: #007bff;
+            text-decoration: none;
+        }
 
-            .table a:hover {
-                color: #0056b3;
-                text-decoration: underline;
-            }
-        </style>
-    @endassets
+        .table a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
+@endassets
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Livewire.on('triggerDeleteConfirmation', (locationId) => {
+            Swal.fire({
+                title: 'Bist du sicher?',
+                text: 'Diese Aktion kann nicht rückgängig gemacht werden!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ja, löschen!',
+                cancelButtonText: 'Abbrechen'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.dispatch('deleteConfirmed', locationId);
+                }
+            });
+        });
+
+        Livewire.on('showSuccessMessage', (message) => {
+            Swal.fire({
+                title: 'Erfolgreich!',
+                text: message,
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+
+        window.confirmForceDelete = function (locationId) {
+            Swal.fire({
+                title: 'Endgültig löschen?',
+                text: 'Diese Location wird dauerhaft entfernt und kann nicht wiederhergestellt werden!',
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ja, endgültig löschen!',
+                cancelButtonText: 'Abbrechen'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.dispatch('forceDeleteConfirmed', locationId);
+                }
+            });
+        };
+    });
+</script>
+@endpush
+

@@ -20,8 +20,11 @@ class LocationTableComponent extends Component
     public $filterStatus = ''; // Statusfilter
     public $sortField = 'id'; // Standard-Sortierfeld
     public $sortDirection = 'asc'; // Standard-Sortierreihenfolge
+    public $filterDeleted = ''; // Soft-Delete-Filter
 
-    protected $listeners = ['refreshLocations' => '$refresh'];
+    protected $listeners = ['refreshLocations' => '$refresh',
+                            'deleteConfirmed' => 'deleteLocation',
+                            'forceDeleteConfirmed' => 'forceDeleteLocation'];
 
     public function updatingSearch()
     {
@@ -165,7 +168,44 @@ class LocationTableComponent extends Component
         }, 'locations_export.xlsx');
     }
 
+    public function confirmDelete($locationId)
+    {
+        // Sendet ein Event, das das JavaScript aufruft
+        $this->dispatch('triggerDeleteConfirmation', $locationId);
+    }
 
+    public function deleteLocation($locationId)
+    {
+        $location = WwdeLocation::find($locationId);
+
+        if ($location) {
+            $location->delete(); // Nutzt jetzt SoftDeletes
+            $this->dispatch('refreshLocations');
+            $this->dispatch('showSuccessMessage', 'Die Location wurde erfolgreich gelöscht.');
+        }
+    }
+
+    public function restoreLocation($locationId)
+    {
+        $location = WwdeLocation::withTrashed()->find($locationId);
+
+        if ($location) {
+            $location->restore(); // Wiederherstellen
+            $this->dispatch('refreshLocations');
+            $this->dispatch('showSuccessMessage', 'Die Location wurde erfolgreich wiederhergestellt.');
+        }
+    }
+
+    public function forceDeleteLocation($locationId)
+    {
+        $location = WwdeLocation::withTrashed()->find($locationId);
+
+        if ($location) {
+            $location->forceDelete(); // Endgültig löschen
+            $this->dispatch('refreshLocations');
+            $this->dispatch('showSuccessMessage', 'Die Location wurde dauerhaft gelöscht.');
+        }
+    }
 
     public function render()
     {
@@ -188,6 +228,12 @@ class LocationTableComponent extends Component
             }, function ($query) {
                 $query->orderBy($this->sortField, $this->sortDirection);
             })
+            ->when($this->filterDeleted === 'only_deleted', function ($query) {
+                $query->onlyTrashed(); // Zeigt nur gelöschte Locations
+            })
+            ->when($this->filterDeleted === 'with_deleted', function ($query) {
+                $query->withTrashed(); // Zeigt alle, inklusive gelöschte Locations
+            })
             ->paginate($this->perPage);
 
         $countries = WwdeCountry::all();
@@ -197,4 +243,5 @@ class LocationTableComponent extends Component
             'countries' => $countries,
         ])->layout('backend.layouts.livewiere-main');
     }
+
 }

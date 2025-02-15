@@ -12,13 +12,13 @@ class GenerateBreadcrumbs
     {
         $breadcrumbs = [];
 
-        // Füge die Startseite hinzu
+        // "Home" als erster Eintrag (immer klickbar)
         $breadcrumbs[] = [
             'title' => 'Home',
             'url' => route('home'),
         ];
 
-        // Hole die aktuelle Route
+        // Aktuelle Route abrufen
         $currentRoute = Route::current();
         if (!$currentRoute) {
             View::share('breadcrumbs', $breadcrumbs);
@@ -28,8 +28,40 @@ class GenerateBreadcrumbs
         $routeName = $currentRoute->getName();
         $routeParameters = $currentRoute->parameters();
 
-        // Generiere Breadcrumbs basierend auf benannten Routen
+        // Dynamische Breadcrumbs für verschiedene Routen
         switch ($routeName) {
+            case 'search.results':
+                $breadcrumbs[] = [
+                    'title' => 'Suchergebnisse',
+                    'url' => route('search.results'),
+                ];
+                break;
+
+            case 'detail_search':
+                $breadcrumbs[] = [
+                    'title' => 'Detailsuche',
+                    'url' => route('detail_search'),
+                ];
+                break;
+
+            case 'detail_search_result':
+                $breadcrumbs[] = [
+                    'title' => 'Detailsuche',
+                    'url' => route('detail_search'),
+                ];
+                $breadcrumbs[] = [
+                    'title' => 'Ergebnisse',
+                    'url' => route('detail_search_result'),
+                ];
+                break;
+
+            case 'ergebnisse.anzeigen':
+                $breadcrumbs[] = [
+                    'title' => 'Alle Ergebnisse',
+                    'url' => route('ergebnisse.anzeigen'),
+                ];
+                break;
+
             case 'continent.countries':
                 $breadcrumbs[] = [
                     'title' => ucfirst($routeParameters['continentAlias']),
@@ -73,11 +105,18 @@ class GenerateBreadcrumbs
                 ];
                 break;
 
+            case 'impressum':
+                $breadcrumbs[] = [
+                    'title' => 'Impressum',
+                    'url' => route('impressum'),
+                ];
+                break;
+
             default:
                 break;
         }
 
-        // Teile die Breadcrumbs mit allen Views
+        // Breadcrumbs für Views verfügbar machen
         View::share('breadcrumbs', $breadcrumbs);
 
         return $next($request);

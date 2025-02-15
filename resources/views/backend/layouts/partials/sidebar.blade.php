@@ -174,7 +174,7 @@
                                href="{{ route('verwaltung.header-manager.header_contents.index') }}">
                                 Header Manager
                             </a>
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.header-manager.header_contents.index') ? 'active' : '' }}"
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.quickfilter-manager.index') ? 'active' : '' }}"
                                 href="{{ route('verwaltung.quickfilter-manager.index') }}">
                                  QuickFilter Manager
                              </a>

@@ -13,11 +13,12 @@ use App\Models\MonthlyClimateSummary;
 use App\Models\ModDailyClimateAverage;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ModHistoricalClimateData;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WwdeLocation extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.

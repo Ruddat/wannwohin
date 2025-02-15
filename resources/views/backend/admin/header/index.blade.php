@@ -27,8 +27,8 @@
                             <th>ID</th>
                             <th>Background Image</th>
                             <th>Main Image</th>
+                            <th>Title - Überschrift</th>
                             <th>Main Text</th>
-                            <th>Title</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -69,10 +69,11 @@
                                         <span class="text-danger">No Image Found</span>
                                     @endif
                                 </td>
+                                <td>{{ $content->title ?? '-' }}</td>
                                 <td style="max-width: 300px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                                     {!! $content->main_text !!}
                                 </td>
-                                <td>{{ $content->title ?? '-' }}</td>
+
                                 <td>
                                     <div class="btn-list">
                                         <a href="{{ route('verwaltung.header-manager.header_contents.edit', $content->id) }}" class="btn btn-warning btn-sm">

@@ -22,7 +22,7 @@
                         </div>
 
 
-                        
+
                         <section class="timeline custom-timeline" id="timeline">
                             <div class="timeline-body">
 @php
@@ -142,34 +142,54 @@
 
                                                     @php
                                                     // JSON in Array umwandeln
-                                                    $bestTravelMonths = collect(json_decode($location->best_traveltime_json, true))
+                                                    $months = collect(json_decode($location->best_traveltime_json, true))
+                                                        ->sort() // Sicherstellen, dass die Monate in richtiger Reihenfolge sind
                                                         ->map(function ($month) {
-                                                            return DateTime::createFromFormat('!m', $month)->format('M'); // Abkürzungen (Jan, Feb, ...)
-                                                        })
-                                                        ->implode(', '); // Liste als String
+                                                            return (int) $month; // Integer-Werte für die Gruppierung
+                                                        })->values();
 
-                                                    // Deutsche Monatsabkürzungen (falls erforderlich)
-                                                    $germanMonths = [
-                                                        "Jan" => "Jan", "Feb" => "Feb", "Mar" => "Mär", "Apr" => "Apr",
-                                                        "May" => "Mai", "Jun" => "Jun", "Jul" => "Jul", "Aug" => "Aug",
-                                                        "Sep" => "Sep", "Oct" => "Okt", "Nov" => "Nov", "Dec" => "Dez"
-                                                    ];
+                                                    // Deutsche Monatsnamen
+                                                    $germanMonths = [1 => "Jan", 2 => "Feb", 3 => "Mär", 4 => "Apr", 5 => "Mai", 6 => "Jun",
+                                                                     7 => "Jul", 8 => "Aug", 9 => "Sep", 10 => "Okt", 11 => "Nov", 12 => "Dez"];
 
-                                                    // Falls deutsche Monatsnamen benötigt werden
-                                                    $bestTravelMonths = str_replace(array_keys($germanMonths), array_values($germanMonths), $bestTravelMonths);
-                                                    @endphp
+                                                    // Gruppenbildung für zusammenhängende Monate
+                                                    $groupedMonths = [];
+                                                    $tempGroup = [];
 
-                                                    <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
-                                                        <div class="d-flex pb-2 border-bottom w-100">
-                                                            <div class="col-5">
-                                                                Beste Reisezeit
-                                                                <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" title="Empfohlene Monate für eine Reise"></i>
-                                                            </div>
-                                                            <div class="col-7">
-                                                                {{ $bestTravelMonths ?? 'N/A' }}
-                                                            </div>
+                                                    foreach ($months as $index => $month) {
+                                                        if (empty($tempGroup) || end($tempGroup) == $month - 1) {
+                                                            $tempGroup[] = $month; // Monat zur Gruppe hinzufügen
+                                                        } else {
+                                                            $groupedMonths[] = $tempGroup; // Vorherige Gruppe speichern
+                                                            $tempGroup = [$month]; // Neue Gruppe starten
+                                                        }
+                                                    }
+                                                    if (!empty($tempGroup)) {
+                                                        $groupedMonths[] = $tempGroup; // Letzte Gruppe speichern
+                                                    }
+
+                                                    // Ausgabeformatierung: "Juni - August" oder "Juni"
+                                                    $bestTravelMonths = collect($groupedMonths)->map(function ($group) use ($germanMonths) {
+                                                        return count($group) > 1
+                                                            ? $germanMonths[$group[0]] . " - " . $germanMonths[end($group)]
+                                                            : $germanMonths[$group[0]];
+                                                    })->implode(', ');
+
+                                                @endphp
+
+                                                <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
+                                                    <div class="d-flex pb-2 border-bottom w-100">
+                                                        <div class="col-5">
+                                                            Beste Reisezeit
+
+                                                        </div>
+                                                        <div class="col-7">
+                                                            {{ $bestTravelMonths ?? 'N/A' }}
+                                                            <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" title="Empfohlene Monate für eine Reise"></i>
                                                         </div>
                                                     </div>
+                                                </div>
+
 
 
 
