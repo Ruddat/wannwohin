@@ -29,11 +29,16 @@ class DashboardController extends Controller
 
     // Monatliche Zusammenfassung
     $trafficSummary = DB::table('stat_location_search_histories')
-        ->select(DB::raw("DATE_FORMAT(month, '%Y-%m') as month"), DB::raw('SUM(search_count) as total_searches'))
-        ->groupBy('month')
-        ->orderBy('month', 'desc')
-        ->get();
+    ->select(
+        'month',
+        DB::raw('SUM(search_count) as total_searches')
+    )
+    ->whereNotNull('month') // Stellt sicher, dass month nicht NULL ist
+    ->groupBy('month')
+    ->orderBy('month', 'desc')
+    ->get();
 
+      //  dd($trafficSummary);
 
     return view('backend.admin.dashboard.index', compact(
         'totalLocations',

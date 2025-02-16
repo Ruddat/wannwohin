@@ -26,6 +26,7 @@
         </div>
     </div>
 </section>
+<div class="inner-shape"></div>
 
 <div class="custom-about-links bg-color-light">
         <div class="container">
@@ -284,8 +285,16 @@
         margin-top: -12px;
     }
 }
-
-
-
-
+</style>
+<style>
+    .inner-shape {
+    background-image: url(/assets/img/slider-pattern.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    content: "";
+    height: 150px;
+    width: 100%;
+    margin-top: -100px;
+    position: relative;
+}
 </style>

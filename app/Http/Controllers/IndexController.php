@@ -378,6 +378,7 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
         // 🟢 **Neue Header-Werte aus `mod_quick_filter_items`**
         'header_title' => $headerContent->title,
         'header_title_text' => $headerContent->title_text,
+        'main_text' => $headerContent->content,
         'panorama_location_picture' => $bgImgPath,
         'main_location_picture' => $mainImgPath,
     ]);

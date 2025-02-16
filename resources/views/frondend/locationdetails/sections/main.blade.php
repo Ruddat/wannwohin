@@ -22,7 +22,7 @@
                     style="background-repeat: no-repeat; background-size: cover; background-position: center;
                             background-image: url('{{ $randomImage ? asset($randomImage) : asset('img/placeholders/location-placeholder.jpg') }}');
                             height: 100%; min-height: 400px;"
-                    data-aos="fade-right" data-aos-delay="200">
+                    data-aos="fade-up" data-aos-delay="200">
                     <!-- Schicker Bildtext im unteren Bereich -->
                     <div
                         class="position-absolute bottom-0 w-100 bg-opacity-75 bg-white text-dark p-3 rounded-top shadow-lg">

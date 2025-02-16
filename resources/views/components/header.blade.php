@@ -37,13 +37,6 @@
                             {!! app('autotranslate')->trans($headerTitleText, app()->getLocale()) !!}
                         </h1>
                     @endif
-
-                    @if (!empty($panoramaLocationText) && $panoramaLocationText !== null)
-
-                    <p class="custom-text">
-                            {!! app('autotranslate')->trans($panoramaLocationText, app()->getLocale()) !!}
-                        </p>
-                    @endif
                 </div>
 
                 <!-- Admin-Button nur sichtbar für eingeloggte Admins -->
@@ -62,9 +55,11 @@
             </div>
         </div>
     </div>
+
 </section>
 
 
+<div class="inner-shape"></div>
 
 <div class="custom-about-links bg-color-light">
     <div class="container">
@@ -89,6 +84,17 @@
 </div>
 <x-breadcrumb />
 <hr class="custom-suggestion">
+
+@if (!empty($panoramaLocationText) && $panoramaLocationText !== null)
+<div class="container">
+
+<div class="custom-results-text">
+        <p class="custom-text">
+            {!! app('autotranslate')->trans($panoramaLocationText, app()->getLocale()) !!}
+        </p>
+    </div>
+</div>
+    @endif
 
 <style>
     /* Spezifisches Styling nur für die Header-Sektion */
@@ -151,6 +157,26 @@
         margin-top: 1.5rem;
     }
 
+    .custom-results-text {
+    background-color: #fdd55c; /* Warme, auffällige Farbe */
+    padding: 8px 20px; /* Weniger Padding, mehr Kompaktheit */
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    display: inline-block; /* Passt sich dem Text an, anstatt volle Breite zu nutzen */
+}
+
+.custom-text {
+    margin: 0; /* Entfernt extra Abstände */
+    line-height: 1.4;
+}
+
+
+
 
     /* Responsives Design */
     @media (max-width: 768px) {
@@ -161,11 +187,16 @@
             /* Weniger Innenabstand */
         }
 
-    /* Styling für Bilder */
-    .custom-header-section img {
-    width: 100%;  /* Bild an die Breite des Containers anpassen */
-    height: auto;  /* Höhe automatisch proportional skalieren */
+        .custom-header-img img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
 }
+
+        .custom-header-section .custom-image-pos-1 {
+            display: none;
+            /* Scroll-Icon auf kleinen Bildschirmen ausblenden */
+        }
 
     }
 
@@ -422,4 +453,16 @@
             margin-top: -12px;
         }
     }
+</style>
+<style>
+    .inner-shape {
+    background-image: url(../assets/img/slider-pattern.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    content: "";
+    height: 150px;
+    width: 100%;
+    margin-top: -100px;
+    position: relative;
+}
 </style>
