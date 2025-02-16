@@ -62,6 +62,9 @@
     <!-- AOS CSS -->
     <link rel="stylesheet" href="{{ asset('assets\vendor\aos\aos.css') }}">
 
+    <!-- Custom New CSS -->
+    <link rel="stylesheet" href="{{ asset('assets\css\custom-new.css') }}">
+
     <!-- Cookies Consent CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/cookie-consent.css') }}">
     @yield('css')

@@ -74,6 +74,10 @@
                 @livewire('frontend.continent-selector.continent-selector-component')
             </div>
 
+            <div class="custom-suggestion">
+                @livewire('frontend.wishlist-select.wishlist-component')
+            </div>
+
             {{-- Location-Suggestion
             <div class="custom-suggestion">
                 @livewire('frontend.location-suggestion.location-suggestion-component')
@@ -453,16 +457,4 @@
             margin-top: -12px;
         }
     }
-</style>
-<style>
-    .inner-shape {
-    background-image: url(../assets/img/slider-pattern.png);
-    background-size: cover;
-    background-repeat: no-repeat;
-    content: "";
-    height: 150px;
-    width: 100%;
-    margin-top: -100px;
-    position: relative;
-}
 </style>

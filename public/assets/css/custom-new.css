@@ -1,0 +1,94 @@
+/**
+ * ============================================================================
+ *  Custom Stylesheet for WannWoHin
+ *  ----------------------------------------------------------------------------
+ *  Project:     WannWoHin
+ *  Author:      Ingo Ruddat
+ *  Version:     1.0.0
+ *  Date:        [Aktuelles Datum]
+ *  File:        custom-new.css
+ * ============================================================================
+ *
+ *  Description:
+ *  ----------------------------------------------------------------------------
+ *  Dieses Stylesheet enthält alle benutzerdefinierten Styles für das Projekt
+ *  "WannWoHin". Hier werden neue Designanpassungen und Optimierungen ergänzt,
+ *  die über das Standard-Stylesheet hinausgehen.
+ *
+ *  Struktur:
+ *  ----------------------------------------------------------------------------
+ *  1. Allgemeine Layout-Einstellungen
+ *  2. Hintergrund & Overlays
+ *  3. Responsive Anpassungen
+ *  4. Effekte & Animationen
+ *  5. Komponenten & UI-Elemente
+ *
+ *  Hinweise:
+ *  ----------------------------------------------------------------------------
+ *  - Alle neuen Styles sollten hier hinzugefügt werden, um eine zentrale
+ *    Verwaltung sicherzustellen.
+ *  - Die Datei sollte regelmäßig dokumentiert und versioniert werden.
+ *  - Bestehende CSS-Regeln aus anderen Stylesheets sollten nicht überschrieben,
+ *    sondern gezielt erweitert oder angepasst werden.
+ * ============================================================================
+ */
+
+/* ============================================================================
+   1. Allgemeine Layout-Einstellungen
+   ============================================================================ */
+
+/* Beispiel: Einheitliche Schriften und Abstände */
+body {
+    font-family: "Arial", sans-serif;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   2. Hintergrund & Overlays
+   ============================================================================ */
+
+/* Beispiel: Hintergrund für Sektionen */
+.inner-shape {
+    background-image: url("../img/slider-pattern.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    content: "";
+    height: 150px;
+    width: 100%;
+    margin-top: -100px;
+    position: relative;
+}
+
+/* ============================================================================
+   3. Responsive Anpassungen
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .inner-shape {
+        height: 100px;
+        margin-top: -50px;
+    }
+}
+
+/* ============================================================================
+   4. Effekte & Animationen
+   ============================================================================ */
+
+/* Beispiel: Hover-Effekt für Buttons */
+.btn-custom:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease-in-out;
+}
+
+/* ============================================================================
+   5. Komponenten & UI-Elemente
+   ============================================================================ */
+
+/* Beispiel: Standardisierte Karten */
+.card-custom {
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background: white;
+}
+

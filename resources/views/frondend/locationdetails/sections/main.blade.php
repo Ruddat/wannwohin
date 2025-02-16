@@ -279,6 +279,8 @@
                                 </td>
                             </tr>
                         </table>
+                        @livewire('frontend.wishlist-select.wishlist-button-component', ['locationId' => $location->id])
+
                     </div>
                 </div>
 
@@ -315,7 +317,6 @@
                         </table>
                     </div>
                 </div>
-
                 @php
                     $hasActivities =
                         $location->list_beach ||
