@@ -110,10 +110,13 @@ class WwdeLocation extends Model
     {
         return [
             'slug' => [
-                'source' => 'title'
+                'source' => function ($model) {
+                    return !empty($model->title) ? $model->title : 'location-' . uniqid();
+                }
             ]
         ];
     }
+
 
     /**
      * Relationships

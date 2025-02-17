@@ -63,7 +63,9 @@ Route::get('/random-destination', [NewSearchController::class, 'randomDestinatio
 //})->name('compare');
 
 //Route::get('/compare/{ids}', [WishlistCompareController::class, 'index'])->name('compare');
-Route::get('/compare/{slugs}', [WishlistCompareController::class, 'index'])->name('compare');
+Route::get('/compare/{slugs?}', [WishlistCompareController::class, 'index'])
+    ->where('slugs', '.*')
+    ->name('compare');
 
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {

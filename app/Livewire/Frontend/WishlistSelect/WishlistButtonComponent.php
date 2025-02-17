@@ -3,17 +3,31 @@
 namespace App\Livewire\Frontend\WishlistSelect;
 
 use Livewire\Component;
+use Illuminate\Support\Str;
+use App\Models\WwdeLocation;
 
 class WishlistButtonComponent extends Component
 {
     public $locationId;
     public $inWishlist = false;
+    public $slug;
 
     public function mount($locationId)
     {
         $this->locationId = $locationId;
 
-      //dd($locationId);
+        $location = WwdeLocation::find($locationId);
+
+        if ($location) {
+            // Falls kein Slug vorhanden ist, generiere ihn und speichere die Location
+            if (empty($location->slug) && !empty($location->title)) {
+                $location->slug = Str::slug($location->title);
+                $location->save(); // Slug direkt in der Datenbank speichern
+            }
+
+            $this->slug = $location->slug;
+        }
+
         $this->inWishlist = in_array($locationId, session()->get('wishlist', []));
     }
 
@@ -36,6 +50,8 @@ class WishlistButtonComponent extends Component
 
     public function render()
     {
-        return view('livewire.frontend.wishlist-select.wishlist-button-component');
+        return view('livewire.frontend.wishlist-select.wishlist-button-component', [
+            'slug' => $this->slug,
+        ]);
     }
 }

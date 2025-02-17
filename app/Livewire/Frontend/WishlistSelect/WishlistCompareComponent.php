@@ -9,23 +9,31 @@ class WishlistCompareComponent extends Component
 {
     public $compareList = [];
 
-    public function mount($slugs)
+    public function mount()
     {
-        // Slugs aus der URL extrahieren (z.B. "berlin-hamburg-muenchen" -> ['berlin', 'hamburg', 'muenchen'])
-        $slugArray = explode('-', $slugs);
-
-        // IDs aus den Slugs holen
-        $this->compareList = WwdeLocation::whereIn('slug', $slugArray)->pluck('id')->toArray();
+        // Wishlist-IDs aus der Session holen
+        $this->compareList = session()->get('wishlist', []);
     }
 
     public function removeFromCompare($locationId)
     {
-        $this->compareList = array_diff($this->compareList, [$locationId]);
+        $wishlist = session()->get('wishlist', []);
+        $wishlist = array_diff($wishlist, [$locationId]);
+
+        session()->put('wishlist', $wishlist);
+        $this->compareList = $wishlist;
+
+        // 🟢 Event zum Aktualisieren der Wishlist-Komponente auslösen
+        $this->dispatch('wishlistUpdated');
     }
 
     public function clearCompare()
     {
+        session()->forget('wishlist');
         $this->compareList = [];
+
+        // 🟢 Event zum Aktualisieren der Wishlist-Komponente auslösen
+        $this->dispatch('wishlistUpdated');
     }
 
     public function render()
