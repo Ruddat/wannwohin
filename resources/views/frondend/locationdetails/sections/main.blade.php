@@ -278,9 +278,15 @@
                                         {{ number_format($location->dist_from_FRA, 0, ',', '.') }} km</div>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>
+                                @livewire('frontend.wishlist-select.wishlist-button-component', ['locationId' => $location->id])
+                                </td>
+                               <td>
+                                @livewire('frontend.wishlist-select.wishlist-component')
+                               </td>
+                            </tr>
                         </table>
-                        @livewire('frontend.wishlist-select.wishlist-button-component', ['locationId' => $location->id])
-
                     </div>
                 </div>
 

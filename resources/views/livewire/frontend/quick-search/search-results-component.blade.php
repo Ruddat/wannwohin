@@ -29,17 +29,6 @@
                             @endphp
 
 
-
-
-
-
-
-
-
-
-
-
-
                                 @forelse($locations as $location)
                                     <article class="timeline-box right custom-box-shadow-2">
                                         <div class="row">

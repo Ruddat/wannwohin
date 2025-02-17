@@ -8,11 +8,14 @@
                         <!-- Bearbeiten-Button (nur für Admins sichtbar) -->
                         @if(Auth::guard('admin')->check())
                         <!-- Debug-Ausgabe -->
-                        <a href="{{ route('location-manager.edit', $location->id) }}" target="_blank" class="btn btn-sm btn-warning position-absolute top-0 end-0 m-2 card-edit-button">
+                        <a href="{{ route('location-manager.edit', $location->id) }}" target="_blank" class="btn btn-sm btn-warning position-absolute top-0 end-40 m-2 card-edit-button">
                             <i class="ti ti-edit"></i> Bearbeiten
                         </a>
                     @endif
-
+    <!-- Wishlist-Button oben rechts als Overlay -->
+    <div class="wishlist-overlay1">
+        @livewire('frontend.wishlist-select.wishlist-button-component', ['locationId' => $location->id])
+    </div>
                         <!-- Bild -->
                         <a href="{{ route('location.details', [
                             'continent' => $location->country->continent->alias,
@@ -28,7 +31,6 @@
                         <div class="card-body d-flex flex-column">
                             <!-- Titel -->
                             <h5 class="card-title text-truncate text-center"> {{ $location->title }}</h5>
-
                             <!-- Text -->
                             <p class="card-text">
                                 @if (!empty($location->text_short))
@@ -147,6 +149,16 @@
     }
 }
 
+
+
+
+/* Wishlist-Overlay oben rechts */
+.wishlist-overlay1 {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
 
 
 </style>

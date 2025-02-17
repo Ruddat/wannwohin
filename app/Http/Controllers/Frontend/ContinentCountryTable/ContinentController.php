@@ -33,14 +33,21 @@ class ContinentController extends Controller
         // Bilder abrufen (mit Fallback-Mechanismus)
         $images = $this->getContinentImages($continent, $repository);
 
-        // Header-Daten in der Session speichern
-        session()->put('headerData', [
-            'bgImgPath' => $images['bgImgPath'],
-            'mainImgPath' => $images['mainImgPath'],
-            'headerContent' => [
-                'main_text' => $continent->continent_header_text ?? 'Standardtext',
-            ],
-        ]);
+//dd($continent, $images);
+
+
+             session([
+                'headerData' => [
+                    'bgImgPath' => $images['bgImgPath'],
+                    'mainImgPath' => $images['mainImgPath'],
+                    'title' => $continent->title,
+                    'title_text' => $continent->continent_header_text,
+                  //  'main_text' => $continent->continent_text ?? 'Standardtext',
+                ]
+            ]);
+
+
+
 
         // Ansicht rendern
         return view('frondend.continent_and_countries.index', [
@@ -71,14 +78,18 @@ class ContinentController extends Controller
         // Bilder abrufen (mit Fallback-Mechanismus)
         $images = $this->getContinentImages($continent, $repository);
 
-        // Header-Daten in der Session speichern
-        session()->put('headerData', [
-            'bgImgPath' => $images['bgImgPath'],
-            'mainImgPath' => $images['mainImgPath'],
-            'headerContent' => [
-                'main_text' => $continent->continent_header_text ?? 'Standardtext',
-            ],
+
+        session([
+            'headerData' => [
+                'bgImgPath' => $images['bgImgPath'],
+                'mainImgPath' => $images['mainImgPath'],
+                'title' => $continent->title,
+                'title_text' => $continent->continent_header_text,
+              //  'main_text' => $continent->continent_text ?? 'Standardtext',
+            ]
         ]);
+
+
 
         // Ansicht rendern
         return view('frondend.continent_and_countries.locations', [

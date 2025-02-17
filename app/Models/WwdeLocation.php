@@ -13,12 +13,13 @@ use App\Models\MonthlyClimateSummary;
 use App\Models\ModDailyClimateAverage;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ModHistoricalClimateData;
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WwdeLocation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Sluggable;
 
     /**
      * The table associated with the model.
@@ -38,6 +39,7 @@ class WwdeLocation extends Model
         'country_id',
         'title',
         'alias',
+        'slug',
         'iata_code',
         'flight_hours',
         'stop_over',
@@ -100,6 +102,19 @@ class WwdeLocation extends Model
         'best_traveltime_json',
     ];
 
+
+    /**
+     * Automatische Slug-Erstellung für die title-Spalte
+     */
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => 'title'
+            ]
+        ];
+    }
+
     /**
      * Relationships
      */
@@ -138,11 +153,14 @@ class WwdeLocation extends Model
 
 
     // Beziehung zu LocationImages
+    //public function images()
+    //{
+    //    return $this->hasMany(WwdeLocationImages::class);
+    //}
     public function images()
     {
-        return $this->hasMany(WwdeLocationImages::class);
+        return $this->hasMany(WwdeLocationImages::class, 'location_id', 'id');
     }
-
 
     // Primärbild abrufen
     // public function primaryImage()

@@ -16,6 +16,7 @@ use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
 use App\Http\Controllers\Backend\Imports\FilterLocationImportController;
 use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
 use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
+use App\Http\Controllers\Frontend\WishlistCompare\WishlistCompareController;
 
 
 
@@ -54,12 +55,15 @@ Route::get('/search-locations', [NewSearchController::class, 'search'])->name('s
 Route::get('/random-destination', [NewSearchController::class, 'randomDestination'])->name('search.random');
 
 
-Route::get('/compare-locations', function () {
-    $ids = request('ids') ? explode(',', request('ids')) : [];
-    $locations = \App\Models\WwdeLocation::whereIn('id', $ids)->get();
+//Route::get('/compare-locations', function () {
+//    $ids = request('ids') ? explode(',', request('ids')) : [];
+//    $locations = \App\Models\WwdeLocation::whereIn('id', $ids)->get();
+//
+//    return view('compare', compact('locations'));
+//})->name('compare');
 
-    return view('compare', compact('locations'));
-})->name('compare');
+//Route::get('/compare/{ids}', [WishlistCompareController::class, 'index'])->name('compare');
+Route::get('/compare/{slugs}', [WishlistCompareController::class, 'index'])->name('compare');
 
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {

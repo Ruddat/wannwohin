@@ -54,9 +54,14 @@ class WishlistComponent extends Component
     public function compareLocations()
     {
         if (count($this->wishlist) > 1) {
-            return redirect()->route('compare', ['ids' => implode(',', $this->wishlist)]);
+            // Hole die Slugs der Locations aus der Wishlist
+            $slugs = WwdeLocation::whereIn('id', $this->wishlist)->pluck('slug')->toArray();
+
+            // Redirect mit Slugs statt IDs
+            return redirect()->route('compare', ['slugs' => implode('-', $slugs)]);
         }
     }
+
 
     public function render()
     {
