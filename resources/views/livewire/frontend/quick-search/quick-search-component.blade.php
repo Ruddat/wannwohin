@@ -10,6 +10,18 @@
         style="{{ $isCollapsed ? 'transform: translateX(-100%);' : 'transform: translateX(0);' }}">
         <h4 class="text-center text-color-white">Suche anpassen</h4>
         <form wire:submit.prevent="redirectToResults">
+
+            <div class="form-group">
+                <label for="urlaub">@autotranslate('Urlaub im', app()->getLocale()) <span class="text-danger">*</span></label>
+                <select wire:model.change="urlaub" class="form-select py-1">
+                    <option value="">@autotranslate('Bitte auswählen', app()->getLocale())</option>
+                    @foreach ([1 => 'January', 2 => 'February', 3 => 'März', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'] as $number => $englishMonth)
+                        <option value="{{ $number }}">@autotranslate($englishMonth, app()->getLocale())</option>
+                    @endforeach
+                </select>
+                @error('urlaub') <span class="text-danger">{{ $message }}</span> @enderror
+            </div>
+
             <div class="form-group">
                 <label for="continent">Kontinent</label>
                 <select wire:model.change="continent" class="form-select py-1">
@@ -31,32 +43,6 @@
             </div>
 
             <div class="form-group">
-                <label for="urlaub">@autotranslate('Urlaub im', app()->getLocale())</label>
-                <select wire:model.change="urlaub" class="form-select py-1">
-                    <option value="">@autotranslate('Beliebig', app()->getLocale())</option>
-                    @foreach ([
-                        1 => 'January',
-                        2 => 'February',
-                        3 => 'März',
-                        4 => 'April',
-                        5 => 'May',
-                        6 => 'June',
-                        7 => 'July',
-                        8 => 'August',
-                        9 => 'September',
-                        10 => 'October',
-                        11 => 'November',
-                        12 => 'December'
-                    ] as $number => $englishMonth)
-                        <option value="{{ $number }}">@autotranslate($englishMonth, app()->getLocale())</option>
-                    @endforeach
-                </select>
-            </div>
-
-
-
-
-            <div class="form-group">
                 <label for="sonnenstunden">Sonnenstunden</label>
                 <select wire:model.change="sonnenstunden" class="form-select py-1">
                     <option value="">Beliebig</option>
@@ -76,18 +62,13 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <input type="checkbox" wire:model.change="nurInBesterReisezeit" id="beste_reisezeit" class="form-check-input">
+                <label for="beste_reisezeit">Nur in bester Reisezeit</label>
+            </div>
+
             <h5 class="text-white">Spezielle Wünsche</h5>
-            @foreach ([
-        'list_beach' => 'Strandurlaub',
-        'list_citytravel' => 'Städtereise',
-        'list_sports' => 'Sporturlaub',
-        'list_culture' => 'Kulturreise',
-        'list_nature' => 'Natururlaub',
-        'list_watersport' => 'Wassersport',
-        'list_wintersport' => 'Wintersport',
-        'list_mountainsport' => 'Bergsport',
-        'list_amusement_park' => 'Freizeitpark',
-    ] as $field => $label)
+            @foreach ($specialWishes as $field => $label)
                 <div>
                     <input wire:model.change="spezielle" id="{{ $field }}" type="checkbox"
                         value="{{ $field }}" class="form-check-input">
@@ -95,16 +76,28 @@
                 </div>
             @endforeach
 
+
+
             <button type="submit" class="bg-warning text-color-black mt-3 btn py-4 px-1">
                 <i class="fas fa-search me-2"></i>
                 <span>{{ $filteredLocations }}</span> Ergebnisse von <span>{{ $totalLocations }}</span> anzeigen
             </button>
         </form>
 
-        <div class="mt-2">
-            <a class="text-decoration-underline text-white" href="{{ route('detail_search') }}"><i
-                    class="fas fa-arrow-circle-right text-warning rounded-circle me-1 bg-white"></i>Detailsuche</a>
+
+        <div id="icon-section" class="d-flex align-items-center mt-3 custom-icon-group">
+            <!-- Detailsuche-Link mit funktionierendem wire:click -->
+            <a href="{{ route('detail_search') }}" class="custom-icon-link d-flex align-items-center"
+               data-bs-toggle="tooltip" title="Zur Detail-Suche"
+               wire:click.prevent="collapseSidebar">
+                <i class="fas fa-arrow-circle-right fa-lg me-2"></i> Detailsuche
+            </a>
+            <!-- Reset-Button -->
+            <button type="button" wire:click="resetFilters" class="btn custom-icon-btn rounded-circle p-2" data-bs-toggle="tooltip" title="Filter zurücksetzen">
+                <i class="fas fa-sync-alt fa-lg"></i>
+            </button>
         </div>
+
     </div>
 
     @script
@@ -132,8 +125,64 @@
                 initializeSidebarState();
             });
         </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        Livewire.on("sidebarCollapsed", () => {
+            document.getElementById("sidebar").style.transform = "translateX(-100%)";
+        });
+    });
+    </script>
+
     @endscript
 
+
+
+    <style>
+        /* Isolierung der Styles für diesen Abschnitt */
+        #icon-section {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Abstand zwischen Icon und Link */
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        #icon-section .custom-icon-btn {
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 1.3rem;
+            padding: 8px;
+            transition: color 0.3s ease;
+        }
+
+        #icon-section .custom-icon-btn:hover {
+            color: #ffc107; /* Bootstrap Warnfarbe */
+            text-decoration: none;
+        }
+
+        #icon-section .custom-icon-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-size: 1rem;
+            color: white;
+            transition: color 0.3s ease;
+        }
+
+        #icon-section .custom-icon-link i {
+            font-size: 1.5rem;
+            margin-right: 5px;
+            color: #ffc107;
+            text-decoration: none;
+        }
+
+        #icon-section .custom-icon-link:hover {
+            color: #ffc107;
+            text-decoration: none;
+        }
+    </style>
 
     <style>
         #sidebarButton {
@@ -169,8 +218,7 @@
             margin-right: 0.5rem;
         }
 
-        .btn {
-            width: 100%;
-        }
+
+
     </style>
 </div>

@@ -53,6 +53,15 @@ Route::post('/location-text-import', [FilterLocationImportController::class, 'im
 Route::get('/search-locations', [NewSearchController::class, 'search'])->name('search.locations');
 Route::get('/random-destination', [NewSearchController::class, 'randomDestination'])->name('search.random');
 
+
+Route::get('/compare-locations', function () {
+    $ids = request('ids') ? explode(',', request('ids')) : [];
+    $locations = \App\Models\WwdeLocation::whereIn('id', $ids)->get();
+
+    return view('compare', compact('locations'));
+})->name('compare');
+
+
 Route::middleware(['web', 'breadcrumbs'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
 

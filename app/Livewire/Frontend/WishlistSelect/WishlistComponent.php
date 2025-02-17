@@ -10,8 +10,11 @@ class WishlistComponent extends Component
     public $wishlist = [];
     public $showWishlist = false;
 
-    // 🟢 Listener für das Event "wishlistUpdated"
-    protected $listeners = ['wishlistUpdated' => 'updateWishlist'];
+    // 🟢 Event-Listener für Wishlist-Updates
+    protected $listeners = [
+        'wishlistUpdated' => 'updateWishlist',
+        'removeFromWishlist' => 'removeFromWishlist'
+    ];
 
     public function mount()
     {
@@ -36,17 +39,23 @@ class WishlistComponent extends Component
         session()->put('wishlist', $wishlist);
         $this->wishlist = $wishlist;
 
-        // 🟢 Event an alle Komponenten senden, damit Buttons sich aktualisieren
-        $this->dispatch('wishlistUpdated')->to(WishlistButtonComponent::class);
+        $this->dispatch('wishlistUpdated');
     }
-    
+
     public function clearWishlist()
     {
         session()->forget('wishlist');
         $this->wishlist = [];
 
-        // 🟢 Event zum Aktualisieren aller Buttons
         $this->dispatch('wishlistUpdated');
+    }
+
+    // 🆕 Methode für Vergleichs-Button
+    public function compareLocations()
+    {
+        if (count($this->wishlist) > 1) {
+            return redirect()->route('compare', ['ids' => implode(',', $this->wishlist)]);
+        }
     }
 
     public function render()

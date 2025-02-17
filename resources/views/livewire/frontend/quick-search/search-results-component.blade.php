@@ -28,6 +28,18 @@
                             //  dd($locations);
                             @endphp
 
+
+
+
+
+
+
+
+
+
+
+
+
                                 @forelse($locations as $location)
                                     <article class="timeline-box right custom-box-shadow-2">
                                         <div class="row">
@@ -134,7 +146,8 @@
                                                         <div class="d-flex pb-2 border-bottom w-100">
                                                             <div class="col-6">Wasser</div>
                                                             <div class="col-4">{{ intval($location->climate_data['water_temperature'] ?? 'N/A') }}℃</div>
-                                                        </div>
+
+                                                    </div>
                                                     </div>
                                                     <div class="col-12 col-md-5 d-flex align-items-end justify-content-start">
                                                         <div class="d-flex pb-2 border-bottom w-100">

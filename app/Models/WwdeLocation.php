@@ -223,10 +223,26 @@ class WwdeLocation extends Model
     }
 
     // Scope für Preis-Filter
-    public function scopeFilterByPrice($query, $price)
+    public function scopeFilterByPrice($query, $priceId)
     {
-        if (!empty($price)) {
-            $query->where('price_flight', '<=', $price);
+
+        $priceRange = WwdeRange::find($priceId); // Hier den echten Preis holen
+//dd($priceRange);
+
+
+        if ($priceRange) {
+            $rangeToShow = $priceRange->Range_to_show;
+
+            if (str_contains($rangeToShow, '-')) {
+                [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
+                $query->whereBetween('price_flight', [$minPrice, $maxPrice]);
+            } elseif (str_contains($rangeToShow, '>')) {
+                $minPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '>=', $minPrice);
+            } else {
+                $maxPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '<=', $maxPrice);
+            }
         }
     }
 
@@ -241,9 +257,12 @@ class WwdeLocation extends Model
     // Scope für Sonnenstunden-Filter
     public function scopeFilterBySunshine($query, $sonnenstunden)
     {
-        if (!empty($sonnenstunden)) {
-            $query->whereHas('climates', function ($q) use ($sonnenstunden) {
-                $q->where('sunshine_per_day', '>=', $sonnenstunden);
+        // Sicherstellen, dass eine Zahl extrahiert wird
+        $minHours = (int) str_replace('more_', '', $sonnenstunden);
+
+        if ($minHours > 0) {
+            $query->whereHas('climates', function ($q) use ($minHours) {
+                $q->where('sunshine_per_day', '>=', $minHours);
             });
         }
     }
@@ -251,9 +270,12 @@ class WwdeLocation extends Model
     // Scope für Wassertemperatur-Filter
     public function scopeFilterByWaterTemperature($query, $wassertemperatur)
     {
-        if (!empty($wassertemperatur)) {
-            $query->whereHas('climates', function ($q) use ($wassertemperatur) {
-                $q->where('water_temperature', '>=', $wassertemperatur);
+        // Sicherstellen, dass eine Zahl extrahiert wird
+        $minTemp = (int) str_replace('more_', '', $wassertemperatur);
+
+        if ($minTemp > 0) {
+            $query->whereHas('climates', function ($q) use ($minTemp) {
+                $q->where('water_temperature', '>=', $minTemp);
             });
         }
     }

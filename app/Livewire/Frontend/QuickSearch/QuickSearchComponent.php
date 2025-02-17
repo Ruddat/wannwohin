@@ -17,6 +17,7 @@ class QuickSearchComponent extends Component
     public $sonnenstunden;
     public $wassertemperatur;
     public $spezielle = []; // Array für mehrere spezielle Wünsche
+    public $nurInBesterReisezeit = false;
 
     public $totalLocations = 0; // Gesamtanzahl aller Standorte
     public $filteredLocations = 0; // Gefilterte Anzahl der Standorte
@@ -30,6 +31,7 @@ class QuickSearchComponent extends Component
     ];
 
     protected $rules = [
+        'urlaub' => 'required|numeric|min:1|max:12',
         'continent' => 'nullable|string',
         'price' => 'nullable|string',
         'urlaub' => 'nullable|string',
@@ -38,39 +40,79 @@ class QuickSearchComponent extends Component
         'spezielle' => 'nullable|array',
     ];
 
+    public $specialWishes = [
+        'list_beach' => 'Strandurlaub',
+        'list_citytravel' => 'Städtereise',
+        'list_sports' => 'Sporturlaub',
+        'list_island' => 'Inselurlaub',
+        'list_culture' => 'Kulturreise',
+        'list_nature' => 'Natururlaub',
+        'list_watersport' => 'Wassersport',
+        'list_wintersport' => 'Wintersport',
+        'list_mountainsport' => 'Bergsport',
+        'list_biking' => 'Fahrradurlaub',
+        'list_fishing' => 'Angelurlaub',
+        'list_amusement_park' => 'Freizeitpark',
+        'list_water_park' => 'Wasserpark',
+        'list_animal_park' => 'Tierpark',
+    ];
+
+
 
     public function mount(LocationRepository $repository)
     {
+        // Session-Werte laden, falls vorhanden
+        $this->continent = session('quicksearch.continent', null);
+        $this->price = session('quicksearch.price', null);
+//        $this->urlaub = session('quicksearch.urlaub', null);
+        $this->urlaub = session('quicksearch.urlaub', date('n')); // Automatisch aktueller Monat
 
+        $this->sonnenstunden = session('quicksearch.sonnenstunden', null);
+        $this->wassertemperatur = session('quicksearch.wassertemperatur', null);
+        $this->spezielle = session('quicksearch.spezielle', []);
+        $this->nurInBesterReisezeit = session('quicksearch.nurInBesterReisezeit', false);
 
-// Cookie-Wert auslesen und sicherstellen, dass es ein Boolean ist
-$this->isCollapsed = filter_var(cookie('isCollapsed', false), FILTER_VALIDATE_BOOLEAN);
-
-$this->isCollapsed = session('isCollapsed', false); // Standard: false
+        // Cookie-Wert für Sidebar-Status laden
+        $this->isCollapsed = filter_var(cookie('isCollapsed', false), FILTER_VALIDATE_BOOLEAN);
+        $this->isCollapsed = session('isCollapsed', false);
 
         // Header Content und Bilder laden
         $headerData = $repository->getHeaderContent();
-
         $this->headerContent = $headerData['headerContent'] ?? null;
         $this->bgImgPath = $headerData['bgImgPath'] ?? null;
         $this->mainImgPath = $headerData['mainImgPath'] ?? null;
 
-        // Alle Locations laden (wie zuvor)
+        // Alle Locations laden
         $this->allLocations = WwdeLocation::where('status', 'active')
             ->where('finished', 1)
             ->get();
 
-//dd($this->allLocations);
-
-
         $this->totalLocations = $this->allLocations->count();
-        $this->filteredLocations = $this->totalLocations;
+
+        // Laden der gefilterten Locations aus der Session
+        $this->filteredLocations = session('quicksearch.filteredLocations', $this->totalLocations);
+
+
+        //$this->filteredLocations = $this->totalLocations;
     }
 
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
         $this->filterLocations();
+
+        // Alle Filter-Werte in die Session speichern
+        session([
+            'quicksearch.continent' => $this->continent,
+            'quicksearch.price' => $this->price,
+            'quicksearch.urlaub' => $this->urlaub,
+            'quicksearch.sonnenstunden' => $this->sonnenstunden,
+            'quicksearch.wassertemperatur' => $this->wassertemperatur,
+            'quicksearch.spezielle' => $this->spezielle,
+            'quicksearch.nurInBesterReisezeit' => $this->nurInBesterReisezeit,
+            'quicksearch.filteredLocations' => $this->filteredLocations, // Speicherung des gefilterten Werts
+
+        ]);
     }
 
     public function filterLocations()
@@ -103,15 +145,36 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
             $this->applyPriceFilter($query);
         }
 
-        // Filter: Urlaub (Monat) mit direkten Zahlenwerten (1–12)
-        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+        //if (empty($this->urlaub)) {
+        //    return; // Keine Filterung ohne Monat
+       // }
+
+
+        if (!empty($this->urlaub)) {
             $monthNumber = (int) $this->urlaub;
-//dd($monthNumber);
-            // Stelle sicher, dass der Monat zwischen 1 und 12 liegt
-            if ($monthNumber >= 1 && $monthNumber <= 12) {
+
+            if ($this->nurInBesterReisezeit) {
                 $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+            } else {
+              //  $query->whereRaw('JSON_CONTAINS(all_traveltime_json, ?)', [json_encode($monthNumber)]);
             }
         }
+
+
+        if ($this->nurInBesterReisezeit) {
+            $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode((int)$this->urlaub)]);
+        }
+
+
+        // Filter: Urlaub (Monat) mit direkten Zahlenwerten (1–12)
+      //  if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+       //     $monthNumber = (int) $this->urlaub;
+//dd($monthNumber);
+            // Stelle sicher, dass der Monat zwischen 1 und 12 liegt
+         ////   if ($monthNumber >= 1 && $monthNumber <= 12) {
+            //    $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+          //  }
+     //   }
 
         // Filter: Sonnenstunden
         if (!empty($this->sonnenstunden)) {
@@ -138,6 +201,17 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
 
         // Gefilterte Locations zählen
         $this->filteredLocations = $query->count();
+
+
+    // ✅ Livewire zwingen, das Template neu zu rendern
+    $this->dispatch('filteredLocationsUpdated', $this->filteredLocations);
+
+    // ✅ Speicherung in die Session für persistente Werte
+    session(['quicksearch.filteredLocations' => $this->filteredLocations]);
+
+        // Speicherung in die Session
+        session(['quicksearch.filteredLocations' => $this->filteredLocations]);
+
     }
 
 
@@ -168,6 +242,10 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
 
     public function redirectToResults()
     {
+        $this->validate([
+            'urlaub' => 'required|numeric|min:1|max:12',
+        ]);
+
         $queryParams = [
             'continent' => $this->continent,
             'price' => $this->price,
@@ -175,13 +253,17 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
             'sonnenstunden' => $this->sonnenstunden,
             'wassertemperatur' => $this->wassertemperatur,
             'spezielle' => $this->spezielle,
+            'nurInBesterReisezeit' => $this->nurInBesterReisezeit ? 1 : 0, // Damit es als Parameter mitgegeben wird
         ];
 
-//dd($queryParams);
+        $this->toggleCollapse();
 
+        // Speicherung in die Session
+        session(['quicksearch.filteredLocations' => $this->filteredLocations]);
 
         return redirect()->route('search.results', array_filter($queryParams));
     }
+
 
     private function applyPriceFilter($query)
     {
@@ -207,15 +289,46 @@ $this->isCollapsed = session('isCollapsed', false); // Standard: false
     {
         $this->isCollapsed = true;
 
-        // Optional: Zustand in einem Cookie speichern
+        // ✅ Livewire-Frontend über das Event informieren
+        $this->dispatch('sidebarCollapsed', true);
+
+        // Zustand im Cookie speichern
         cookie()->queue('isCollapsed', true, 60 * 24 * 30); // 30 Tage
 
         // Zustand in der Session speichern
         session(['isCollapsed' => $this->isCollapsed]);
 
-        // Nach dem Einklappen zur "Detailsuche"-Route umleiten
+        // ✅ Warten auf Frontend-Update vor Redirect
         return redirect()->route('detail_search');
     }
+
+    public function resetFilters()
+    {
+        // Werte zurücksetzen
+        $this->continent = null;
+        $this->price = null;
+        $this->urlaub = null;
+        $this->sonnenstunden = null;
+        $this->wassertemperatur = null;
+        $this->spezielle = [];
+
+        // Session-Werte löschen
+        session()->forget([
+            'quicksearch.continent',
+            'quicksearch.price',
+            'quicksearch.urlaub',
+            'quicksearch.sonnenstunden',
+            'quicksearch.wassertemperatur',
+            'quicksearch.spezielle',
+            'quicksearch.nurInBesterReisezeit',
+            'quicksearch.filteredLocations',
+
+        ]);
+
+        // Nach dem Zurücksetzen erneut filtern
+        $this->filterLocations();
+    }
+
 
     public function render()
     {

@@ -4,8 +4,9 @@ namespace App\Livewire\Frontend\QuickSearch;
 
 use Livewire\Component;
 use App\Models\WwdeLocation;
-use App\Models\HeaderContent;
 use Livewire\WithPagination;
+use App\Models\HeaderContent;
+use Illuminate\Support\Facades\Storage;
 use App\Repositories\LocationRepository;
 
 class SearchResultsComponent extends Component
@@ -18,6 +19,7 @@ class SearchResultsComponent extends Component
     public $sonnenstunden;
     public $wassertemperatur;
     public $spezielle;
+    public $nurInBesterReisezeit = false;
 
     public $sortBy = 'title';
     public $sortDirection = 'asc';
@@ -30,25 +32,52 @@ class SearchResultsComponent extends Component
     {
         // Header Content und Bilder laden
         $headerData = $repository->getHeaderContent();
-
         session()->put('headerData', [
             'headerContent' => $headerData['headerContent'] ?? null,
             'bgImgPath' => $headerData['bgImgPath'] ?? null,
             'mainImgPath' => $headerData['mainImgPath'] ?? null,
         ]);
 
-        $this->headerContent = $headerData['headerContent'] ?? null;
-        $this->bgImgPath = $headerData['bgImgPath'] ?? null;
-        $this->mainImgPath = $headerData['mainImgPath'] ?? null;
+         // HeaderContent abrufen
+         $headerContent = HeaderContent::inRandomOrder()->first();
+
+         // Bildpfade validieren
+         $bgImgPath = $headerContent->bg_img ?
+             (Storage::exists($headerContent->bg_img)
+                 ? Storage::url($headerContent->bg_img)
+                 : (file_exists(public_path($headerContent->bg_img))
+                     ? asset($headerContent->bg_img)
+                     : null))
+             : null;
+
+         $mainImgPath = $headerContent->main_img ?
+             (Storage::exists($headerContent->main_img)
+                 ? Storage::url($headerContent->main_img)
+                 : (file_exists(public_path($headerContent->main_img))
+                     ? asset($headerContent->main_img)
+                     : null))
+             : null;
+
+             session([
+                'headerData' => [
+                    'bgImgPath' => $bgImgPath,
+                    'mainImgPath' => $mainImgPath,
+                    'title' => $headerContent->title,
+                    'title_text' => $headerContent->main_text,
+                    'main_text' => $headerContent->content,
+                ]
+            ]);
+
+
 
         // Suchparameter aus der URL laden
         $this->continent = request('continent');
         $this->price = request('price');
         $this->urlaub = request('urlaub');
-        //dd($this->urlaub);
         $this->sonnenstunden = request('sonnenstunden');
         $this->wassertemperatur = request('wassertemperatur');
         $this->spezielle = request('spezielle');
+        $this->nurInBesterReisezeit = request('nurInBesterReisezeit', false);
     }
 
     public function updatedSortBy()
@@ -56,32 +85,37 @@ class SearchResultsComponent extends Component
         $this->resetPage(); // Pagination zurücksetzen, wenn die Sortierung geändert wird
     }
 
-    public function scopeFilterByTravelTime($query, $month)
-    {
-        if (!empty($month) && is_numeric($month)) {
-            return $query->whereJsonContains('best_traveltime_json', (int) $month);
-        }
-        return $query;
-    }
-
-
     public function render()
     {
         $query = WwdeLocation::query()
-            ->active() // Filter: Nur aktive und fertige Locations
+            ->select('wwde_locations.*') // Alle Spalten von Locations
+            ->with('climates') // Alle Klimadaten mitladen
+            ->active()
             ->filterByContinent($this->continent)
             ->filterByPrice($this->price)
-            ->filterByTravelTime((int) $this->urlaub)
             ->filterBySunshine($this->sonnenstunden)
             ->filterByWaterTemperature($this->wassertemperatur)
             ->filterBySpecials($this->spezielle);
 
-        // Ergebnisse sortieren und paginieren
+        // **Filter nach Reisezeit**
+        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+            $monthNumber = (int) $this->urlaub;
+
+            if ($this->nurInBesterReisezeit) {
+                $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+            }
+        }
+
+        // **Sortieren und paginieren**
         $locations = $query->orderBy("wwde_locations.{$this->sortBy}", $this->sortDirection)
             ->paginate(10);
 
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
+            'selectedMonth' => $this->urlaub, // Monat ans Blade übergeben
         ]);
     }
+
+
+
 }

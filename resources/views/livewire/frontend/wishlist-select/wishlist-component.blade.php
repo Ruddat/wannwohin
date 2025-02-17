@@ -28,6 +28,13 @@
                     <button wire:click="clearWishlist" class="clear-btn">
                         <i class="fa fa-trash"></i> Wishlist leeren
                     </button>
+
+                    @if(count($wishlist) > 1)
+                    <button wire:click="compareLocations" class="compare-btn">
+                        <i class="fa fa-exchange"></i> Vergleichen
+                    </button>
+                @endif
+
                 @else
                     <p class="text-muted">Noch keine Locations in der Wishlist.</p>
                 @endif
@@ -193,7 +200,23 @@
     .clear-btn:hover {
         background: darkred;
     }
+    .compare-btn {
+    margin-top: 10px;
+    background: blue;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    width: 100%;
+}
 
+.compare-btn:hover {
+    background: darkblue;
+}
 
 
 </style>
