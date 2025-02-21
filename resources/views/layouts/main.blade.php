@@ -283,6 +283,7 @@
         'detail_search',
         'continent.countries',
         'list-country-locations',
+        'compare',
         'ergebnisse.anzeigen'))
 
     @if($panoramaLocationPicture || $mainLocationPicture)

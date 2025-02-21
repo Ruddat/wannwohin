@@ -56,6 +56,15 @@
 
             </div>
 
+
+
+
+
+
+
+
+
+
             <!-- Klimatabelle -->
             <div class="experience-description col-lg-9 col-sm-7 bg-color-light px-3 py-3 rounded-end">
                 <h4 class="text-color-dark font-weight-semibold mb-4">Klimatabelle {{ $location->title }}</h4>
@@ -127,8 +136,10 @@
     </div>
 
 
-
 </section>
+
+
+
 
 <style>
     .weather-box {
@@ -208,3 +219,5 @@
         color: #0573cc;
     }
     </style>
+
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\WwdeClimate;
 use App\Models\WwdeLocation;
+use App\Helpers\HeaderHelper;
 use App\Models\HeaderContent;
 use App\Services\ClimateService;
 use App\Services\GeocodeService;
@@ -164,35 +165,17 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
             return DB::table('wwde_locations')->count();
         });
 
-         // HeaderContent abrufen
-         $headerContent = HeaderContent::inRandomOrder()->first();
 
-         // Bildpfade validieren
-         $bgImgPath = $headerContent->bg_img ?
-             (Storage::exists($headerContent->bg_img)
-                 ? Storage::url($headerContent->bg_img)
-                 : (file_exists(public_path($headerContent->bg_img))
-                     ? asset($headerContent->bg_img)
-                     : null))
-             : null;
+        $headerData = HeaderHelper::getHeaderContent();
+        session(['headerData' => $headerData]);
 
-         $mainImgPath = $headerContent->main_img ?
-             (Storage::exists($headerContent->main_img)
-                 ? Storage::url($headerContent->main_img)
-                 : (file_exists(public_path($headerContent->main_img))
-                     ? asset($headerContent->main_img)
-                     : null))
-             : null;
+//dd($headerData);
 
-             session([
-                'headerData' => [
-                    'bgImgPath' => $bgImgPath,
-                    'mainImgPath' => $mainImgPath,
-                    'title' => $headerContent->title,
-                    'title_text' => $headerContent->main_text,
-                    'main_text' => $headerContent->content,
-                ]
-            ]);
+        // Zugriff auf Variablen
+        $bgImgPath = $headerData['bgImgPath'];
+        $mainImgPath = $headerData['mainImgPath'];
+        $main_text = $headerData['title_text'];
+
 
 
          // Gesamtladezeit loggen
@@ -201,15 +184,52 @@ Log::info('TopTenLocationWithClima:', $TopTenLocationWithClima);
         // Gesamtladezeit loggen
         //Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
 
+
+
+        // Hole die verschiedenen Vorschläge aus der Datenbank
+        $categories = [
+            'inspiration' => 'Inspiration',
+            'wetter' => 'Wetter',
+            'erlebnis' => 'Erlebnis',
+            'sport' => 'Sport',
+            'freizeitpark' => 'Freizeitpark',
+
+        ];
+
+        // Lade die Daten aus der Datenbank
+        $suggestions = DB::table('mod_location_filters')
+            ->select('text_type', 'uschrift', 'text')
+            ->whereIn('text_type', array_values($categories)) // Nur relevante Kategorien holen
+            ->get()
+            ->groupBy('text_type'); // Gruppiere nach Kategorie
+
+
+    // Füge Icons für jede Kategorie hinzu
+    $icons = [
+        'inspiration' => 'fas fa-th-large', // Domino-Stein
+        'wetter' => 'fas fa-sun',
+        'erlebnis' => 'fas fa-map-signs',
+        'sport' => 'fas fa-running',
+        'freizeitpark' => 'fas fa-ticket-alt',
+    ];
+
+
+
+
+
         // Rückgabe der View
         return view('pages.main.index', [
             'top_ten' => $TopTenLocationWithClima,
             'total_locations' => $totalLocations,
             'panorama_location_picture' => $bgImgPath,
             'main_location_picture' => $mainImgPath,
-            'panorama_location_text' => $headerContent->main_text ?? null,
+            'panorama_location_text' => $main_text ?? null,
+            'categories' => $categories,
+            'suggestions' => $suggestions,
+            'icons' => $icons,
         ]);
     }
+
 
 
     private function getCountryCode($countryId)

@@ -103,11 +103,26 @@
                 />
             </div>
         </div>
+
+        @if (session()->has('message'))
+        <div class="alert alert-success">
+            {{ session('message') }}
+        </div>
+    @endif
+
+    @if (session()->has('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
         <div class="card-footer text-end">
             <button wire:click="save" class="btn btn-primary">
                 <i class="ti ti-check"></i> Speichern
             </button>
         </div>
+
+
     </div>
 </div>
 

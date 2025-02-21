@@ -106,6 +106,44 @@ foreach ($worksheet->getRowIterator() as $rowIndex => $row) {
     $pres = $rowData[10] ?? null;
     $tsun = isset($rowData[11]) ? $rowData[11] / 60 : null; // Convert minutes to hours
 
+// Monatsspezifische maximale Sonnenstunden festlegen
+$monthMaxSunshine = [
+    1 => 8,  // Januar
+    2 => 8,  // Februar
+    3 => 10, // März
+    4 => 12, // April
+    5 => 14, // Mai
+    6 => 16, // Juni
+    7 => 16, // Juli
+    8 => 14, // August
+    9 => 12, // September
+    10 => 10, // Oktober
+    11 => 8, // November
+    12 => 6, // Dezember
+];
+
+// Schätze Sonnenstunden dynamisch auf Basis von Monat und Temperaturdifferenz
+if (empty($tsun)) {
+    if ($tmax !== null && $tmin !== null) {
+        $temperatureDiff = $tmax - $tmin;
+
+        // Maximale Sonnenstunden für den jeweiligen Monat
+        $maxSunshine = $monthMaxSunshine[$month] ?? 8; // Standard: 8 Stunden, falls Monat unbekannt
+
+        // Schätzung: Temperaturdifferenz relativ zur Maximaltemperatur
+        $estimatedSunshine = max(0, min($maxSunshine, ($temperatureDiff / max(1, $tmax)) * $maxSunshine));
+
+        $tsun = round($estimatedSunshine, 2);
+    } else {
+        // Wenn Temperaturdaten fehlen, zufälliger Wert im Bereich der maximal möglichen Sonnenstunden
+        $maxSunshine = $monthMaxSunshine[$month] ?? 8;
+        $tsun = round(mt_rand($maxSunshine * 50, $maxSunshine * 100) / 100, 2);
+    }
+}
+
+
+
+
     // Log missing data for debugging
     if ($tavg === null || $tmin === null || $tmax === null) {
         $this->warn("Temperature data is incomplete for row $rowIndex in station: {$station->station_id}");

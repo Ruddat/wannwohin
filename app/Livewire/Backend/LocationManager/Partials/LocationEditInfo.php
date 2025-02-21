@@ -31,7 +31,8 @@ class LocationEditInfo extends Component
     public $population;
     public $continents = [];
     public $countries = [];
-
+    public $finished;
+    public $status;
 
     public function mount($locationId)
     {
@@ -59,6 +60,8 @@ class LocationEditInfo extends Component
         $this->bundesstaatShort = $location->bundesstaat_short;
         $this->noCityBut = $location->no_city_but;
         $this->population = $location->population;
+        $this->finished = $location->finished;
+        $this->status = $location->status;
 
         // Länder des ausgewählten Kontinents laden, falls vorhanden
         if ($this->continentId) {
@@ -93,6 +96,8 @@ class LocationEditInfo extends Component
             'bundesstaatShort' => 'nullable|string|max:255',
             'noCityBut' => 'nullable|string|max:255',
             'population' => 'nullable|integer',
+            'status' => 'required|in:active,pending,inactive',
+            'finished' => 'required|boolean',
         ]);
 
         $location = WwdeLocation::findOrFail($this->locationId);
@@ -118,6 +123,8 @@ class LocationEditInfo extends Component
             'bundesstaat_short' => $this->bundesstaatShort,
             'no_city_but' => $this->noCityBut,
             'population' => $this->population,
+            'status' => $this->status,
+            'finished' => $this->finished,
         ]);
 
         session()->flash('success', 'Standortinformationen erfolgreich gespeichert.');

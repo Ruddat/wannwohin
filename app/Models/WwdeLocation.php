@@ -137,7 +137,10 @@ class WwdeLocation extends Model
     {
         return $this->hasMany(WwdeClimate::class, 'location_id', 'id');
     }
-
+    public function historicalClimates()
+    {
+        return $this->hasMany(ClimateMonthlyData::class, 'location_id', 'id');
+    }
 
     public function dailyClimates()
     {
@@ -310,6 +313,15 @@ class WwdeLocation extends Model
             }
         }
     }
+
+// Scope für gefilterte IDs
+public function scopeFilterByIds($query, $ids)
+{
+    if (!empty($ids)) {
+        $query->whereIn('id', $ids);
+    }
+}
+
 
 
     public function scopeFilterByClimateRange($query, $request)

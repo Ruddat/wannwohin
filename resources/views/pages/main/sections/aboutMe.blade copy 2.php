@@ -36,6 +36,37 @@
                         @autotranslate('ONLINE REISEFÜHRER', app()->getLocale())
                     </h2>
 
+                    <!-- Suchcontainer -->
+                    <div class="search-container p-4 shadow-sm rounded bg-white">
+                        <h4 class="text-center font-weight-bold mb-3">
+                            @autotranslate('Finde dein Traumziel', app()->getLocale())
+                        </h4>
+
+                        <!-- Suchfeld & Zufallsbutton -->
+                        <div class="input-group search-bar">
+                            <input type="text" class="form-control" placeholder="@autotranslate('Wohin möchtest du reisen?', app()->getLocale())" id="travel-search" autocomplete="off">
+                            <button class="btn btn-primary px-3" id="random-destination-btn">
+                                🎲 @autotranslate('Ich bin unentschlossen!', app()->getLocale())
+                            </button>
+                        </div>
+
+                        <!-- Filter für Aktivitäten -->
+                        <div class="filter-container mt-3">
+                            <label for="filter-activity" class="form-label">
+                                @autotranslate('Aktivität wählen:', app()->getLocale())
+                            </label>
+                            <select class="form-select" id="filter-activity">
+                                <option value="">@autotranslate('Alle Aktivitäten', app()->getLocale())</option>
+                                <option value="Erlebnis">@autotranslate('Erlebnis', app()->getLocale())</option>
+                                <option value="Sport">@autotranslate('Sport', app()->getLocale())</option>
+                                <option value="Freizeitpark">@autotranslate('Freizeitpark', app()->getLocale())</option>
+                            </select>
+                        </div>
+
+                        <!-- Suchergebnisse -->
+                        <ul id="search-results" class="list-group search-results mt-2"></ul>
+                    </div>
+
                     <!-- Beschreibungstexte -->
                     <p>
                         @autotranslate('Herzlich willkommen bei www.wann-wohin.de – Ihrem Online Reiseführer. Sie haben Urlaub und Lust auf einen Tapetenwechsel – wissen aber nicht wohin die nächste Reise gehen soll? Wir haben auf dieser Seite unterschiedliche Möglichkeiten für Sie zusammengestellt, mit denen Sie schnell und unkompliziert Ihr Traumziel finden.', app()->getLocale())

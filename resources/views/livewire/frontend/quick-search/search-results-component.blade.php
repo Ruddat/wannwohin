@@ -187,6 +187,45 @@
         {{ $locations->links() }}
     </div>
 
+
+<!-- ✅ HTML: Rein CSS-basierte Timeline -->
+
+<div class="container mt-2 mb-2">
+
+<ul class="timeline">
+    @foreach($locations as $location)
+        <li>
+            <div class="timeline-content">
+                <div class="row">
+                <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 m-0 overflow-hidden">
+                    <a href="{{ route('location.details', [
+                        'continent' => $location->country->continent->alias,
+                        'country' => $location->country->alias,
+                        'location' => $location->alias,
+                    ]) }}" class="p-0 m-0">
+                        <div class="my-zoom" style="background-image: url('{{ asset("{$location->text_pic1}") }}')">
+                        </div>
+                    </a>
+                </div>
+                <div class="experience-description col-lg-9 col-sm-7 bg-color-light">
+                    <h4 class="text-7 text-dark mb-4">{{ $location->title }}</h4>
+                    <p>Preis: {{ number_format($location->price_flight, 0, ',', '.') }} €</p>
+                    <p>Temperatur: {{ intval($location->climate_data['main']['temp'] ?? 'N/A') }}℃</p>
+                    <p>Sonnenstunden: {{ $location->climate_data['sunshine_per_day'] ?? 'N/A' }} h</p>
+                    <p>Beste Reisezeit: {{ $location->best_traveltime ?? 'N/A' }}</p>
+                </div>
+
+
+
+
+
+            </div>
+            </div>
+        </li>
+    @endforeach
+</ul>
+</div>
+
         <script>
             document.getElementById('pagination').onchange = function() {
                 const params = new URLSearchParams(window.location.search);
@@ -233,4 +272,86 @@
             }
         }
     </style>
+<style>
+ul.timeline {
+    list-style-type: none;
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+/* Linie links platzieren */
+ul.timeline:before {
+    content: '';
+    background: #d4d9df;
+    display: inline-block;
+    position: absolute;
+    left: 30px; /* Linie links positionieren */
+    width: 2px;
+    height: 100%;
+    z-index: 400;
+}
+
+/* Eintrag-Elemente */
+ul.timeline > li {
+    margin: 50px 0;
+    padding-left: 60px; /* Abstand zur Linie */
+    position: relative;
+}
+
+/* Punkte mittig auf der Linie */
+ul.timeline > li:before {
+    content: '';
+    background: white;
+    display: inline-block;
+    position: absolute;
+    top: 50%; /* Punkt mittig platzieren */
+    transform: translateY(-50%);
+    left: 21px; /* Abstand zur Linie */
+    border-radius: 50%;
+    border: 3px solid #22c0e8;
+    width: 20px;
+    height: 20px;
+    z-index: 401;
+    transition: background 0.3s ease;
+}
+
+/* Hover-Effekt für Punkte */
+ul.timeline > li:hover:before {
+    background: #22c0e8;
+}
+
+/* Inhalt der Timeline-Boxen */
+.timeline-content {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    text-align: left;
+}
+
+/* Hover-Effekt für die Boxen */
+ul.timeline > li:hover .timeline-content {
+    transform: translateY(-5px);
+}
+
+/* Responsive Anpassung */
+@media (max-width: 768px) {
+    ul.timeline {
+        padding-left: 20px;
+    }
+
+    ul.timeline:before {
+        left: 15px;
+    }
+
+    ul.timeline > li:before {
+        left: 10px;
+    }
+}
+
+</style>
+
+
    </div>

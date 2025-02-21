@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
+use App\Http\Controllers\WetterTestController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
@@ -63,9 +64,12 @@ Route::get('/random-destination', [NewSearchController::class, 'randomDestinatio
 //})->name('compare');
 
 //Route::get('/compare/{ids}', [WishlistCompareController::class, 'index'])->name('compare');
-Route::get('/compare/{slugs?}', [WishlistCompareController::class, 'index'])
-    ->where('slugs', '.*')
-    ->name('compare');
+
+
+
+    Route::get('/wetter', [WetterTestController::class, 'showWeather']);
+
+
 
 
 Route::middleware(['web', 'breadcrumbs'])->group(function () {
@@ -108,6 +112,11 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
 
     Route::get('/{continentAlias}/{countryAlias}/locations', [ContinentController::class, 'showLocations'])
         ->name('list-country-locations');
+
+
+        Route::get('/compare/{slugs?}', [WishlistCompareController::class, 'index'])
+        ->where('slugs', '.*')
+        ->name('compare');
 
 
     });

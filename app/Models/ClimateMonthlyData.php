@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\WwdeLocation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,11 +23,21 @@ class ClimateMonthlyData extends Model
      */
     protected $fillable = [
         'location_id',
-        'datatype',
-        'value',
-        'date',
-        'station',
-        'attributes',
+        'month',
+        'month_name',
+        'year',
+        'temperature_avg',
+        'temperature_max',
+        'temperature_min',
+        'precipitation',
+        'snowfall',
+        'sunshine_hours',
+        'wind_direction',
+        'wind_speed',
+        'peak_wind_gust',
+        'sea_level_pressure',
+        'created_at',
+        'updated_at',
     ];
 
     /**

@@ -87,32 +87,43 @@ class SearchResultsComponent extends Component
 
     public function render()
     {
-        $query = WwdeLocation::query()
-            ->select('wwde_locations.*') // Alle Spalten von Locations
-            ->with('climates') // Alle Klimadaten mitladen
-            ->active()
-            ->filterByContinent($this->continent)
-            ->filterByPrice($this->price)
-            ->filterBySunshine($this->sonnenstunden)
-            ->filterByWaterTemperature($this->wassertemperatur)
-            ->filterBySpecials($this->spezielle);
+        // ✅ Gefilterte Location-IDs aus der Session laden
+        $filteredLocationIds = session('quicksearch.filteredLocationIds', []);
+        \Log::info('Gefilterte Location-IDs aus der Session:', ['ids' => $filteredLocationIds]);
 
-        // **Filter nach Reisezeit**
-        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
-            $monthNumber = (int) $this->urlaub;
+        // Prüfen, ob gefilterte IDs existieren
+        if (empty($filteredLocationIds)) {
+            // Keine gefilterten Ergebnisse vorhanden → Keine Locations anzeigen
+            $locations = collect(); // Leere Collection
+        } else {
+            // Hauptabfrage für die gefilterten Ergebnisse
+            $query = WwdeLocation::query()
+                ->select('wwde_locations.*')
+                ->with('climates')
+                ->active()
+                ->filterByIds($filteredLocationIds) // ✅ Nur gefilterte Ergebnisse laden
+                ->filterByContinent($this->continent)
+                ->filterByPrice($this->price)
+                ->filterBySunshine($this->sonnenstunden)
+                ->filterByWaterTemperature($this->wassertemperatur)
+                ->filterBySpecials($this->spezielle);
 
-            if ($this->nurInBesterReisezeit) {
-                $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+            // Filter für Reisezeit
+            if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+                $monthNumber = (int) $this->urlaub;
+
+                if ($this->nurInBesterReisezeit) {
+                    $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+                }
             }
-        }
 
-        // **Sortieren und paginieren**
-        $locations = $query->orderBy("wwde_locations.{$this->sortBy}", $this->sortDirection)
-            ->paginate(10);
+            // Ergebnisse paginieren
+            $locations = $query->paginate(10);
+        }
 
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
-            'selectedMonth' => $this->urlaub, // Monat ans Blade übergeben
+            'selectedMonth' => $this->urlaub,
         ]);
     }
 

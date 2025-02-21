@@ -176,6 +176,44 @@
             <input wire:model="population" type="number" class="form-control" id="population">
         </div>
 </div>
+
+<hr>
+<div class="col-sm-6 col-md-3">
+    <div class="mb-3">
+        <label for="status" class="form-label">Status</label>
+        <select wire:model="status" class="form-control">
+            <option value="active">Aktiv</option>
+            <option value="pending">Ausstehend</option>
+            <option value="inactive">Inaktiv</option>
+        </select>
+        @error('status') <span class="text-danger">{{ $message }}</span> @enderror
+    </div>
+</div>
+
+<div class="col-sm-6 col-md-3">
+    <div class="mb-3">
+        <label for="finished" class="form-label">Fertiggestellt</label>
+        <select wire:model="finished" class="form-control">
+            <option value="1">Ja</option>
+            <option value="0">Nein</option>
+        </select>
+        @error('finished') <span class="text-danger">{{ $message }}</span> @enderror
+    </div>
+</div>
+
+@if (session()->has('message'))
+<div class="alert alert-success">
+    {{ session('message') }}
+</div>
+@endif
+
+@if (session()->has('success'))
+<div class="alert alert-success">
+    {{ session('success') }}
+</div>
+@endif
+
+
         <button type="submit" class="btn btn-primary">Speichern</button>
 
         </div>

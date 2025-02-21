@@ -50,5 +50,8 @@ class AppServiceProvider extends ServiceProvider
         $locale = Session::get('locale', config('app.locale'));
         App::setLocale($locale);
 
+        require_once app_path('Helpers/IconHelper.php');
+
+
     }
 }
