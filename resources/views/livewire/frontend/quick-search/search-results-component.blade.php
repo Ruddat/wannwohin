@@ -114,22 +114,27 @@
                                                 <span>{{ $location->country->title ?? 'Unbekanntes Land' }}</span>
                                             </div>
 
-                                            <div class="info-item">
-                                                <i class="fas fa-globe-europe"></i>
-                                                <span>{{ $location->country->continent->title ?? 'Unbekannter Kontinent' }}</span>
+                                            @php
+                                            // Kontinent-Icons zuweisen
+                                            $continentIcons = [
+                                                'africa' => 'fas fa-globe-africa',
+                                                'asia' => 'fas fa-globe-asia',
+                                                'europe' => 'fas fa-globe-europe',
+                                                'north-america' => 'fas fa-globe-americas',
+                                                'south-america' => 'fas fa-globe-americas',
+                                                'oceania' => 'fas fa-globe',
+                                                'antarctica' => 'fas fa-snowflake',
+                                            ];
 
-                                                {{-- Kontinent-Flagge --}}
-                                                @if ($location->country && $location->country->continent)
-                                                    <img src="{{ asset('assets/img/location_main_img/' . strtolower($location->country->continent->alias) . '.png') }}"
-                                                        alt="{{ $location->country->continent->title }}" class="me-3"
-                                                        style="width: 30px; height: auto;">
-                                                    {{ $location->country->continent->title ?? 'Unknown Continent' }}
-                                                @else
-                                                    Unknown Continent
-                                                @endif
+                                            // Fallback Icon
+                                            $continentAlias = strtolower($location->country->continent->alias ?? 'unknown');
+                                            $continentIcon = $continentIcons[$continentAlias] ?? 'fas fa-globe';
+                                        @endphp
 
-
-                                            </div>
+                                        <div class="info-item">
+                                            <i class="{{ $continentIcon }} text-black"></i>
+                                            <span class="ms-2">{{ $location->country->continent->title ?? 'Unbekannter Kontinent' }}</span>
+                                        </div>
 
                                             <div class="info-item">
                                                 <i class="fas fa-arrows-alt-h"></i>
@@ -283,7 +288,7 @@
                                             @endphp
 
 
-                                            <div class="info-item">
+                                            <div class="info-item" wire:ignore>
                                                 <span>Beste Reisezeit</span>
                                                 <span> {{ $bestTravelMonths ?? 'N/A' }}</span>
                                                 <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip"
@@ -321,7 +326,7 @@
                                             ];
                                         @endphp
 
-                                        <div class="icon-bar">
+                                        <div class="icon-bar" wire:ignore>
                                             @foreach ($iconMap as $flag => $icon)
                                                 @if ($location->$flag)
                                                     <span class="tooltip-container"
@@ -702,20 +707,25 @@
     </style>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.tooltip-container').forEach(function(tooltip) {
-                tooltip.addEventListener('click', function() {
-                    this.classList.toggle('clicked'); // Toggle Tooltip beim Klick
-                });
-
-                // Tooltip schließt automatisch bei Klick außerhalb
-                window.addEventListener('click', function(e) {
-                    if (!tooltip.contains(e.target)) {
-                        tooltip.classList.remove('clicked');
-                    }
-                });
-            });
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.tooltip-container').forEach(function (tooltip) {
+        // Tooltip öffnen/schließen beim Klick
+        tooltip.addEventListener('click', function (e) {
+            e.stopPropagation(); // Verhindert das Schließen beim Klick auf das Tooltip-Element selbst
+            this.classList.toggle('clicked');
         });
+    });
+
+    // Tooltip schließen, wenn außerhalb geklickt wird
+    window.addEventListener('click', function (e) {
+        document.querySelectorAll('.tooltip-container').forEach(function (tooltip) {
+            if (!tooltip.contains(e.target)) {
+                tooltip.classList.remove('clicked');
+            }
+        });
+    });
+});
+
     </script>
 
 

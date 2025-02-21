@@ -53,11 +53,11 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     content: "";
-    height: 150px;
+    height: 90px;
     width: 100%;
-    margin-top: -100px;
+    margin-top: -80px;
     position: relative;
-}
+  }
 
 /* ============================================================================
    3. Responsive Anpassungen
