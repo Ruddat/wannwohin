@@ -178,6 +178,15 @@ ul.timeline > li:hover .timeline-content {
     }
 }
 
+/* Timeline auf kleinen Geräten ausblenden */
+@media (max-width: 576px) {
+    ul.timeline {
+        display: none;
+    }
+}
+
+
+
     </style>
 
 

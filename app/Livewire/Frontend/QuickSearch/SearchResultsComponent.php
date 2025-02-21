@@ -28,6 +28,8 @@ class SearchResultsComponent extends Component
     public $bgImgPath;
     public $mainImgPath;
 
+    public $perPage = 10; // Standardmäßig 10 Ergebnisse pro Seite
+
     public function mount(LocationRepository $repository)
     {
         // Header Content und Bilder laden
@@ -85,23 +87,48 @@ class SearchResultsComponent extends Component
         $this->resetPage(); // Pagination zurücksetzen, wenn die Sortierung geändert wird
     }
 
+    public function sortBy($field)
+    {
+        // Wenn das aktuelle Sortierfeld erneut angeklickt wird, die Richtung umkehren
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Neues Feld setzen und Standardrichtung aufsteigend
+            $this->sortBy = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        // Pagination zurücksetzen
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
+    {
+        $this->resetPage(); // Pagination zurücksetzen, wenn sich die Anzahl der Ergebnisse ändert
+    }
+
+    public function toggleSortDirection()
+    {
+        $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+
     public function render()
     {
         // ✅ Gefilterte Location-IDs aus der Session laden
         $filteredLocationIds = session('quicksearch.filteredLocationIds', []);
         \Log::info('Gefilterte Location-IDs aus der Session:', ['ids' => $filteredLocationIds]);
 
-        // Prüfen, ob gefilterte IDs existieren
         if (empty($filteredLocationIds)) {
-            // Keine gefilterten Ergebnisse vorhanden → Keine Locations anzeigen
             $locations = collect(); // Leere Collection
         } else {
-            // Hauptabfrage für die gefilterten Ergebnisse
             $query = WwdeLocation::query()
                 ->select('wwde_locations.*')
-                ->with('climates')
+                ->with(['climates', 'historicalClimates' => function ($q) {
+                    $lastYear = now()->subYear()->year;
+                    $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
+                }])
                 ->active()
-                ->filterByIds($filteredLocationIds) // ✅ Nur gefilterte Ergebnisse laden
+                ->filterByIds($filteredLocationIds)
                 ->filterByContinent($this->continent)
                 ->filterByPrice($this->price)
                 ->filterBySunshine($this->sonnenstunden)
@@ -117,15 +144,51 @@ class SearchResultsComponent extends Component
                 }
             }
 
+            // Sichere Sortierung
+            $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours'];
+            if (in_array($this->sortBy, $allowedSortFields)) {
+                $query->orderBy($this->sortBy, $this->sortDirection);
+            } elseif ($this->sortBy === 'temperature') {
+                $query->orderByRaw("COALESCE(
+                    JSON_EXTRACT(climate_data, '$.main.temp'),
+                    (SELECT temperature_avg
+                     FROM climate_monthly_data
+                     WHERE location_id = wwde_locations.id
+                     AND year >= " . now()->subYear()->year . "
+                     ORDER BY year DESC, month DESC LIMIT 1)
+                ) {$this->sortDirection}");
+            } else {
+                $query->orderBy('title', 'asc');
+            }
+
             // Ergebnisse paginieren
-            $locations = $query->paginate(10);
+            $locations = $query->paginate($this->perPage);
+
+            // 🔍 Fallback für fehlende Klimadaten aus historischen Daten
+            $locations->transform(function ($location) {
+                if (empty($location->climates)) {
+                    $historicalClimate = $location->historicalClimates->last(); // Letzte verfügbare Daten
+                    if ($historicalClimate) {
+                        $location->climate_data = [
+                            'main' => ['temp' => $historicalClimate->temperature_avg],
+                            'temp_max' => $historicalClimate->temperature_max,
+                            'temp_min' => $historicalClimate->temperature_min,
+                            'sunshine_hours' => $historicalClimate->sunshine_hours,
+                        ];
+                    }
+                }
+                return $location;
+            });
         }
+
 
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
             'selectedMonth' => $this->urlaub,
         ]);
     }
+
+
 
 
 
