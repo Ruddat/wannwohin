@@ -128,7 +128,9 @@ class SearchResultsComponent extends Component
                     $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
                 }])
                 ->active()
-                ->filterByIds($filteredLocationIds)
+//                ->filterByIds($filteredLocationIds)
+                ->whereIn('wwde_locations.id', $filteredLocationIds)
+
                 ->filterByContinent($this->continent)
                 ->filterByPrice($this->price)
                 ->filterBySunshine($this->sonnenstunden)
@@ -148,14 +150,16 @@ class SearchResultsComponent extends Component
             $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours'];
             if (in_array($this->sortBy, $allowedSortFields)) {
                 $query->orderBy($this->sortBy, $this->sortDirection);
-            } elseif ($this->sortBy === 'temperature') {
-                $query->orderByRaw("COALESCE(
-                    JSON_EXTRACT(climate_data, '$.main.temp'),
-                    (SELECT temperature_avg
-                     FROM climate_monthly_data
-                     WHERE location_id = wwde_locations.id
-                     AND year >= " . now()->subYear()->year . "
-                     ORDER BY year DESC, month DESC LIMIT 1)
+            } elseif ($this->sortBy === 'climate_data->main->temp') {
+                $query->leftJoin('climate_monthly_data as cmd', function ($join) {
+                    $join->on('wwde_locations.id', '=', 'cmd.location_id')
+                         ->where('cmd.year', '>=', now()->subYear()->year);
+                })
+                ->groupBy('wwde_locations.id')  // 🔥 Gruppiere die Ergebnisse nach Location-ID
+                ->orderByRaw("COALESCE(
+                    MAX(cmd.temperature_avg),  -- 🔥 Aggregatfunktion verwenden
+                    MAX(cmd.temperature_max),
+                    MAX(cmd.temperature_min)
                 ) {$this->sortDirection}");
             } else {
                 $query->orderBy('title', 'asc');

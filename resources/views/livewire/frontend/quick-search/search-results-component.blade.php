@@ -1,5 +1,5 @@
     <div role="main" class="main">
-            <section class="location-results py-5">
+            <section class="location-results py-5 dynamic-background">
                 <div class="container">
                     <h2 class="text-center mb-4">Reiseergebnisse</h2>
 
@@ -346,14 +346,16 @@
                 <p class="text-center">Keine Ergebnisse gefunden.</p>
                 @endforelse
                 </ul>
+
+
                 <!-- Pagination -->
+                @if ($locations instanceof \Illuminate\Pagination\LengthAwarePaginator)
                 <div class="custom-pagination-container d-flex justify-content-center mt-4">
                     {{ $locations->onEachSide(1)->links() }}
                 </div>
-
+                @endif
             </section>
     </div>
-
 
     <!-- ✅ HTML: Rein CSS-basierte Timeline -->
 
@@ -783,6 +785,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 padding: 8px 12px;
                 font-size: 0.9rem;
             }
+
+        /* Die Bild-Section bleibt sichtbar */
+        .card-image {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            width: 100%;
+            min-height: 200px;
+            overflow: hidden;
+            border-radius: 10px 0 0 10px;
+        }
+        .info-item {
+  align-items: center;
+  gap: 10px;
+  width: calc(50% - 10px);
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 5px;
+}
+
+
         }
     </style>
 
@@ -802,16 +824,7 @@ document.addEventListener('DOMContentLoaded', function () {
             /* Sicherstellen, dass der Link über dem Bild liegt */
         }
 
-        /* Die Bild-Section bleibt sichtbar */
-        .card-image {
-            position: relative;
-            background-size: cover;
-            background-position: center;
-            width: 30%;
-            min-height: 200px;
-            overflow: hidden;
-            border-radius: 10px 0 0 10px;
-        }
+
 
         /* Zoom-Effekt für das Bild */
         .card-image.zoom-effect:hover {
@@ -849,4 +862,110 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+<style>
+.waves {
+  position: relative;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100px;
+  background: url("https://i.imgur.com/ZAts69f.png");
+  background-size: 1000px 100px;
+}
+
+.wave#wave1 {
+  opacity: 1;
+  bottom: 0;
+  animation: animateWaves 6s linear infinite;
+}
+
+.wave#wave2 {
+  opacity: 0.5;
+  bottom: 10px;
+  animation: animate 6s linear infinite !important;
+}
+
+.wave#wave3 {
+  opacity: 0.2;
+  bottom: 15px;
+  animation: animateWaves 5s linear infinite;
+}
+
+.wave#wave4 {
+  opacity: 0.7;
+  bottom: 20px;
+  animation: animate 4s linear infinite;
+}
+
+@keyframes animateWaves {
+  0% {
+    background-position-x: 1000px;
+  }
+  100% {
+    background-position-x: 0px;
+  }
+}
+
+@keyframes animate {
+  0% {
+    background-position-x: -1000px;
+  }
+  100% {
+    background-position-x: 0px;
+  }
+}
+/* Farben für verschiedene Tageszeiten */
+.morning {
+  filter: hue-rotate(30deg) brightness(1.2); /* Heller Morgen */
+}
+
+.afternoon {
+  filter: hue-rotate(200deg) brightness(1); /* Blau für den Nachmittag */
+}
+
+.evening {
+  filter: hue-rotate(300deg) brightness(0.8); /* Rötlich für den Abend */
+}
+
+.night {
+  filter: hue-rotate(240deg) brightness(0.5); /* Dunkelblau für die Nacht */
+}
+  </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const currentHour = new Date().getHours();
+      const waves = document.querySelector('.waves');
+
+      // Tageszeiten-Farben anwenden
+      if (currentHour >= 6 && currentHour < 12) {
+        waves.classList.add('morning');
+      } else if (currentHour >= 12 && currentHour < 18) {
+        waves.classList.add('afternoon');
+      } else if (currentHour >= 18 && currentHour < 21) {
+        waves.classList.add('evening');
+      } else {
+        waves.classList.add('night');
+      }
+    });
+    </script>
+
+<!-- Wellen-Animation am Ende der Ergebnisse -->
+<div class="waves">
+    <div class="wave" id="wave1"></div>
+    <div class="wave" id="wave2"></div>
+    <div class="wave" id="wave3"></div>
+    <div class="wave" id="wave4"></div>
+</div>
     </div>

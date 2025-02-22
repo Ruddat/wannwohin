@@ -1,4 +1,5 @@
 <footer class="footer bg-dark text-white py-5">
+
     <div class="container">
         <div class="row gy-4">
             <!-- Navigation Links -->
