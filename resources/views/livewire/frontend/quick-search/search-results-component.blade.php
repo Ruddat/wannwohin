@@ -347,7 +347,6 @@
                 @endforelse
                 </ul>
 
-
                 <!-- Pagination -->
                 @if ($locations instanceof \Illuminate\Pagination\LengthAwarePaginator)
                 <div class="custom-pagination-container d-flex justify-content-center mt-4">

@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\WwdeLocation;
 use Livewire\WithPagination;
 use App\Models\HeaderContent;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Repositories\LocationRepository;
 
@@ -29,6 +30,8 @@ class SearchResultsComponent extends Component
     public $mainImgPath;
 
     public $perPage = 10; // Standardmäßig 10 Ergebnisse pro Seite
+
+    public $page;
 
     public function mount(LocationRepository $repository)
     {
@@ -121,20 +124,34 @@ class SearchResultsComponent extends Component
         if (empty($filteredLocationIds)) {
             $locations = collect(); // Leere Collection
         } else {
+            // Unterabfrage für die Aggregation der Klimadaten
+            $subQuery = WwdeLocation::query()
+                ->select('wwde_locations.id')
+                ->leftJoin('climate_monthly_data as cmd', function ($join) {
+                    $join->on('wwde_locations.id', '=', 'cmd.location_id')
+                        ->where('cmd.year', '>=', now()->subYear()->year);
+                })
+                ->groupBy('wwde_locations.id')
+                ->orderByRaw("COALESCE(
+                    MAX(cmd.temperature_avg),
+                    MAX(cmd.temperature_max),
+                    MAX(cmd.temperature_min)
+                ) {$this->sortDirection}");
+
+            // Hauptabfrage
             $query = WwdeLocation::query()
-            ->select('wwde_locations.*')
-            ->with(['climates', 'historicalClimates' => function ($q) {
-                $lastYear = now()->subYear()->year;
-                $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
-            }])
-            ->active()
-            ->whereIn('wwde_locations.id', $filteredLocationIds)
-            ->filterByContinent($this->continent)
-            ->filterByPrice($this->price)
-            ->filterBySunshine($this->sonnenstunden)
-            ->filterByWaterTemperature($this->wassertemperatur)
-            ->filterBySpecials($this->spezielle)
-            ->groupBy('wwde_locations.id');  // 🔥 Gruppiere standardmäßig nach ID
+                ->select('wwde_locations.*')
+                ->with(['climates', 'historicalClimates' => function ($q) {
+                    $lastYear = now()->subYear()->year;
+                    $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
+                }])
+                ->active()
+                ->whereIn('wwde_locations.id', $filteredLocationIds)
+                ->filterByContinent($this->continent)
+                ->filterByPrice($this->price)
+                ->filterBySunshine($this->sonnenstunden)
+                ->filterByWaterTemperature($this->wassertemperatur)
+                ->filterBySpecials($this->spezielle);
 
             // Filter für Reisezeit
             if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
@@ -150,22 +167,31 @@ class SearchResultsComponent extends Component
             if (in_array($this->sortBy, $allowedSortFields)) {
                 $query->orderBy($this->sortBy, $this->sortDirection);
             } elseif ($this->sortBy === 'climate_data->main->temp') {
-                $query->leftJoin('climate_monthly_data as cmd', function ($join) {
-                    $join->on('wwde_locations.id', '=', 'cmd.location_id')
-                         ->where('cmd.year', '>=', now()->subYear()->year);
-                })
-                ->groupBy('wwde_locations.id')  // 🔥 Gruppiere die Ergebnisse nach Location-ID
-                ->orderByRaw("COALESCE(
-                    MAX(cmd.temperature_avg),  -- 🔥 Aggregatfunktion verwenden
-                    MAX(cmd.temperature_max),
-                    MAX(cmd.temperature_min)
-                ) {$this->sortDirection}");
+                // Join mit der Unterabfrage
+                $query->joinSub($subQuery, 'sub', function ($join) {
+                    $join->on('wwde_locations.id', '=', 'sub.id');
+                });
+
+                // 🔥 Sortierrichtung explizit setzen
+                if ($this->sortDirection === 'asc') {
+                    $query->orderByRaw("COALESCE(
+                        (SELECT MAX(cmd.temperature_avg) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?),
+                        (SELECT MAX(cmd.temperature_max) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?),
+                        (SELECT MAX(cmd.temperature_min) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?)
+                    ) ASC", [now()->subYear()->year, now()->subYear()->year, now()->subYear()->year]);
+                } else {
+                    $query->orderByRaw("COALESCE(
+                        (SELECT MAX(cmd.temperature_avg) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?),
+                        (SELECT MAX(cmd.temperature_max) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?),
+                        (SELECT MAX(cmd.temperature_min) FROM climate_monthly_data cmd WHERE cmd.location_id = wwde_locations.id AND cmd.year >= ?)
+                    ) DESC", [now()->subYear()->year, now()->subYear()->year, now()->subYear()->year]);
+                }
             } else {
                 $query->orderBy('title', 'asc');
             }
 
-            // Ergebnisse paginieren
-            $locations = $query->paginate($this->perPage);
+            // Ergebnisse paginieren (ohne Cache)
+            $locations = $query->paginate($this->perPage)->withQueryString();
 
             // 🔍 Fallback für fehlende Klimadaten aus historischen Daten
             $locations->transform(function ($location) {
@@ -184,12 +210,12 @@ class SearchResultsComponent extends Component
             });
         }
 
-
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
             'selectedMonth' => $this->urlaub,
         ]);
     }
+
 
 
 
