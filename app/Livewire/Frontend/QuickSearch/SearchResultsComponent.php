@@ -122,20 +122,19 @@ class SearchResultsComponent extends Component
             $locations = collect(); // Leere Collection
         } else {
             $query = WwdeLocation::query()
-                ->select('wwde_locations.*')
-                ->with(['climates', 'historicalClimates' => function ($q) {
-                    $lastYear = now()->subYear()->year;
-                    $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
-                }])
-                ->active()
-//                ->filterByIds($filteredLocationIds)
-                ->whereIn('wwde_locations.id', $filteredLocationIds)
-
-                ->filterByContinent($this->continent)
-                ->filterByPrice($this->price)
-                ->filterBySunshine($this->sonnenstunden)
-                ->filterByWaterTemperature($this->wassertemperatur)
-                ->filterBySpecials($this->spezielle);
+            ->select('wwde_locations.*')
+            ->with(['climates', 'historicalClimates' => function ($q) {
+                $lastYear = now()->subYear()->year;
+                $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
+            }])
+            ->active()
+            ->whereIn('wwde_locations.id', $filteredLocationIds)
+            ->filterByContinent($this->continent)
+            ->filterByPrice($this->price)
+            ->filterBySunshine($this->sonnenstunden)
+            ->filterByWaterTemperature($this->wassertemperatur)
+            ->filterBySpecials($this->spezielle)
+            ->groupBy('wwde_locations.id');  // 🔥 Gruppiere standardmäßig nach ID
 
             // Filter für Reisezeit
             if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
