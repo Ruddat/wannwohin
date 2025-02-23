@@ -8,12 +8,12 @@
                             <li class="breadcrumb-item {{ $loop->last ? 'active' : '' }}">
                                 @if ($loop->first)
                                     <a href="{{ $breadcrumb['url'] }}">
-                                        <i class="fas fa-home"></i> Home <!-- Haus-Icon + Text -->
+                                        <i class="fas fa-home"></i> @autotranslate('Home', app()->getLocale())
                                     </a>
                                 @elseif (!$loop->last)
-                                    <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a>
+                                    <a href="{{ $breadcrumb['url'] }}">@autotranslate($breadcrumb['title'], app()->getLocale())</a>
                                 @else
-                                    {{ $breadcrumb['title'] }}
+                                    @autotranslate($breadcrumb['title'], app()->getLocale())
                                 @endif
                             </li>
                         @endforeach

@@ -28,17 +28,17 @@
                         <table class="table table-borderless table-sm text-center">
                             <tr>
                                 <td>
-                                    <span class="text-muted">Area (km²)</span>
+                                    <span class="text-muted">@autotranslate("Area", app()->getLocale()) (km²)</span>
                                     <div><h5 class="m-0">{{ number_format($continent->area_km) }}</h5></div>
                                 </td>
                                 <td>
-                                    <span class="text-muted">Population</span>
+                                    <span class="text-muted">@autotranslate('Population', app()->getLocale())</span>
                                     <div><h5 class="m-0">{{ number_format($continent->population) }}</h5></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <span class="text-muted">Countries</span>
+                                    <span class="text-muted">@autotranslate('Countries', app()->getLocale())</span>
                                     <div><h5 class="m-0">{{ $continent->no_countries }}</h5></div>
                                 </td>
                             </tr>

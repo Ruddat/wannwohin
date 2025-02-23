@@ -9,7 +9,7 @@
                         @if(Auth::guard('admin')->check())
                         <!-- Debug-Ausgabe -->
                         <a href="{{ route('location-manager.edit', $location->id) }}" target="_blank" class="btn btn-sm btn-warning position-absolute top-0 end-40 m-2 card-edit-button">
-                            <i class="ti ti-edit"></i> Bearbeiten
+                            <i class="ti ti-edit"></i> @autotranslate('Bearbeiten', app()->getLocale())
                         </a>
                     @endif
     <!-- Wishlist-Button oben rechts als Overlay -->

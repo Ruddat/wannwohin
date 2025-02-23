@@ -1,49 +1,75 @@
     <div role="main" class="main">
             <section class="location-results py-5 dynamic-background">
                 <div class="container">
-                    <h2 class="text-center mb-4">Reiseergebnisse</h2>
+                   
 
-                    <div
-                        class="d-flex flex-wrap justify-content-between align-items-center mb-4 bg-light p-3 rounded shadow-sm">
-                        <!-- Ergebnisse pro Seite -->
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-list-ol text-primary"></i>
-                            <label for="resultsPerPage" class="fw-semibold mb-0">Ergebnisse pro Seite:</label>
-                            <select wire:model.change="perPage"
-                                class="result-form-select form-select-sm w-auto shadow-sm">
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
 
-                        <!-- Sortieren nach -->
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-sort text-primary"></i>
-                            <label for="sortSelect" class="fw-semibold mb-0">Sortieren nach:</label>
-                            <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
-                                <option value="price_flight">Preis</option>
-                                <option value="title">Reiseziel</option>
-                                <option value="climate_data->main->temp">Tagestemperatur</option>
-                                <option value="continent_id">Kontinent</option>
-                                <option value="country_id">Land</option>
-                                <option value="flight_hours">Flugdauer</option>
-                            </select>
 
-                            <!-- Sort Direction Buttons -->
-                            <button wire:click="toggleSortDirection"
-                                class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                <i class="fas fa-sort-amount-up"
-                                    @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
-                            </button>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <!-- Ergebnisse und aktive Filter -->
+                            <div class="mb-3">
+                                <h5 class="card-title">{{ $totalResults }} Reiseziele wurden nach Deinen Kriterien gefunden</h5>
+                                <hr>
 
-                            <button wire:click="toggleSortDirection"
-                                class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                <i class="fas fa-sort-amount-down"
-                                    @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
-                            </button>
+                                <!-- Aktive Filter als entfernbare Tags -->
+                                <div class="mb-3">
+                                    @foreach ($activeFilters as $key => $value)
+                                        @if ($value)
+                                            <span class="badge bg-primary me-1">
+                                                {{ ucfirst($key) }}: {{ $value }}
+                                                <button type="button" class="btn-close btn-close-white btn-sm ms-2"
+                                                    wire:click="removeFilter('{{ $key }}')">
+                                                </button>
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Filtereinstellungen (Ergebnisse pro Seite & Sortierung) -->
+                            <div class="d-flex flex-wrap justify-content-between align-items-center bg-light p-3 rounded shadow-sm">
+                                <!-- Ergebnisse pro Seite -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-list-ol text-primary"></i>
+                                    <label for="resultsPerPage" class="fw-semibold mb-0">Ergebnisse pro Seite:</label>
+                                    <select wire:model.change="perPage"
+                                        class="result-form-select form-select-sm w-auto shadow-sm">
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sortieren nach -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-sort text-primary"></i>
+                                    <label for="sortSelect" class="fw-semibold mb-0">Sortieren nach:</label>
+                                    <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
+                                        <option value="price_flight">Preis</option>
+                                        <option value="title">Reiseziel</option>
+                                        <option value="climate_data->main->temp">Tagestemperatur</option>
+                                        <option value="continent_id">Kontinent</option>
+                                        <option value="country_id">Land</option>
+                                        <option value="flight_hours">Flugdauer</option>
+                                    </select>
+
+                                    <!-- Sort Direction Buttons -->
+                                    <button wire:click="toggleSortDirection"
+                                        class="btn btn-outline-primary btn-sm border-0 shadow-sm">
+                                        <i class="fas fa-sort-amount-up"
+                                            @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
+                                    </button>
+
+                                    <button wire:click="toggleSortDirection"
+                                        class="btn btn-outline-primary btn-sm border-0 shadow-sm">
+                                        <i class="fas fa-sort-amount-down"
+                                            @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -967,4 +993,19 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="wave" id="wave3"></div>
     <div class="wave" id="wave4"></div>
 </div>
-    </div>
+
+<style>
+    .badge {
+padding: 0.5rem;
+font-size: 0.85rem;
+}
+
+.btn-close {
+cursor: pointer;
+}
+</style>
+
+
+</div>
+
+

@@ -32,6 +32,9 @@ class SearchResultsComponent extends Component
     public $perPage = 10; // Standardmäßig 10 Ergebnisse pro Seite
 
     public $page;
+    public $activeFilters = [];
+    public $totalResults = 0;
+
 
     public function mount(LocationRepository $repository)
     {
@@ -83,6 +86,16 @@ class SearchResultsComponent extends Component
         $this->wassertemperatur = request('wassertemperatur');
         $this->spezielle = request('spezielle');
         $this->nurInBesterReisezeit = request('nurInBesterReisezeit', false);
+
+       // ✅ Aktive Filter direkt setzen
+       $this->activeFilters['continent'] = $this->continent;
+       $this->activeFilters['price'] = $this->price;
+       $this->activeFilters['urlaub'] = $this->urlaub;
+       $this->activeFilters['sonnenstunden'] = $this->sonnenstunden;
+       $this->activeFilters['wassertemperatur'] = $this->wassertemperatur;
+       $this->activeFilters['spezielle'] = $this->spezielle;
+
+
     }
 
     public function updatedSortBy()
@@ -113,6 +126,22 @@ class SearchResultsComponent extends Component
     public function toggleSortDirection()
     {
         $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+
+
+    public function updated($property)
+    {
+        if (in_array($property, ['continent', 'price', 'urlaub', 'sonnenstunden', 'wassertemperatur', 'spezielle'])) {
+            $this->activeFilters[$property] = $this->$property;
+        }
+    }
+
+
+    public function removeFilter($filterKey)
+    {
+        unset($this->activeFilters[$filterKey]);
+        $this->$filterKey = null; // Den Filter auch im State zurücksetzen
+        $this->resetPage();
     }
 
     public function render()
@@ -209,6 +238,9 @@ class SearchResultsComponent extends Component
                 return $location;
             });
         }
+
+        $this->totalResults = $locations->total(); // Für paginierte Ergebnisse
+
 
         return view('livewire.frontend.quick-search.search-results-component', [
             'locations' => $locations,
