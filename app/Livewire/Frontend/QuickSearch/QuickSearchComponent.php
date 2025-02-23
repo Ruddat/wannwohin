@@ -237,11 +237,11 @@ if (!empty($this->wassertemperatur) && !empty($this->urlaub)) {
     // ✅ Livewire zwingen, das Template neu zu rendern
     $this->dispatch('filteredLocationsUpdated', $this->filteredLocations);
 
+
+
     // ✅ Speicherung in die Session für persistente Werte
     session(['quicksearch.filteredLocations' => $this->filteredLocations]);
 
-        // Speicherung in die Session
-        session(['quicksearch.filteredLocations' => $this->filteredLocations]);
 
     }
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Frontend\QuickSearch;
 
 use Livewire\Component;
+use App\Models\WwdeRange;
 use App\Models\WwdeLocation;
 use Livewire\WithPagination;
 use App\Models\HeaderContent;
@@ -34,6 +35,23 @@ class SearchResultsComponent extends Component
     public $page;
     public $activeFilters = [];
     public $totalResults = 0;
+
+    public $specialWishes = [
+        'list_beach' => 'Strandurlaub',
+        'list_citytravel' => 'Städtereise',
+        'list_sports' => 'Sporturlaub',
+        'list_island' => 'Inselurlaub',
+        'list_culture' => 'Kulturreise',
+        'list_nature' => 'Natururlaub',
+        'list_watersport' => 'Wassersport',
+        'list_wintersport' => 'Wintersport',
+        'list_mountainsport' => 'Bergsport',
+        'list_biking' => 'Fahrradurlaub',
+        'list_fishing' => 'Angelurlaub',
+        'list_amusement_park' => 'Freizeitpark',
+        'list_water_park' => 'Wasserpark',
+        'list_animal_park' => 'Tierpark',
+    ];
 
 
     public function mount(LocationRepository $repository)
@@ -133,16 +151,115 @@ class SearchResultsComponent extends Component
     {
         if (in_array($property, ['continent', 'price', 'urlaub', 'sonnenstunden', 'wassertemperatur', 'spezielle'])) {
             $this->activeFilters[$property] = $this->$property;
+            $this->resetPage(); // Pagination zurücksetzen
         }
     }
 
 
     public function removeFilter($filterKey)
     {
+        \Log::info('Removing filter:', ['filterKey' => $filterKey, 'activeFilters' => $this->activeFilters]);
         unset($this->activeFilters[$filterKey]);
-        $this->$filterKey = null; // Den Filter auch im State zurücksetzen
+        $this->$filterKey = null;
         $this->resetPage();
+
+        // Aktualisiere die gefilterten Location-IDs in der Session
+        $this->updateFilteredLocationIds();
+
+        $this->render();
     }
+
+    private function updateFilteredLocationIds()
+    {
+        $query = WwdeLocation::query()
+            ->select('id') // Nur die IDs der Locations abfragen
+            ->active()
+            ->finished()
+            ->filterByContinent($this->continent)
+            ->filterByPrice($this->price)
+            ->filterBySpecials($this->spezielle);
+
+        // 🌍 **Filter für Reisezeit**
+        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+            $monthNumber = (int) $this->urlaub;
+
+            if ($this->nurInBesterReisezeit) {
+                $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
+            }
+        }
+
+        // 🌞 **Filter: Sonnenstunden (aktuelle oder historische Daten)**
+        if (!empty($this->sonnenstunden) && !empty($this->urlaub)) {
+            $minHours = (int) str_replace('more_', '', $this->sonnenstunden);
+            $lastYear = now()->subYear()->year;
+
+            $query->where(function ($q) use ($minHours, $lastYear) {
+                // 🔍 Aktuelle Klimadaten
+                $q->whereHas('climates', function ($subQuery) use ($minHours) {
+                    $subQuery->where('month_id', (int) $this->urlaub)
+                        ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
+                })
+                // 🔍 Historische Daten aus dem letzten Jahr
+                ->orWhereHas('historicalClimates', function ($subQuery) use ($minHours, $lastYear) {
+                    $subQuery->where('month', (int) $this->urlaub)
+                        ->where('year', $lastYear)
+                        ->whereRaw('COALESCE(sunshine_hours, 0) >= ?', [$minHours]);
+                });
+            });
+        }
+
+        // 🌊 **Filter: Wassertemperatur (aktuelle Daten oder historische Daten)**
+        if (!empty($this->wassertemperatur) && !empty($this->urlaub)) {
+            $minTemp = (int) str_replace('more_', '', $this->wassertemperatur);
+            $lastYear = now()->subYear()->year;
+
+            $query->where(function ($q) use ($minTemp, $lastYear) {
+                // 🔍 Aktuelle Klimadaten
+                $q->whereHas('climates', function ($subQuery) use ($minTemp) {
+                    $subQuery->where('month_id', (int) $this->urlaub)
+                        ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
+                })
+                // 🔍 Historische Daten aus dem letzten Jahr
+                ->orWhereHas('historicalClimates', function ($subQuery) use ($minTemp, $lastYear) {
+                    $subQuery->where('month', (int) $this->urlaub)
+                        ->where('year', $lastYear)
+                        ->whereRaw('COALESCE(temperature_avg, 0) >= ?', [$minTemp]);
+                });
+            });
+        }
+
+        // ✅ Ergebnisse filtern und nur IDs speichern
+        $filteredIds = $query->pluck('id')->toArray();
+        session(['quicksearch.filteredLocationIds' => $filteredIds]);
+
+        // ✅ Debug: Anzahl der gefilterten IDs loggen
+        \Log::info('Aktualisierte gefilterte Location-IDs:', [
+            'count' => count($filteredIds),
+            'ids' => $filteredIds,
+        ]);
+    }
+
+
+public function getFilterLabel($key, $value)
+{
+    switch ($key) {
+        case 'price':
+            $priceRange = WwdeRange::find($value);
+            return $priceRange ? $priceRange->Range_to_show : $value;
+        case 'urlaub':
+            return config('custom.months')[$value] ?? $value;
+        case 'sonnenstunden':
+            $hours = str_replace('more_', '', $value);
+            return "Mehr als {$hours} Sonnenstunden"; // Angepasste Formatierung
+        case 'wassertemperatur':
+            $temp = str_replace('more_', '', $value);
+            return "Mehr als {$temp}°C Wassertemperatur"; // Angepasste Formatierung
+        case 'spezielle':
+            return $this->specialWishes[$value] ?? $value;
+        default:
+            return $value;
+    }
+}
 
     public function render()
     {
@@ -175,12 +292,33 @@ class SearchResultsComponent extends Component
                     $q->where('year', '>=', $lastYear); // Daten aus dem letzten Jahr
                 }])
                 ->active()
-                ->whereIn('wwde_locations.id', $filteredLocationIds)
-                ->filterByContinent($this->continent)
-                ->filterByPrice($this->price)
-                ->filterBySunshine($this->sonnenstunden)
-                ->filterByWaterTemperature($this->wassertemperatur)
-                ->filterBySpecials($this->spezielle);
+                ->whereIn('wwde_locations.id', session('quicksearch.filteredLocationIds', []));
+
+                // Dynamische Filter anwenden
+                foreach ($this->activeFilters as $key => $value) {
+                    if ($value) {
+                        switch ($key) {
+                            case 'continent':
+                                $query->filterByContinent($value);
+                                break;
+                            case 'price':
+                                $query->filterByPrice($value);
+                                break;
+                            case 'urlaub':
+                                $query->filterBySunshine($value);
+                                break;
+                            case 'sonnenstunden':
+                                $query->filterBySunshine($value);
+                                break;
+                            case 'wassertemperatur':
+                                $query->filterByWaterTemperature($value);
+                                break;
+                            case 'spezielle':
+                                $query->filterBySpecials($value);
+                                break;
+                        }
+                    }
+                }
 
             // Filter für Reisezeit
             if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
@@ -239,7 +377,12 @@ class SearchResultsComponent extends Component
             });
         }
 
-        $this->totalResults = $locations->total(); // Für paginierte Ergebnisse
+    // Ergebnis zählen
+    if ($locations instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+        $this->totalResults = $locations->total();
+    } else {
+        $this->totalResults = $locations->count();
+    }
 
 
         return view('livewire.frontend.quick-search.search-results-component', [

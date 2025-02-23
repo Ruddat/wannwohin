@@ -1,77 +1,87 @@
     <div role="main" class="main">
             <section class="location-results py-5 dynamic-background">
                 <div class="container">
-                   
 
 
+                    @if ($totalResults === 0)
+                    <div class="alert alert-warning">
+                        Deine Sitzung ist abgelaufen. Bitte starte die Suche erneut.
+                    </div>
+                @endif
 
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <!-- Ergebnisse und aktive Filter -->
-                            <div class="mb-3">
-                                <h5 class="card-title">{{ $totalResults }} Reiseziele wurden nach Deinen Kriterien gefunden</h5>
-                                <hr>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <!-- Titel und Filter-Badges -->
+                        <div class="bg-light">
+                            <h5 class="card-title">{{ $totalResults }} Reiseziele wurden nach Deinen Kriterien gefunden</h5>
+                            <hr>
 
-                                <!-- Aktive Filter als entfernbare Tags -->
-                                <div class="mb-3">
-                                    @foreach ($activeFilters as $key => $value)
-                                        @if ($value)
-                                            <span class="badge bg-primary me-1">
-                                                {{ ucfirst($key) }}: {{ $value }}
-                                                <button type="button" class="btn-close btn-close-white btn-sm ms-2"
+                            <!-- Filter-Badges -->
+                            <div class="filter-container">
+                                @foreach ($activeFilters as $key => $value)
+                                    @if ($value)
+                                        @if (is_array($value) && $key === 'spezielle')
+                                            @foreach ($value as $item)
+                                                <span class="badge">
+                                                    {{ $this->getFilterLabel($key, $item) }}
+                                                    <button type="button" class="btn-close"
+                                                        wire:click.prevent="removeFilter('{{ $key }}', '{{ $item }}')">
+                                                    </button>
+                                                </span>
+                                            @endforeach
+                                        @else
+                                            <span class="badge">
+                                                {{ $this->getFilterLabel($key, $value) }}
+                                                <button type="button" class="btn-close"
                                                     wire:click="removeFilter('{{ $key }}')">
                                                 </button>
                                             </span>
                                         @endif
-                                    @endforeach
-                                </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Filtereinstellungen (Ergebnisse pro Seite & Sortierung) -->
+                        <div class="d-flex flex-wrap justify-content-between align-items-center bg-light p-3 rounded shadow-sm mt-4">
+                            <!-- Ergebnisse pro Seite -->
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-list-ol"></i>
+                                <label for="resultsPerPage" class="fw-semibold mb-0">Ergebnisse pro Seite:</label>
+                                <select wire:model.change="perPage" class="result-form-select form-select-sm w-auto shadow-sm">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
                             </div>
 
-                            <!-- Filtereinstellungen (Ergebnisse pro Seite & Sortierung) -->
-                            <div class="d-flex flex-wrap justify-content-between align-items-center bg-light p-3 rounded shadow-sm">
-                                <!-- Ergebnisse pro Seite -->
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="fas fa-list-ol text-primary"></i>
-                                    <label for="resultsPerPage" class="fw-semibold mb-0">Ergebnisse pro Seite:</label>
-                                    <select wire:model.change="perPage"
-                                        class="result-form-select form-select-sm w-auto shadow-sm">
-                                        <option value="5">5</option>
-                                        <option value="10">10</option>
-                                        <option value="25">25</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
+                            <!-- Sortieren nach -->
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-sort"></i>
+                                <label for="sortSelect" class="fw-semibold mb-0">Sortieren nach:</label>
+                                <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
+                                    <option value="price_flight">Preis</option>
+                                    <option value="title">Reiseziel</option>
+                                    <option value="climate_data->main->temp">Tagestemperatur</option>
+                                    <option value="continent_id">Kontinent</option>
+                                    <option value="country_id">Land</option>
+                                    <option value="flight_hours">Flugdauer</option>
+                                </select>
 
-                                <!-- Sortieren nach -->
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="fas fa-sort text-primary"></i>
-                                    <label for="sortSelect" class="fw-semibold mb-0">Sortieren nach:</label>
-                                    <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
-                                        <option value="price_flight">Preis</option>
-                                        <option value="title">Reiseziel</option>
-                                        <option value="climate_data->main->temp">Tagestemperatur</option>
-                                        <option value="continent_id">Kontinent</option>
-                                        <option value="country_id">Land</option>
-                                        <option value="flight_hours">Flugdauer</option>
-                                    </select>
+                                <!-- Sort Direction Buttons -->
+                                <button wire:click="toggleSortDirection" class="btn btn-outline-primary btn-sm border-0 shadow-sm">
+                                    <i class="fas fa-sort-amount-up" @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
+                                </button>
 
-                                    <!-- Sort Direction Buttons -->
-                                    <button wire:click="toggleSortDirection"
-                                        class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                        <i class="fas fa-sort-amount-up"
-                                            @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
-                                    </button>
-
-                                    <button wire:click="toggleSortDirection"
-                                        class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                        <i class="fas fa-sort-amount-down"
-                                            @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
-                                    </button>
-                                </div>
+                                <button wire:click="toggleSortDirection" class="btn btn-outline-primary btn-sm border-0 shadow-sm">
+                                    <i class="fas fa-sort-amount-down" @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
 
                     <ul class="timeline">
                         @forelse($locations as $location)
@@ -995,15 +1005,128 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 
 <style>
-    .badge {
-padding: 0.5rem;
-font-size: 0.85rem;
-}
+    /* Allgemeine Stile */
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+    }
 
-.btn-close {
-cursor: pointer;
-}
-</style>
+    .card-title {
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        color: #2c3e50; /* Dunkelblau für bessere Lesbarkeit */
+    }
+
+    /* Filter-Badges */
+    .badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 20px;
+        background-color: #3498db; /* Helles Blau */
+        color: white;
+        margin: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .badge:hover {
+        background-color: #2980b9; /* Dunkleres Blau beim Hover */
+        transform: translateY(-2px); /* Leichter Hover-Effekt */
+    }
+
+    /* Schließen-Button */
+    .btn-close {
+        cursor: pointer;
+        padding: 0.2rem;
+        margin-left: 0.5rem;
+        font-size: 0.65rem;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-close:hover {
+        background-color: rgba(255, 255, 255, 0.5); /* Heller beim Hover */
+    }
+
+    /* Responsive Layout */
+    @media (max-width: 768px) {
+        .card-title {
+            font-size: 1rem; /* Kleinere Schrift auf mobilen Geräten */
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-close {
+            padding: 0.15rem;
+            font-size: 0.6rem;
+        }
+
+        .filter-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .d-flex.flex-wrap {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    /* Hintergrund und Container */
+    .bg-light {
+        background-color: #f8f9fa !important;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+    }
+
+    /* Flexbox für Filter-Badges */
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Formular-Elemente */
+    .result-form-select {
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .result-form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    /* Buttons */
+    .btn-outline-primary {
+        border: 1px solid #3498db;
+        color: #3498db;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #3498db;
+        color: white;
+    }
+
+    /* Icons */
+    .fas {
+        font-size: 1rem;
+        color: #3498db;
+    }
+    </style>
 
 
 </div>
