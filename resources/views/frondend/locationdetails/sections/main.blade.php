@@ -13,22 +13,31 @@
         <div class="row">
             <!-- Hauptbild -->
             <div class="col-lg-7 col-md-12">
-                @php
+@php
                     $imagePaths = array_filter([$location->text_pic1, $location->text_pic2, $location->text_pic3]);
                     $randomImage = $imagePaths ? $imagePaths[array_rand($imagePaths)] : null;
                 @endphp
 
                 <div class="figure-img img-fluid custom-border position-relative"
                     style="background-repeat: no-repeat; background-size: cover; background-position: center;
-                            background-image: url('{{ $randomImage ? asset($randomImage) : asset('img/placeholders/location-placeholder.jpg') }}');
+                            background-image: url('{{ $location->text_pic2 ? asset($location->text_pic2) : asset('img/placeholders/location-placeholder.jpg') }}');
                             height: 100%; min-height: 400px;"
                     data-aos="fade-up" data-aos-delay="200">
                     <!-- Schicker Bildtext im unteren Bereich -->
-                    <div
-                        class="position-absolute bottom-0 w-100 bg-opacity-75 bg-white text-dark p-3 rounded-top shadow-lg">
-                        <p class="mb-0 text-center fw-bold">
+
+                    <div class="image-caption">
+                        @autotranslate($location->pic1_text ?? 'Kein Beschreibungstext verfügbar', app()->getLocale())
+                    </div>
+
+
+                    <div>
+
+                        <div class="image-caption">
                             @autotranslate($location->pic1_text ?? 'Kein Beschreibungstext verfügbar', app()->getLocale())
-                        </p>
+                        </div>
+
+
+
                         @if (!empty($panorama_text_and_style))
                             <div
                                 style="background: {{ $panorama_text_and_style['style']['background'] }};
@@ -526,6 +535,42 @@
         cursor: help;
         /* Zeigt an, dass es sich um einen Tooltip handelt */
     }
+
+    .image-caption {
+    position: absolute;
+    bottom: 8px;
+    left: 20%;
+    width: 80%;
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #333;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 10px 0 0 10px;
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+
+@media (max-width: 768px) {
+    .image-caption {
+    position: absolute;
+    bottom: 8px;
+    left: 10%;
+    width: 90%;
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #333;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 10px 0 0 10px;
+    font-size: 16px;
+    opacity: 0.6;
+}
+    }
+
+
+
 </style>
 
 <!-- Scripts -->
