@@ -5,7 +5,7 @@
 
                     @if ($totalResults === 0)
                     <div class="alert alert-warning">
-                        Deine Sitzung ist abgelaufen. Bitte starte die Suche erneut.
+                        @autotranslate('Keine Ergebnisse gefunden. Bitte starte die Suche erneut.', app()->getLocale())
                     </div>
                 @endif
 
@@ -13,7 +13,7 @@
                     <div class="card-body">
                         <!-- Titel und Filter-Badges -->
                         <div class="bg-light">
-                            <h5 class="card-title">{{ $totalResults }} Reiseziele wurden nach Deinen Kriterien gefunden</h5>
+                            <h5 class="card-title">{{ $totalResults }} @autotranslate('Reiseziele wurden nach Deinen Kriterien gefunden', app()->getLocale())</h5>
                             <hr>
 
                             <!-- Filter-Badges -->
@@ -47,7 +47,7 @@
                             <!-- Ergebnisse pro Seite -->
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fas fa-list-ol"></i>
-                                <label for="resultsPerPage" class="fw-semibold mb-0">Ergebnisse pro Seite:</label>
+                                <label for="resultsPerPage" class="fw-semibold mb-0">@autotranslate('Ergebnisse pro Seite:', app()->getLocale())</label>
                                 <select wire:model.change="perPage" class="result-form-select form-select-sm w-auto shadow-sm">
                                     <option value="5">5</option>
                                     <option value="10">10</option>
@@ -59,8 +59,8 @@
 
                             <!-- Sortieren nach -->
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-sort"></i>
-                                <label for="sortSelect" class="fw-semibold mb-0">Sortieren nach:</label>
+
+                                <label for="sortSelect" class="fw-semibold mb-0">@autotranslate('Sortieren nach:', app()->getLocale())</label></label>
                                 <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
                                     <option value="price_flight">Preis</option>
                                     <option value="title">Reiseziel</option>
@@ -379,7 +379,7 @@
                 </div>
                 </li>
             @empty
-                <p class="text-center">Keine Ergebnisse gefunden.</p>
+                <p class="text-center">@autotranslate('Keine Ergebnisse gefunden.', app()->getLocale())</p>
                 @endforelse
                 </ul>
 

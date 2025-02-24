@@ -3,12 +3,13 @@
     <div class="card-body">
         <div class="row">
             <!-- Flugstunden -->
-            <div class="col-4">
-                <div class="form-group col">
-                    <div class="d-flex my-2 mx-2">
-                        <i class="fas fa-fighter-jet fa-2x me-3" title="Flugstunden"></i><label>Flugstunden</label>
+            <div class="col-12 col-md-4 mb-3 mb-md-0">
+                <div class="form-group">
+                    <div class="d-flex align-items-center my-2 mx-2">
+                        <i class="fas fa-fighter-jet fa-2x me-3" title="Flugstunden"></i>
+                        <label class="mb-0">Flugstunden</label>
                     </div>
-                    <select name="flight_duration" class="form-select form-select-icon-light form-control bg-primary mb-3 details_search_result_count">
+                    <select name="flight_duration" class="form-select form-select-icon-light form-control bg-primary details_search_result_count">
                         <option value="" selected>Beliebig</option>
                         @foreach($flightDuration as $key => $duration)
                             <option value="{{ $key }}" @selected(request()->flight_duration == $key)>
@@ -18,13 +19,15 @@
                     </select>
                 </div>
             </div>
+
             <!-- Entfernung -->
-            <div class="col-4">
-                <div class="form-group col">
-                    <div class="d-flex my-2 mx-2">
-                        <i class="fas fa-arrows-alt-h fa-2x me-3" title="Entfernung zum Reiseziel"></i><span>Entfernung zum Reiseziel</span>
+            <div class="col-12 col-md-4 mb-3 mb-md-0">
+                <div class="form-group">
+                    <div class="d-flex align-items-center my-2 mx-2">
+                        <i class="fas fa-arrows-alt-h fa-2x me-3" title="Entfernung zum Reiseziel"></i>
+                        <span class="mb-0">Entfernung zum Reiseziel</span>
                     </div>
-                    <select name="distance_to_destination" class="form-select form-select-icon-light form-control bg-primary mb-3 details_search_result_count">
+                    <select name="distance_to_destination" class="form-select form-select-icon-light form-control bg-primary details_search_result_count">
                         <option value="" selected>Beliebig</option>
                         @foreach($Destinations as $key => $destination)
                             <option value="{{ $key }}" @selected(request()->distance_to_destination == $key)>
@@ -34,13 +37,15 @@
                     </select>
                 </div>
             </div>
+
             <!-- Direktflug -->
-            <div class="col-4">
-                <div class="form-group col">
-                    <div class="d-flex my-2 mx-2">
-                        <i class="fas fa-luggage-cart fa-2x me-3" title="Direktflug"></i><span>Direktflug</span>
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <div class="d-flex align-items-center my-2 mx-2">
+                        <i class="fas fa-luggage-cart fa-2x me-3" title="Direktflug"></i>
+                        <span class="mb-0">Direktflug</span>
                     </div>
-                    <select name="stop_over" class="form-select form-select-icon-light form-control bg-primary mb-3 details_search_result_count">
+                    <select name="stop_over" class="form-select form-select-icon-light form-control bg-primary details_search_result_count">
                         <option value="" selected>Beliebig</option>
                         <option value="yes" @selected("yes" === request()->stop_over)>Ja</option>
                         <option value="no" @selected("no" === request()->stop_over)>Nein</option>

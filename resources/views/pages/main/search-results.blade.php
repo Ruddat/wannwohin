@@ -1,6 +1,25 @@
 @extends('layouts.main')
 @section('content')
-    <div role="main" class="main">
+
+
+
+
+
+
+
+
+
+
+<livewire:frontend.quick-search.search-results-component />
+
+
+
+
+
+
+
+
+<div role="main" class="main">
         <section id="experience" class="section section-secondary section-no-border m-0 pb-0 bg-white">
             <div class="container">
                 <div class="row">
