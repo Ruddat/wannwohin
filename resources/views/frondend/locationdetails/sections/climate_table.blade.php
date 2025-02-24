@@ -2,67 +2,54 @@
 <section class="timeline-box right custom-box-shadow-2 box-shadow-2 py-4">
     <div class="container" style="background-color: #eaeff5; border-radius: 8px; padding: 20px;">
         <div class="row">
-            <!-- Wetterinformationen -->
-            <div class="experience-info col-lg-3 col-sm-5 bg-info p-3 rounded-start weather-box">
-                <div class="text-center align-middle mb-4 pt-4">
-                    <h4 class="text-color-white">
-                        Wetter {{ $location->title }}
-                    </h4>
-                </div>
+<!-- Wetterinformationen -->
+<div class="experience-info col-lg-3 col-sm-5 bg-info p-3 rounded-start weather-box">
+    <!-- Oberer Bereich: Größer -->
+    <div class="text-center align-middle mb-4 pt-3">
+        <h3 class="text-color-white fw-bold">Wetter {{ $location->title }}</h3>
+    </div>
 
-                <div class="text-center align-middle mb-5">
-                    <h1 class="text-color-white">
-                        <img src="{{ \App\Helpers\WeatherHelper::getWeatherIcon($weather_data['icon'] ?? null) }}" alt="Wetter-Icon" class="pe-2">
-                        {{ \App\Helpers\WeatherHelper::formatTemperature($weather_data['temperature'] ?? null) }}
-                    </h1>
-                </div>
-@php
-  // dd($weather_data);
-@endphp
+    <div class="text-center align-middle mb-4">
+        <h1 class="text-color-white display-5">
+            <img src="{{ \App\Helpers\WeatherHelper::getWeatherIcon($weather_data['icon'] ?? null) }}"
+                 alt="Wetter-Icon" class="pe-2" style="width: 64px; vertical-align: middle;">
+            {{ \App\Helpers\WeatherHelper::formatTemperature($weather_data['temperature'] ?? null) }}
+        </h1>
+    </div>
 
-<div class="text-center align-middle mb-5">
-    <h3 class="text-color-white">
-        @if (!empty($weather_data['description']))
-        Beschreibung
-        @else
-            @autotranslate('Nicht verfügbar', app()->getLocale())
-        @endif
-    </h3>
+    <div class="text-center align-middle mb-4">
+        <h4 class="text-color-white">
+            {{ $weather_data['description'] ?? '@autotranslate("Nicht verfügbar", app()->getLocale())' }}
+        </h4>
+    </div>
+
+    <!-- Unterer Bereich: Minimalistisch -->
+    <div class="text-center align-middle mb-2">
+        <small class="text-color-white">
+            <span class="me-1">@autotranslate('Luftfeuchtigkeit:', app()->getLocale())</span>
+            {{ $weather_data['humidity'] ?? 'N/A' }}%
+        </small>
+    </div>
+    <div class="text-center align-middle mb-3">
+        <small class="text-color-white">
+            <span class="me-1">@autotranslate('Wind:', app()->getLocale())</span>
+            {{ \App\Helpers\WeatherHelper::formatWindSpeed($weather_data['wind_speed'] ?? null) }}
+        </small>
+    </div>
+
+
+<!-- Minimalistische 7-Tage-Wettervorhersage (vertikal) -->
+<div class="weather-forecast mt-2">
+    <p class="text-color-white mb-1" style="font-size: 1.2rem; text-align: center;">7 Tage Vorhersage</p>
+    @foreach ($forecast as $day)
+        <div class="weather-day" title="{{ $day['weather'] }} - {{ $day['precipitation'] }} mm">
+            <span>{{ substr($day['date'], 0, 5) }}</span>
+            <span class="weather-icon">{{ $day['icon'] }}</span>
+            <span>{{ $day['temp_max'] }}°/{{ $day['temp_min'] }}°</span>
+        </div>
+    @endforeach
 </div>
-
-                <div class="text-center align-middle">
-                    <h5 class="text-color-white">
-                        <span class="me-1">@autotranslate('Luftfeuchtigkeit:', app()->getLocale())</span>
-                        {{ $weather_data['humidity'] ?? 'N/A' }} %
-                    </h5>
-                </div>
-                <div class="text-center align-middle mb-1">
-                    <h5 class="text-color-white">
-                        <span class="me-1">@autotranslate('Bewölkung:', app()->getLocale())</span>
-                        {{ $weather_data['cloudiness'] ?? 'N/A' }} %
-                    </h5>
-                </div>
-                <div class="text-center align-middle mb-1">
-                    <h5 class="text-color-white">
-                        <span class="me-1">@autotranslate('Wind', app()->getLocale())  ({{ isset($weather_data['wind_direction']) ? \App\Helpers\WeatherHelper::getWindDirection($weather_data['wind_direction']) : 'Keine Daten' }}):</span>
-                        {{ \App\Helpers\WeatherHelper::formatWindSpeed($weather_data['wind_speed'] ?? null) }}
-                        @if(isset($weather_data['wind_speed']))
-                            <small>({{ \App\Helpers\WeatherHelper::getWindDescription($weather_data['wind_speed']) }})</small>
-                        @endif
-                    </h5>
-                </div>
-
-
-
-            </div>
-
-
-
-
-
-
-
-
+</div>
 
 
             <!-- Klimatabelle -->
@@ -102,24 +89,7 @@
                             </tr>
                         @endforeach
                     </tbody>
-
             </table>
-
-<!-- Wettervorhersage -->
-<div class="weather-container">
-    <h4 class="weather-title">7-Tage-Wettervorhersage für {{ $location->title }}</h4>
-    <div class="weather-forecast">
-        @foreach ($forecast as $day)
-            <div class="weather-day">
-                <p class="date">{{ $day['date'] }}</p>
-                <p class="icon">{{ $day['icon'] }}</p>
-                <p class="weather-description">{{ $day['weather'] }}</p>
-                <p class="temp">🌡️ {{ $day['temp_max'] }}°C / {{ $day['temp_min'] }}°C</p>
-                <p class="precipitation">🌧️ {{ $day['precipitation'] }} mm</p>
-            </div>
-        @endforeach
-    </div>
-</div>
 
 
 
@@ -139,85 +109,50 @@
 </section>
 
 
-
-
 <style>
     .weather-box {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    border-radius: 12px 0 0 12px; /* Nur links abgerundet */
-    padding: 25px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    text-align: center;
-}
-</style>
-
-
-<style>
-    /* Wetterbox mit Blauverlauf & modernem Design */
-    .weather-container {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-        text-align: center;
-    }
-
-    .weather-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 15px;
+        overflow: hidden;
     }
 
     .weather-forecast {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        justify-content: center;
+        font-size: 0.7rem;
     }
 
     .weather-day {
-        background: rgb(22,221,223);
-        background: linear-gradient(0deg, rgba(22,221,223,1) 21%, rgba(241,253,45,0.9360119047619048) 100%);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    min-width: 150px;
-    flex: 1 1 calc(20% - 1rem);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-
-    .weather-day:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(255, 255, 255, 0.3);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0.2rem 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        margin-bottom: 0.2rem;
     }
 
-    .date {
-        font-size: 1rem;
-        font-weight: 600;
+    .weather-icon {
+        display: inline-block;
+        width: 16px;
+        text-align: center;
+        vertical-align: middle;
+        margin: 0 0.2rem;
     }
 
-    .icon {
-        font-size: 2rem;
-        margin: 10px 0;
+    .text-color-white {
+        color: #fff;
     }
 
-    .weather-description {
-        font-size: 1rem;
-        font-weight: 500;
+    .display-5 {
+        font-size: 2.5rem; /* Größere Temperatur */
     }
 
-    .temp {
-        font-size: 1rem;
-        color: #3c3a35;
-    }
-
-    .precipitation {
-        font-size: 1rem;
-        color: #0573cc;
+    @media (max-width: 576px) {
+        .display-5 {
+            font-size: 2rem;
+        }
+        .weather-forecast {
+            font-size: 0.65rem;
+        }
+        .weather-icon {
+            width: 14px;
+        }
     }
     </style>
-
-

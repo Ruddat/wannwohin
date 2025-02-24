@@ -43,7 +43,130 @@
 
 
 
+<!-- Wettervorhersage -->
+<div class="weather-container">
+    <h4 class="weather-title">7-Tage-Wettervorhersage für {{ $location->title }}</h4>
+    <div class="weather-forecast">
+        @foreach ($forecast as $day)
+            <div class="weather-day">
+                <p class="date">{{ $day['date'] }}</p>
+                <p class="icon">{{ $day['icon'] }}</p>
+                <p class="weather-description">{{ $day['weather'] }}</p>
+                <p class="temp">🌡️ {{ $day['temp_max'] }}°C / {{ $day['temp_min'] }}°C</p>
+                <p class="precipitation">🌧️ {{ $day['precipitation'] }} mm</p>
+            </div>
+        @endforeach
+    </div>
+</div>
 
+<div class="weather-forecast">
+    @foreach ($forecast as $day)
+        <div class="weather-day">
+            {{ substr($day['date'], 0, 5) }}
+            {{ $day['icon'] }}
+            {{ $day['temp_max'] }}°/{{ $day['temp_min'] }}°
+            {{ $day['precipitation'] }}mm
+        </div>
+    @endforeach
+</div>
+
+<style>
+.weather-forecast {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.weather-day {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+</style>
+
+<style>
+    .weather-box {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-radius: 12px 0 0 12px; /* Nur links abgerundet */
+    padding: 25px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+</style>
+
+
+<style>
+    /* Wetterbox mit Blauverlauf & modernem Design */
+    .weather-container {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+
+    .weather-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .weather-forecast {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .weather-day {
+        background: rgb(22,221,223);
+        background: linear-gradient(0deg, rgba(22,221,223,1) 21%, rgba(241,253,45,0.9360119047619048) 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    min-width: 150px;
+    flex: 1 1 calc(20% - 1rem);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+    .weather-day:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(255, 255, 255, 0.3);
+    }
+
+    .date {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .icon {
+        font-size: 2rem;
+        margin: 10px 0;
+    }
+
+    .weather-description {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .temp {
+        font-size: 1rem;
+        color: #3c3a35;
+    }
+
+    .precipitation {
+        font-size: 1rem;
+        color: #0573cc;
+    }
+    </style>
 
 
 
