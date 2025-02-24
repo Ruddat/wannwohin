@@ -123,6 +123,11 @@ class SearchResultsComponent extends Component
         $this->resetPage();
     }
 
+    public function toggleSortDirection()
+    {
+        $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+    
     public function removeFilter($filterKey, $value = null)
     {
         if ($filterKey === 'spezielle' && $value) {
