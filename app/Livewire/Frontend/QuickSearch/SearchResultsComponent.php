@@ -130,6 +130,11 @@ class SearchResultsComponent extends Component
 
     public function removeFilter($filterKey, $value = null)
     {
+        // Verhindere das Entfernen des Monatsfilters
+        if ($filterKey === 'urlaub') {
+            return; // Ignoriere das Entfernen dieses Filters
+        }
+
         if ($filterKey === 'spezielle' && $value) {
             $this->spezielle = array_filter((array)$this->spezielle, fn($item) => $item !== $value);
             $this->activeFilters['spezielle'] = $this->spezielle;
@@ -141,6 +146,7 @@ class SearchResultsComponent extends Component
         $this->updateFilteredLocationIds();
         $this->resetPage();
     }
+
 
     private function updateFilteredLocationIds()
     {
@@ -196,7 +202,7 @@ class SearchResultsComponent extends Component
             default => $value,
         };
     }
-    
+
     private function getContinentName($continentId)
     {
         $continents = Cache::remember('continents_list', 3600, fn() =>

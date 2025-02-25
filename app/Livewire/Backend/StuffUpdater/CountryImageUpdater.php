@@ -78,20 +78,24 @@ class CountryImageUpdater extends Component
             $directory = "uploads/images/locations/{$safeCityName}/";
             $fileName = "country_image_{$index}.jpg";
 
-            if (!Storage::exists("public/{$directory}")) {
-                Storage::makeDirectory("public/{$directory}");
+            // Verwende die Disk 'public' ohne das Präfix 'public/' im Pfad
+            if (!Storage::disk('public')->exists($directory)) {
+                Storage::disk('public')->makeDirectory($directory);
             }
 
+            // Lade das Bild herunter
             $imageContents = Http::get($imageUrl)->body();
-            Storage::put("public/{$directory}{$fileName}", $imageContents);
+            Storage::disk('public')->put("{$directory}{$fileName}", $imageContents);
 
             $status = 'active';
-            return "storage/{$directory}{$fileName}"; // Relativer Pfad
+            // Rückgabe des Pfads, der über die URL erreichbar ist
+            return "storage/{$directory}{$fileName}";
         }
 
         $status = 'inactive';
         return null;
     }
+
 
     private function sanitizeCityName($city)
     {

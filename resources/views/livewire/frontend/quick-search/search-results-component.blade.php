@@ -52,9 +52,11 @@
                         @else
                             <span class="badge bg-primary">
                                 {{ $this->getFilterLabel($key, $value) }}
-                                <button type="button" class="btn-close btn-close-white"
-                                    wire:click="removeFilter('{{ $key }}')">
-                                </button>
+                                @if ($key !== 'urlaub')  <!-- Kein Schließen-Button für Monatsfilter -->
+                                    <button type="button" class="btn-close btn-close-white"
+                                        wire:click="removeFilter('{{ $key }}')">
+                                    </button>
+                                @endif
                             </span>
                         @endif
                     @endif
@@ -1108,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function () {
         font-size: 0.85rem;
         border-radius: 20px;
         background-color: #3498db; /* Helles Blau */
-        color: white;
+        color: rgb(54, 53, 53);
         margin: 0.25rem;
         display: inline-flex;
         align-items: center;
