@@ -1,7 +1,6 @@
-<section class="header-section section section-parallax bg-transparent m-0"
-         data-plugin-parallax
-         data-plugin-options="{'speed': 1.5}"
-         data-image-src="{{ $pic1Text ?? asset('default-bg.jpg') }}">
+<section class="header-section section section-parallax bg-transparent m-0">
+    <div class="parallax-background" style="background-image: url('{{ $pic1Text ?? asset('default-bg.jpg') }}');"></div>
+
     <div class="container">
         <div class="row align-items-center g-4">
             <!-- Hauptbild -->
@@ -32,6 +31,7 @@
         </div>
     </div>
 </section>
+<div class="inner-shape"></div>
 
 <div class="about-links bg-color-light">
     <div class="container">
@@ -49,6 +49,9 @@
         <x-breadcrumb />
     </div>
 </div>
+
+
+
 
 <style scoped>
 /* Header-Sektion */
@@ -204,3 +207,132 @@
     }
 }
 </style>
+<style>
+    /* Parallax-Effekt */
+.parallax-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    transform: translateZ(0);
+    will-change: transform;
+    z-index: -1;
+}
+
+/* Header-Sektion */
+.header-section {
+    position: relative;
+    overflow: hidden;
+    padding: 5rem 0;
+}
+
+.header-section .heading-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.header-section .travel-heading {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #333;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    margin: 0;
+    line-height: 1;
+}
+
+.header-section .travel-destination {
+    font-size: 3rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem 1rem;
+    margin: 0;
+    line-height: 1;
+    transform: translateX(3ch);
+}
+
+.header-section .header-main-img {
+    border: 3px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    object-fit: cover;
+}
+
+/* Scroll Icon */
+.header-section .scroll-icon {
+    max-width: 50px;
+    animation: bounce 2s infinite;
+}
+
+/* Animation für das Scroll-Icon */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Fix für Firefox */
+@-moz-document url-prefix() {
+    .parallax-background {
+        background-attachment: scroll;
+        transform: none;
+    }
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 992px) {
+    .header-section {
+        padding: 2rem 0;
+    }
+
+    .header-section .header-main-img {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-section {
+        padding: 1.5rem 0;
+    }
+
+    .header-section .travel-heading {
+        font-size: 1.2rem;
+        padding: 0.4rem 0.8rem;
+        text-align: center;
+    }
+
+    .header-section .travel-destination {
+        font-size: 2rem;
+        padding: 0.4rem 0.8rem;
+        transform: none;
+        text-align: center;
+    }
+
+    .header-section .header-main-img {
+        max-height: 250px;
+    }
+}
+
+</style>
+<script>
+    document.addEventListener('scroll', function () {
+        const parallax = document.querySelector('.parallax-background');
+        let scrollPosition = window.pageYOffset;
+
+        // Parallax-Geschwindigkeit
+        parallax.style.transform = 'translateY(' + scrollPosition * 0.5 + 'px)';
+    });
+    </script>

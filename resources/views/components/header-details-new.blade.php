@@ -32,7 +32,7 @@
         </a>
     </div>
 </section>
-
+<div class="inner-shape"></div>
 <style>
     /* Header-Sektion mit Parallax */
     .header-section {

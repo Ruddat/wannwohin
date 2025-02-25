@@ -1,7 +1,7 @@
 <div id="about-me" class="about-me-section">
-
+{{--
     @livewire('frontend.travel-explorer.travel-explorer-component')
-
+ --}}
 
     <section class="section bg-color-light m-0">
         <!-- Vorschläge -->
