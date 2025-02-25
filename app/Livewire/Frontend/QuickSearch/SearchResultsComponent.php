@@ -127,7 +127,7 @@ class SearchResultsComponent extends Component
     {
         $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
     }
-    
+
     public function removeFilter($filterKey, $value = null)
     {
         if ($filterKey === 'spezielle' && $value) {
@@ -187,6 +187,7 @@ class SearchResultsComponent extends Component
     public function getFilterLabel($key, $value)
     {
         return match ($key) {
+            'continent' => $this->getContinentName($value), // Hier wird der Kontinent ergänzt
             'price' => WwdeRange::find($value)?->Range_to_show ?? $value,
             'urlaub' => config('custom.months')[$value] ?? $value,
             'sonnenstunden' => "Mehr als " . str_replace('more_', '', $value) . " Sonnenstunden",
@@ -195,6 +196,16 @@ class SearchResultsComponent extends Component
             default => $value,
         };
     }
+    
+    private function getContinentName($continentId)
+    {
+        $continents = Cache::remember('continents_list', 3600, fn() =>
+            \App\Models\WwdeContinent::pluck('title', 'id')->toArray()
+        );
+
+        return $continents[$continentId] ?? 'Unbekannter Kontinent';
+    }
+
 
     public function render()
     {

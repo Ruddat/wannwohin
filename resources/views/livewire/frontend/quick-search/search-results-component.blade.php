@@ -9,79 +9,99 @@
                     </div>
                 @endif
 
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <!-- Titel und Filter-Badges -->
-                        <div class="bg-light">
-                            <h5 class="card-title">{{ $totalResults }} @autotranslate('Reiseziele wurden nach Deinen Kriterien gefunden', app()->getLocale())</h5>
-                            <hr>
+<!-- Sticky-Filterleiste nur für mobile Geräte -->
+<div class="d-flex justify-content-between align-items-center p-2 bg-white shadow-sm sticky-top d-md-none">
+    <!-- Filter-Button -->
+    <button class="btn btn-outline-danger filter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        <i class="fas fa-sliders-h"></i> Filtern
+        <span class="badge bg-danger">{{ $totalResults }}</span>
+    </button>
 
-                            <!-- Filter-Badges -->
-                            <div class="filter-container">
-                                @foreach ($activeFilters as $key => $value)
-                                    @if ($value)
-                                        @if (is_array($value) && $key === 'spezielle')
-                                            @foreach ($value as $item)
-                                                <span class="badge">
-                                                    {{ $this->getFilterLabel($key, $item) }}
-                                                    <button type="button" class="btn-close"
-                                                        wire:click.prevent="removeFilter('{{ $key }}', '{{ $item }}')">
-                                                    </button>
-                                                </span>
-                                            @endforeach
-                                        @else
-                                            <span class="badge">
-                                                {{ $this->getFilterLabel($key, $value) }}
-                                                <button type="button" class="btn-close"
-                                                    wire:click="removeFilter('{{ $key }}')">
-                                                </button>
-                                            </span>
-                                        @endif
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
+    <!-- Sortier-Optionen (nur mobil sichtbar) -->
+    <div class="d-flex align-items-center gap-2">
+        <button wire:click="toggleSortDirection" class="btn btn-outline-secondary btn-sm shadow-sm" title="Aufsteigend sortieren">
+            <i class="fas fa-sort-amount-up" @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
+        </button>
+        <button wire:click="toggleSortDirection" class="btn btn-outline-secondary btn-sm shadow-sm" title="Absteigend sortieren">
+            <i class="fas fa-sort-amount-down" @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
+        </button>
+    </div>
+</div>
 
-                        <!-- Filtereinstellungen (Ergebnisse pro Seite & Sortierung) -->
-                        <div class="d-flex flex-wrap justify-content-between align-items-center bg-light p-3 rounded shadow-sm mt-4">
-                            <!-- Ergebnisse pro Seite -->
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-list-ol"></i>
-                                <label for="resultsPerPage" class="fw-semibold mb-0">@autotranslate('Ergebnisse pro Seite:', app()->getLocale())</label>
-                                <select wire:model.change="perPage" class="result-form-select form-select-sm w-auto shadow-sm">
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
+<!-- Filterbereich mit Bootstrap Collapse -->
+<div class="card shadow-sm mb-4 collapse filter-section" id="filterCollapse">
+    <div class="card-body">
+        <!-- Titel und Filter-Badges -->
+        <div class="bg-light">
+            <h5 class="card-title">{{ $totalResults }} @autotranslate('Reiseziele wurden nach Deinen Kriterien gefunden', app()->getLocale())</h5>
+            <hr>
 
-                            <!-- Sortieren nach -->
-                            <div class="d-flex align-items-center gap-2">
-
-                                <label for="sortSelect" class="fw-semibold mb-0">@autotranslate('Sortieren nach:', app()->getLocale())</label></label>
-                                <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
-                                    <option value="price_flight">Preis</option>
-                                    <option value="title">Reiseziel</option>
-                                    <option value="climate_data->main->temp">Tagestemperatur</option>
-                                    <option value="continent_id">Kontinent</option>
-                                    <option value="country_id">Land</option>
-                                    <option value="flight_hours">Flugdauer</option>
-                                </select>
-
-                                <!-- Sort Direction Buttons -->
-                                <button wire:click="toggleSortDirection" class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                    <i class="fas fa-sort-amount-up" @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
+            <!-- Filter-Badges -->
+            <div class="filter-container">
+                @foreach ($activeFilters as $key => $value)
+                    @if ($value)
+                        @if (is_array($value) && $key === 'spezielle')
+                            @foreach ($value as $item)
+                                <span class="badge bg-primary">
+                                    {{ $this->getFilterLabel($key, $item) }}
+                                    <button type="button" class="btn-close btn-close-white"
+                                        wire:click.prevent="removeFilter('{{ $key }}', '{{ $item }}')">
+                                    </button>
+                                </span>
+                            @endforeach
+                        @else
+                            <span class="badge bg-primary">
+                                {{ $this->getFilterLabel($key, $value) }}
+                                <button type="button" class="btn-close btn-close-white"
+                                    wire:click="removeFilter('{{ $key }}')">
                                 </button>
+                            </span>
+                        @endif
+                    @endif
+                @endforeach
+            </div>
+        </div>
 
-                                <button wire:click="toggleSortDirection" class="btn btn-outline-primary btn-sm border-0 shadow-sm">
-                                    <i class="fas fa-sort-amount-down" @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Filtereinstellungen (Ergebnisse pro Seite & Sortierung) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center bg-light p-3 rounded shadow-sm mt-4">
+            <!-- Ergebnisse pro Seite -->
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-list-ol"></i>
+                <label for="resultsPerPage" class="fw-semibold mb-0">@autotranslate('Ergebnisse pro Seite:', app()->getLocale())</label>
+                <select wire:model.change="perPage" class="result-form-select form-select-sm w-auto shadow-sm">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <!-- Sortieren nach -->
+            <div class="d-flex align-items-center gap-2">
+                <label for="sortSelect" class="fw-semibold mb-0">@autotranslate('Sortieren nach:', app()->getLocale())</label>
+                <select wire:model.change="sortBy" class="result-form-select w-auto shadow-sm">
+                    <option value="price_flight">Preis</option>
+                    <option value="title">Reiseziel</option>
+                    <option value="climate_data->main->temp">Tagestemperatur</option>
+                    <option value="continent_id">Kontinent</option>
+                    <option value="country_id">Land</option>
+                    <option value="flight_hours">Flugdauer</option>
+                </select>
+
+                <!-- Sortier-Optionen (nur Desktop sichtbar) -->
+                <button wire:click="toggleSortDirection" class="btn btn-outline-secondary btn-sm shadow-sm d-none d-md-inline-flex" title="Aufsteigend sortieren">
+                    <i class="fas fa-sort-amount-up" @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
+                </button>
+                <button wire:click="toggleSortDirection" class="btn btn-outline-secondary btn-sm shadow-sm d-none d-md-inline-flex" title="Absteigend sortieren">
+                    <i class="fas fa-sort-amount-down" @if ($sortDirection === 'desc') style="color:#22c0e8;" @endif></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
                     <ul class="timeline">
                         @forelse($locations as $location)
@@ -893,7 +913,70 @@ document.addEventListener('DOMContentLoaded', function () {
         .card-link .price {
             color: inherit;
         }
-    </style>
+
+   </style>
+
+
+<style>
+    /* Mobile Filter-Button */
+    .filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border-radius: 30px;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .filter-btn .badge {
+        margin-left: 5px;
+    }
+
+    /* Sortier-Icons */
+    .btn-outline-secondary {
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #22c0e8;
+        color: #fff;
+    }
+
+    /* Sticky-Header auf Mobile */
+    .sticky-top {
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Stelle sicher, dass der Filterbereich auf Desktop immer sichtbar ist */
+@media (min-width: 768px) {
+        /* Auf Desktop ausgeblendet */
+        .d-md-none {
+            display: none !important;
+        }
+
+    .filter-section {
+        display: block !important; /* Überschreibt collapse */
+    }
+    .filter-toggle {
+        display: none; /* Verstecke den Button auf Desktop */
+    }
+
+}
+</style>
+
 
 
 
