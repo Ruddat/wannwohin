@@ -252,6 +252,8 @@ public function searchByNominatimOnly(string $cityName): array
                 'ISO3166-2-lvl4' => strtoupper($data['address']['ISO3166-2-lvl4'] ?? 'unknown'),
                 'state' => $data['address']['state'] ?? null, // Bundesstaat
                 'county' => $data['address']['county'] ?? null, // Landkreis oder Region
+                'region' => $data['address']['region'] ?? null, // Region falls vorhanden
+                'city' => $data['address']['city'] ?? $data['address']['town'] ?? $data['address']['village'] ?? null, // Stadt erkennen
             ],
             'lat' => $data['lat'] ?? null,
             'lon' => $data['lon'] ?? null,
@@ -265,11 +267,14 @@ public function searchByNominatimOnly(string $cityName): array
             'ISO3166-2-lvl4' => 'unknown',
             'state' => null,
             'county' => null,
+            'region' => null,
+            'city' => null,
         ],
         'lat' => null,
         'lon' => null,
     ];
 }
+
 
     /**
      * Standard-Header für HTTP-Anfragen.

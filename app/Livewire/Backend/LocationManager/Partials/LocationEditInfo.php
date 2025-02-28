@@ -72,7 +72,11 @@ class LocationEditInfo extends Component
     public function updatedContinentId($continentId)
     {
         $this->countries = WwdeCountry::where('continent_id', $continentId)->get();
-        $this->countryId = null; // Zurücksetzen
+
+        // Country-ID nur zurücksetzen, wenn sie nicht bereits gesetzt wurde
+        if (!in_array($this->countryId, $this->countries->pluck('id')->toArray())) {
+            $this->countryId = null;
+        }
     }
 
     public function save()
@@ -141,37 +145,46 @@ class LocationEditInfo extends Component
         // GeocodeService aufrufen
         $geocodeService = new GeocodeService();
         $result = $geocodeService->searchByNominatimOnly($this->title);
+//dd($result);
+        // Prüfen, ob ein gültiges Array zurückgegeben wurde
+        if (!is_array($result) || empty($result)) {
+            session()->flash('error', 'Keine gültigen Geodaten gefunden. Bitte überprüfen Sie den Stadtnamen.');
+            return;
+        }
 
-        if (!empty($result)) {
-            // Felder mit den Ergebnissen füllen
-            $this->iso2 = $result['address']['country_code'] ?? null;
-            $this->iso3 = $result['address']['ISO3166-2-lvl4'] ?? null;
-            $this->lat = $result['lat'] ?? null;
-            $this->lon = $result['lon'] ?? null;
-            $this->bundesstaatLong = $result['address']['state'] ?? null;
-            $this->bundesstaatShort = $result['address']['county'] ?? null; // Landkreis als "Kurzversion"
+        // Sicherstellen, dass 'address' existiert und ein Array ist
+        $address = $result['address'] ?? [];
 
-            // Land anhand des country_codes aus der Datenbank suchen und setzen
+        if (!is_array($address)) {
+            session()->flash('error', 'Ungültige Geodaten erhalten.');
+            return;
+        }
+
+        // Felder mit den Ergebnissen füllen (mit zusätzlicher Absicherung)
+        $this->iso2 = $address['country_code'] ?? null;
+        $this->iso3 = $address['ISO3166-2-lvl4'] ?? null;
+        $this->lat = $result['lat'] ?? null;
+        $this->lon = $result['lon'] ?? null;
+        $this->bundesstaatLong = $address['state'] ?? null;
+        $this->bundesstaatShort = $address['county'] ?? null;
+        $this->title = $address['city'] ?? $this->title; // Stadt automatisch setzen, falls leer
+        $this->region = $address['region'] ?? null; // Falls eine Region existiert
+
+        // Land anhand des country_codes aus der Datenbank suchen und setzen
+        if (!empty($this->iso2)) {
             $country = WwdeCountry::where('country_code', strtoupper($this->iso2))->first();
+            //dd("Gefundenes Land:", $country);
+
             if ($country) {
                 $this->countryId = $country->id;
                 $this->continentId = $country->continent_id;
                 $this->updatedContinentId($this->continentId); // Länderliste aktualisieren
+                $this->countries = WwdeCountry::where('continent_id', $this->continentId)->get();
             }
-
-            session()->flash('success', 'Daten erfolgreich abgerufen und eingetragen.');
-        } else {
-            session()->flash('error', 'Keine Daten gefunden. Bitte überprüfen Sie den Stadtnamen.');
         }
+        // Erfolgsmeldung
+        session()->flash('success', 'Daten erfolgreich abgerufen und eingetragen.');
     }
-
-
-
-
-
-
-
-
 
 
     public function render()
