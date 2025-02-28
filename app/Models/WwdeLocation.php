@@ -110,11 +110,14 @@ class WwdeLocation extends Model
     {
         return [
             'slug' => [
-                'source' => function ($model) {
-                    return !empty($model->title) ? $model->title : 'location-' . uniqid();
-                }
+                'source' => 'slugSource' // Verweist auf einen Accessor
             ]
         ];
+    }
+
+    public function getSlugSourceAttribute()
+    {
+        return !empty($this->title) ? $this->title : 'location-' . uniqid();
     }
 
 

@@ -34,10 +34,12 @@
             <div class="col-sm-6 col-md-6">
         <div class="mb-3">
             <label for="countryId" class="form-label">Land</label>
-            <select wire:model="countryId" class="form-control" {{ empty($countries) ? 'disabled' : '' }}>
+            <select wire:model="countryId" class="form-control" wire:ignore.self>
                 <option value="">-- Wähle ein Land --</option>
                 @foreach($countries as $country)
-                    <option value="{{ $country->id }}">{{ $country->title }}</option>
+                    <option value="{{ $country->id }}" {{ $country->id == $countryId ? 'selected' : '' }}>
+                        {{ $country->title }}
+                    </option>
                 @endforeach
             </select>
             @error('countryId') <span class="text-danger">{{ $message }}</span> @enderror

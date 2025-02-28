@@ -69,15 +69,19 @@ class LocationEditInfo extends Component
         }
     }
 
-    public function updatedContinentId($continentId)
-    {
-        $this->countries = WwdeCountry::where('continent_id', $continentId)->get();
+public function updatedContinentId($continentId)
+{
+    $this->countries = WwdeCountry::where('continent_id', $continentId)->get();
 
-        // Country-ID nur zurücksetzen, wenn sie nicht bereits gesetzt wurde
-        if (!in_array($this->countryId, $this->countries->pluck('id')->toArray())) {
-            $this->countryId = null;
-        }
+    // Debugging, um zu sehen, ob `countryId` verloren geht
+   // dd("updatedContinentId:", "Erhaltener Continent ID:", $continentId, "Aktuelle Country ID:", $this->countryId, "Neue Länder:", $this->countries->pluck('id', 'title'));
+
+    // Country-ID nur zurücksetzen, wenn sie nicht in der neuen Liste vorkommt
+    if ($this->countryId && !$this->countries->pluck('id')->contains($this->countryId)) {
+        $this->countryId = null;
     }
+}
+
 
     public function save()
     {
@@ -106,32 +110,47 @@ class LocationEditInfo extends Component
 
         $location = WwdeLocation::findOrFail($this->locationId);
 
-        $location->update([
-            'continent_id' => $this->continentId,
-            'country_id' => $this->countryId,
-            'iso2' => $this->iso2,
-            'iso3' => $this->iso3,
-            'title' => $this->title,
-            'alias' => $this->alias,
-            'iata_code' => $this->iataCode,
-            'flight_hours' => $this->flightHours,
-            'stop_over' => $this->stopOver,
-            'dist_from_FRA' => $this->distFromFRA,
-            'dist_type' => $this->distType,
-            'lat' => $this->lat,
-            'lon' => $this->lon,
-            'lat_new' => $this->lat,
-            'lon_new' => $this->lon,
-            'station_id' => $this->stationId,
-            'bundesstaat_long' => $this->bundesstaatLong,
-            'bundesstaat_short' => $this->bundesstaatShort,
-            'no_city_but' => $this->noCityBut,
-            'population' => $this->population,
-            'status' => $this->status,
-            'finished' => $this->finished,
-        ]);
+        $data = [
+            'continent_id' => $this->continentId ?? 0,
+            'country_id' => $this->countryId ?? 0,
+            'iso2' => $this->iso2 ?? '',
+            'iso3' => $this->iso3 ?? '',
+            'title' => $this->title ?? 'Unbekannt',
+            'alias' => $this->alias ?? '',
+            'iata_code' => $this->iataCode ?? '',
+            'flight_hours' => $this->flightHours ?? 0,
+            'stop_over' => $this->stopOver ?? 0,
+            'dist_from_FRA' => $this->distFromFRA ?? 0,
+            'dist_type' => $this->distType ?? '',
+            'lat' => $this->lat ?? null,
+            'lon' => $this->lon ?? null,
+            'lat_new' => $this->lat ?? null,
+            'lon_new' => $this->lon ?? null,
+            'station_id' => $this->stationId ?? '',
+            'bundesstaat_long' => $this->bundesstaatLong ?? '',
+            'bundesstaat_short' => $this->bundesstaatShort ?? '',
+            'no_city_but' => $this->noCityBut ?? '',
+            'population' => $this->population ?? 0,
+            'status' => $this->status ?? 'pending',
+            'finished' => $this->finished ?? 0,
+        ];
 
-        session()->flash('success', 'Standortinformationen erfolgreich gespeichert.');
+      //  dump('Before update', $location->toArray(), $data);
+
+        // Manueller Fehler-Handler
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+
+        try {
+            $location->update($data);
+           // dump('After update', $location->fresh()->toArray());
+            session()->flash('success', 'Standortinformationen erfolgreich gespeichert.');
+        } catch (\Throwable $e) { // Fängt Fehler und Exceptions
+          //  dd('Error during update', $e->getMessage(), $e->getTraceAsString());
+        } finally {
+            restore_error_handler();
+        }
     }
 
     public function fetchGeocodeData()
@@ -146,6 +165,8 @@ class LocationEditInfo extends Component
         $geocodeService = new GeocodeService();
         $result = $geocodeService->searchByNominatimOnly($this->title);
 //dd($result);
+	//	dd("ISO2:", $this->iso2, "Gefundenes Land:", $this->countryId, "Verfügbare Länder:", $this->countries->pluck('id', 'title'));
+
         // Prüfen, ob ein gültiges Array zurückgegeben wurde
         if (!is_array($result) || empty($result)) {
             session()->flash('error', 'Keine gültigen Geodaten gefunden. Bitte überprüfen Sie den Stadtnamen.');
@@ -171,17 +192,20 @@ class LocationEditInfo extends Component
         $this->region = $address['region'] ?? null; // Falls eine Region existiert
 
         // Land anhand des country_codes aus der Datenbank suchen und setzen
-        if (!empty($this->iso2)) {
-            $country = WwdeCountry::where('country_code', strtoupper($this->iso2))->first();
-            //dd("Gefundenes Land:", $country);
+if (!empty($this->iso2)) {
+    $country = WwdeCountry::where('country_code', strtoupper($this->iso2))->first();
 
-            if ($country) {
-                $this->countryId = $country->id;
-                $this->continentId = $country->continent_id;
-                $this->updatedContinentId($this->continentId); // Länderliste aktualisieren
-                $this->countries = WwdeCountry::where('continent_id', $this->continentId)->get();
-            }
-        }
+    if ($country) {
+        $this->countryId = $country->id;
+        $this->continentId = $country->continent_id;
+
+        //dd("Nach dem Setzen:", "Continent ID:", $this->continentId, "Country ID:", $this->countryId);
+
+        $this->updatedContinentId($this->continentId);
+        $this->countries = WwdeCountry::where('continent_id', $this->continentId)->get();
+    }
+}
+$this->dispatch('updateCountrySelect', $this->countryId);
         // Erfolgsmeldung
         session()->flash('success', 'Daten erfolgreich abgerufen und eingetragen.');
     }
