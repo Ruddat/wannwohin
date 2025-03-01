@@ -8,7 +8,6 @@
                         @autotranslate('Keine Ergebnisse gefunden. Bitte starte die Suche erneut.', app()->getLocale())
                     </div>
                 @endif
-
 <!-- Sticky-Filterleiste nur für mobile Geräte -->
 <div class="d-flex justify-content-between align-items-center p-2 bg-white shadow-sm sticky-top d-md-none">
     <!-- Filter-Button -->
@@ -252,21 +251,8 @@
                                                 <span>Sonne</span>
                                                 <span>
                                                     @php
-                                                        // Sonnenstunden aus den aktuellen Klimadaten holen
-                                                        $sunshine = $location->climate_data['sunshine_per_day'] ?? null;
-
-                                                        // Fallback auf historische Daten
-                                                        if (
-                                                            is_null($sunshine) &&
-                                                            isset($location->historicalClimates)
-                                                        ) {
-                                                            $lastHistoricalData = $location->historicalClimates->last();
-                                                            $sunshine = $lastHistoricalData
-                                                                ? $lastHistoricalData->sunshine_hours
-                                                                : null;
-                                                        }
+                                                        $sunshine = $location->climate_data['sunshine_hours'] ?? null;
                                                     @endphp
-
                                                     {{ is_numeric($sunshine) ? number_format($sunshine, 1, ',', '.') . ' h' : 'N/A' }}
                                                 </span>
                                             </div>

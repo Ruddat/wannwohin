@@ -46,14 +46,15 @@ class SearchResultsComponent extends Component
 
     public function mount(LocationRepository $repository)
     {
-        // Header-Daten laden und cachen
         $this->loadHeaderData($repository);
-
-        // Suchparameter aus der URL laden
         $this->loadSearchParams();
-
-        // Aktive Filter initialisieren
         $this->updateActiveFilters();
+
+        // Session zurücksetzen und neu berechnen
+        session()->forget('quicksearch.filteredLocationIds');
+        if (!session()->has('quicksearch.filteredLocationIds')) {
+            $this->updateFilteredLocationIds();
+        }
     }
 
     private function loadHeaderData(LocationRepository $repository)
@@ -91,8 +92,8 @@ class SearchResultsComponent extends Component
         $this->urlaub = request('urlaub');
         $this->sonnenstunden = request('sonnenstunden');
         $this->wassertemperatur = request('wassertemperatur');
-        $this->spezielle = request('spezielle');
-        $this->nurInBesterReisezeit = request('nurInBesterReisezeit', false);
+        $this->spezielle = request('spezielle') ?? [];
+        $this->nurInBesterReisezeit = filter_var(request('nurInBesterReisezeit', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     private function updateActiveFilters()
@@ -109,10 +110,10 @@ class SearchResultsComponent extends Component
 
     public function updated($property)
     {
-        if (array_key_exists($property, $this->activeFilters)) {
+        if (array_key_exists($property, $this->activeFilters) || $property === 'nurInBesterReisezeit') {
             $this->activeFilters[$property] = $this->$property;
-            $this->resetPage();
             $this->updateFilteredLocationIds();
+            $this->resetPage();
         }
     }
 
@@ -130,9 +131,8 @@ class SearchResultsComponent extends Component
 
     public function removeFilter($filterKey, $value = null)
     {
-        // Verhindere das Entfernen des Monatsfilters
         if ($filterKey === 'urlaub') {
-            return; // Ignoriere das Entfernen dieses Filters
+            return; // Monat darf nicht entfernt werden
         }
 
         if ($filterKey === 'spezielle' && $value) {
@@ -147,53 +147,99 @@ class SearchResultsComponent extends Component
         $this->resetPage();
     }
 
-
     private function updateFilteredLocationIds()
     {
-        $query = WwdeLocation::query()
-            ->select('id')
-            ->active()
-            ->finished()
-            ->filterByContinent($this->continent)
-            ->filterByPrice($this->price)
-            ->filterBySpecials($this->spezielle);
+        $query = WwdeLocation::query()->select('id');
+        $this->applyFilters($query);
 
-        // Reisezeit-Filter
-        if ($this->urlaub && is_numeric($this->urlaub)) {
-            $monthNumber = (int)$this->urlaub;
+        $filteredIds = $query->pluck('id')->toArray();
+        session(['quicksearch.filteredLocationIds' => $filteredIds]);
+
+        \Log::info('Updated filtered Location-IDs:', ['count' => count($filteredIds), 'ids' => $filteredIds]);
+    }
+
+    private function applyFilters($query)
+    {
+        $query->active()->finished();
+
+        if (!empty($this->continent)) {
+            $query->where('continent_id', $this->continent);
+        }
+
+        if (!empty($this->price)) {
+            $this->applyPriceFilter($query);
+        }
+
+        if (!empty($this->urlaub) && is_numeric($this->urlaub)) {
+            $monthNumber = (int) $this->urlaub;
             if ($this->nurInBesterReisezeit) {
                 $query->whereRaw('JSON_CONTAINS(best_traveltime_json, ?)', [json_encode($monthNumber)]);
             }
         }
 
-        // Sonnenstunden-Filter
-        if ($this->sonnenstunden && $this->urlaub) {
-            $minHours = (int)str_replace('more_', '', $this->sonnenstunden);
-            $lastYear = now()->subYear()->year;
-            $query->where(function ($q) use ($minHours, $lastYear) {
-                $q->whereHas('climates', fn($sub) => $sub->where('month_id', (int)$this->urlaub)->where('sunshine_per_day', '>=', $minHours))
-                  ->orWhereHas('historicalClimates', fn($sub) => $sub->where('month', (int)$this->urlaub)->where('year', $lastYear)->where('sunshine_hours', '>=', $minHours));
+        if (!empty($this->sonnenstunden) && !empty($this->urlaub) && is_numeric($this->urlaub)) {
+            $minHours = (int) str_replace('more_', '', $this->sonnenstunden);
+            $currentYear = now()->subYear()->year;
+
+            $query->where(function ($q) use ($minHours, $currentYear) {
+                $q->whereHas('climates', function ($subQuery) use ($minHours) {
+                    $subQuery->where('month_id', (int) $this->urlaub)
+                             ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
+                })->orWhereHas('monthlyClimates', function ($subQuery) use ($minHours, $currentYear) {
+                    $subQuery->where('month', (int) $this->urlaub)
+                             ->where('year', $currentYear)
+                             ->whereRaw('COALESCE(sunshine_hours, 0) >= ?', [$minHours]);
+                });
             });
         }
 
-        // Wassertemperatur-Filter
-        if ($this->wassertemperatur && $this->urlaub) {
-            $minTemp = (int)str_replace('more_', '', $this->wassertemperatur);
+        if (!empty($this->wassertemperatur) && !empty($this->urlaub)) {
+            $minTemp = (int) str_replace('more_', '', $this->wassertemperatur);
             $lastYear = now()->subYear()->year;
+
             $query->where(function ($q) use ($minTemp, $lastYear) {
-                $q->whereHas('climates', fn($sub) => $sub->where('month_id', (int)$this->urlaub)->where('water_temperature', '>=', $minTemp))
-                  ->orWhereHas('historicalClimates', fn($sub) => $sub->where('month', (int)$this->urlaub)->where('year', $lastYear)->where('temperature_avg', '>=', $minTemp));
+                $q->whereHas('climates', function ($subQuery) use ($minTemp) {
+                    $subQuery->where('month_id', (int) $this->urlaub)
+                             ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
+                })->orWhereHas('historicalClimates', function ($subQuery) use ($minTemp, $lastYear) {
+                    $subQuery->where('month', (int) $this->urlaub)
+                             ->where('year', $lastYear)
+                             ->whereRaw('COALESCE(temperature_avg, 0) >= ?', [$minTemp]);
+                });
             });
         }
 
-        $filteredIds = $query->pluck('id')->toArray();
-        session(['quicksearch.filteredLocationIds' => $filteredIds]);
+        if (!empty($this->spezielle)) {
+            foreach ((array)$this->spezielle as $wish) {
+                $query->where($wish, 1);
+            }
+        }
+    }
+
+    private function applyPriceFilter($query)
+    {
+        $priceRange = WwdeRange::find($this->price);
+
+        if ($priceRange) {
+            $rangeToShow = $priceRange->Range_to_show;
+
+            if (str_contains($rangeToShow, '-')) {
+                [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
+                $query->whereBetween('price_flight', [$minPrice, $maxPrice]);
+            } elseif (str_contains($rangeToShow, '>')) {
+                $minPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '>=', $minPrice);
+            } else {
+                $maxPrice = (int) filter_var($rangeToShow, FILTER_SANITIZE_NUMBER_INT);
+                $query->where('price_flight', '<=', $maxPrice);
+            }
+        }
     }
 
     public function getFilterLabel($key, $value)
     {
         return match ($key) {
-            'continent' => $this->getContinentName($value), // Hier wird der Kontinent ergänzt
+            'continent' => $this->getContinentName($value),
             'price' => WwdeRange::find($value)?->Range_to_show ?? $value,
             'urlaub' => config('custom.months')[$value] ?? $value,
             'sonnenstunden' => "Mehr als " . str_replace('more_', '', $value) . " Sonnenstunden",
@@ -208,14 +254,13 @@ class SearchResultsComponent extends Component
         $continents = Cache::remember('continents_list', 3600, fn() =>
             \App\Models\WwdeContinent::pluck('title', 'id')->toArray()
         );
-
         return $continents[$continentId] ?? 'Unbekannter Kontinent';
     }
-
 
     public function render()
     {
         $filteredLocationIds = session('quicksearch.filteredLocationIds', []);
+
         if (empty($filteredLocationIds)) {
             $locations = collect();
         } else {
@@ -224,7 +269,6 @@ class SearchResultsComponent extends Component
                 ->active()
                 ->whereIn('id', $filteredLocationIds);
 
-            // Sortierung
             $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours'];
             if (in_array($this->sortBy, $allowedSortFields)) {
                 $query->orderBy($this->sortBy, $this->sortDirection);
@@ -252,14 +296,55 @@ class SearchResultsComponent extends Component
 
     private function enrichLocationData($location)
     {
-        if (empty($location->climates) && ($historical = $location->historicalClimates->last())) {
+        $month = (int) $this->urlaub;
+        $minHours = !empty($this->sonnenstunden) ? (int) str_replace('more_', '', $this->sonnenstunden) : null;
+        $currentYear = now()->subYear()->year;
+
+        // Primär: wwde_climates
+        $climate = $location->climates
+            ->where('month_id', $month)
+            ->filter(function ($data) use ($minHours) {
+                return $minHours === null || ($data->sunshine_per_day && $data->sunshine_per_day >= $minHours);
+            })
+            ->first();
+
+        if ($climate) {
             $location->climate_data = [
-                'main' => ['temp' => $historical->temperature_avg],
-                'temp_max' => $historical->temperature_max,
-                'temp_min' => $historical->temperature_min,
-                'sunshine_hours' => $historical->sunshine_hours,
+                'main' => ['temp' => $climate->daily_temperature ?? null],
+                'temp_max' => $climate->daily_temperature ?? null, // Kein max/min direkt
+                'temp_min' => $climate->night_temperature ?? null,
+                'sunshine_hours' => $climate->sunshine_per_day ?? null,
             ];
+        } else {
+            // Fallback: climate_monthly_data
+            $monthly = $location->monthlyClimates
+                ->where('month', $month)
+                ->where('year', $currentYear)
+                ->filter(function ($data) use ($minHours) {
+                    return $minHours === null || ($data->sunshine_hours && $data->sunshine_hours >= $minHours);
+                })
+                ->sortByDesc('year')
+                ->first();
+
+            if ($monthly) {
+                $location->climate_data = [
+                    'main' => ['temp' => $monthly->temperature_avg ?? null],
+                    'temp_max' => $monthly->temperature_max ?? null,
+                    'temp_min' => $monthly->temperature_min ?? null,
+                    'sunshine_hours' => $monthly->sunshine_hours ?? null,
+                ];
+            } else {
+                $location->climate_data = [];
+            }
         }
+
+        \Log::info('Enriched Location Data', [
+            'location_id' => $location->id,
+            'sunshine_hours' => $location->climate_data['sunshine_hours'] ?? 'N/A',
+            'month' => $month,
+            'source' => $climate ? 'wwde_climates' : ($monthly ? 'climate_monthly_data' : 'none'),
+        ]);
+
         return $location;
     }
 }

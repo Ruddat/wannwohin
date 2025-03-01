@@ -145,6 +145,7 @@ class WwdeLocation extends Model
         return $this->hasMany(ClimateMonthlyData::class, 'location_id', 'id');
     }
 
+
     public function dailyClimates()
     {
         return $this->hasMany(ModDailyClimateAverage::class, 'location_id');
@@ -286,13 +287,42 @@ class WwdeLocation extends Model
     {
         // Sicherstellen, dass eine Zahl extrahiert wird
         $minHours = (int) str_replace('more_', '', $sonnenstunden);
-
+dd($minHours);
         if ($minHours > 0) {
             $query->whereHas('climates', function ($q) use ($minHours) {
                 $q->where('sunshine_per_day', '>=', $minHours);
             });
         }
     }
+
+
+    public function scopeFilterByMinSunshine($query, $minSunshine, $month = null)
+    {
+
+dd($query);
+        $query->where(function ($q) use ($minSunshine, $month) {
+            $q->whereHas('climates', function ($subQuery) use ($minSunshine, $month) {
+                $subQuery->where('sunshine_per_day', '>=', $minSunshine);
+                if ($month) {
+                    $subQuery->where('month_id', $month);
+
+                }
+
+
+            })->orWhere(function ($subQuery) use ($minSunshine, $month) {
+                $subQuery->whereDoesntHave('climates')
+                         ->whereHas('historicalClimates', function ($histQuery) use ($minSunshine, $month) {
+                             $histQuery->where('sunshine_hours', '>=', $minSunshine);
+                             if ($month) {
+                                 $histQuery->where('month', $month);
+                             }
+                             $histQuery->where('year', now()->subYear()->year);
+                         });
+            });
+        });
+    }
+
+
 
     // Scope für Wassertemperatur-Filter
     public function scopeFilterByWaterTemperature($query, $wassertemperatur)
@@ -323,6 +353,11 @@ public function scopeFilterByIds($query, $ids)
     if (!empty($ids)) {
         $query->whereIn('id', $ids);
     }
+}
+
+public function monthlyClimates()
+{
+    return $this->hasMany(ClimateMonthlyData::class, 'location_id', 'id');
 }
 
 

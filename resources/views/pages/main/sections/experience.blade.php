@@ -5,7 +5,8 @@
                 <h2 class="text-color-dark text-uppercase font-weight-extra-bold mb-0">@autotranslate('WELCHER URLAUBSTYP SIND SIE?', app()->getLocale())</h2>
                 <h5 class="text-color-dark">@autotranslate('und in welchem Monat wollen Sie verreisen?', app()->getLocale())</h5>
                 <div class="row col-lg-3 ms-4">
-                    <select class="form-select urlaub_type_month" id="urlaub_type_month" onchange="updateSearchResults()">
+                    <select class="form-select urlaub_type_month" id="urlaub_type_month" name="month">
+                        <option value="">Monat auswählen</option>
                         @foreach(range(1, 12) as $month)
                             <option value="{{ $month }}" {{ $month == 6 ? 'selected' : '' }}>
                                 @autotranslate(\Carbon\Carbon::create()->month($month)->translatedFormat('F'), app()->getLocale())
@@ -14,185 +15,244 @@
                     </select>
                 </div>
 
-                <section class="timeline custom-timeline" id="timeline">
-                    <div class="timeline-body">
+                <!-- Timeline aus Blade 1 integriert -->
+                <ul class="timeline">
+                    @php
+                        $travelTypes = \App\Models\ModQuickFilterItem::where('status', 1)
+                            ->orderBy('sort_order', 'asc')
+                            ->get();
+                        $urlaubTypeMap = [
+                            'strand-reise' => 'list_beach',
+                            'staedte-reise' => 'list_citytravel',
+                            'sport-reise' => 'list_sports',
+                            'insel-reise' => 'list_island',
+                            'kultur-reise' => 'list_culture',
+                            'natur-reise' => 'list_nature',
+                            'wassersport-reise' => 'list_watersport',
+                            'wintersport-reise' => 'list_wintersport',
+                            'mountainsport-reise' => 'list_mountainsport',
+                            'biking-reise' => 'list_biking',
+                            'fishing-reise' => 'list_fishing',
+                            'amusement-park-reise' => 'list_amusement_park',
+                            'water-park-reise' => 'list_water_park',
+                            'animal-park-reise' => 'list_animal_park',
+                        ];
+                    @endphp
 
-                        <!-- Reisearten -->
-                    <div class="timeline-body">
-                        @php
-                            $travelTypes = \App\Models\ModQuickFilterItem::where('status', 1)
-                                ->orderBy('sort_order', 'asc')
-                                ->get();
-                        @endphp
-
-                        @foreach($travelTypes as $type)
-                        <a href="{{ url('/urlaub/' . $type->slug) }}" class="p-0 m-0 urlaub-type-url">
-                            <article class="timeline-box right custom-box-shadow-2">
-                                <div class="my-zoom1">
-                                    <div class="row">
-                                        <div class="experience-info col-lg-3 col-sm-5 bg-color-primary p-0 m-0 overflow-hidden">
-                                            <img class="w-100 img-fill" src="{{ asset('storage/' . $type->thumbnail) }}">
-                                        </div>
-                                        <div class="experience-description col-lg-9 col-sm-7 bg-color-light">
-                                            <h4 class="text-color-dark font-weight-semibold">@autotranslate($type->title, app()->getLocale()) - @autotranslate($type->title_text, app()->getLocale())</h4>
-                                            <p class="custom-text-color-2">@autotranslate($type->content, app()->getLocale())</p>
-                                        </div>
+                    @forelse($travelTypes as $type)
+                        <li>
+                            <div class="timeline-content">
+                                <div class="card-container">
+                                    <!-- Image Section -->
+                                    <div class="card-image zoom-effect"
+                                         style="background-image: url('{{ asset('storage/' . $type->thumbnail) }}')">
+                                        <a href="#" onclick="redirectToSearch('{{ $type->slug }}'); return false;"
+                                           class="image-link"></a>
                                     </div>
+
+                                    <!-- Content Section -->
+                                    <a href="#" onclick="redirectToSearch('{{ $type->slug }}'); return false;"
+                                       class="card-link">
+                                        <div class="card-details">
+                                            <div class="card-header">
+                                                <h4 class="location-title">
+                                                    @autotranslate($type->title, app()->getLocale()) - @autotranslate($type->title_text, app()->getLocale())
+                                                </h4>
+                                            </div>
+                                            <div class="card-info">
+                                                <p class="custom-text-color-2">
+                                                    @autotranslate($type->content, app()->getLocale())
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
                                 </div>
-                            </article>
-                        </a>
-                        <div class="timeline-bar"></div>
-                        @endforeach
-                    </div>
-
-
-
-
-                </section>
+                            </div>
+                        </li>
+                    @empty
+                        <p class="text-center">@autotranslate('Keine Urlaubstypen gefunden.', app()->getLocale())</p>
+                    @endforelse
+                </ul>
             </div>
         </div>
     </div>
 </section>
 
-
-
-<style>
-
-/* Grundstruktur */
-.timeline-bar {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #007bff; /* Hauptfarbe der Linie */
-    z-index: -1; /* Hinter die Artikel legen */
-    transform: translateX(-50%);
-}
-
-.timeline-box.right .timeline-bar {
-    left: 50%; /* Linker Startpunkt für die Linie */
-}
-
-section.timeline .timeline-box.right {
-    clear: right;
-    float: right;
-    right: 1px;
-    margin-top: 40px;
-}
-
-.timeline-box:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease-in-out;
-}
-
-.timeline-box img {
-    transition: transform 0.3s ease-in-out;
-}
-
-.timeline-box:hover img {
-    transform: scale(1.1);
-}
-
-
-.timeline-box:nth-child(even) .experience-description {
-    text-align: left;
-}
-
-.timeline-box:nth-child(odd) .experience-description {
-    text-align: right;
-}
-
-.timeline-box .experience-info img {
-    border-radius: 8px;
-}
-
-
-/* Inhalt */
-.experience-info img {
-    max-width: 100%;
-    object-fit: cover;
-}
-
-.experience-description {
-    padding: 20px;
-}
-
-/* Desktop-Layout */
-.col-lg-4 {
-    flex: 0 0 33.33%;
-    max-width: 33.33%;
-}
-
-.col-lg-8 {
-    flex: 0 0 66.66%;
-    max-width: 66.66%;
-}
-
-/* Tablets */
-@media (max-width: 992px) {
-    .col-lg-4,
-    .col-lg-8 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-
-    .timeline-box {
-        flex-direction: column;
-    }
-
-    .experience-info img {
-        max-height: 250px;
-    }
-
-    .experience-description {
-        padding: 15px;
-        text-align: center;
-    }
-}
-
-/* Smartphones */
-@media (max-width: 768px) {
-    .experience-description {
-        text-align: center;
-        padding: 10px;
-    }
-
-    .experience-info img {
-        max-height: 200px;
-    }
-
-    h4 {
-        font-size: 1.25rem;
-    }
-
-    p {
-        font-size: 0.9rem;
-    }
-}
-
-</style>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const timelineBars = document.querySelectorAll('.timeline-bar');
-    timelineBars.forEach((bar, index) => {
-        const parent = bar.closest('.timeline-box');
-        const nextSibling = parent.nextElementSibling;
-        if (nextSibling) {
-            const height = nextSibling.offsetTop - parent.offsetTop;
-            bar.style.height = `${height}px`;
-        }
-    });
+    const urlaubTypeMap = @json($urlaubTypeMap);
 
-    window.addEventListener('resize', function () {
-        timelineBars.forEach((bar) => {
-            const parent = bar.closest('.timeline-box');
-            const nextSibling = parent.nextElementSibling;
-            if (nextSibling) {
-                const height = nextSibling.offsetTop - parent.offsetTop;
-                bar.style.height = `${height}px`;
-            }
-        });
-    });
-});
+    function redirectToSearch(urlaubType) {
+        const monthId = document.getElementById('urlaub_type_month').value;
+        if (!monthId) {
+            alert('Bitte wählen Sie einen Monat aus.');
+            return;
+        }
+        const mappedType = urlaubTypeMap[urlaubType] || urlaubType;
+        const url = "{{ route('search.results') }}?urlaub=" + monthId + "&spezielle=" + mappedType;
+        window.location.href = url;
+    }
 </script>
+
+<!-- CSS aus Blade 1 übernommen und angepasst -->
+<style>
+    /* Timeline-Grundstruktur bleibt gleich */
+    ul.timeline {
+        list-style-type: none;
+        position: relative;
+        padding: 0;
+        margin: 0;
+    }
+
+    ul.timeline:before {
+        content: '';
+        background: #d4d9df;
+        display: inline-block;
+        position: absolute;
+        left: 30px;
+        width: 2px;
+        height: 100%;
+        z-index: 400;
+    }
+
+    ul.timeline > li {
+        margin: 50px 0;
+        padding-left: 60px;
+        position: relative;
+    }
+
+    ul.timeline > li:before {
+        content: '';
+        background: white;
+        display: inline-block;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 21px;
+        border-radius: 50%;
+        border: 3px solid #22c0e8;
+        width: 20px;
+        height: 20px;
+        z-index: 401;
+        transition: background 0.3s ease;
+    }
+
+    ul.timeline > li:hover:before {
+        background: #22c0e8;
+    }
+
+    .timeline-content {
+        background: #fff;
+        padding: 0;
+        border-radius: 10px;
+        box-shadow: none;
+        transition: transform 0.2s ease-in-out;
+        text-align: left;
+    }
+
+    ul.timeline > li:hover .timeline-content {
+        transform: translateY(-5px);
+    }
+
+    /* Angepasster Card-Container */
+    .card-container {
+        display: flex;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+        min-height: 200px; /* Optional: Stabilisiert die Höhe */
+    }
+
+    /* Einheitliche Bildgröße */
+    .card-image {
+        background-size: cover;
+        background-position: center;
+        width: 25%;
+        height: 200px; /* Feste Höhe statt min-height */
+        position: relative;
+    }
+
+    .card-details {
+        width: 75%;
+        padding: 20px;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .location-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .card-info p {
+        margin: 0;
+        color: #666;
+    }
+
+    .image-link {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+    }
+
+    .card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Responsive Anpassungen */
+    @media (max-width: 768px) {
+        .card-container {
+            flex-direction: column;
+            min-height: unset; /* Entfernt die minimale Höhe auf Mobilgeräten */
+        }
+
+        .card-image {
+            width: 100%;
+            height: 150px; /* Kleinere feste Höhe für Mobilgeräte */
+        }
+
+        .card-details {
+            width: 100%;
+        }
+
+        ul.timeline:before {
+            left: 15px;
+        }
+
+        ul.timeline > li {
+            padding-left: 40px;
+        }
+
+        ul.timeline > li:before {
+            left: 6px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        ul.timeline:before, ul.timeline > li:before {
+            display: none;
+        }
+
+        ul.timeline > li {
+            padding-left: 0;
+            text-align: center;
+        }
+
+        .timeline-content {
+            margin: 0 auto;
+            max-width: 90%;
+        }
+    }
+</style>
