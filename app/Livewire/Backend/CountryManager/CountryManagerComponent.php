@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use App\Models\WwdeContinent;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -31,6 +32,7 @@ class CountryManagerComponent extends Component
     public $climatezones_ids, $climatezones_lnam, $climatezones_details_lnam, $artikel;
     public $travelwarning_id, $price_tendency, $status = 'active';
     public $image1_path, $image2_path, $image3_path, $custom_images = false;
+    public $country_headert_titel, $country_header_text;
 
     public $currency_conversion;
     public $population_capital;
@@ -47,6 +49,9 @@ class CountryManagerComponent extends Component
 
     public $newImages = [];
 
+    protected $queryString = ['search'];
+
+
     // Validierungsregeln
     public function rules()
     {
@@ -54,6 +59,8 @@ class CountryManagerComponent extends Component
             'continent_id' => 'required|exists:wwde_continents,id',
             'title' => 'required|string|max:255',
             'alias' => 'nullable|string|max:255',
+            'country_headert_titel' => 'nullable|string|max:255',
+            'country_header_text' => 'nullable|string',
             'currency_code' => 'nullable|string|max:3',
             'currency_name' => 'nullable|string|max:50',
             'country_code' => 'required|string|max:3',
@@ -127,11 +134,20 @@ class CountryManagerComponent extends Component
     {
         $this->validate();
 
-
         $data = $this->prepareData();
+        $data['country_headert_titel'] = $this->country_headert_titel;
+        $data['country_header_text'] = $this->country_header_text;
 
-        WwdeCountry::updateOrCreate(['id' => $this->countryId], $data);
+        // Speichern oder aktualisieren und sicherstellen, dass ein Objekt zurückkommt
+        $country = WwdeCountry::updateOrCreate(['id' => $this->countryId], $data);
 
+        if ($country) {
+            // Cache für dieses Land und den zugehörigen Kontinent löschen
+            Cache::forget("country_{$country->alias}");
+            Cache::forget("countries_{$country->continent_id}");
+            Cache::forget("continent_{$country->continent_id}");
+            Cache::forget("continent_images_{$country->continent_id}");
+        }
 
         $this->resetInputFields();
         $this->dispatch('success', 'Country saved successfully.');
@@ -266,7 +282,8 @@ class CountryManagerComponent extends Component
             'country_visum_needed', 'country_visum_max_time', 'count_climatezones',
             'climatezones_ids', 'climatezones_lnam', 'climatezones_details_lnam', 'artikel',
             'travelwarning_id', 'price_tendency', 'status', 'image1_path', 'image2_path',
-            'image3_path', 'pixabayImages', 'custom_images', 'editMode'
+            'image3_path', 'pixabayImages', 'custom_images', 'editMode',
+            'country_headert_titel', 'country_header_text'
         ]);
     }
 
@@ -431,12 +448,11 @@ public function deleteImage($index)
 
 
         // Suchfilter
-        if (!empty($this->search)) {
-
+        if (!empty(trim($this->search))) {
             $query->where(function ($q) {
                 $q->where('title', 'LIKE', "%{$this->search}%")
-                ->orWhere('alias', 'LIKE', "%{$this->search}%") // Suche zusätzlich im Alias
-                ->orWhere('country_code', 'LIKE', "%{$this->search}%");
+                  ->orWhere('alias', 'LIKE', "%{$this->search}%")
+                  ->orWhere('country_code', 'LIKE', "%{$this->search}%");
             });
         }
 
@@ -473,6 +489,12 @@ public function deleteImage($index)
             'continents' => WwdeContinent::all(),
         ])->layout('backend.layouts.livewiere-main');
     }
+
+
+    public function updatedSearch()
+{
+    $this->resetPage(); // Setzt die Paginierung zurück, damit die erste Seite angezeigt wird.
+}
 
 
 }

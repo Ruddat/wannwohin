@@ -28,6 +28,8 @@ class WwdeCountry extends Model
         'continent_id',
         'title',
         'alias',
+        'country_headert_titel',
+        'country_header_text',
         'currency_code',
         'currency_name',
         'country_code',

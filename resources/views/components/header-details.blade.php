@@ -15,7 +15,7 @@
                 <div class="heading-wrapper">
                     <h2 class="travel-heading">
                        {{--  @autotranslate('STÄDTEREISE NACH', app()->getLocale()) --}}
-                        {{ $panoramaTitle ?? 'STÄDTEREISE NACH' }}
+                        {{ $panoramaTitle ?? 'DEINE REISE NACH' }}
                     </h2>
                     <h1 class="travel-destination">
                         {{--  {!! app('autotranslate')->trans($headLine ?? 'Default Header Text', app()->getLocale()) !!} --}}

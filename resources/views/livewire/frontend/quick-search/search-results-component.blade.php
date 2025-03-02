@@ -278,30 +278,24 @@
                                             </div>
 
                                             @php
-                                                // JSON in Array umwandeln
-                                                $months = collect(json_decode($location->best_traveltime_json, true))
-                                                    ->sort() // Sicherstellen, dass die Monate in richtiger Reihenfolge sind
-                                                    ->map(function ($month) {
-                                                        return (int) $month; // Integer-Werte für die Gruppierung
-                                                    })
-                                                    ->values();
+                                            // JSON sicher in ein Array umwandeln
+                                            $decodedMonths = json_decode($location->best_traveltime_json, true);
+                                            $months = collect(is_array($decodedMonths) ? $decodedMonths : []) // Falls null, dann leeres Array
+                                                ->filter(fn($month) => is_numeric($month) && $month >= 1 && $month <= 12) // Nur gültige Monate (1-12)
+                                                ->map(fn($month) => (int) $month) // Sicherstellen, dass es Integer sind
+                                                ->sort()
+                                                ->values();
 
-                                                // Deutsche Monatsnamen
-                                                $germanMonths = [
-                                                    1 => 'Jan',
-                                                    2 => 'Feb',
-                                                    3 => 'Mär',
-                                                    4 => 'Apr',
-                                                    5 => 'Mai',
-                                                    6 => 'Jun',
-                                                    7 => 'Jul',
-                                                    8 => 'Aug',
-                                                    9 => 'Sep',
-                                                    10 => 'Okt',
-                                                    11 => 'Nov',
-                                                    12 => 'Dez',
-                                                ];
+                                            // Deutsche Monatsnamen
+                                            $germanMonths = [
+                                                1 => 'Jan', 2 => 'Feb', 3 => 'Mär', 4 => 'Apr', 5 => 'Mai', 6 => 'Jun',
+                                                7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Dez'
+                                            ];
 
+                                            // Wenn keine Monate vorhanden sind, setze einen Standardwert
+                                            if ($months->isEmpty()) {
+                                                $bestTravelMonths = 'Keine Empfehlung verfügbar';
+                                            } else {
                                                 // Gruppenbildung für zusammenhängende Monate
                                                 $groupedMonths = [];
                                                 $tempGroup = [];
@@ -322,14 +316,13 @@
                                                 $bestTravelMonths = collect($groupedMonths)
                                                     ->map(function ($group) use ($germanMonths) {
                                                         return count($group) > 1
-                                                            ? $germanMonths[$group[0]] .
-                                                                    ' - ' .
-                                                                    $germanMonths[end($group)]
-                                                            : $germanMonths[$group[0]];
+                                                            ? $germanMonths[$group[0]] . ' - ' . $germanMonths[end($group)]
+                                                            : $germanMonths[$group[0]] ?? 'Unbekannter Monat';
                                                     })
                                                     ->implode(', ');
+                                            }
+                                        @endphp
 
-                                            @endphp
 
 
                                             <div class="info-item" wire:ignore>

@@ -6,17 +6,50 @@
                 <div class="continent-facts-card card position-relative">
                     <div class="card-body p-4 bg-overlay"
                          style="background-image: url('{{ $country->primaryImage() ?? asset('img/default-country.jpg') }}');">
-                        @if (!empty($country->country_text))
-                            <div class="card-text text-white">
-                                @autotranslate($country->country_text, app()->getLocale())
-                            </div>
-                        @else
-                            <div class="placeholder-content d-flex align-items-center justify-content-center h-100">
-                                <h4 class="text-uppercase text-white m-0">
-                                    @autotranslate($country->title, app()->getLocale())
-                                </h4>
-                            </div>
-                        @endif
+
+
+                         @php
+                         // Editor-Inhalt bereinigen
+                         function cleanEditorContent(?string $content): ?string {
+                             if (is_null($content)) return null;
+
+                             // HTML-Tags entfernen, aber Bilder und Links beibehalten
+                             $cleaned = trim(strip_tags($content, '<img><a>'));
+
+                             // Leere Strukturen als null behandeln
+                             $emptyPatterns = [
+                                 '/^<p>\s*<br\s*\/?>\s*<\/p>$/i', // <p><br></p>
+                                 '/^<p>\s*&nbsp;\s*<\/p>$/i', // <p>&nbsp;</p>
+                                 '/^\s*$/', // Leere Zeichenketten
+                             ];
+
+                             foreach ($emptyPatterns as $pattern) {
+                                 if (preg_match($pattern, $content)) {
+                                     return null;
+                                 }
+                             }
+
+                             return empty($cleaned) ? null : $content;
+                         }
+
+                         // Bereinigten Text holen
+                         $cleanedText = cleanEditorContent($country->country_text ?? null);
+                     @endphp
+
+                     @if (!empty($cleanedText))
+                         <h4 class="text-uppercase text-white m-0">
+                             @autotranslate($country->title, app()->getLocale())
+                         </h4>
+                         <div class="card-text text-white">
+                             @autotranslate($cleanedText, app()->getLocale())
+                         </div>
+                     @else
+                         <div class="placeholder-content d-flex align-items-center justify-content-center h-100">
+                             <h4 class="text-uppercase text-white m-0">
+                                 @autotranslate($country->title, app()->getLocale())
+                             </h4>
+                         </div>
+                     @endif
                     </div>
                 </div>
             </div>
@@ -25,49 +58,74 @@
             <div class="col-12 col-lg-5" data-aos="fade-left" data-aos-duration="500">
                 <div class="continent-facts-card card h-100">
                     <div class="card-header text-center p-3">
-                        <h4 class="text-uppercase mb-0">@autotranslate($country->title, app()->getLocale())</h4>
+                        <h4 class="text-uppercase mb-0">
+                            @autotranslate($country->title, app()->getLocale())
+                        </h4>
                     </div>
                     <div class="card-body p-3">
                         <div class="continent-flag mx-auto mb-3"></div>
                         <table class="continent-facts-table table table-borderless">
                             <tr>
                                 <td>
-                                    <span><i class="fas fa-coins me-1"></i> @autotranslate('Währung', app()->getLocale())</span>
-                                    <h5>@autotranslate($country->currency_code, app()->getLocale())</h5>
+                                    <span>
+                                        <i class="fas fa-coins me-1"></i> @autotranslate('Währung', app()->getLocale())
+                                    </span>
+                                    <h5>
+                                        <i class="fas fa-money-bill-wave me-1 text-primary"></i>
+                                        @autotranslate($country->currency_code, app()->getLocale())
+                                    </h5>
                                 </td>
                                 <td>
-                                    <span>@autotranslate('Hauptstadt', app()->getLocale())</span>
-                                    <h5>@autotranslate($country->capital, app()->getLocale())</h5>
+                                    <span>
+                                        <i class="fas fa-city me-1"></i> @autotranslate('Hauptstadt', app()->getLocale())
+                                    </span>
+                                    <h5>
+                                        <i class="fas fa-landmark me-1 text-success"></i>
+                                        @autotranslate($country->capital, app()->getLocale())
+                                    </h5>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <span>@autotranslate('Preistendenz', app()->getLocale())</span>
-                                    <h5>@autotranslate($country->price_tendency, app()->getLocale())</h5>
+                                    <span>
+                                        <i class="fas fa-chart-line me-1"></i> @autotranslate('Preistendenz', app()->getLocale())
+                                    </span>
+                                    <h5>
+                                        <i class="fas fa-tag me-1 text-warning"></i>
+                                        @autotranslate($country->price_tendency, app()->getLocale())
+                                    </h5>
                                 </td>
                                 <td>
                                     <span>
+                                        <i class="fas fa-globe me-1"></i>
                                         @php
                                             $languageLabel = count(explode(',', $country->official_language)) > 1 ? 'Sprachen' : 'Sprache';
                                             echo app('autotranslate')->trans($languageLabel, app()->getLocale());
                                         @endphp
                                     </span>
-                                    <h5>@autotranslate($country->official_language, app()->getLocale())</h5>
+                                    <h5>
+                                        <i class="fas fa-language me-1 text-info"></i>
+                                        @autotranslate($country->official_language, app()->getLocale())
+                                    </h5>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2" class="text-center">
-                                    <strong>{{ __('Visum & Reisepass') }}</strong>
+                                    <strong>
+                                        <i class="fas fa-passport me-1"></i> {{ __('Visum & Reisepass') }}
+                                    </strong>
                                     <div class="d-flex justify-content-center align-items-center mt-2">
                                         @if ($country->country_visum_needed === null)
                                             <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
                                             <span class="fw-bold">{{ __('Keine Angaben') }}</span>
                                         @elseif ($country->country_visum_needed)
-                                            <i class="fas fa-passport text-success me-2 fs-5"></i>
+                                            <i class="fas fa-check-circle text-success me-2 fs-5"></i>
                                             <span class="fw-bold">{{ __('Kein Visum erforderlich') }}</span>
                                         @else
-                                            <i class="fas fa-plane-departure text-danger me-2 fs-5"></i>
-                                            <span class="fw-bold">{{ $country->country_visum_max_time ?? __('Keine Angaben') }}</span>
+                                            <i class="fas fa-exclamation-triangle text-danger me-2 fs-5"></i>
+                                            <span class="fw-bold">
+                                                {{ $country->country_visum_max_time ?? __('Keine Angaben') }}
+                                            </span>
                                         @endif
                                     </div>
                                 </td>
@@ -82,11 +140,17 @@
                                                 @endforeach
                                             </div>
                                             <div class="travel-warning-text">
-                                                <strong>@autotranslate('Reisewarnung:', app()->getLocale())</strong>
+                                                <strong>
+                                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                                    @autotranslate('Reisewarnung:', app()->getLocale())
+                                                </strong>
                                                 @autotranslate($country->travelWarning->severity, app()->getLocale())
                                                 <br>
                                                 <small>
-                                                    <strong>@autotranslate('Stand:', app()->getLocale())</strong>
+                                                    <strong>
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        @autotranslate('Stand:', app()->getLocale())
+                                                    </strong>
                                                     {{ \Carbon\Carbon::parse($country->travelWarning->issued_at)->format('d.m.Y') }}
                                                 </small>
                                             </div>
@@ -98,6 +162,10 @@
                     </div>
                 </div>
             </div>
+
+
+
+
         </div>
     </div>
 </section>

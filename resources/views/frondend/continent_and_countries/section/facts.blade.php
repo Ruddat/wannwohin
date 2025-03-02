@@ -9,7 +9,11 @@
                             @autotranslate($continent->title, app()->getLocale()) @autotranslate("Facts", app()->getLocale())
                         </h5>
                         <p class="card-text">
-                            @autotranslate($continent->continent_text, app()->getLocale())
+                            @php
+                            $cleanedText = strip_tags($continent->continent_text ?? '');
+                        @endphp
+                        @autotranslate($cleanedText, app()->getLocale())
+
                         </p>
                     </div>
                 </div>

@@ -409,23 +409,64 @@
                                 @enderror
                             </div>
 
+<!-- Country Header Einstellungen -->
+<div class="mb-4 p-3 border rounded">
+    <h5 class="mb-3">Country Header Einstellungen</h5>
+    <p class="text-muted">
+        Der <strong>Header Titel</strong> ersetzt den Standardnamen des Landes. <br>
+        Der <strong>Header Text</strong> ersetzt die Standardbeschreibung im Panorama unter dem Titel.
+    </p>
 
-                            <!-- Country Text -->
-                            <div class="mb-3">
-                                <livewire:jodit-text-editor wire:model.live="country_text" :buttons="[
-                                    'bold',
-                                    'italic',
-                                    'underline',
-                                    'strikeThrough',
-                                    '|',
-                                    'left',
-                                    'center',
-                                    'right',
-                                    '|',
-                                    'link',
-                                    'image',
-                                ]" />
-                            </div>
+    <!-- Country Header Titel -->
+    <div class="mb-3">
+        <label for="country_headert_titel" class="form-label">Header Titel</label>
+        <input wire:model="country_headert_titel" type="text" id="country_headert_titel" class="form-control" placeholder="Neuer Header Titel">
+        @error('country_headert_titel') <span class="text-danger">{{ $message }}</span> @enderror
+    </div>
+
+    <!-- Country Header Text mit Jodit -->
+    <div class="mb-3">
+        <label for="country_header_text" class="form-label">Header Beschreibung</label>
+        <livewire:jodit-text-editor wire:model.live="country_header_text" :buttons="[
+            'bold', 'italic', 'underline', 'strikeThrough',
+            '|', 'left', 'center', 'right', '|',
+            'link', 'image'
+        ]" />
+        @error('country_header_text') <span class="text-danger">{{ $message }}</span> @enderror
+    </div>
+</div>
+<!-- Country Text -->
+<div class="mb-3">
+    <livewire:jodit-text-editor
+        wire:model.live="country_text"
+        :config="[
+            'buttons' => [
+                'bold',
+                'italic',
+                'underline',
+                'strikeThrough',
+                '|',
+                'left',
+                'center',
+                'right',
+                '|',
+                'link',
+                'image',
+            ],
+            'enter' => 'DIV', // Verhindert das automatische Erstellen von <p><br></p>
+            'cleanHTML' => [
+                'fillEmptyParagraph' => false, // Keine leeren <p><br></p>
+                'removeEmptyNodes' => true, // Entfernt leere Knoten
+                'denyTags' => ['script', 'iframe'], // Verhindert unsichere Tags
+            ],
+            'defaultMode' => '1', // 1 = WYSIWYG-Modus
+            'placeholder' => 'Geben Sie hier den Text ein...', // Zeigt einen Platzhalter an
+            'spellcheck' => true, // Aktiviert Rechtschreibprüfung
+        ]"
+    />
+</div>
+
+
 
 <!-- Custom Images Toggle -->
 <div class="mb-3">

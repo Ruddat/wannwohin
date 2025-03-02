@@ -194,7 +194,7 @@
                                 Country Manager
                             </a>
 
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-table-manager.index') ? 'active' : '' }}"
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-table-manager.*') ? 'active' : '' }}"
                                href="{{ route('verwaltung.location-table-manager.index') }}">
                                 City Manager
                             </a>

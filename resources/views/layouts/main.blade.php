@@ -278,7 +278,7 @@
     $default_city = $location->title ?? 'Unbekannte Stadt';
     $panorama_titel = (!empty($panorama_titel) && trim($panorama_titel) !== '' && $panorama_titel !== 'Standard Panorama Title')
     ? $panorama_titel
-    : 'STÄDTEREISE NACH';
+    : 'DEINE REISE NACH';
 
     $panorama_short_text = (!empty($panorama_short_text) && trim($panorama_short_text) !== '' && $panorama_short_text !== 'Standard Panorama Short Title')
     ? $panorama_short_text

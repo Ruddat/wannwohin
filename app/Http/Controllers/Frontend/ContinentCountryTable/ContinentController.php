@@ -24,7 +24,9 @@ class ContinentController extends Controller
         $countries = $this->fetchCountries($continent->id);
         $images = $this->getContinentImages($continent);
 
-        $this->storeHeaderData($continent, $images);
+        //$this->storeHeaderData($continent, $images);
+        // Nur Continent als Datenquelle
+        $this->storeHeaderData($continent, $continent, $images);
 
         return view('frondend.continent_and_countries.index', [
             'continent' => $continent,
@@ -42,7 +44,13 @@ class ContinentController extends Controller
         $locations = $this->fetchLocations($country->id);
         $images = $this->getContinentImages($continent);
 
-        $this->storeHeaderData($continent, $images);
+     //   $this->storeHeaderData($continent, $images);
+      //  $this->storeHeaderData($country, $images, [
+        //    'continent' => $continent->title,
+      //  ]);
+    // Land als Hauptquelle, Kontinent als Fallback
+    $this->storeHeaderData($country, $continent, $images);
+    //dd($continent, $country, $locations, $images);
 
         return view('frondend.continent_and_countries.locations', [
             'continent' => $continent,
@@ -107,15 +115,53 @@ class ContinentController extends Controller
         });
     }
 
-    private function storeHeaderData(WwdeContinent $continent, array $images): void
+    private function storeHeaderData(object $entity, WwdeContinent $continent, array $images, array $additionalData = []): void
     {
         session([
-            'headerData' => [
-                'bgImgPath' => $images['bgImgPath'],
-                'mainImgPath' => $images['mainImgPath'],
-                'title' => $continent->title,
-                'title_text' => $continent->continent_header_text,
-            ]
+            'headerData' => array_merge([
+                'bgImgPath' => $images['bgImgPath'] ?? null,
+                'mainImgPath' => $images['mainImgPath'] ?? null,
+                // Falls `country_headert_titel` existiert und nicht leer ist → nutzen, sonst `continent_headert_titel`, sonst `title`
+                'title' => $this->cleanEditorContent(
+                    !empty($entity->country_headert_titel) ? $entity->country_headert_titel :
+                    (!empty($entity->continent_headert_titel) ? $entity->continent_headert_titel : $entity->title)
+                ),
+                // Falls `country_header_text` existiert und nicht leer ist → nutzen, sonst `continent_header_text`
+                'title_text' => $this->cleanEditorContent($entity->country_header_text)
+                ?? $this->cleanEditorContent($continent->continent_header_text),
+            ], $additionalData)
         ]);
     }
+
+
+
+
+    private function cleanEditorContent(?string $content): ?string
+    {
+        if (is_null($content)) {
+            return null;
+        }
+
+        // HTML-Tags entfernen und Leerzeichen trimmen
+        $cleaned = trim(strip_tags($content, '<img><a>')); // Bilder und Links beibehalten, wenn nötig
+
+        // Bestimmte "leere" HTML-Strukturen explizit als leer markieren
+        $emptyPatterns = [
+            '/^<p>\s*<br\s*\/?>\s*<\/p>$/i', // <p><br></p>
+            '/^<p>\s*&nbsp;\s*<\/p>$/i', // <p>&nbsp;</p>
+            '/^\s*$/', // Leere Zeichenketten oder nur Leerzeichen
+        ];
+
+        foreach ($emptyPatterns as $pattern) {
+            if (preg_match($pattern, $content)) {
+                return null;
+            }
+        }
+
+        return empty($cleaned) ? null : $content;
+    }
+
+
+
+
 }
