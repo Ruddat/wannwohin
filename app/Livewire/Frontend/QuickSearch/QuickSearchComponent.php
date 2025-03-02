@@ -49,14 +49,14 @@ class QuickSearchComponent extends Component
         'list_island' => 'Inselurlaub',
         'list_culture' => 'Kulturreise',
         'list_nature' => 'Natururlaub',
-        'list_watersport' => 'Wassersport',
-        'list_wintersport' => 'Wintersport',
-        'list_mountainsport' => 'Bergsport',
-        'list_biking' => 'Fahrradurlaub',
-        'list_fishing' => 'Angelurlaub',
-        'list_amusement_park' => 'Freizeitpark',
-        'list_water_park' => 'Wasserpark',
-        'list_animal_park' => 'Tierpark',
+       // 'list_watersport' => 'Wassersport',
+       // 'list_wintersport' => 'Wintersport',
+       // 'list_mountainsport' => 'Bergsport',
+       // 'list_biking' => 'Fahrradurlaub',
+       // 'list_fishing' => 'Angelurlaub',
+       // 'list_amusement_park' => 'Freizeitpark',
+       // 'list_water_park' => 'Wasserpark',
+       // 'list_animal_park' => 'Tierpark',
     ];
 
     public function mount(LocationRepository $repository)
