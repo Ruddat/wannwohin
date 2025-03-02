@@ -23,6 +23,7 @@ class ContinentController extends Controller
         $continent = $this->fetchContinent($continentAlias);
         $countries = $this->fetchCountries($continent->id);
         $images = $this->getContinentImages($continent);
+//dd($images);
 
         //$this->storeHeaderData($continent, $images);
         // Nur Continent als Datenquelle

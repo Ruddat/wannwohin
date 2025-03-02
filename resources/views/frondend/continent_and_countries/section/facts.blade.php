@@ -1,23 +1,27 @@
 <section class="continent-section bg-color-light m-0 pb-0">
     <div class="container">
         <div class="row g-4 align-items-stretch">
-            <!-- Continent Text -->
-            <div class="col-12 col-lg-7">
-                <div class="continent-card card h-100">
-                    <div class="card-body p-4">
-                        <h5 class="card-title text-uppercase text-primary">
-                            @autotranslate($continent->title, app()->getLocale()) @autotranslate("Facts", app()->getLocale())
-                        </h5>
-                        <p class="card-text">
-                            @php
-                            $cleanedText = strip_tags($continent->continent_text ?? '');
-                        @endphp
-                        @autotranslate($cleanedText, app()->getLocale())
+<!-- Continent Text -->
+<div class="col-12 col-lg-7">
+    <div class="continent-card card h-100 position-relative overflow-hidden">
+        <!-- Hintergrundbild -->
+        <div class="continent-bg"
+            style="background-image: url('{{ Storage::url($continent->image1_path ?? $continent->image2_path ?? "assets/img/location_main_img/{$continent->alias}.png") }}');">
+        </div>
 
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <!-- Overlay -->
+        <div class="continent-overlay"></div>
+
+        <div class="card-body p-4 position-relative">
+            <h5 class="card-title text-uppercase text-primary">
+                @autotranslate($continent->title, app()->getLocale()) @autotranslate("Facts", app()->getLocale())
+            </h5>
+            <p class="card-text">
+                @autotranslate($continent->continent_text ?? '', app()->getLocale())
+            </p>
+        </div>
+    </div>
+</div>
 
             <!-- Continent Info Card -->
             <div class="col-12 col-lg-5">
@@ -123,4 +127,53 @@
         padding: 6px;
     }
 }
+
+
+.continent-card {
+    position: relative;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+
+/* Hintergrundbild */
+.continent-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    opacity: 0.4; /* Transparenz für bessere Lesbarkeit */
+}
+
+/* Dunkles Overlay */
+.continent-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Dunkler Overlay für besseren Kontrast */
+    z-index: 2;
+}
+
+/* Inhalt über dem Overlay */
+.continent-card .card-body {
+    position: relative;
+    z-index: 3;
+    color: white; /* Text in Weiß für besseren Kontrast */
+}
+
+/* Titel in auffälliger Farbe */
+.continent-card .card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+}
+
 </style>
