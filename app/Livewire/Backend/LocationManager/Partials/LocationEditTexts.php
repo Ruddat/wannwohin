@@ -8,6 +8,10 @@ use App\Models\WwdeLocation;
 class LocationEditTexts extends Component
 {
     public $locationId;
+    public $locationTitle;
+    public $textPic1;
+    public $textPic2;
+    public $textPic3;
     public $pic1Text;
     public $pic2Text;
     public $pic3Text;
@@ -19,12 +23,18 @@ class LocationEditTexts extends Component
     public $textSports;
     public $textAmusementParks;
     public $panoramaTextAndStyle;
+    public $panoramaTitle; // Neues Feld
+    public $panoramaShortText; // Neues Feld
 
     public function mount($locationId)
     {
         $location = WwdeLocation::findOrFail($locationId);
 
         $this->locationId = $locationId;
+        $this->locationTitle = $location->title;
+        $this->textPic1 = $location->text_pic2; // Bild 2 Text (Faktencheck)
+        $this->textPic2 = $location->text_pic1; // Bild 3 Text (Faktencheck)
+        $this->textPic3 = $location->text_pic3; // Bild 4 Text (Faktencheck)
         $this->pic1Text = $location->pic1_text;
         $this->pic2Text = $location->pic2_text;
         $this->pic3Text = $location->pic3_text;
@@ -36,6 +46,8 @@ class LocationEditTexts extends Component
         $this->textSports = $location->text_sports;
         $this->textAmusementParks = $location->text_amusement_parks;
         $this->panoramaTextAndStyle = $location->panorama_text_and_style;
+        $this->panoramaTitle = $location->panorama_title; // Neues Feld
+        $this->panoramaShortText = $location->panorama_short_text; // Neues Feld
     }
 
     public function save()
@@ -43,24 +55,35 @@ class LocationEditTexts extends Component
         $location = WwdeLocation::findOrFail($this->locationId);
 
         $location->update([
-            'pic1_text' => $this->pic1Text,
-            'pic2_text' => $this->pic2Text,
-            'pic3_text' => $this->pic3Text,
-            'text_headline' => $this->textHeadline,
-            'text_short' => $this->textShort,
-            'text_what_to_do' => $this->textWhatToDo,
-            'text_location_climate' => $this->textLocationClimate,
-            'text_best_traveltime' => $this->textBestTravelTime,
-            'text_sports' => $this->textSports,
-            'text_amusement_parks' => $this->textAmusementParks,
-            'panorama_text_and_style' => $this->panoramaTextAndStyle,
+            'pic1_text' => $this->cleanEditorContent($this->pic1Text),
+            'pic2_text' => $this->cleanEditorContent($this->pic2Text),
+            'pic3_text' => $this->cleanEditorContent($this->pic3Text),
+            'text_headline' => $this->cleanEditorContent($this->textHeadline),
+            'text_short' => $this->cleanEditorContent($this->textShort),
+            'text_what_to_do' => $this->cleanEditorContent($this->textWhatToDo),
+            'text_location_climate' => $this->cleanEditorContent($this->textLocationClimate),
+            'panorama_text_and_style' => $this->cleanEditorContent($this->panoramaTextAndStyle),
+            'panorama_title' => $this->cleanEditorContent($this->panoramaTitle),
+            'panorama_short_text' => $this->cleanEditorContent($this->panoramaShortText),
         ]);
 
         session()->flash('success', 'Texte erfolgreich gespeichert.');
     }
+/**
+ * Prüft den Editor-Text und entfernt leere Inhalte wie "<p><br></p>".
+ */
+private function cleanEditorContent($content)
+{
+    // Entfernt Leerzeichen, HTML-Kommentare und überprüft, ob nur "<p><br></p>" o.ä. übrig bleibt.
+    $cleaned = trim(strip_tags($content, '<img><a>')); // Erlaubt Bilder und Links
+
+    return empty($cleaned) ? null : $content;
+}
 
     public function render()
     {
-        return view('livewire.backend.location-manager.partials.location-edit-texts');
+        return view('livewire.backend.location-manager.partials.location-edit-texts', [
+            'locationTitle' => $this->locationTitle // 🔹 Titel an die View übergeben
+        ]);
     }
 }

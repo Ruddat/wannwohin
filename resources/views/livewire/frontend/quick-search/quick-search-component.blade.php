@@ -92,10 +92,11 @@
                wire:click.prevent="collapseSidebar">
                 <i class="fas fa-arrow-circle-right fa-lg me-2"></i> Detailsuche
             </a>
-            <!-- Reset-Button -->
-            <button type="button" wire:click="resetFilters" class="btn custom-icon-btn rounded-circle p-2" data-bs-toggle="tooltip" title="Filter zurücksetzen">
-                <i class="fas fa-sync-alt fa-lg"></i>
-            </button>
+<!-- Reset-Button mit modernerem Mülleimer-Icon -->
+<button type="button" wire:click="resetFilters" class="btn custom-icon-btn rounded-circle p-2"
+        data-bs-toggle="tooltip" title="Filter zurücksetzen">
+    <i class="fas fa-trash-alt fa-lg"></i>
+</button>
         </div>
 
     </div>

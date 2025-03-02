@@ -308,6 +308,10 @@ document.addEventListener("DOMContentLoaded", () => {
     text-overflow: ellipsis;
     display: inline-block;
     vertical-align: middle;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #333;
+
 }
 
 .about-me-section .table th,

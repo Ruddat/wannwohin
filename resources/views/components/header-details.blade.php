@@ -14,10 +14,12 @@
             <div class="col-lg-6 col-xl-5 col-md-7 col-sm-6">
                 <div class="heading-wrapper">
                     <h2 class="travel-heading">
-                        @autotranslate('STÄDTEREISE NACH', app()->getLocale())
+                       {{--  @autotranslate('STÄDTEREISE NACH', app()->getLocale()) --}}
+                        {{ $panoramaTitle ?? 'STÄDTEREISE NACH' }}
                     </h2>
                     <h1 class="travel-destination">
-                        {!! app('autotranslate')->trans($headLine ?? 'Default Header Text', app()->getLocale()) !!}
+                        {{--  {!! app('autotranslate')->trans($headLine ?? 'Default Header Text', app()->getLocale()) !!} --}}
+                        {!! str_replace(['<p>', '</p>'], '', $panoramaShortText ?? '') !!}
                     </h1>
                 </div>
             </div>
@@ -81,7 +83,7 @@
 }
 
 .header-section .travel-destination {
-    font-size: 3rem;
+    font-size: 2.3rem
     font-weight: bold;
     text-transform: uppercase;
     color: #fff;
@@ -249,7 +251,7 @@
 }
 
 .header-section .travel-destination {
-    font-size: 3rem;
+    font-size: 2.3rem;
     font-weight: bold;
     text-transform: uppercase;
     color: #fff;

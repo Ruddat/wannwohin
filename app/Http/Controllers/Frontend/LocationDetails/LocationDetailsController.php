@@ -56,6 +56,8 @@ class LocationDetailsController extends Controller
             'pic2_text' => $location->text_pic2 ?? 'Standard Text für Bild 2',
             'pic3_text' => $location->text_pic3 ?? 'Standard Text für Bild 3',
             'head_line' => $location->title ?? 'Standard Headline',
+            'panorama_titel' => $location->panorama_title ?? 'Standard Panorama Title',
+            'panorama_short_text' => $location->panorama_short_text ?? 'Standard Panorama Short Title',
             'weather_data' => $weatherData,
             'current_time' => $timeInfo['current_time'],
             'time_offset' => $timeInfo['offset'],

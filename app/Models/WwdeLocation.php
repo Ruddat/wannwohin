@@ -91,6 +91,8 @@ class WwdeLocation extends Model
         'range_travel',
         'finished',
         'panorama_text_and_style',
+        'panorama_title',
+        'panorama_short_text',
         'time_zone',
         'lat_new',
         'lon_new',

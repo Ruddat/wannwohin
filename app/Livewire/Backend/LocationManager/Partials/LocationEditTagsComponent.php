@@ -82,9 +82,9 @@ class LocationEditTagsComponent extends Component
             $this->location->update(array_merge($this->tags, [
                 'best_traveltime_json' => json_encode($best_traveltime_numbers, JSON_UNESCAPED_UNICODE),
                 'best_traveltime' => implode(' - ', [reset($best_traveltime_numbers), end($best_traveltime_numbers)]),
-                'text_best_traveltime' => $this->best_traveltime_text,
-                'text_sports' => $this->text_sports,
-                'text_amusement_parks' => $this->text_amusement_parks,
+                'text_best_traveltime' => $this->cleanEditorContent($this->best_traveltime_text),
+                'text_sports' => $this->cleanEditorContent($this->text_sports),
+                'text_amusement_parks' => $this->cleanEditorContent($this->text_amusement_parks),
             ]));
 
             session()->flash('success', 'Tags erfolgreich aktualisiert!');
@@ -116,6 +116,20 @@ class LocationEditTagsComponent extends Component
             return $monthMap[$number] ?? null; // Gibt den Monatsnamen zurück oder null, falls die Zahl ungültig ist
         }, $numbers);
     }
+
+
+/**
+ * Prüft den Editor-Text und entfernt leere Inhalte wie "<p><br></p>".
+ */
+private function cleanEditorContent($content)
+{
+    // Entfernt Leerzeichen, HTML-Kommentare und überprüft, ob nur "<p><br></p>" o.ä. übrig bleibt.
+    $cleaned = trim(strip_tags($content, '<img><a>')); // Erlaubt Bilder und Links
+
+    return empty($cleaned) ? null : $content;
+}
+
+
 
     public function render()
     {

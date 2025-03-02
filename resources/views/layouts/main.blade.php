@@ -273,6 +273,21 @@
     $pic2_text = $pic2_text ?? 'Standardtext 2';
     $pic3_text = $pic3_text ?? 'Standardtext 3';
     $head_line = $head_line ?? 'Standardüberschrift';
+
+    // Panorama-Titel und Kurztext: Falls leer, dann "STÄDTEREISE NACH {ORT}"
+    $default_city = $location->title ?? 'Unbekannte Stadt';
+    $panorama_titel = (!empty($panorama_titel) && trim($panorama_titel) !== '' && $panorama_titel !== 'Standard Panorama Title')
+    ? $panorama_titel
+    : 'STÄDTEREISE NACH';
+
+    $panorama_short_text = (!empty($panorama_short_text) && trim($panorama_short_text) !== '' && $panorama_short_text !== 'Standard Panorama Short Title')
+    ? $panorama_short_text
+    : ($default_city ?? '');
+
+
+//    $panorama_titel = !empty($headerData['panorama_titel']) ? $headerData['panorama_titel'] : __('STÄDTEREISE NACH') . ' ' . $default_city;
+  // $panorama_short_text = !empty($headerData['panorama_short_text']) ? $headerData['panorama_short_text'] : $default_city;
+
     $gallery_images = $gallery_images ?? [];
 @endphp
 
@@ -299,6 +314,8 @@
             :pic3-text="$pic3_text"
             :head-line="$head_line"
             :gallery-images="$gallery_images"
+            :panorama-title="$panorama_titel"
+            :panorama-short-text="$panorama_short_text"
         />
     @endif
 
@@ -310,9 +327,10 @@
         :pic3-text="$pic3_text"
         :head-line="$head_line"
         :gallery-images="$gallery_images"
+        :panorama-title="$panorama_titel"
+        :panorama-short-text="$panorama_short_text"
     />
 @endif
-
 
 
 

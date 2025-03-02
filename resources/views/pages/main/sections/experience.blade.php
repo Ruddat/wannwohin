@@ -93,7 +93,7 @@
     }
 </script>
 
-<!-- CSS aus Blade 1 übernommen und angepasst -->
+<!-- CSS mit neuem Hover-Effekt -->
 <style>
     /* Timeline-Grundstruktur bleibt gleich */
     ul.timeline {
@@ -164,13 +164,38 @@
         min-height: 200px; /* Optional: Stabilisiert die Höhe */
     }
 
-    /* Einheitliche Bildgröße */
+    /* Einheitliche Bildgröße mit Hover-Effekt */
     .card-image {
         background-size: cover;
         background-position: center;
         width: 25%;
-        height: 200px; /* Feste Höhe statt min-height */
+        height: 200px; /* Feste Höhe */
         position: relative;
+        transition: transform 0.5s ease, box-shadow 0.3s ease; /* Sanfte Übergänge für Zoom und Schatten */
+        overflow: hidden; /* Verhindert Überlaufen des Schimmers */
+    }
+
+    /* Hover-Effekt für das Bild */
+    .card-image:hover {
+        transform: scale(1.1); /* Leichtes Vergrößern */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Stärkerer Schatten */
+    }
+
+    /* Schimmer-Effekt mit Pseudo-Element */
+    .card-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -75%; /* Startet außerhalb des Bildes */
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1));
+        transform: skewX(-25deg); /* Schräger Schimmer */
+        transition: left 0.7s ease-in-out; /* Bewegung des Schimmers */
+    }
+
+    .card-image:hover::before {
+        left: 125%; /* Bewegt den Schimmer über das Bild */
     }
 
     .card-details {
@@ -221,6 +246,11 @@
         .card-image {
             width: 100%;
             height: 150px; /* Kleinere feste Höhe für Mobilgeräte */
+        }
+
+        .card-image:hover {
+            transform: none; /* Deaktiviert den Zoom auf Mobilgeräten, falls gewünscht */
+            box-shadow: none; /* Optional: Entfernt Schatten auf Mobilgeräten */
         }
 
         .card-details {

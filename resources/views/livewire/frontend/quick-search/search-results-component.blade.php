@@ -13,7 +13,7 @@
     <!-- Filter-Button -->
     <button class="btn btn-outline-danger filter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
         <i class="fas fa-sliders-h"></i> Filtern
-        <span class="badge bg-danger">{{ $totalResults }}</span>
+        <span class="badge bg-danger text-white">{{ $totalResults }}</span>
     </button>
 
     <!-- Sortier-Optionen (nur mobil sichtbar) -->
