@@ -217,7 +217,7 @@ class WeatherDataManagerLibrary
 
 
 /**
- * Holt die 7-Tage-Wettervorhersage von Open-Meteo API und gibt sie als Array zurück.
+ * Holt die 8-Tage-Wettervorhersage von Open-Meteo API und gibt sie als Array zurück.
  *
  * @param float $latitude
  * @param float $longitude
@@ -230,46 +230,86 @@ public function fetchEightDayForecast($latitude, $longitude, $location_id)
         return null;
     }
 
-    // Cache-Schlüssel für die Wettervorhersage
     $cacheKey = "weather_forecast_{$location_id}";
 
-    // Falls bereits gecachte Daten existieren, diese zurückgeben
     if (Cache::has($cacheKey)) {
         return Cache::get($cacheKey);
     }
 
-    // API-Aufruf für die Wettervorhersage (Open-Meteo)
     $response = Http::get("https://api.open-meteo.com/v1/forecast", [
         'latitude' => $latitude,
         'longitude' => $longitude,
-        'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode',
+        'current_weather' => true,
+        'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,sunrise,sunset,apparent_temperature_max,windspeed_10m_max',
+        'hourly' => 'relativehumidity_2m,pressure_msl',
         'timezone' => 'Europe/Berlin'
     ]);
 
-   // dd($response->json());
+//dd($response->json());
+
     if ($response->successful()) {
         $forecastData = $response->json();
-        $sevenDayForecast = [];
+        $current = $forecastData['current_weather'];
+        $daily = $forecastData['daily'];
+        $hourly = $forecastData['hourly'];
 
-        foreach ($forecastData['daily']['time'] as $key => $date) {
-            $weatherCode = $forecastData['daily']['weathercode'][$key];
-            $sevenDayForecast[] = [
+        // Aktuelle Daten
+        $currentData = [
+            'date' => Carbon::now()->format('F d'),
+            'weekday' => Carbon::now()->format('l'),
+            'time' => Carbon::now()->format('h:i A'),
+            'temperature' => $current['temperature'],
+            'weather' => $this->getWeatherDescription($current['weathercode']),
+            'icon' => $this->getWeatherIcon($current['weathercode']),
+            'wind_speed' => $current['windspeed'],
+            'wind_direction' => $this->getWindDirection($current['winddirection']),
+        ];
+
+        // 8-Tage-Vorhersage
+        $eightDayForecast = [];
+        foreach ($daily['time'] as $key => $date) {
+            $weatherCode = $daily['weathercode'][$key];
+            $eightDayForecast[] = [
                 'date' => Carbon::parse($date)->format('d.m.Y'),
-                'temp_max' => $forecastData['daily']['temperature_2m_max'][$key],
-                'temp_min' => $forecastData['daily']['temperature_2m_min'][$key],
-                'precipitation' => $forecastData['daily']['precipitation_sum'][$key],
+                'weekday' => Carbon::parse($date)->format('l'),
+                'temp_max' => $daily['temperature_2m_max'][$key],
+                'temp_min' => $daily['temperature_2m_min'][$key],
+                'precipitation' => $daily['precipitation_sum'][$key],
                 'weather' => $this->getWeatherDescription($weatherCode),
-                'icon' => $this->getWeatherIcon($weatherCode)
+                'icon' => $this->getWeatherIcon($weatherCode),
+                'sunrise' => Carbon::parse($daily['sunrise'][$key])->format('h:i A'),
+                'sunset' => Carbon::parse($daily['sunset'][$key])->format('h:i A'),
+                'real_feel' => $daily['apparent_temperature_max'][$key],
+                'wind_speed' => $daily['windspeed_10m_max'][$key],
             ];
         }
 
-        // Speichert das Ergebnis im Cache für 6 Stunden
-        Cache::put($cacheKey, $sevenDayForecast, 21600);
+        // Zusätzliche aktuelle Details (Feuchtigkeit, Druck) aus hourly für den aktuellen Tag
+        $currentHourIndex = Carbon::now()->hour;
+        $currentData['humidity'] = $hourly['relativehumidity_2m'][$currentHourIndex] ?? null;
+        $currentData['pressure'] = $hourly['pressure_msl'][$currentHourIndex] ?? null;
 
-        return $sevenDayForecast;
+        $result = [
+            'current' => $currentData,
+            'forecast' => $eightDayForecast
+        ];
+
+        Cache::put($cacheKey, $result, 21600); // 6 Stunden Cache
+        return $result;
     }
 
     return null;
+}
+
+
+/**
+ * Wandelt Windrichtung in Text um (Beispiel).
+ */
+private function getWindDirection($degrees)
+{
+    $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    $index = round($degrees / 45) % 8;
+    return $directions[$index];
 }
 
 

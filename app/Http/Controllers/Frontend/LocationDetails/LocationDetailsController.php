@@ -33,9 +33,8 @@ class LocationDetailsController extends Controller
         $location = $this->fetchLocation($continentAlias, $countryAlias, $locationAlias);
         $this->updateTopTen($location->id);
 
-        $weatherData = $this->weatherService->getWeatherDataForLocation($location);
-        $forecast = $this->fetchWeatherForecast($location);
-        $weatherWidget = $this->fetchWeatherWidgetData($location);
+        $weather = $this->fetchAllWeatherData($location);
+        $weatherData = $this->weatherService->getWeatherDataForLocation($location); // Noch nötig?
         $galleryImages = $this->fetchGalleryImages($location);
         $parksWithOpeningTimes = $this->fetchAmusementParks($location);
         $timeInfo = $this->getLocationTimeInfo($location);
@@ -51,23 +50,24 @@ class LocationDetailsController extends Controller
             'gallery_images' => $galleryImages,
             'parks_with_opening_times' => $parksWithOpeningTimes,
             'panorama_location_picture' => $location->panorama_text_and_style ?? asset('default-bg.jpg'),
-            'forecast' => $forecast,
+            'forecast' => $weather['forecast'],
             'pic1_text' => $location->text_pic1 ?? 'Standard Text für Bild 1',
             'pic2_text' => $location->text_pic2 ?? 'Standard Text für Bild 2',
             'pic3_text' => $location->text_pic3 ?? 'Standard Text für Bild 3',
             'head_line' => $location->title ?? 'Standard Headline',
             'panorama_titel' => $location->panorama_title ?? 'Standard Panorama Title',
             'panorama_short_text' => $location->panorama_short_text ?? 'Standard Panorama Short Title',
-            'weather_data' => $weatherData,
+            'weather_data' => $weatherData, // Noch nötig?
             'current_time' => $timeInfo['current_time'],
             'time_offset' => $timeInfo['offset'],
             'panorama_text_and_style' => json_decode($location->panorama_text_and_style, true),
             'best_travel_months' => $bestTravelMonths,
             'price_trend' => $priceTrend,
-            'hourly_weather' => $weatherWidget['hourly_weather'],
-            'weather_data_widget' => $weatherWidget['current_weather'],
+            'hourly_weather' => $weather['hourly'],
+            'weather_data_widget' => $weather['current'],
         ]);
     }
+
 
     private function fetchLocation(string $continentAlias, string $countryAlias, string $locationAlias): WwdeLocation
     {
@@ -153,6 +153,93 @@ class LocationDetailsController extends Controller
             return ['current_weather' => $currentWeather, 'hourly_weather' => $hourlyWeather];
         });
     }
+
+    private function fetchAllWeatherData(WwdeLocation $location): array
+    {
+        $cacheKey = "all_weather_data_{$location->id}";
+        return Cache::remember($cacheKey, 15 * 60, function () use ($location) {
+            $response = Http::get('https://api.open-meteo.com/v1/forecast', [
+                'latitude' => $location->lat,
+                'longitude' => $location->lon,
+                'current_weather' => true,
+                'hourly' => 'temperature_2m,weathercode,relativehumidity_2m,pressure_msl',
+                'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,sunrise,sunset,apparent_temperature_max,windspeed_10m_max',
+                'timezone' => 'auto',
+            ]);
+
+            if (!$response->successful()) {
+                return ['current' => [], 'hourly' => [], 'forecast' => []];
+            }
+
+            $data = $response->json();
+            $currentHour = Carbon::now()->hour;
+
+            // Aktuelle Daten
+            $currentWeather = [
+                'date' => Carbon::now()->format('F d'),
+                'weekday' => Carbon::now()->format('l'),
+                'time' => Carbon::now()->format('h:i A'),
+                'temperature' => $data['current_weather']['temperature'],
+                'description' => $this->mapWeatherCode($data['current_weather']['weathercode']),
+                'icon' => $this->mapWeatherIcon($data['current_weather']['weathercode']),
+                'wind_speed' => $data['current_weather']['windspeed'],
+                'wind_direction' => $this->getWindDirection($data['current_weather']['winddirection']),
+                'humidity' => $data['hourly']['relativehumidity_2m'][$currentHour] ?? null,
+                'pressure' => $data['hourly']['pressure_msl'][$currentHour] ?? null,
+            ];
+
+            // Stündliche Daten (24 Stunden)
+            $hourlyWeather = collect(array_slice($data['hourly']['time'], 0, 24))
+                ->map(function ($time, $index) use ($data) {
+                    $hour = Carbon::parse($time);
+                    return [
+                        'day' => $hour->isToday() ? 'today' : 'tomorrow',
+                        'hour' => $hour->format('H'),
+                        'weather' => $this->mapWeatherIcon($data['hourly']['weathercode'][$index]),
+                        'temp' => round($data['hourly']['temperature_2m'][$index] ?? 0),
+                        'time' => $hour->format('H:i'),
+                    ];
+                })->all();
+
+            // 8-Tage-Vorhersage
+            $forecast = [];
+            foreach ($data['daily']['time'] as $key => $date) {
+                $weatherCode = $data['daily']['weathercode'][$key];
+                $forecast[] = [
+                    'date' => Carbon::parse($date)->format('d.m.Y'),
+                    'weekday' => Carbon::parse($date)->format('l'),
+                    'temp_max' => $data['daily']['temperature_2m_max'][$key],
+                    'temp_min' => $data['daily']['temperature_2m_min'][$key],
+                    'precipitation' => $data['daily']['precipitation_sum'][$key],
+                    'weather' => $this->mapWeatherCode($weatherCode),
+                    'icon' => $this->mapWeatherIcon($weatherCode),
+                    'sunrise' => Carbon::parse($data['daily']['sunrise'][$key])->format('H:i'),
+                    'sunset' => Carbon::parse($data['daily']['sunset'][$key])->format('H:i'),
+                    'real_feel' => $data['daily']['apparent_temperature_max'][$key],
+                    'wind_speed' => $data['daily']['windspeed_10m_max'][$key],
+                ];
+            }
+
+            return [
+                'current' => $currentWeather,
+                'hourly' => $hourlyWeather,
+                'forecast' => $forecast,
+            ];
+        });
+    }
+
+    private function getWindDirection($degrees): string
+    {
+        $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        $index = round($degrees / 45) % 8;
+        return $directions[$index];
+    }
+
+
+
+
+
+
 
     private function fetchAmusementParks(WwdeLocation $location): \Illuminate\Support\Collection
     {
@@ -288,34 +375,34 @@ class LocationDetailsController extends Controller
     private function mapWeatherIcon(?int $code, bool $isDaytime = true): string
     {
         $map = [
-            0 => $isDaytime ? 'sunny' : 'clear-night',
-            1 => $isDaytime ? 'partly-cloudy' : 'partly-cloudy-night',
-            2 => $isDaytime ? 'partly-cloudy' : 'partly-cloudy-night',
-            3 => 'cloudy',
-            45 => 'foggy',
-            48 => 'foggy',
-            51 => 'rainy',
-            53 => 'rainy',
-            55 => 'rainy',
-            56 => 'snowy',
-            57 => 'snowy',
-            61 => 'rainy',
-            63 => 'rainy',
-            65 => 'rainy',
-            66 => 'snowy',
-            67 => 'snowy',
-            71 => 'snowy',
-            73 => 'snowy',
-            75 => 'snowy',
-            77 => 'snowy',
-            80 => 'rainy',
-            81 => 'rainy',
-            82 => 'rainy',
-            85 => 'snowy',
-            86 => 'snowy',
-            95 => 'thunderstorm',
-            96 => 'thunderstorm',
-            99 => 'thunderstorm'
+            0 => $isDaytime ? 'sunny' : 'clear-night', // Klarer Himmel (Tag/Nacht)
+            1 => $isDaytime ? 'partly-cloudy' : 'partly-cloudy-night', // Leicht bewölkt (Tag/Nacht)
+            2 => $isDaytime ? 'partly-cloudy2' : 'partly-cloudy-night', // Mäßig bewölkt (Tag/Nacht, unterschiedliche Wolkenmenge)
+            3 => 'cloudy', // Bedeckt
+            45 => 'foggy', // Nebel
+            48 => 'foggy', // Nebel mit Reif
+            51 => 'rainy', // Leichter Nieselregen
+            53 => 'rainy', // Mäßiger Nieselregen
+            55 => 'rainy2', // Starker Nieselregen (stärkere Regen-Version)
+            61 => 'rainy', // Leichter Regen
+            63 => 'rainy', // Mäßiger Regen
+            65 => 'rainy2', // Starker Regen (stärkere Regen-Version)
+            80 => 'rainy', // Leichte Regenschauer
+            81 => 'rainy', // Mäßige Regenschauer
+            82 => 'rainy2', // Starke Regenschauer (stärkere Regen-Version)
+            95 => 'thunderstorm', // Gewitter
+            96 => 'thunderstorm', // Gewitter mit leichtem Hagel
+            99 => 'thunderstorm2', // Gewitter mit starkem Hagel (stärkere Version)
+            56 => 'unknown', // Leichter gefrierender Nieselregen
+            57 => 'unknown', // Starker gefrierender Nieselregen
+            66 => 'unknown', // Leichter gefrierender Regen
+            67 => 'unknown', // Starker gefrierender Regen
+            71 => 'unknown', // Leichter Schneefall
+            73 => 'unknown', // Mäßiger Schneefall
+            75 => 'unknown', // Starker Schneefall
+            77 => 'unknown', // Schneegriesel
+            85 => 'unknown', // Leichte Schneeschauer
+            86 => 'unknown', // Starke Schneeschauer
         ];
         return $map[$code] ?? 'unknown';
     }
