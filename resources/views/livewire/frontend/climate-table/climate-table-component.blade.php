@@ -1,7 +1,7 @@
 <div class="compact-climate-container">
     <div class="d-flex align-items-center mb-2">
         <label for="year" class="me-2 fw-semibold">Jahr:</label>
-        <select id="year" wire:model.change="year" class="form-select form-select-sm w-auto">
+        <select id="year" wire:model.change="year" class="form-select form-select-sm w-25">
             @foreach($availableYears as $availableYear)
                 <option value="{{ $availableYear }}">{{ $availableYear }}</option>
             @endforeach

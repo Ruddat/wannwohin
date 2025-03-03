@@ -28,23 +28,70 @@ class LocationDetailsController extends Controller
         $this->weatherService = $weatherService;
     }
 
+    /**
+     * Zeigt die Details eines Standorts an, einschließlich Wetter- und Klimadaten.
+     *
+     * @param string $continentAlias
+     * @param string $countryAlias
+     * @param string $locationAlias
+     * @return \Illuminate\View\View
+     */
     public function show(string $continentAlias, string $countryAlias, string $locationAlias)
     {
         $location = $this->fetchLocation($continentAlias, $countryAlias, $locationAlias);
         $this->updateTopTen($location->id);
 
         $weather = $this->fetchAllWeatherData($location);
-        $weatherData = $this->weatherService->getWeatherDataForLocation($location); // Noch nötig?
         $galleryImages = $this->fetchGalleryImages($location);
         $parksWithOpeningTimes = $this->fetchAmusementParks($location);
         $timeInfo = $this->getLocationTimeInfo($location);
         $priceTrend = $this->calculatePriceTrend($location->iso2 ?? 'DE');
         $bestTravelMonths = $this->parseBestTravelMonths($location->best_traveltime_json);
 
+        // Klimadaten für das laufende Jahr (2025)
+        $currentYear = date('Y'); // 2025
+        $climates = WwdeClimate::where('location_id', $location->id)
+            ->where(function ($query) use ($currentYear) {
+                $query->whereYear('created_at', $currentYear)
+                      ->orWhereYear('sunrise', $currentYear) // Fallback, falls created_at nicht korrekt ist
+                      ->orWhereYear('sunset', $currentYear); // Fallback
+            })
+            ->whereIn('month_id', range(1, 12)) // Stelle sicher, dass nur Monate 1–12 verwendet werden
+            ->orderBy('month_id', 'asc')
+            ->get()
+            ->unique('month_id') // Entferne Duplikate basierend auf month_id
+            ->map(function ($climate) {
+                // Normalisiere month_id auf zwei-stellige Zahl
+                $climate->month_id = sprintf('%02d', $climate->month_id);
+                return $climate;
+            });
+
+        // Füge fehlende Monate mit Standardwerten hinzu, falls Daten unvollständig sind
+        $climateData = $climates->keyBy('month_id')->all();
+        $allMonths = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $monthId = sprintf('%02d', $month);
+            if (isset($climateData[$monthId])) {
+                $allMonths[] = $climateData[$monthId];
+            } else {
+                // Fallback für fehlende Monate mit Standardwerten
+                $allMonths[] = new WwdeClimate([
+                    'month_id' => $monthId,
+                    'daily_temperature' => null,
+                    'night_temperature' => null,
+                    'water_temperature' => null,
+                    'humidity' => null,
+                    'sunshine_per_day' => null,
+                    'rainy_days' => null,
+                ]);
+            }
+        }
+        $climates = collect($allMonths);
+
         return view('frondend.locationdetails._index', [
             'location' => $location,
             'electric_standard' => $location->electricStandard,
-            'climates' => WwdeClimate::where('location_id', $location->id)->orderBy('month_id', 'asc')->get(),
+            'climates' => $climates,
             'averages' => MonthlyClimateSummary::where('location_id', $location->id)->first(),
             'main_image_path' => $location->main_img ? Storage::url($location->main_img) : null,
             'gallery_images' => $galleryImages,
@@ -57,7 +104,6 @@ class LocationDetailsController extends Controller
             'head_line' => $location->title ?? 'Standard Headline',
             'panorama_titel' => $location->panorama_title ?? 'Standard Panorama Title',
             'panorama_short_text' => $location->panorama_short_text ?? 'Standard Panorama Short Title',
-            'weather_data' => $weatherData, // Noch nötig?
             'current_time' => $timeInfo['current_time'],
             'time_offset' => $timeInfo['offset'],
             'panorama_text_and_style' => json_decode($location->panorama_text_and_style, true),
@@ -68,96 +114,65 @@ class LocationDetailsController extends Controller
         ]);
     }
 
-
+    /**
+     * Holt einen Standort basierend auf Alias-Werten.
+     *
+     * @param string $continentAlias
+     * @param string $countryAlias
+     * @param string $locationAlias
+     * @return WwdeLocation
+     */
     private function fetchLocation(string $continentAlias, string $countryAlias, string $locationAlias): WwdeLocation
     {
         return WwdeLocation::where('alias', $locationAlias)
             ->whereHas('country', fn($query) => $query->where('alias', $countryAlias))
             ->whereHas('country.continent', fn($query) => $query->where('alias', $continentAlias))
-            ->with('electric')
+            ->with(['electric', 'country', 'country.continent'])
             ->firstOrFail();
     }
 
+    /**
+     * Holt Galeriebilder für einen Standort.
+     *
+     * @param WwdeLocation $location
+     * @return array
+     */
     private function fetchGalleryImages(WwdeLocation $location): array
     {
-        return \App\Models\ModLocationGalerie::where('location_id', $location->id)
-            ->get()
-            ->map(function ($item) {
-                $url = $item->image_path ? asset('storage/' . $item->image_path) : null;
-                $relativePath = $url ? ltrim(parse_url($url, PHP_URL_PATH), '/') : null;
-                $cacheKey = 'file_exists_' . md5($relativePath ?? '');
+        $galleryImages = [];
+        \App\Models\ModLocationGalerie::where('location_id', $location->id)
+            ->chunk(100, function ($items) use (&$galleryImages) {
+                $galleryImages = array_merge($galleryImages, $items->map(function ($item) {
+                    $url = $item->image_path ? asset('storage/' . $item->image_path) : null;
+                    $relativePath = $url ? ltrim(parse_url($url, PHP_URL_PATH), '/') : null;
+                    $cacheKey = 'file_exists_' . md5($relativePath ?? '');
 
-                $fileExists = $relativePath ? Cache::remember($cacheKey, now()->addHours(1), fn() => Storage::exists($relativePath)) : false;
-                if ($relativePath && !$fileExists && strpos($url, '/storage/img') !== false) {
-                    $url = str_replace('/storage', '', $url);
-                }
+                    $fileExists = $relativePath ? Cache::remember($cacheKey, now()->addHours(1), fn() => Storage::exists($relativePath)) : false;
+                    if ($relativePath && !$fileExists && strpos($url, '/storage/img') !== false) {
+                        $url = str_replace('/storage', '', $url);
+                    }
 
-                return [
-                    'url' => $url,
-                    'description' => $item->description ?? 'Keine Beschreibung verfügbar',
-                    'activity' => $item->activity ?? 'Allgemein',
-                    'image_caption' => $item->image_caption ?? 'Kein Titel verfügbar',
-                ];
-            })->toArray();
-    }
-
-    private function fetchWeatherForecast(WwdeLocation $location): array
-    {
-        return Cache::remember("forecast_{$location->id}", 60 * 60, fn() =>
-            (new WeatherDataManagerLibrary())->fetchEightDayForecast($location->lat, $location->lon, $location->id)
-        );
-    }
-
-    private function fetchWeatherWidgetData(WwdeLocation $location): array
-    {
-        $cacheKey = "weather_widget_{$location->id}";
-        return Cache::remember($cacheKey, 15 * 60, function () use ($location) {
-            $response = Http::get('https://api.open-meteo.com/v1/forecast', [
-                'latitude' => $location->lat,
-                'longitude' => $location->lon,
-                'hourly' => 'temperature_2m,weathercode',
-                'daily' => 'sunrise,sunset',
-                'timezone' => 'auto',
-            ]);
-
-            if (!$response->successful()) {
-                return ['current_weather' => [], 'hourly_weather' => []];
-            }
-
-            $data = $response->json();
-            $sunrise = Carbon::parse($data['daily']['sunrise'][0])->format('H:i');
-            $sunset = Carbon::parse($data['daily']['sunset'][0])->format('H:i');
-            $currentHour = Carbon::now()->hour;
-
-            $currentWeather = [
-                'temperature' => $data['hourly']['temperature_2m'][$currentHour] ?? null,
-                'description' => $this->mapWeatherCode($data['hourly']['weathercode'][$currentHour] ?? null),
-                'icon' => $this->mapWeatherIcon($data['hourly']['weathercode'][$currentHour] ?? null),
-                'sunrise' => $sunrise,
-                'sunset' => $sunset,
-            ];
-
-            $hourlyWeather = collect(array_slice($data['hourly']['time'], 0, 24))
-                ->map(function ($time, $index) use ($data, $sunrise, $sunset) {
-                    $hour = Carbon::parse($time)->format('H');
-                    $isDaytime = $hour >= Carbon::parse($sunrise)->format('H') && $hour < Carbon::parse($sunset)->format('H');
                     return [
-                        'day' => Carbon::parse($time)->isToday() ? 'tod' : 'tom',
-                        'hour' => $hour,
-                        'weather' => $this->mapWeatherIcon($data['hourly']['weathercode'][$index] ?? null, $isDaytime),
-                        'temp' => round($data['hourly']['temperature_2m'][$index] ?? 0),
-                        'time' => Carbon::parse($time)->format('H:i'),
+                        'url' => $url,
+                        'description' => $item->description ?? 'Keine Beschreibung verfügbar',
+                        'activity' => $item->activity ?? 'Allgemein',
+                        'image_caption' => $item->image_caption ?? 'Kein Titel verfügbar',
                     ];
-                })->all();
-
-            return ['current_weather' => $currentWeather, 'hourly_weather' => $hourlyWeather];
-        });
+                })->toArray());
+            });
+        return $galleryImages;
     }
 
+    /**
+     * Holt alle Wetterdaten (aktuell, stündlich, täglich) für einen Standort.
+     *
+     * @param WwdeLocation $location
+     * @return array
+     */
     private function fetchAllWeatherData(WwdeLocation $location): array
     {
         $cacheKey = "all_weather_data_{$location->id}";
-        return Cache::remember($cacheKey, 15 * 60, function () use ($location) {
+        return Cache::remember($cacheKey, config('weather.cache_duration', 30 * 60), function () use ($location) {
             $response = Http::get('https://api.open-meteo.com/v1/forecast', [
                 'latitude' => $location->lat,
                 'longitude' => $location->lon,
@@ -168,6 +183,7 @@ class LocationDetailsController extends Controller
             ]);
 
             if (!$response->successful()) {
+                Log::error("API-Fehler bei Open-Meteo: Status-Code {$response->status()}, Body: " . $response->body());
                 return ['current' => [], 'hourly' => [], 'forecast' => []];
             }
 
@@ -228,6 +244,12 @@ class LocationDetailsController extends Controller
         });
     }
 
+    /**
+     * Berechnet die Windrichtung basierend auf Grad.
+     *
+     * @param float $degrees
+     * @return string
+     */
     private function getWindDirection($degrees): string
     {
         $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -235,16 +257,16 @@ class LocationDetailsController extends Controller
         return $directions[$index];
     }
 
-
-
-
-
-
-
+    /**
+     * Holt Vergnügungsparks in der Nähe eines Standorts.
+     *
+     * @param WwdeLocation $location
+     * @return \Illuminate\Support\Collection
+     */
     private function fetchAmusementParks(WwdeLocation $location): \Illuminate\Support\Collection
     {
-        $cacheKey = "amusement_parks_{$location->id}";
-        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location) {
+        $cacheKey = "amusement_parks_{$location->id}_" . date('Y-m-d');
+        return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location) {
             $amusementParks = DB::table('amusement_parks')
                 ->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
                 ->having('distance', '<=', 100)
@@ -259,12 +281,29 @@ class LocationDetailsController extends Controller
         });
     }
 
+    /**
+     * Führt einen API-Aufruf durch und gibt die JSON-Antwort zurück.
+     *
+     * @param string $url
+     * @param array $headers
+     * @return array|null
+     */
     private function fetchApiData(string $url, array $headers): ?array
     {
         $response = Http::withHeaders(['accept' => 'application/json'] + $headers)->get($url);
-        return $response->successful() ? $response->json() : null;
+        if (!$response->successful()) {
+            Log::error("API-Fehler bei {$url}: Status-Code {$response->status()}, Body: " . $response->body());
+            return null;
+        }
+        return $response->json();
     }
 
+    /**
+     * Parst die besten Reisezeiten aus einem JSON-String.
+     *
+     * @param string|null $json
+     * @return \Illuminate\Support\Collection
+     */
     private function parseBestTravelMonths(?string $json): \Illuminate\Support\Collection
     {
         return collect(json_decode($json, true) ?? [])
@@ -273,6 +312,12 @@ class LocationDetailsController extends Controller
             ->mapWithKeys(fn($month) => [$month => DateTime::createFromFormat('!m', $month)->format('F')]);
     }
 
+    /**
+     * Aktualisiert die Top-Ten-Statistik für einen Standort.
+     *
+     * @param int $locationId
+     * @return void
+     */
     protected function updateTopTen(int $locationId): void
     {
         $now = now();
@@ -283,6 +328,12 @@ class LocationDetailsController extends Controller
         DB::table('stat_top_ten_locations')->where('updated_at', '<', $now->subWeeks(4))->delete();
     }
 
+    /**
+     * Holt verfügbare Aktivitäten für einen Standort.
+     *
+     * @param WwdeLocation $location
+     * @return array
+     */
     protected function getActivities(WwdeLocation $location): array
     {
         return collect([
@@ -302,10 +353,17 @@ class LocationDetailsController extends Controller
         ])->filter()->keys()->toArray();
     }
 
+    /**
+     * Berechnet den Preis-Trend für ein Land im Vergleich zu einem Referenzland.
+     *
+     * @param string $countryCode
+     * @param string $referenceCountryCode
+     * @return array|null
+     */
     protected function calculatePriceTrend(string $countryCode, string $referenceCountryCode = 'DE'): ?array
     {
-        $cacheKey = "price_trend_{$countryCode}_{$referenceCountryCode}";
-        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($countryCode, $referenceCountryCode) {
+        $cacheKey = "price_trend_{$countryCode}_{$referenceCountryCode}_" . date('Y-m-d');
+        return Cache::remember($cacheKey, config('weather.price_trend_cache_duration', 12 * 60 * 60), function () use ($countryCode, $referenceCountryCode) {
             $countryIncome = $this->fetchIncomeData($countryCode);
             $referenceIncome = $this->fetchIncomeData($referenceCountryCode);
 
@@ -320,13 +378,23 @@ class LocationDetailsController extends Controller
         });
     }
 
+    /**
+     * Holt Einkommensdaten für ein Land von der World Bank API.
+     *
+     * @param string $countryCode
+     * @return float|null
+     */
     protected function fetchIncomeData(string $countryCode): ?float
     {
-        $cacheKey = "income_data_{$countryCode}";
-        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($countryCode) {
+        $cacheKey = "income_data_{$countryCode}_" . date('Y-m-d');
+        return Cache::remember($cacheKey, config('weather.income_data_cache_duration', 12 * 60 * 60), function () use ($countryCode) {
             try {
                 $response = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/NY.GDP.PCAP.CD?format=json");
-                return $response->successful() ? ($response->json()[1][0]['value'] ?? null) : null;
+                if (!$response->successful()) {
+                    Log::error("API-Fehler bei World Bank für {$countryCode}: Status-Code {$response->status()}, Body: " . $response->body());
+                    return null;
+                }
+                return $response->json()[1][0]['value'] ?? null;
             } catch (\Exception $e) {
                 Log::error("Error fetching income data for {$countryCode}: {$e->getMessage()}");
                 return null;
@@ -334,6 +402,40 @@ class LocationDetailsController extends Controller
         });
     }
 
+    /**
+     * Holt Zeitzoneninformationen basierend auf einer IP-Adresse.
+     *
+     * @param string $ip
+     * @return string|null
+     */
+    protected function getTimezoneFromIp(string $ip): ?string
+    {
+        if (in_array($ip, ['127.0.0.1', '::1'])) {
+            return config('app.timezone', 'Europe/Berlin');
+        }
+
+        $cacheKey = "timezone_{$ip}_" . date('Y-m-d');
+        return Cache::remember($cacheKey, config('weather.timezone_cache_duration', 24 * 60 * 60), function () use ($ip) {
+            try {
+                $response = Http::get("http://ip-api.com/json/{$ip}");
+                if (!$response->successful()) {
+                    Log::error("API-Fehler bei ip-api für {$ip}: Status-Code {$response->status()}, Body: " . $response->body());
+                    return null;
+                }
+                return $response->json('timezone');
+            } catch (\Exception $e) {
+                Log::error("Error fetching timezone for IP: {$ip}: {$e->getMessage()}");
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Holt Zeitzonen- und Offset-Informationen für einen Standort.
+     *
+     * @param WwdeLocation $location
+     * @return array
+     */
     protected function getLocationTimeInfo(WwdeLocation $location): array
     {
         $locationTimezone = $location->time_zone ?? config('app.timezone', 'UTC');
@@ -354,58 +456,49 @@ class LocationDetailsController extends Controller
         }
     }
 
-    protected function getTimezoneFromIp(string $ip): ?string
+
+    private function mapWeatherIcon(?int $code, bool $isDaytime = true, float $temperature = null): string
     {
-        if (in_array($ip, ['127.0.0.1', '::1'])) {
-            return config('app.timezone', 'Europe/Berlin');
+        // Spezielle Logik für "extrem heiß" (z. B. > 35°C bei Tag)
+        if ($temperature && $temperature > 35 && $isDaytime) {
+            return 'sunny-hot'; // Extrem heiß, kombiniert mit Sonnenschutz-Icons
         }
 
-        $cacheKey = "timezone_{$ip}";
-        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($ip) {
-            try {
-                $response = Http::get("http://ip-api.com/json/{$ip}");
-                return $response->successful() ? $response->json('timezone') : null;
-            } catch (\Exception $e) {
-                Log::error("Error fetching timezone for IP: {$ip}: {$e->getMessage()}");
-                return null;
-            }
-        });
-    }
-
-    private function mapWeatherIcon(?int $code, bool $isDaytime = true): string
-    {
         $map = [
             0 => $isDaytime ? 'sunny' : 'clear-night', // Klarer Himmel (Tag/Nacht)
             1 => $isDaytime ? 'partly-cloudy' : 'partly-cloudy-night', // Leicht bewölkt (Tag/Nacht)
-            2 => $isDaytime ? 'partly-cloudy2' : 'partly-cloudy-night', // Mäßig bewölkt (Tag/Nacht, unterschiedliche Wolkenmenge)
+            2 => $isDaytime ? 'partly-cloudy2' : 'partly-cloudy-night', // Mäßig bewölkt (Tag/Nacht)
             3 => 'cloudy', // Bedeckt
             45 => 'foggy', // Nebel
             48 => 'foggy', // Nebel mit Reif
             51 => 'rainy', // Leichter Nieselregen
             53 => 'rainy', // Mäßiger Nieselregen
-            55 => 'rainy2', // Starker Nieselregen (stärkere Regen-Version)
+            55 => 'rainy2', // Starker Nieselregen
             61 => 'rainy', // Leichter Regen
             63 => 'rainy', // Mäßiger Regen
-            65 => 'rainy2', // Starker Regen (stärkere Regen-Version)
+            65 => 'rainy2', // Starker Regen
             80 => 'rainy', // Leichte Regenschauer
             81 => 'rainy', // Mäßige Regenschauer
-            82 => 'rainy2', // Starke Regenschauer (stärkere Regen-Version)
+            82 => 'rainy2', // Starke Regenschauer
             95 => 'thunderstorm', // Gewitter
             96 => 'thunderstorm', // Gewitter mit leichtem Hagel
-            99 => 'thunderstorm2', // Gewitter mit starkem Hagel (stärkere Version)
-            56 => 'unknown', // Leichter gefrierender Nieselregen
-            57 => 'unknown', // Starker gefrierender Nieselregen
-            66 => 'unknown', // Leichter gefrierender Regen
-            67 => 'unknown', // Starker gefrierender Regen
-            71 => 'unknown', // Leichter Schneefall
-            73 => 'unknown', // Mäßiger Schneefall
-            75 => 'unknown', // Starker Schneefall
-            77 => 'unknown', // Schneegriesel
-            85 => 'unknown', // Leichte Schneeschauer
-            86 => 'unknown', // Starke Schneeschauer
+            99 => 'thunderstorm2', // Gewitter mit starkem Hagel
+
+            // Schnee- und Frost-Zustände (kreative Kombination mit Sommerthemen)
+            56 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Leichter gefrierender Nieselregen
+            57 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Starker gefrierender Nieselregen
+            66 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Leichter gefrierender Regen
+            67 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Starker gefrierender Regen
+            71 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Leichter Schneefall
+            73 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Mäßiger Schneefall
+            75 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Starker Schneefall
+            77 => $isDaytime ? 'snowy-cloudy' : 'snowy-cloudy', // Schneegriesel
+            85 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Leichte Schneeschauer
+            86 => $isDaytime ? 'snowy-sunny' : 'snowy-cloudy', // Starke Schneeschauer
         ];
-        return $map[$code] ?? 'unknown';
+        return $map[$code] ?? 'cloudy'; // Fallback auf 'cloudy' statt 'unknown' für eine schönere Darstellung
     }
+
 
     private function mapWeatherCode(?int $code): string
     {
