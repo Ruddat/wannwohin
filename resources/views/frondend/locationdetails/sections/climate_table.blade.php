@@ -45,7 +45,7 @@
 
 <!-- Klimatabelle -->
 <div class="col-lg-8 col-sm-7 bg-color-light px-3 py-3 climate-table-col">
-    <h4 class="text-color-dark font-weight-semibold mb-4">Klimatabelle {{ $location->title }} ({{ date('Y') }})</h4>
+    <h4 class="text-color-dark font-weight-semibold mb-4">Klimatabelle {{ $location->title }}</h4>
     <table class="table table-striped table-bordered table-hover table-condensed location-climate-table climate-table mb-4">
         <thead>
             <tr>
@@ -63,7 +63,7 @@
         <tbody>
             @foreach ($climates as $climate)
                 <tr>
-                    <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->format('F') }} {{ date('Y') }}</td>
+                    <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->format('F') }}</td>
                     <td class="center">{{ $climate->daily_temperature ? number_format($climate->daily_temperature, 1, ',', '.') : '-' }} °C</td>
                     <td class="center">{{ $climate->night_temperature ? number_format($climate->night_temperature, 1, ',', '.') : '-' }} °C</td>
                     @if ($climates->first()?->water_temperature_avg > 1)

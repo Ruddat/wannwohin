@@ -50,43 +50,25 @@ class LocationDetailsController extends Controller
 
         // Klimadaten für das laufende Jahr (2025)
         $currentYear = date('Y'); // 2025
-        $climates = WwdeClimate::where('location_id', $location->id)
-            ->where(function ($query) use ($currentYear) {
-                $query->whereYear('created_at', $currentYear)
-                      ->orWhereYear('sunrise', $currentYear) // Fallback, falls created_at nicht korrekt ist
-                      ->orWhereYear('sunset', $currentYear); // Fallback
-            })
-            ->whereIn('month_id', range(1, 12)) // Stelle sicher, dass nur Monate 1–12 verwendet werden
-            ->orderBy('month_id', 'asc')
-            ->get()
-            ->unique('month_id') // Entferne Duplikate basierend auf month_id
-            ->map(function ($climate) {
-                // Normalisiere month_id auf zwei-stellige Zahl
-                $climate->month_id = sprintf('%02d', $climate->month_id);
-                return $climate;
-            });
+     ///   dd($currentYear);
+      //  $climates = $this->fetchClimateYearData($location, $currentYear);
+      //  $climates = $this->fetchSeasonalClimateYearData($location, $currentYear);
 
-        // Füge fehlende Monate mit Standardwerten hinzu, falls Daten unvollständig sind
-        $climateData = $climates->keyBy('month_id')->all();
-        $allMonths = [];
-        for ($month = 1; $month <= 12; $month++) {
-            $monthId = sprintf('%02d', $month);
-            if (isset($climateData[$monthId])) {
-                $allMonths[] = $climateData[$monthId];
-            } else {
-                // Fallback für fehlende Monate mit Standardwerten
-                $allMonths[] = new WwdeClimate([
-                    'month_id' => $monthId,
-                    'daily_temperature' => null,
-                    'night_temperature' => null,
-                    'water_temperature' => null,
-                    'humidity' => null,
-                    'sunshine_per_day' => null,
-                    'rainy_days' => null,
-                ]);
-            }
-        }
-        $climates = collect($allMonths);
+// Hole und speichere Klimadaten für das Vorjahr (2024)
+//$climates = $this->fetchHistoricalClimateYearData($location, $currentYear);
+$climates = $this->fetchAndStoreClimateData($location, $currentYear);
+
+// Klimadaten für das Vorjahr (2024) aus der Datenbank
+$currentYear = date('Y'); // 2025
+$climates = WwdeClimate::where('location_id', $location->id)
+    ->where('year', $currentYear - 1) // Vorjahr 2024
+    ->orderBy('month_id', 'asc')
+    ->get();
+
+
+    //  dd($climates);
+
+
 
         return view('frondend.locationdetails._index', [
             'location' => $location,
@@ -162,6 +144,241 @@ class LocationDetailsController extends Controller
             });
         return $galleryImages;
     }
+
+    private function fetchAndStoreClimateData(WwdeLocation $location, int $year): void
+    {
+        $cacheKey = "climate_data_{$location->id}_{$year}";
+        $previousYear = $year - 1; // Vorjahr (2024, wenn $year = 2025)
+
+        // Debugging der Koordinaten
+        if (!$location->lat || !$location->lon) {
+            Log::error("Ungültige Koordinaten für Standort {$location->id}: lat={$location->lat}, lon={$location->lon}");
+            return;
+        }
+
+        // Versuche, gecachte Daten zu nutzen
+        $climateData = Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location, $previousYear) {
+            Log::debug("Open-Meteo Historical Weather Request für Standort {$location->id}: latitude={$location->lat}, longitude={$location->lon}, year={$previousYear}");
+
+            $response = Http::get('https://archive-api.open-meteo.com/v1/archive', [
+                'latitude' => $location->lat,
+                'longitude' => $location->lon,
+                'start_date' => "$previousYear-01-01",
+                'end_date' => "$previousYear-12-31",
+                'daily' => 'weather_code,temperature_2m_max,sunshine_duration,temperature_2m_min,sunrise,sunset,daylight_duration,precipitation_sum,rain_sum,snowfall_sum,precipitation_hours,wind_direction_10m_dominant',
+                'timezone' => 'auto',
+            ]);
+
+            Log::debug("Open-Meteo Historical Weather Response: Status={$response->status()}, Body=" . $response->body());
+
+            if (!$response->successful()) {
+                Log::error("API-Fehler bei Open-Meteo Historical Weather für {$location->id} im Jahr {$previousYear}: Status-Code {$response->status()}, Body: " . $response->body());
+                return null;
+            }
+
+            $data = $response->json()['daily'];
+            $climates = [];
+
+            // Aggregiere tägliche Daten zu monatlichen Durchschnittswerten
+            $monthlyData = [];
+            foreach ($data['time'] as $key => $date) {
+                $month = Carbon::parse($date)->month;
+                if (!isset($monthlyData[$month])) {
+                    $monthlyData[$month] = [
+                        'temps_max' => [],
+                        'temps_min' => [],
+                        'sunshine_durations' => [],
+                        'precipitation_sums' => [],
+                        'precipitation_hours' => [],
+                        'weather_codes' => [],
+                        'wind_directions' => [],
+                        'sunrises' => [],
+                        'sunsets' => [],
+                    ];
+                }
+
+                // Debugging der Werte
+                Log::debug("Tägliche Daten für {$date}: weather_code=" . ($data['weather_code'][$key] ?? 'null'));
+
+                $monthlyData[$month]['temps_max'][] = $data['temperature_2m_max'][$key] ?? null;
+                $monthlyData[$month]['temps_min'][] = $data['temperature_2m_min'][$key] ?? null;
+                $monthlyData[$month]['sunshine_durations'][] = $data['sunshine_duration'][$key] ?? null;
+                $monthlyData[$month]['precipitation_sums'][] = $data['precipitation_sum'][$key] ?? null;
+                $monthlyData[$month]['precipitation_hours'][] = $data['precipitation_hours'][$key] ?? null;
+                $monthlyData[$month]['weather_codes'][] = $data['weather_code'][$key] ?? null;
+                $monthlyData[$month]['wind_directions'][] = $data['wind_direction_10m_dominant'][$key] ?? null;
+                $monthlyData[$month]['sunrises'][] = $data['sunrise'][$key] ?? null;
+                $monthlyData[$month]['sunsets'][] = $data['sunset'][$key] ?? null;
+            }
+
+            // Konvertiere tägliche Daten in monatliche Durchschnittswerte
+            foreach ($monthlyData as $month => $values) {
+                // Debugging der monatlichen Werte
+                Log::debug("Monatliche Daten für Monat {$month}: weather_codes=" . json_encode($values['weather_codes']));
+
+                $weatherCodes = collect($values['weather_codes'])->filter()->all(); // Filtere null-Werte
+                $weatherId = null;
+                if (!empty($weatherCodes)) {
+                    $mode = collect($weatherCodes)->mode();
+                    $weatherId = is_array($mode) ? (isset($mode[0]) ? $mode[0] : null) : $mode; // Nimm den ersten Wert aus mode(), falls ein Array
+                }
+
+                $climates[$month] = [
+                    'year' => $previousYear,
+                    'location_id' => $location->id,
+                    'month_id' => sprintf('%02d', $month),
+                    'month' => Carbon::create()->month($month)->format('F'),
+                    'daily_temperature' => !empty($values['temps_max']) ? $this->safeAvg($values['temps_max']) : null,
+                    'night_temperature' => !empty($values['temps_min']) ? $this->safeAvg($values['temps_min']) : null,
+                    'water_temperature' => null,
+                    'humidity' => null,
+                    'sunshine_per_day' => !empty($values['sunshine_durations']) ? $this->safeAvg($values['sunshine_durations']) / 3600 : null,
+                    'rainy_days' => !empty($values['precipitation_hours']) ? $this->safeSum($values['precipitation_hours']) / 24 : null,
+                    'cloudiness' => null,
+                    'weather_id' => $weatherId, // Sicherstellen, dass nur ein Integer oder null gesetzt wird
+                    'feels_like' => null,
+                    'temp_min' => !empty($values['temps_min']) ? collect($values['temps_min'])->min() : null,
+                    'temp_max' => !empty($values['temps_max']) ? collect($values['temps_max'])->max() : null,
+                    'pressure' => null,
+                    'wind_speed' => null,
+                  //  'wind_direction' => !empty($values['wind_directions']) ? $this->getDominantWindDirection($values['wind_directions']) : null,
+                    'wind_deg' => !empty($values['wind_directions']) ? $this->safeAvg($values['wind_directions']) : null,
+                    'clouds_all' => null,
+                    'dt' => !empty($values['time']) ? Carbon::parse(end($data['time']))->timestamp : null,
+                    'timezone' => 'auto',
+                 //   'country' => $location->country->alias ?? null,
+                    'sunrise' => !empty($values['sunrises']) ? $this->safeAvg($values['sunrises']) : null,
+                    'sunset' => !empty($values['sunsets']) ? $this->safeAvg($values['sunsets']) : null,
+                    'weather_main' => $this->mapWeatherCode($weatherId),
+                    'weather_description' => $this->mapWeatherCode($weatherId, true),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            return $climates;
+        });
+
+        if ($climateData) {
+            // Speichere die Daten in der Datenbank
+            foreach ($climateData as $monthData) {
+                // Anpassung für 'timezone', falls es ein String ist
+                if ($monthData['timezone'] === 'auto') {
+                    $monthData['timezone'] = null; // Setze auf null, falls 'auto'
+                } elseif (is_string($monthData['timezone'])) {
+                    try {
+                        $timezone = new DateTimeZone($monthData['timezone']);
+                        $offset = $timezone->getOffset(new DateTime());
+                        $monthData['timezone'] = $offset; // Speichere Offset als Integer
+                    } catch (\Exception $e) {
+                        $monthData['timezone'] = null;
+                        Log::warning("Ungültige Zeitzone für Standort {$location->id}: {$monthData['timezone']}");
+                    }
+                }
+
+                WwdeClimate::updateOrCreate(
+                    [
+                        'location_id' => $location->id,
+                        'year' => $monthData['year'],
+                        'month_id' => $monthData['month_id'],
+                    ],
+                    $monthData
+                );
+            }
+        }
+    }
+
+    // Neue Hilfsmethoden für sichere Berechnungen (unverändert)
+    private function safeAvg(array $values): ?float
+    {
+        $numericValues = array_filter($values, function ($value) {
+            return is_numeric($value) && $value !== null;
+        });
+
+        return empty($numericValues) ? null : array_sum($numericValues) / count($numericValues);
+    }
+
+    private function safeSum(array $values): ?float
+    {
+        $numericValues = array_filter($values, function ($value) {
+            return is_numeric($value) && $value !== null;
+        });
+
+        return empty($numericValues) ? null : array_sum($numericValues);
+    }
+
+    // Neue Hilfsmethode für die dominante Windrichtung (unverändert)
+    private function getDominantWindDirection(array $directions): ?string
+    {
+        if (empty($directions)) {
+            return null;
+        }
+
+        $directionCounts = [
+            'N' => 0, 'NE' => 0, 'E' => 0, 'SE' => 0,
+            'S' => 0, 'SW' => 0, 'W' => 0, 'NW' => 0,
+        ];
+
+        foreach ($directions as $deg) {
+            if ($deg !== null && is_numeric($deg)) {
+                $index = round($deg / 45) % 8;
+                $directionsArray = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+                $direction = $directionsArray[$index];
+                $directionCounts[$direction]++;
+            }
+        }
+
+        return array_search(max($directionCounts), $directionCounts);
+    }
+
+    private function fetchHistoricalClimateYearData(WwdeLocation $location, int $year): array
+    {
+        $cacheKey = "historical_climate_year_{$location->id}_{$year}";
+        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location, $year) {
+            $climates = [];
+            $previousYear = $year - 1; // Vorjahr (2024, wenn $year = 2025)
+
+            for ($month = 1; $month <= 12; $month++) {
+                $climate = WwdeClimate::where('location_id', $location->id)
+                    ->where('month_id', $month)
+                    ->where('year', $previousYear) // Filtere nach Vorjahr
+                    ->first();
+
+                $climates[$month] = [
+                    'month_id' => sprintf('%02d', $month),
+                    'daily_temperature' => $climate ? $climate->daily_temperature : null,
+                    'night_temperature' => $climate ? $climate->night_temperature : null,
+                    'water_temperature' => $climate ? $climate->water_temperature : null,
+                    'humidity' => $climate ? $climate->humidity : null,
+                    'sunshine_per_day' => $climate ? $climate->sunshine_per_day : null,
+                    'rainy_days' => $climate ? $climate->rainy_days : null,
+                ];
+            }
+
+            // Falls keine Daten für das Vorjahr vorhanden sind, hole historische Durchschnittswerte
+            if (empty(array_filter($climates, fn($data) => $data['daily_temperature'] !== null))) {
+                Log::warning("Keine Daten für das Vorjahr {$previousYear} gefunden, hole historische Durchschnittswerte.");
+                for ($month = 1; $month <= 12; $month++) {
+                    $climate = WwdeClimate::where('location_id', $location->id)
+                        ->where('month_id', $month)
+                        ->first(); // Hole den ersten Eintrag für diesen Monat (historischer Durchschnitt)
+
+                    $climates[$month] = [
+                        'month_id' => sprintf('%02d', $month),
+                        'daily_temperature' => $climate ? $climate->daily_temperature : null,
+                        'night_temperature' => $climate ? $climate->night_temperature : null,
+                        'water_temperature' => $climate ? $climate->water_temperature : null,
+                        'humidity' => $climate ? $climate->humidity : null,
+                        'sunshine_per_day' => $climate ? $climate->sunshine_per_day : null,
+                        'rainy_days' => $climate ? $climate->rainy_days : null,
+                    ];
+                }
+            }
+
+            return array_values($climates);
+        });
+    }
+
 
     /**
      * Holt alle Wetterdaten (aktuell, stündlich, täglich) für einen Standort.
@@ -243,6 +460,127 @@ class LocationDetailsController extends Controller
             ];
         });
     }
+
+
+    private function fetchSeasonalClimateYearData(WwdeLocation $location, int $year): array
+    {
+        $cacheKey = "seasonal_climate_year_{$location->id}_{$year}";
+        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location, $year) {
+            $climates = [];
+            $currentDate = now()->startOfYear()->setYear($year); // Startdatum des Jahres 2025
+            $maxAllowedDate = Carbon::parse('2025-03-18'); // Maximal erlaubtes Datum gemäß API
+            $endDate = $currentDate->copy()->endOfYear();
+
+            while ($currentDate <= $endDate) {
+                // Bestimme das Enddatum für diesen Monat, aber nicht später als 2025-03-18
+                $monthEnd = $currentDate->copy()->endOfMonth();
+                $effectiveEndDate = $monthEnd->lte($maxAllowedDate) ? $monthEnd : $maxAllowedDate;
+
+                if ($currentDate->gt($maxAllowedDate)) {
+                    // Für Monate nach März 2025 verwende historischen Fallback
+                    $month = $currentDate->month;
+                    $climate = WwdeClimate::where('location_id', $location->id)
+                        ->where('month_id', $month)
+                        ->first();
+
+                    $climates[$month] = [
+                        'month_id' => sprintf('%02d', $month),
+                        'daily_temperature' => $climate ? $climate->daily_temperature : null,
+                        'night_temperature' => $climate ? $climate->night_temperature : null,
+                        'water_temperature' => $climate ? $climate->water_temperature : null,
+                        'humidity' => $climate ? $climate->humidity : null,
+                        'sunshine_per_day' => $climate ? $climate->sunshine_per_day : null,
+                        'rainy_days' => $climate ? $climate->rainy_days : null,
+                    ];
+                } else {
+                    // Für Monate bis März 2025 (oder bis 2025-03-18) API aufrufen
+                    $response = Http::get('https://api.open-meteo.com/v1/ecmwf', [
+                        'latitude' => $location->lat,
+                        'longitude' => $location->lon,
+                        'start_date' => $currentDate->toDateString(),
+                        'end_date' => $effectiveEndDate->toDateString(),
+                        'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode',
+                        'timezone' => 'auto',
+                    ]);
+
+                    if (!$response->successful()) {
+                        Log::error("API-Fehler bei Open-Meteo Seasonal Forecast für {$currentDate->toDateString()}: Status-Code {$response->status()}, Body: " . $response->body());
+                        $currentDate->addMonth();
+                        continue;
+                    }
+
+                    $data = $response->json()['daily'];
+                    $month = $currentDate->month;
+
+                    if (!empty($data['time'])) {
+                        $climates[$month] = [
+                            'month_id' => sprintf('%02d', $month),
+                            'daily_temperature' => collect($data['temperature_2m_max'])->avg(),
+                            'night_temperature' => collect($data['temperature_2m_min'])->avg(),
+                            'water_temperature' => null,
+                            'humidity' => null, // Nicht in der Seasonal-API verfügbar, könnte über eine andere API ergänzt werden
+                            'sunshine_per_day' => null, // Nicht in der Seasonal-API verfügbar
+                            'rainy_days' => collect($data['precipitation_sum'])->filter(fn($value) => $value > 0)->count(),
+                        ];
+                    }
+                }
+
+                $currentDate->addMonth();
+            }
+
+            return array_values($climates);
+        });
+    }
+
+
+    private function fetchClimateYearData(WwdeLocation $location, int $year): array
+    {
+        $cacheKey = "climate_year_{$location->id}_{$year}";
+        return Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location, $year) {
+            $climates = [];
+            $currentDate = now()->startOfYear()->setYear($year); // Startdatum des Jahres 2025
+            $endDate = $currentDate->copy()->endOfYear();
+
+            while ($currentDate <= $endDate) {
+                $response = Http::get('https://api.open-meteo.com/v1/forecast', [
+                    'latitude' => $location->lat,
+                    'longitude' => $location->lon,
+                    'start_date' => $currentDate->toDateString(),
+                    'end_date' => $currentDate->copy()->endOfMonth()->toDateString(),
+                    'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,sunshine_duration',
+                    'timezone' => 'auto',
+                ]);
+//dd($response->json());
+
+                if (!$response->successful()) {
+                    Log::error("API-Fehler bei Open-Meteo Forecast für {$currentDate->toDateString()}: Status-Code {$response->status()}, Body: " . $response->body());
+                    $currentDate->addMonth();
+                    continue;
+                }
+
+                $data = $response->json()['daily'];
+                $month = $currentDate->month;
+
+                if (!empty($data['time'])) {
+                    $climates[$month] = [
+                        'month_id' => sprintf('%02d', $month),
+                        'daily_temperature' => collect($data['temperature_2m_max'])->avg(),
+                        'night_temperature' => collect($data['temperature_2m_min'])->avg(),
+                        'water_temperature' => null,
+                      //  'humidity' => collect($data['relativehumidity_2m'])->avg(),
+                        'sunshine_per_day' => collect($data['sunshine_duration'])->avg() / 3600,
+                        'rainy_days' => collect($data['precipitation_sum'])->filter(fn($value) => $value > 0)->count(),
+                    ];
+                }
+
+                $currentDate->addMonth();
+            }
+
+            return array_values($climates);
+        });
+    }
+
+
 
     /**
      * Berechnet die Windrichtung basierend auf Grad.
