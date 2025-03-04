@@ -50,11 +50,9 @@ class LocationDetailsController extends Controller
 
         // Klimadaten für das laufende Jahr (2025)
         $currentYear = date('Y'); // 2025
-     ///   dd($currentYear);
       //  $climates = $this->fetchClimateYearData($location, $currentYear);
       //  $climates = $this->fetchSeasonalClimateYearData($location, $currentYear);
-
-// Hole und speichere Klimadaten für das Vorjahr (2024)
+      // Hole und speichere Klimadaten für das Vorjahr (2024)
 //$climates = $this->fetchHistoricalClimateYearData($location, $currentYear);
 $climates = $this->fetchAndStoreClimateData($location, $currentYear);
 
@@ -168,6 +166,7 @@ $climates = WwdeClimate::where('location_id', $location->id)
                 'daily' => 'weather_code,temperature_2m_max,sunshine_duration,temperature_2m_min,sunrise,sunset,daylight_duration,precipitation_sum,rain_sum,snowfall_sum,precipitation_hours,wind_direction_10m_dominant',
                 'timezone' => 'auto',
             ]);
+//dd($response->json());
 
             Log::debug("Open-Meteo Historical Weather Response: Status={$response->status()}, Body=" . $response->body());
 
@@ -246,7 +245,7 @@ $climates = WwdeClimate::where('location_id', $location->id)
                     'clouds_all' => null,
                     'dt' => !empty($values['time']) ? Carbon::parse(end($data['time']))->timestamp : null,
                     'timezone' => 'auto',
-                 //   'country' => $location->country->alias ?? null,
+                    'country' => $location->country->country_code ?? null,
                     'sunrise' => !empty($values['sunrises']) ? $this->safeAvg($values['sunrises']) : null,
                     'sunset' => !empty($values['sunsets']) ? $this->safeAvg($values['sunsets']) : null,
                     'weather_main' => $this->mapWeatherCode($weatherId),

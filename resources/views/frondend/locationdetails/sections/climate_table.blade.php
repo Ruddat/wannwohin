@@ -76,7 +76,9 @@
             @endforeach
         </tbody>
     </table>
+    {{--
     <livewire:frontend.climate-table.climate-table-component :locationId="$location->id" />
+    --}}
     <div class="text-start">
         <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}.htm">
             @autotranslate('Mehr zu Klima & Wetter', app()->getLocale())

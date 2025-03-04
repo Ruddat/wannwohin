@@ -123,6 +123,7 @@ class WeatherDataManagerLibrary
                 'location_id' => $location_id,
                 'month_id' => Carbon::now()->month, // Aktueller Monat als ID
                 'month' => Carbon::now()->format('F'), // Name des aktuellen Monats
+                'year' => Carbon::now()->format('Y'), // Aktuelles Jahr
                 'daily_temperature' => $weatherData['main']['temp'],
                 'night_temperature' => $weatherData['main']['temp_min'],
                 'humidity' => $weatherData['main']['humidity'],

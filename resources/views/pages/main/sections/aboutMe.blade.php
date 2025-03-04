@@ -2,8 +2,9 @@
 {{--
     @livewire('frontend.travel-explorer.travel-explorer-component')
  --}}
-
     <section class="section bg-color-light m-0">
+
+
         <!-- Vorschläge -->
         <h2 class="suggestions-title">🌍 @autotranslate('Entdecke dein nächstes Abenteuer!', app()->getLocale())</h2>
         <div class="suggestions-container">
@@ -33,6 +34,10 @@
 
         <!-- Inhalt -->
         <div class="container">
+
+            <script async src="https://tp.media/content?currency=eur&trs=394771&shmarker=611711&combine_promos=101_7873&show_hotels=true&powered_by=true&locale=de&searchUrl=www.aviasales.at%2Fsearch&primary_override=%2332a8dd&color_button=%2332a8dd&color_icons=%2332a8dd&dark=%23262626&light=%23FFFFFF&secondary=%23FFFFFF&special=%23C4C4C4&color_focused=%2332a8dd&border_radius=8&no_labels=&plain=true&promo_id=7879&campaign_id=100" charset="utf-8"></script>
+
+
             <div class="row g-4">
                 <!-- Texte -->
                 <div class="col-lg-6">
