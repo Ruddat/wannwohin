@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend\ContinentCountryTable;
 
 use App\Models\WwdeCountry;
 use App\Models\WwdeLocation;
+use App\Services\SeoService;
 use App\Models\WwdeContinent;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
@@ -12,10 +13,12 @@ use App\Repositories\ContinentRepository;
 class ContinentController extends Controller
 {
     protected $repository;
+    protected $seoService;
 
-    public function __construct(ContinentRepository $repository)
+    public function __construct(ContinentRepository $repository, SeoService $seoService)
     {
         $this->repository = $repository;
+        $this->seoService = $seoService;
     }
 
     public function showCountries($continentAlias)
@@ -29,12 +32,16 @@ class ContinentController extends Controller
         // Nur Continent als Datenquelle
         $this->storeHeaderData($continent, $continent, $images);
 
+// Generiere SEO-Daten für den Kontinent
+$seo = $this->seoService->getSeoData($continent);
+
         return view('frondend.continent_and_countries.index', [
             'continent' => $continent,
             'countries' => $countries,
             'panorama_location_picture' => $images['bgImgPath'],
             'main_location_picture' => $images['mainImgPath'],
             'panorama_location_text' => $continent->continent_header_text ?? null,
+            'seo' => $seo, // Teile SEO-Daten mit der View
         ]);
     }
 
@@ -53,6 +60,9 @@ class ContinentController extends Controller
     $this->storeHeaderData($country, $continent, $images);
     //dd($continent, $country, $locations, $images);
 
+    // Generiere SEO-Daten für das Land
+    $seo = $this->seoService->getSeoData($country);
+
         return view('frondend.continent_and_countries.locations', [
             'continent' => $continent,
             'country' => $country,
@@ -60,7 +70,8 @@ class ContinentController extends Controller
             'panorama_location_picture' => $images['bgImgPath'],
             'main_location_picture' => $images['mainImgPath'],
             'panorama_location_text' => $continent->continent_header_text ?? null,
-        ]);
+            'seo' => $seo, // Teile SEO-Daten mit der View
+        ])->with('h1', "Reiseziele in {$country->title} 2025: {$continent->title}");
     }
 
     private function fetchContinent($alias): WwdeContinent

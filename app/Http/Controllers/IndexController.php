@@ -4,21 +4,23 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\WwdeLocation;
+use App\Services\SeoService;
 use App\Helpers\HeaderHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use App\Library\WeatherDataManagerLibrary;
 use App\Repositories\LocationRepository;
+use App\Library\WeatherDataManagerLibrary;
 
 class IndexController extends Controller
 {
     protected $locationRepository;
 
-    public function __construct(LocationRepository $locationRepository)
+    public function __construct(LocationRepository $locationRepository, SeoService $seoService)
     {
         $this->locationRepository = $locationRepository;
+        $this->seoService = $seoService;
     }
 
     public function __invoke()
@@ -60,7 +62,18 @@ class IndexController extends Controller
 
         Log::info('IndexController: Gesamtladezeit ' . (microtime(true) - $startTime) . ' Sekunden');
 
+    // SEO für die Startseite abrufen oder generieren
+    $seo = $this->seoService->getSeoData([
+        'model_type'  => 'homepage',
+        'model_id'    => 1,
+        'title'       => 'WannWohin - Deine Reiseplattform',
+        'description' => 'Finde die besten Reiseziele, Wetterdaten und Top-Locations für deinen nächsten Urlaub.',
+        'image'       => asset('img/homepage.jpg'),
+        'canonical'   => url('/'),
+    ]);
+
         return view('pages.main.index', [
+            'seo' => $seo,
             'top_ten' => $topTenLocations,
             'total_locations' => $totalLocations,
             'panorama_location_picture' => $headerData['bgImgPath'],
@@ -193,6 +206,19 @@ class IndexController extends Controller
         if (!isset($urlaubTypeMap[$urlaubType])) {
             abort(400, "Ungültiger Urlaubstyp: $urlaubType");
         }
+
+
+    // SEO für Suchergebnisse abrufen oder generieren
+    $seo = $this->seoService->getSeoData([
+        'model_type'  => 'search_results',
+        'model_id'    => "{$urlaubType}-{$monthId}",
+        'title'       => "{$urlaubTypeText} im {$monthName} - Beste Reiseziele",
+        'description' => "Hier findest du die besten Orte für eine {$urlaubTypeText} im {$monthName}. Entdecke Klima, Wetter und Preise.",
+        'canonical'   => url("/suche/{$urlaubType}/{$monthId}"),
+        'image'       => asset("img/search/{$urlaubType}.jpg"),
+    ]);
+
+
 
         $column = $urlaubTypeMap[$urlaubType];
         $urlaubTypeIcon = $iconMap[$column] ?? null;

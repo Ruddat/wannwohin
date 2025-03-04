@@ -5,15 +5,88 @@
     <!-- Basic -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    {{--    <title>@yield('title')</title> --}}
-    @yield('meta')
-    {{--    <meta name="keywords" content="HTML5 Template" /> --}}
-    {{--    <meta name="description" content="Porto - Responsive HTML5 Template"> --}}
-    {{--    <meta name="author" content="okler.net"> --}}
+<!-- Dynamische SEO-Daten -->
+@if(isset($seo))
+<title>{{ $seo['title'] ?? 'WannWohin.de – Dein Reiseportal für Urlaub 2025' }}</title>
+<meta name="description" content="{{ $seo['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.' }}">
+<link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
 
-    <!-- Favicon -->
-    {{--    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" /> --}}
-    {{--    <link rel="apple-touch-icon" href="img/apple-touch-icon.png"> --}}
+@if(isset($seo['extra_meta']) && is_array($seo['extra_meta']))
+    @foreach ($seo['extra_meta'] as $key => $value)
+        <meta property="{{ $key }}" content="{{ $value }}">
+    @endforeach
+@endif
+
+<meta name="keywords" content="{{ implode(', ', $seo['keywords']['tags'] ?? []) }}">
+@else
+<title>WannWohin.de – Dein Reiseportal für Urlaub 2025</title>
+<meta name="description" content="Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.">
+<link rel="canonical" href="{{ url()->current() }}">
+<meta name="keywords" content="Urlaub 2025, Reiseziele, Wetter, Direktflüge, Klima">
+@endif
+
+<!-- Strukturierte Daten dynamisch basierend auf dem Modell -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": @php
+        if (isset($location) && $location instanceof \App\Models\WwdeLocation) {
+            echo '"TouristDestination"';
+        } elseif (isset($continent) && $continent instanceof \App\Models\WwdeContinent) {
+            echo '"TouristDestination"';
+        } elseif (isset($country) && $country instanceof \App\Models\WwdeCountry) {
+            echo '"TouristDestination"';
+        } else {
+            echo '"WebSite"';
+        }
+    @endphp,
+    "name": @php
+        if (isset($location)) {
+            echo '"' . ($location->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
+        } elseif (isset($continent)) {
+            echo '"' . ($continent->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
+        } elseif (isset($country)) {
+            echo '"' . ($country->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
+        } else {
+            echo '"WannWohin.de – Reiseportal"';
+        }
+    @endphp,
+    "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",
+    "description": "{{ $seo['description'] ?? 'Erkunde die besten Reiseziele und Wetterdaten weltweit.' }}",
+    @if(isset($location) && $location instanceof \App\Models\WwdeLocation)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $location->title ?? 'Unbekannter Ort' }}",
+            "addressCountry": "{{ $location->iso2 ?? 'DE' }}"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ $location->lat ?? 0 }}",
+            "longitude": "{{ $location->lon ?? 0 }}"
+        },
+    @elseif(isset($country) && $country instanceof \App\Models\WwdeCountry)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $country->title ?? 'Unbekannter Ort' }}",
+            "addressCountry": "{{ $country->iso2 ?? 'DE' }}"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ $country->lat ?? 0 }}",
+            "longitude": "{{ $country->lon ?? 0 }}"
+        },
+    @elseif(isset($continent) && $continent instanceof \App\Models\WwdeContinent)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $continent->title }}",
+            "addressCountry": "Global"
+        },
+    @endif
+    "url": "{{ $seo['canonical'] ?? url()->current() }}",
+    "touristType": "Leisure",
+    "keywords": "{{ implode(', ', $seo['keywords']['tags'] ?? ['Urlaub 2025', 'Reiseziele', 'Wetter', 'Direktflüge', 'Klima']) }}"
+}
+</script>
 
     <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">

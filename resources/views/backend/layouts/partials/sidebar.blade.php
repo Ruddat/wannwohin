@@ -257,6 +257,14 @@
                             </a>
                           </div>
 
+                          <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.seo-table-manager.seo.table') }}">
+                               seo Tables
+                            </a>
+                          </div>
+
+
 
                   </div>
                 </div>

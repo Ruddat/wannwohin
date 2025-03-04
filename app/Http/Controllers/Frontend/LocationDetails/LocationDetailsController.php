@@ -6,6 +6,7 @@ use DateTime;
 use Carbon\Carbon;
 use App\Models\WwdeClimate;
 use App\Models\WwdeLocation;
+use App\Services\SeoService;
 use App\Services\WeatherService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,8 +15,11 @@ use Illuminate\Support\Facades\Http;
 use App\Models\MonthlyClimateSummary;
 use Illuminate\Support\Facades\Cache;
 use App\Services\LocationImageService;
+use RalphJSmit\Laravel\SEO\Models\SEO;
 use Illuminate\Support\Facades\Storage;
 use App\Library\WeatherDataManagerLibrary;
+use RalphJSmit\Laravel\SEO\Support\SEOData;
+
 
 class LocationDetailsController extends Controller
 {
@@ -36,7 +40,7 @@ class LocationDetailsController extends Controller
      * @param string $locationAlias
      * @return \Illuminate\View\View
      */
-    public function show(string $continentAlias, string $countryAlias, string $locationAlias)
+    public function show(string $continentAlias, string $countryAlias, string $locationAlias, SeoService $seoService)
     {
         $location = $this->fetchLocation($continentAlias, $countryAlias, $locationAlias);
         $this->updateTopTen($location->id);
@@ -66,9 +70,12 @@ $climates = WwdeClimate::where('location_id', $location->id)
 
     //  dd($climates);
 
+    // SEO-Daten mit dem Service generieren oder speichern
+    $seo = $seoService->getSeoData($location);
 
 
         return view('frondend.locationdetails._index', [
+            'seo' => $seo,
             'location' => $location,
             'electric_standard' => $location->electricStandard,
             'climates' => $climates,

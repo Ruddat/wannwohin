@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
-use App\Services\GeocodeService;
+use App\Services\SeoService;
 
+use App\Services\GeocodeService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
@@ -40,8 +42,18 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(SeoService $seoService): void
     {
+
+
+        // Standard-SEO-Daten bereitstellen, falls keine explizit übergeben wurden
+        View::share('seo', [
+        'title' => 'WannWohin - Deine Reiseplattform',
+        'description' => 'Finde die besten Reiseziele, Wetterdaten und Top-Locations für deinen nächsten Urlaub.',
+        'canonical' => url('/'),
+        'extra_meta' => [],
+    ]);
+
     // Verwende Bootstrap für die Paginator-Darstellung
     Paginator::useBootstrap();
 
