@@ -6,6 +6,8 @@
         <div role="main" class="main">
             @include('frondend.locationdetails.sections.main')
 
+
+
             <section id="experience" class="section section-secondary section-no-border m-0 pt-0">
                 <div class="container mt-2 mb-2">
                     <div class="row">
@@ -14,6 +16,11 @@
                                 <li>
                                     <h4 class="timeline-title">@autotranslate("Karte & Route: {$location->title}", app()->getLocale())</h4>
                                     @include('frondend.locationdetails.sections.maps')
+                                </li>
+
+                                <li>
+                                    <h4 class="timeline-title">@autotranslate("Flug: {$location->title}", app()->getLocale())</h4>
+                                    <script async src="https://tp.media/content?currency=eur&trs=394771&shmarker=611711&lat=&lng=&powered_by=true&search_host=www.aviasales.at%2Fsearch&locale=de&origin=LON&value_min=0&value_max=1000000&round_trip=true&only_direct=false&radius=1&draggable=true&disable_zoom=false&show_logo=false&scrollwheel=true&primary=%233FABDB&secondary=%233FABDB&light=%23ffffff&width=1500&height=500&zoom=2&promo_id=4054&campaign_id=100" charset="utf-8"></script>
                                 </li>
                                 <li>
                                     <h4 class="timeline-title">@autotranslate("Beste Reisezeit: {$location->title}", app()->getLocale())</h4>
