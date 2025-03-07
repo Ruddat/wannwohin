@@ -21,6 +21,7 @@ use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\SiteSettingsComponent\SiteSettingsManager;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
+use App\Livewire\Backend\StaticPageManager\StaticPageManagerComponent;
 use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
 use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
 use App\Livewire\Backend\AdvertisementManager\AdvertisementBlocksComponent;
@@ -112,15 +113,13 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     });
 
 
-// SeoMetaTable Manager
-Route::prefix('site-settings-manager')->name('site-settings-manager.')->group(function () {
-    Route::get('/site-settings', SiteSettingsManager::class)->name('site-settings');
-});
-
-// SiteSettings Manager
+// SiteSettings Manager SeoMetaTable Manager
 Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function () {
     Route::get('/seo', SeoMetaTable::class)->name('seo.table');
     Route::get('/seo/edit/{id}', SeoMetaEdit::class)->name('seo.edit');
+    Route::get('static-page-manager', StaticPageManagerComponent::class)->name('static-page-manager');
+    Route::get('/site-settings', SiteSettingsManager::class)->name('site-settings');
+
 });
 
 

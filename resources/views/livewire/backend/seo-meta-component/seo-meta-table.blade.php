@@ -6,7 +6,7 @@
                     <h3 class="card-title mb-0">SEO-Einträge</h3>
                     <div class="input-group w-auto">
                         <span class="input-group-text"><i class="ti ti-search"></i></span>
-                        <input type="text" wire:model.change.debounce.100ms="search" class="form-control" placeholder="Suche..." style="max-width: 300px;">
+                        <input type="text" wire:model.live="search" class="form-control" placeholder="Suche..." style="max-width: 300px;">
                     </div>
                 </div>
                 <div class="card-body p-0">

@@ -167,7 +167,7 @@
                         Manager
                     </span>
                 </a>
-                <div class="dropdown-menu {{ request()->is('verwaltung/*') ? 'show' : '' }}">
+                <div class="dropdown-menu {{ request()->is('verwaltung/*') ? 'show active' : '' }}">
                     <div class="dropdown-menu-columns">
                         <div class="dropdown-menu-column">
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.header-manager.header_contents.index') ? 'active' : '' }}"
@@ -220,63 +220,49 @@
                 </div>
             </li>
 
-            <li class="nav-item dropdown {{ request()->is('verwaltung/filters*') ? 'show' : '' }}">
-                <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->is('verwaltung/weather*') ? 'true' : 'false' }}">
+            <li class="nav-item dropdown {{ request()->is('verwaltung/filters*') ? 'show active' : '' }}">
+                <a class="nav-link dropdown-toggle" href="#navbar-layout" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->is('verwaltung/filters*') ? 'true' : 'false' }}">
                   <span class="nav-link-icon d-md-none d-lg-inline-block">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-cloud-sun">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 3v2" />
-                        <path d="M16.25 5.75l-1.5 1.5" />
-                        <path d="M18 10h2" />
-                        <path d="M16.25 14.25l1.5 1.5" />
-                        <path d="M12 17v2" />
-                        <path d="M7.75 14.25l-1.5 1.5" />
-                        <path d="M6 10h-2" />
-                        <path d="M7.75 5.75l1.5 1.5" />
-                        <path d="M12 10a4 4 0 1 0 4 4" />
-                        <path d="M16 16a4 4 0 1 0 -4 -4" />
-                      </svg>
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                      <path d="M12 3v2" />
+                      <path d="M16.25 5.75l-1.5 1.5" />
+                      <path d="M18 10h2" />
+                      <path d="M16.25 14.25l1.5 1.5" />
+                      <path d="M12 17v2" />
+                      <path d="M7.75 14.25l-1.5 1.5" />
+                      <path d="M6 10h-2" />
+                      <path d="M7.75 5.75l1.5 1.5" />
+                      <path d="M12 10a4 4 0 1 0 4 4" />
+                      <path d="M16 16a4 4 0 1 0 -4 -4" />
+                    </svg>
                   </span>
                   <span class="nav-link-title">
                     Filters
                   </span>
                 </a>
-                <div class="dropdown-menu {{ request()->is('verwaltung/filters*') ? 'show' : '' }}">
-                    <div class="dropdown-menu-columns">
-                        <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-table-manager.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.filters-table-manager.index') }}">
-                               Location Filters
-                            </a>
-                          </div>
+                <div class="dropdown-menu {{ request()->is('verwaltung/filters*') ? 'show active' : '' }}">
+                  <div class="dropdown-menu-columns">
+                    <div class="dropdown-menu-column">
+                      <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-table-manager.index') ? 'active' : '' }}"
+                         href="{{ route('verwaltung.filters-table-manager.index') }}">
+                         Location Filters
+                      </a>
+                    </div>
 
-                          <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.filters-advanced-location.index') }}">
-                               Advanced Filters
-                            </a>
-                          </div>
+                    <div class="dropdown-menu-column">
+                      <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
+                         href="{{ route('verwaltung.filters-advanced-location.index') }}">
+                         Advanced Filters
+                      </a>
+                    </div>
 
-                          <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.seo-table-manager.seo.table') }}">
-                               seo Tables
-                            </a>
-                          </div>
-
-                          <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.site-settings-manager.site-settings') }}">
-                               SiteSettings
-                            </a>
-                          </div>
-
-                  </div>
                 </div>
-            </li>
+                </div>
+              </li>
 
 
-            <li class="nav-item dropdown {{ request()->is('verwaltung/seo-table-manager*') ? 'show' : '' }}">
+            <li class="nav-item dropdown {{ request()->is('verwaltung/seo-table-manager*') ? 'show active' : '' }}">
                 <a class="nav-link dropdown-toggle" href="#navbar-seo" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->is('verwaltung/seo-table-manager*') ? 'true' : 'false' }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-search">
@@ -289,7 +275,7 @@
                         SEO Verwaltung
                     </span>
                 </a>
-                <div class="dropdown-menu {{ request()->is('verwaltung/seo-table-manager*') ? 'show' : '' }}">
+                <div class="dropdown-menu {{ request()->is('verwaltung/seo-table-manager*') ? 'show active' : '' }}">
                     <div class="dropdown-menu-columns">
                         <div class="dropdown-menu-column">
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.seo.table') ? 'active' : '' }}"
@@ -298,10 +284,16 @@
                             </a>
                         </div>
                         <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-settings-manager.site-settings') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.site-settings-manager.site-settings') }}">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.site-settings') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.seo-table-manager.site-settings') }}">
                                 Site Settings
                             </a>
+
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.static-page-manager') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.seo-table-manager.static-page-manager') }}">
+                                Statische Seiten
+                             </a>
+
                         </div>
                     </div>
                 </div>

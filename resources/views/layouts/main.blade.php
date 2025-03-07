@@ -321,6 +321,7 @@
 
     @if (Route::is(
             'home',
+            'static.page',
             'impressum',
             'search.results',
             'detail_search',
@@ -331,7 +332,8 @@
 
         @if ($panoramaLocationPicture || $mainLocationPicture)
             <x-header :panorama-location-picture="$panoramaLocationPicture" :main-location-picture="$mainLocationPicture" :panorama-location-text="$panoramaLocationText" />
-        @else
+
+            @else
             <x-header-details :pic1-text="$pic1_text" :pic2-text="$pic2_text" :pic3-text="$pic3_text" :head-line="$head_line" :gallery-images="$gallery_images"
                 :panorama-title="$panorama_titel" :panorama-short-text="$panorama_short_text" />
         @endif

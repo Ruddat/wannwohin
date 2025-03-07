@@ -87,6 +87,14 @@ class SeoMetaTable extends Component
         }
     }
 
+    // Hook zum Zurücksetzen der Pagination bei Änderungen an $search oder $perPage
+    public function updating($name, $value)
+    {
+        if ($name === 'search' || $name === 'perPage') {
+            $this->resetPage();
+        }
+    }
+
     protected function getModelName($modelType, $modelId)
     {
         switch ($modelType) {

@@ -8,6 +8,7 @@ use App\Http\Controllers\WetterTestController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Tools\ScreenshotController;
 use App\Http\Controllers\Backend\Admin\AuthController;
+use App\Http\Controllers\Frontend\StaticPageController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Http\Controllers\Backend\Imports\CountryImportController;
@@ -90,9 +91,14 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
 
         Route::get('/search-results-alle', [App\Http\Controllers\Frontend\DetailSearch\DetailSearchController::class, 'showSearchResults'])
         ->name('ergebnisse.anzeigen');
-// Impressum
-Route::view('impressum', 'pages.impressum-neu')
-->name('impressum');
+
+        // Impressum
+        Route::view('impressum', 'pages.impressum-neu')
+        ->name('impressum');
+
+        Route::get('/{page}', [StaticPageController::class, 'show'])
+        ->where('page', 'impressum|kontakt|agb|datenschutz')
+        ->name('static.page');
 
     Route::get('/climate-forecast/{locationId}', [DetailSearchController::class, 'predictFutureClimate']);
 
