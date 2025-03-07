@@ -1,0 +1,46 @@
+        /* Flaggen-Styling */
+        .flag-icon {
+            width: 20px; /* Kleiner für Mobile */
+            height: auto;
+            border-radius: 3px;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Mobile-Optimierung */
+        @media (max-width: 767px) {
+            .card-body {
+                padding: 1rem; /* Weniger Padding auf Mobile */
+            }
+            .btn-sm {
+                padding: 0.25rem 0.5rem; /* Kleinere Buttons */
+                font-size: 0.875rem;
+            }
+            small {
+                font-size: 0.75rem; /* Kleinere Schrift für Labels */
+            }
+        }
+
+        /* Desktop-Tabelle */
+        @media (min-width: 768px) {
+            .flag-icon {
+                width: 24px; /* Größer für Desktop */
+            }
+        }
+
+        /* Bunte Icons */
+        .fa-flag { color: #1a73e8; } /* Blau für Land */
+        .fa-map-marker-alt { color: #d81b60; } /* Pink für Ort */
+        .fa-euro-sign { color: #388e3c; } /* Grün für Preistendenz */
+        .fa-plane { color: #0288d1; } /* Hellblau für Flugzeit */
+        .fa-money-bill-wave { color: #f9a825; } /* Gelb für Flugpreis */
+        .fa-thermometer-half { color: #e53935; } /* Rot für Temperatur */
+        .fa-sun { color: #ffb300; } /* Orange für Sonnenstunden */
+        .fa-cloud-rain { color: #455a64; } /* Grau für Regentage */
+        .fa-trash { color: #d32f2f; } /* Dunkelrot für Löschen */
+
+        /* Beschreibung unter Icons */
+        th small {
+            font-size: 0.7rem;
+            display: block;
+            margin-top: 0.2rem;
+        }

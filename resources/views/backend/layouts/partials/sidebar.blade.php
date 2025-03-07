@@ -264,13 +264,53 @@
                             </a>
                           </div>
 
-
+                          <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-advanced-location.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-settings-manager.site-settings') }}">
+                               SiteSettings
+                            </a>
+                          </div>
 
                   </div>
                 </div>
-              </li>
+            </li>
 
-        <!-- Trenner -->
+
+            <li class="nav-item dropdown {{ request()->is('verwaltung/seo-table-manager*') ? 'show' : '' }}">
+                <a class="nav-link dropdown-toggle" href="#navbar-seo" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->is('verwaltung/seo-table-manager*') ? 'true' : 'false' }}">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-search">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <circle cx="10" cy="10" r="7" />
+                            <line x1="21" y1="21" x2="15" y2="15" />
+                        </svg>
+                    </span>
+                    <span class="nav-link-title">
+                        SEO Verwaltung
+                    </span>
+                </a>
+                <div class="dropdown-menu {{ request()->is('verwaltung/seo-table-manager*') ? 'show' : '' }}">
+                    <div class="dropdown-menu-columns">
+                        <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.seo.table') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.seo-table-manager.seo.table') }}">
+                                SEO Tabelle
+                            </a>
+                        </div>
+                        <div class="dropdown-menu-column">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-settings-manager.site-settings') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-settings-manager.site-settings') }}">
+                                Site Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+
+
+
+            <!-- Trenner -->
         <div class="hr-text text-green">Optionen</div>
 
 

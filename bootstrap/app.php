@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\GenerateBreadcrumbs;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\GenerateBreadcrumbs;
+use App\Http\Middleware\CheckMaintenanceMode;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -18,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/admin.php'));
 
             // Standard Web-Routen registrieren
-            Route::middleware('web')
+            Route::middleware('web', 'maintenance', 'breadcrumbs')
                 ->group(base_path('routes/web.php'));
         }
     )
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware-Aliase registrieren
         $middleware->alias([
             'breadcrumbs' => GenerateBreadcrumbs::class,
+            'maintenance' => CheckMaintenanceMode::class, // Alias korrekt definiert
         ]);
 
         // Globale Middleware hinzufügen

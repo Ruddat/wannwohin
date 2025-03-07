@@ -1,3 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './wishlist-compare.css';
+@import './wishlist-box.css';
+@import './index-details-timeline.css';
+@import './footer.css';
+

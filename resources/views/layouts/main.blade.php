@@ -1,92 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <!-- Basic -->
+    {{-- Basic --}}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<!-- Dynamische SEO-Daten -->
-@if(isset($seo))
-<title>{{ $seo['title'] ?? 'WannWohin.de – Dein Reiseportal für Urlaub 2025' }}</title>
-<meta name="description" content="{{ $seo['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.' }}">
-<link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
 
-@if(isset($seo['extra_meta']) && is_array($seo['extra_meta']))
-    @foreach ($seo['extra_meta'] as $key => $value)
-        <meta property="{{ $key }}" content="{{ $value }}">
-    @endforeach
-@endif
+{{-- Dynamische SEO-Daten --}}
+@if (isset($seo))
+    <title>{{ $seo['title'] ?? ($seo['keywords']['main'] ?? 'WannWohin.de – Dein Reiseportal für Urlaub 2025') }}</title>
+    <meta name="description" content="{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.') }}">
+    <link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
 
-<meta name="keywords" content="{{ implode(', ', $seo['keywords']['tags'] ?? []) }}">
-@else
-<title>WannWohin.de – Dein Reiseportal für Urlaub 2025</title>
-<meta name="description" content="Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.">
-<link rel="canonical" href="{{ url()->current() }}">
-<meta name="keywords" content="Urlaub 2025, Reiseziele, Wetter, Direktflüge, Klima">
-@endif
-
-<!-- Strukturierte Daten dynamisch basierend auf dem Modell -->
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": @php
-        if (isset($location) && $location instanceof \App\Models\WwdeLocation) {
-            echo '"TouristDestination"';
-        } elseif (isset($continent) && $continent instanceof \App\Models\WwdeContinent) {
-            echo '"TouristDestination"';
-        } elseif (isset($country) && $country instanceof \App\Models\WwdeCountry) {
-            echo '"TouristDestination"';
-        } else {
-            echo '"WebSite"';
-        }
-    @endphp,
-    "name": @php
-        if (isset($location)) {
-            echo '"' . ($location->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
-        } elseif (isset($continent)) {
-            echo '"' . ($continent->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
-        } elseif (isset($country)) {
-            echo '"' . ($country->title ?? $seo['title'] ?? 'Reiseplattform') . '"';
-        } else {
-            echo '"WannWohin.de – Reiseportal"';
-        }
-    @endphp,
-    "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",
-    "description": "{{ $seo['description'] ?? 'Erkunde die besten Reiseziele und Wetterdaten weltweit.' }}",
-    @if(isset($location) && $location instanceof \App\Models\WwdeLocation)
-        "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "{{ $location->title ?? 'Unbekannter Ort' }}",
-            "addressCountry": "{{ $location->iso2 ?? 'DE' }}"
-        },
-        "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": "{{ $location->lat ?? 0 }}",
-            "longitude": "{{ $location->lon ?? 0 }}"
-        },
-    @elseif(isset($country) && $country instanceof \App\Models\WwdeCountry)
-        "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "{{ $country->title ?? 'Unbekannter Ort' }}",
-            "addressCountry": "{{ $country->iso2 ?? 'DE' }}"
-        },
-        "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": "{{ $country->lat ?? 0 }}",
-            "longitude": "{{ $country->lon ?? 0 }}"
-        },
-    @elseif(isset($continent) && $continent instanceof \App\Models\WwdeContinent)
-        "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "{{ $continent->title }}",
-            "addressCountry": "Global"
-        },
+    @if (isset($seo['extra_meta']) && is_array($seo['extra_meta']))
+        @foreach ($seo['extra_meta'] as $key => $value)
+            <meta property="{{ $key }}" content="{{ $value }}">
+        @endforeach
     @endif
-    "url": "{{ $seo['canonical'] ?? url()->current() }}",
-    "touristType": "Leisure",
-    "keywords": "{{ implode(', ', $seo['keywords']['tags'] ?? ['Urlaub 2025', 'Reiseziele', 'Wetter', 'Direktflüge', 'Klima']) }}"
-}
+
+    {{-- Keywords: Nur tags als Meta-Keywords --}}
+    <meta name="keywords" content="{{ implode(', ', $seo['keywords']['tags'] ?? []) }}">
+
+    {{-- Dynamische Keywords-Schlüssel als zusätzliche Meta-Tags --}}
+    @if (isset($seo['keywords']) && is_array($seo['keywords']))
+        @foreach ($seo['keywords'] as $key => $value)
+            @if ($key !== 'tags') {{-- 'tags' wird bereits separat behandelt --}}
+                <meta name="keyword-{{ $key }}" content="{{ is_array($value) ? implode(', ', $value) : $value }}">
+            @endif
+        @endforeach
+    @endif
+@else
+    <title>WannWohin.de – Dein Reiseportal für Urlaub 2025</title>
+    <meta name="description" content="Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta name="keywords" content="Urlaub 2025, Reiseziele, Wetter, Direktflüge, Klima">
+@endif
+
+{{-- Strukturierte Daten dynamisch basierend auf dem Modell --}}
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": @php
+            if (isset($location) && $location instanceof \App\Models\WwdeLocation) {
+                echo '"TouristDestination"';
+            } elseif (isset($continent) && $continent instanceof \App\Models\WwdeContinent) {
+                echo '"TouristDestination"';
+            } elseif (isset($country) && $country instanceof \App\Models\WwdeCountry) {
+                echo '"TouristDestination"';
+            } else {
+                echo '"WebSite"';
+            }
+        @endphp,
+        "name": @php
+            if (isset($location)) {
+                echo '"' . ($location->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
+            } elseif (isset($continent)) {
+                echo '"' . ($continent->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
+            } elseif (isset($country)) {
+                echo '"' . ($country->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
+            } else {
+                echo '"WannWohin.de – Reiseportal"';
+            }
+        @endphp,
+        "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",
+        "description": "{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Erkunde die besten Reiseziele und Wetterdaten weltweit.') }}",
+        @if(isset($location) && $location instanceof \App\Models\WwdeLocation)
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "{{ $location->title ?? 'Unbekannter Ort' }}",
+                "addressCountry": "{{ $location->iso2 ?? 'DE' }}"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "{{ $location->lat ?? 0 }}",
+                "longitude": "{{ $location->lon ?? 0 }}"
+            },
+        @elseif(isset($country) && $country instanceof \App\Models\WwdeCountry)
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "{{ $country->title ?? 'Unbekannter Ort' }}",
+                "addressCountry": "{{ $country->iso2 ?? 'DE' }}"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "{{ $country->lat ?? 0 }}",
+                "longitude": "{{ $country->lon ?? 0 }}"
+            },
+        @elseif(isset($continent) && $continent instanceof \App\Models\WwdeContinent)
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "{{ $continent->title }}",
+                "addressCountry": "Global"
+            },
+        @endif
+        "url": "{{ $seo['canonical'] ?? url()->current() }}",
+        "touristType": "Leisure",
+        "keywords": "{{ implode(', ', $seo['keywords']['tags'] ?? ['Urlaub 2025', 'Reiseziele', 'Wetter', 'Direktflüge', 'Klima']) }}",
+        @if(isset($seo['keywords']['nextYear']))
+            "temporalCoverage": "{{ $seo['keywords']['nextYear'] }}-01-01/{{ $seo['keywords']['nextYear'] }}-12-31"
+        @endif,
+        @if(isset($seo['keywords']) && is_array($seo['keywords']))
+            "additionalProperty": [
+                @foreach ($seo['keywords'] as $key => $value)
+                    @if ($key !== 'tags' && $key !== 'nextYear' && $key !== 'main' && $key !== 'description') {{-- Bekannte Schlüssel überspringen --}}
+                        {
+                            "@type": "PropertyValue",
+                            "name": "{{ $key }}",
+                            "value": "{{ is_array($value) ? implode(', ', $value) : $value }}"
+                        },
+                    @endif
+                @endforeach
+            ]
+        @endif
+    }
 </script>
+
 
     <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
@@ -110,6 +138,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/theme-elements.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/theme-blog.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/theme-shop.css') }}">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Demo CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/demo-resume.css') }}">
@@ -153,25 +183,23 @@
 --}}
 
 
-<!-- Ladeanzeige -->
-<div id="loading-screen"
-    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #4CAF50, #2196F3); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 20px; box-sizing: border-box;">
-    <div class="loading-animation">
-        <svg xmlns="http://www.w3.org/2000/svg" class="loading-icon" viewBox="0 0 16 16">
-            <path
-                d="M8.001 15.999c3.866 0 7-3.133 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM2.318 8c0 3.13 2.55 5.681 5.682 5.681.176 0 .356-.005.533-.015-.008-.115-.013-.23-.017-.346-.044-1.423-.133-4.58-2.134-5.885-.956-.636-2.1-.804-3.159-.435-.174-.996-.26-2.068-.26-3.117 0-.063.002-.125.003-.188A5.58 5.58 0 0 1 2.318 8zm11.364 0a5.58 5.58 0 0 1-1.64 3.966 5.53 5.53 0 0 1-1.25-2.847A15.67 15.67 0 0 1 12.41 8c-.037-.36-.09-.714-.16-1.062-.32-.036-.648-.059-.979-.059-.2 0-.399.006-.595.016-.094-.392-.196-.781-.307-1.166a5.58 5.58 0 0 1 3.011 1.184 5.58 5.58 0 0 1 1.442 1.818c.054.093.102.186.146.28.098-.292.17-.593.208-.896z" />
-        </svg>
+    <!-- Ladeanzeige -->
+    <div id="loading-screen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #4CAF50, #2196F3); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 20px; box-sizing: border-box;">
+        <div class="loading-animation">
+            <svg xmlns="http://www.w3.org/2000/svg" class="loading-icon" viewBox="0 0 16 16">
+                <path
+                    d="M8.001 15.999c3.866 0 7-3.133 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM2.318 8c0 3.13 2.55 5.681 5.682 5.681.176 0 .356-.005.533-.015-.008-.115-.013-.23-.017-.346-.044-1.423-.133-4.58-2.134-5.885-.956-.636-2.1-.804-3.159-.435-.174-.996-.26-2.068-.26-3.117 0-.063.002-.125.003-.188A5.58 5.58 0 0 1 2.318 8zm11.364 0a5.58 5.58 0 0 1-1.64 3.966 5.53 5.53 0 0 1-1.25-2.847A15.67 15.67 0 0 1 12.41 8c-.037-.36-.09-.714-.16-1.062-.32-.036-.648-.059-.979-.059-.2 0-.399.006-.595.016-.094-.392-.196-.781-.307-1.166a5.58 5.58 0 0 1 3.011 1.184 5.58 5.58 0 0 1 1.442 1.818c.054.093.102.186.146.28.098-.292.17-.593.208-.896z" />
+            </svg>
+        </div>
+        <p class="loading-text">Laden... Wir bereiten alles für Sie vor!</p>
+        <div class="loading-bar">
+            <div class="progress"></div>
+        </div>
     </div>
-    <p class="loading-text">Laden... Wir bereiten alles für Sie vor!</p>
-    <div class="loading-bar">
-        <div class="progress"></div>
-    </div>
-</div>
 
 
-
-
-    <!-- Go-to-Top Button -->
+    {{-- Go-to-Top Button --}}
     <button id="goTopButton" class="go-top">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
             <path fill="currentColor" d="M12 2l-7 7h4v7h6v-7h4l-7-7z"></path>
@@ -183,227 +211,135 @@
     </button>
 
 
-    <style>
-        /* General Button Styling */
-        .go-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 4rem;
-            height: 4rem;
-            border: none;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4caf50, #81c784);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 1;
-        }
 
-        .go-top:hover {
-            background: linear-gradient(135deg, #388e3c, #66bb6a);
-            transform: scale(1.1);
-        }
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const progressCircle = document.querySelector(".progress-ring__progress");
+            const button = document.getElementById("goTopButton");
 
-        .go-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
+            if (!progressCircle || !button) return; // Falls die Elemente fehlen, beende das Script
 
-        /* Progress Ring */
-        .progress-ring {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
-            z-index: 0;
-            /* Below the button content */
-        }
-
-        .progress-ring__background,
-        .progress-ring__progress {
-            fill: none;
-            stroke-width: 5;
-            r: 45;
-            /* Radius */
-            cx: 50;
-            /* Center x */
-            cy: 50;
-            /* Center y */
-        }
-
-        .progress-ring__background {
-            stroke: rgba(255, 255, 255, 0.2);
-        }
-
-        .progress-ring__progress {
-            stroke: white;
-            stroke-dasharray: 283;
-            /* Circumference: 2 * π * r */
-            stroke-dashoffset: 283;
-            /* Start fully hidden */
-            transition: stroke-dashoffset 0.2s ease;
-        }
-
-        @media (max-width: 768px) {
-            #goTopButton {
-                display: none !important;
+            // Versuche, den Radius zu holen (Fehlertoleranz für nicht unterstützte Browser)
+            let radius = 0;
+            try {
+                radius = progressCircle.r.baseVal.value;
+            } catch (error) {
+                console.warn("Fehler beim Laden des Fortschrittskreises:", error);
             }
-        }
-    </style>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const progressCircle = document.querySelector(".progress-ring__progress");
-        const button = document.getElementById("goTopButton");
+            const circumference = 2 * Math.PI * radius;
 
-        if (!progressCircle || !button) return; // Falls die Elemente fehlen, beende das Script
+            // Set initial attributes
+            progressCircle.style.strokeDasharray = `${circumference}`;
+            progressCircle.style.strokeDashoffset = circumference;
 
-        // Versuche, den Radius zu holen (Fehlertoleranz für nicht unterstützte Browser)
-        let radius = 0;
-        try {
-            radius = progressCircle.r.baseVal.value;
-        } catch (error) {
-            console.warn("Fehler beim Laden des Fortschrittskreises:", error);
-        }
+            // Scroll Event
+            document.addEventListener("scroll", () => {
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPosition = window.scrollY;
 
-        const circumference = 2 * Math.PI * radius;
+                // Fortschrittsberechnung
+                const progress = scrollPosition / scrollHeight;
+                const offset = circumference - progress * circumference;
 
-        // Set initial attributes
-        progressCircle.style.strokeDasharray = `${circumference}`;
-        progressCircle.style.strokeDashoffset = circumference;
+                progressCircle.style.strokeDashoffset = offset;
 
-        // Scroll Event
-        document.addEventListener("scroll", () => {
-            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPosition = window.scrollY;
-
-            // Fortschrittsberechnung
-            const progress = scrollPosition / scrollHeight;
-            const offset = circumference - progress * circumference;
-
-            progressCircle.style.strokeDashoffset = offset;
-
-            // Button sichtbar machen
-            if (scrollPosition > 200) {
-                button.classList.add("visible");
-            } else {
-                button.classList.remove("visible");
-            }
-        });
-
-        // Smooth Scroll (alternative Methode für bessere Firefox-Kompatibilität)
-        button.addEventListener("click", () => {
-            smoothScrollTo(0, 500); // 500ms Scroll-Zeit
-        });
-
-        function smoothScrollTo(targetPosition, duration) {
-            const startPosition = window.scrollY;
-            const distance = targetPosition - startPosition;
-            let startTime = null;
-
-            function animation(currentTime) {
-                if (!startTime) startTime = currentTime;
-                const timeElapsed = currentTime - startTime;
-                const progress = Math.min(timeElapsed / duration, 1);
-
-                window.scrollTo(0, startPosition + distance * easeInOutQuad(progress));
-
-                if (timeElapsed < duration) {
-                    requestAnimationFrame(animation);
+                // Button sichtbar machen
+                if (scrollPosition > 200) {
+                    button.classList.add("visible");
+                } else {
+                    button.classList.remove("visible");
                 }
+            });
+
+            // Smooth Scroll (alternative Methode für bessere Firefox-Kompatibilität)
+            button.addEventListener("click", () => {
+                smoothScrollTo(0, 500); // 500ms Scroll-Zeit
+            });
+
+            function smoothScrollTo(targetPosition, duration) {
+                const startPosition = window.scrollY;
+                const distance = targetPosition - startPosition;
+                let startTime = null;
+
+                function animation(currentTime) {
+                    if (!startTime) startTime = currentTime;
+                    const timeElapsed = currentTime - startTime;
+                    const progress = Math.min(timeElapsed / duration, 1);
+
+                    window.scrollTo(0, startPosition + distance * easeInOutQuad(progress));
+
+                    if (timeElapsed < duration) {
+                        requestAnimationFrame(animation);
+                    }
+                }
+
+                function easeInOutQuad(t) {
+                    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                }
+
+                requestAnimationFrame(animation);
             }
-
-            function easeInOutQuad(t) {
-                return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-            }
-
-            requestAnimationFrame(animation);
-        }
-    });
-</script>
+        });
+    </script>
 
 
-@php
-    // Daten aus der Session abrufen oder Standardwerte setzen
-    $headerData = session('headerData', []);
-    $panoramaLocationPicture = $headerData['bgImgPath'] ?? null;
-    $mainLocationPicture = $headerData['mainImgPath'] ?? null;
-    $headerTitle = $headerData['title'] ?? 'Standard Titel';
-    $headerTitleText = $headerData['title_text'] ?? 'Standard Titel-Text';
-    $panoramaLocationText = $headerData['main_text'] ?? null;
+    @php
+        // Daten aus der Session abrufen oder Standardwerte setzen
+        $headerData = session('headerData', []);
+        $panoramaLocationPicture = $headerData['bgImgPath'] ?? null;
+        $mainLocationPicture = $headerData['mainImgPath'] ?? null;
+        $headerTitle = $headerData['title'] ?? 'Standard Titel';
+        $headerTitleText = $headerData['title_text'] ?? 'Standard Titel-Text';
+        $panoramaLocationText = $headerData['main_text'] ?? null;
 
-    // Falls kein Header-Content vorhanden ist, alternative Bilder und Texte verwenden
-    $pic1_text = $pic1_text ?? 'Standardtext 1';
-    $pic2_text = $pic2_text ?? 'Standardtext 2';
-    $pic3_text = $pic3_text ?? 'Standardtext 3';
-    $head_line = $head_line ?? 'Standardüberschrift';
+        // Falls kein Header-Content vorhanden ist, alternative Bilder und Texte verwenden
+        $pic1_text = $pic1_text ?? 'Standardtext 1';
+        $pic2_text = $pic2_text ?? 'Standardtext 2';
+        $pic3_text = $pic3_text ?? 'Standardtext 3';
+        $head_line = $head_line ?? 'Standardüberschrift';
 
-    // Panorama-Titel und Kurztext: Falls leer, dann "STÄDTEREISE NACH {ORT}"
-    $default_city = $location->title ?? 'Unbekannte Stadt';
-    $panorama_titel = (!empty($panorama_titel) && trim($panorama_titel) !== '' && $panorama_titel !== 'Standard Panorama Title')
-    ? $panorama_titel
-    : 'DEINE REISE NACH';
+        // Panorama-Titel und Kurztext: Falls leer, dann "STÄDTEREISE NACH {ORT}"
+        $default_city = $location->title ?? 'Unbekannte Stadt';
+        $panorama_titel =
+            !empty($panorama_titel) && trim($panorama_titel) !== '' && $panorama_titel !== 'Standard Panorama Title'
+                ? $panorama_titel
+                : 'DEINE REISE NACH';
 
-    $panorama_short_text = (!empty($panorama_short_text) && trim($panorama_short_text) !== '' && $panorama_short_text !== 'Standard Panorama Short Title')
-    ? $panorama_short_text
-    : ($default_city ?? '');
+        $panorama_short_text =
+            !empty($panorama_short_text) &&
+            trim($panorama_short_text) !== '' &&
+            $panorama_short_text !== 'Standard Panorama Short Title'
+                ? $panorama_short_text
+                : $default_city ?? '';
 
+        //    $panorama_titel = !empty($headerData['panorama_titel']) ? $headerData['panorama_titel'] : __('STÄDTEREISE NACH') . ' ' . $default_city;
+        // $panorama_short_text = !empty($headerData['panorama_short_text']) ? $headerData['panorama_short_text'] : $default_city;
 
-//    $panorama_titel = !empty($headerData['panorama_titel']) ? $headerData['panorama_titel'] : __('STÄDTEREISE NACH') . ' ' . $default_city;
-  // $panorama_short_text = !empty($headerData['panorama_short_text']) ? $headerData['panorama_short_text'] : $default_city;
+        $gallery_images = $gallery_images ?? [];
+    @endphp
 
-    $gallery_images = $gallery_images ?? [];
-@endphp
+    @if (Route::is(
+            'home',
+            'impressum',
+            'search.results',
+            'detail_search',
+            'continent.countries',
+            'list-country-locations',
+            'compare',
+            'ergebnisse.anzeigen'))
 
-@if (Route::is(
-        'home',
-        'impressum',
-        'search.results',
-        'detail_search',
-        'continent.countries',
-        'list-country-locations',
-        'compare',
-        'ergebnisse.anzeigen'))
-
-    @if($panoramaLocationPicture || $mainLocationPicture)
-        <x-header
-            :panorama-location-picture="$panoramaLocationPicture"
-            :main-location-picture="$mainLocationPicture"
-            :panorama-location-text="$panoramaLocationText"
-        />
+        @if ($panoramaLocationPicture || $mainLocationPicture)
+            <x-header :panorama-location-picture="$panoramaLocationPicture" :main-location-picture="$mainLocationPicture" :panorama-location-text="$panoramaLocationText" />
+        @else
+            <x-header-details :pic1-text="$pic1_text" :pic2-text="$pic2_text" :pic3-text="$pic3_text" :head-line="$head_line" :gallery-images="$gallery_images"
+                :panorama-title="$panorama_titel" :panorama-short-text="$panorama_short_text" />
+        @endif
     @else
-        <x-header-details
-            :pic1-text="$pic1_text"
-            :pic2-text="$pic2_text"
-            :pic3-text="$pic3_text"
-            :head-line="$head_line"
-            :gallery-images="$gallery_images"
-            :panorama-title="$panorama_titel"
-            :panorama-short-text="$panorama_short_text"
-        />
+        {{-- **Fallback für alle anderen Routen** --}}
+        <x-header-details :pic1-text="$pic1_text" :pic2-text="$pic2_text" :pic3-text="$pic3_text" :head-line="$head_line" :gallery-images="$gallery_images"
+            :panorama-title="$panorama_titel" :panorama-short-text="$panorama_short_text" />
     @endif
-
-@else
-    {{-- **Fallback für alle anderen Routen** --}}
-    <x-header-details
-        :pic1-text="$pic1_text"
-        :pic2-text="$pic2_text"
-        :pic3-text="$pic3_text"
-        :head-line="$head_line"
-        :gallery-images="$gallery_images"
-        :panorama-title="$panorama_titel"
-        :panorama-short-text="$panorama_short_text"
-    />
-@endif
 
 
 
@@ -470,77 +406,6 @@
 </script>
 
 
-
-<style>
-/* Globale Stile */
-#loading-screen {
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.loading-icon {
-  width: 80px;
-  height: 80px;
-  fill: #ffffff;
-}
-
-/* Lade-Text */
-.loading-text {
-  color: #fff;
-  font-size: 1.5rem;
-  margin-top: 20px;
-  text-align: center;
-}
-
-/* Fortschrittsbalken */
-.loading-bar {
-  width: 80%;
-  max-width: 600px;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 20px;
-}
-
-.progress {
-  width: 0%;
-  height: 100%;
-  background: #fff;
-  transition: width 0.3s ease;
-}
-
-/* ✅ Responsive Anpassungen */
-@media (max-width: 768px) {
-  .loading-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  .loading-text {
-    font-size: 1.2rem;
-  }
-
-  .loading-bar {
-    width: 90%;
-  }
-}
-
-@media (max-width: 480px) {
-  .loading-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .loading-text {
-    font-size: 1rem;
-  }
-
-  .loading-bar {
-    width: 100%;
-  }
-}
-</style>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {

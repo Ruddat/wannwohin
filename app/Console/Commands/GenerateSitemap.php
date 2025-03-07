@@ -29,14 +29,15 @@ class GenerateSitemap extends Command
      */
     public function handle()
     {
+        // Initialisiere XML-Sitemap mit Header
         $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL;
-        $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">' . PHP_EOL;
+        $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . PHP_EOL;
 
         // Kontinente hinzufügen
         WwdeContinent::all()->each(function ($continent) use (&$sitemap) {
             $url = route('continent.countries', $continent->alias);
             $sitemap .= '    <url>' . PHP_EOL;
-            $sitemap .= '        <loc>' . $url . '</loc>' . PHP_EOL;
+            $sitemap .= '        <loc>' . htmlspecialchars($url, ENT_XML1, 'UTF-8') . '</loc>' . PHP_EOL;
             $sitemap .= '        <lastmod>' . now()->toAtomString() . '</lastmod>' . PHP_EOL;
             $sitemap .= '        <changefreq>weekly</changefreq>' . PHP_EOL;
             $sitemap .= '        <priority>0.7</priority>' . PHP_EOL;
@@ -47,7 +48,7 @@ class GenerateSitemap extends Command
         WwdeCountry::where('status', 'active')->get()->each(function ($country) use (&$sitemap) {
             $url = route('list-country-locations', [$country->continent->alias, $country->alias]);
             $sitemap .= '    <url>' . PHP_EOL;
-            $sitemap .= '        <loc>' . $url . '</loc>' . PHP_EOL;
+            $sitemap .= '        <loc>' . htmlspecialchars($url, ENT_XML1, 'UTF-8') . '</loc>' . PHP_EOL;
             $sitemap .= '        <lastmod>' . now()->toAtomString() . '</lastmod>' . PHP_EOL;
             $sitemap .= '        <changefreq>weekly</changefreq>' . PHP_EOL;
             $sitemap .= '        <priority>0.8</priority>' . PHP_EOL;
@@ -61,18 +62,19 @@ class GenerateSitemap extends Command
                     ->each(function ($location) use (&$sitemap) {
                         $url = route('location.details', [$location->continent->alias, $location->country->alias, $location->alias]);
                         $sitemap .= '    <url>' . PHP_EOL;
-                        $sitemap .= '        <loc>' . $url . '</loc>' . PHP_EOL;
+                        $sitemap .= '        <loc>' . htmlspecialchars($url, ENT_XML1, 'UTF-8') . '</loc>' . PHP_EOL;
                         $sitemap .= '        <lastmod>' . $location->updated_at->toAtomString() . '</lastmod>' . PHP_EOL;
                         $sitemap .= '        <changefreq>weekly</changefreq>' . PHP_EOL;
                         $sitemap .= '        <priority>0.9</priority>' . PHP_EOL;
                         $sitemap .= '    </url>' . PHP_EOL;
                     });
 
+        // Schließe XML-Datei
         $sitemap .= '</urlset>';
 
         // Speichere die Sitemap
         file_put_contents(public_path('sitemap.xml'), $sitemap);
 
-        $this->info('Sitemap generiert unter public/sitemap.xml');
+        $this->info('Sitemap erfolgreich generiert: public/sitemap.xml');
     }
 }

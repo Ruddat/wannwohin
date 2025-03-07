@@ -6,6 +6,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
 use App\Http\Controllers\WetterTestController;
 use App\Http\Controllers\Search\SearchController;
+use App\Http\Controllers\Tools\ScreenshotController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
@@ -26,11 +27,11 @@ use App\Http\Controllers\Frontend\WishlistCompare\WishlistCompareController;
 
 // Home
 
-// Impressum
-Route::view('impressum', 'pages.impressum-neu')
-->name('impressum');
-
+// Login
 Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::get('/generate-screenshot', [ScreenshotController::class, 'generate']);
 
 // Imports
 Route::post('/import-continents', [ContinentImportController::class, 'import'])->name('continents.import');
@@ -89,7 +90,9 @@ Route::middleware(['web', 'breadcrumbs'])->group(function () {
 
         Route::get('/search-results-alle', [App\Http\Controllers\Frontend\DetailSearch\DetailSearchController::class, 'showSearchResults'])
         ->name('ergebnisse.anzeigen');
-
+// Impressum
+Route::view('impressum', 'pages.impressum-neu')
+->name('impressum');
 
     Route::get('/climate-forecast/{locationId}', [DetailSearchController::class, 'predictFutureClimate']);
 
