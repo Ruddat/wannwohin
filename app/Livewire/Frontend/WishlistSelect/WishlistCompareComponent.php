@@ -86,7 +86,17 @@ class WishlistCompareComponent extends Component
                 DB::raw('MAX(wwde_climates.rainy_days) as rainy_days'),
                 DB::raw('MAX(wwde_climates.icon) as icon')
             )
-            ->groupBy('wwde_locations.id');
+            ->groupBy(
+                'wwde_locations.id',
+                'wwde_locations.title',
+                'wwde_locations.alias',
+                'wwde_locations.iso2',
+                'wwde_continents.alias',
+                'wwde_countries.alias',
+                'wwde_locations.flight_hours',
+                'wwde_locations.price_flight'
+            );
+
 
         // Sortierung für alle Spalten außer price_trend in der DB
         if ($this->sortColumn !== 'price_trend') {

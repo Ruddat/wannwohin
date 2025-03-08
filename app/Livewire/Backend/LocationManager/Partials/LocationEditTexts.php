@@ -4,6 +4,7 @@ namespace App\Livewire\Backend\LocationManager\Partials;
 
 use Livewire\Component;
 use App\Models\WwdeLocation;
+use Illuminate\Support\Facades\Cache;
 
 class LocationEditTexts extends Component
 {
@@ -66,6 +67,11 @@ class LocationEditTexts extends Component
             'panorama_title' => $this->cleanEditorContent($this->panoramaTitle),
             'panorama_short_text' => $this->cleanEditorContent($this->panoramaShortText),
         ]);
+
+
+    // Hier wird der Cache für diese Location gelöscht,
+    // damit zukünftige Anfragen die aktualisierten Daten erhalten.
+    Cache::forget("location_texts_{$this->locationId}");
 
         session()->flash('success', 'Texte erfolgreich gespeichert.');
     }
