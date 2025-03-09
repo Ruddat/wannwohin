@@ -16,7 +16,7 @@
             <h5 class="card-title text-uppercase text-primary">
                 @autotranslate($continent->title, app()->getLocale()) @autotranslate("Facts", app()->getLocale())
             </h5>
-            <p class="card-text">
+            <p class="card-text text-white mb-0">
                 @autotranslate($continent->continent_text ?? '', app()->getLocale())
             </p>
         </div>

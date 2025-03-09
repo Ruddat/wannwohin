@@ -325,6 +325,14 @@
                     </a>
                 </div>
 
+
+                <div class="dropdown-menu-column">
+                    <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-providers') ? 'active' : '' }}"
+                       href="{{ route('verwaltung.advertisement-manager.advertisement-providers') }}">
+                       Werbeprovider
+                    </a>
+                </div>
+
                 <div class="dropdown-menu-column">
                     <a class="dropdown-item {{ request()->routeIs('verwaltung.advertisement-manager.advertisement-blocks') ? 'active' : '' }}"
                        href="{{ route('verwaltung.advertisement-manager.advertisement-blocks') }}">

@@ -15,6 +15,7 @@ use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
 use App\Livewire\Backend\LocationFilters\AdvancedLocationFilter;
 use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\AdvertisementManager\ProvidersComponent;
 use App\Livewire\Backend\QuickFilterManager\QuickFilterComponent;
 use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
@@ -86,6 +87,8 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
     // Advertisement Manager
     Route::prefix('advertisement-manager')->name('advertisement-manager.')->group(function () {
         Route::get('/advertisement-blocks', AdvertisementBlocksComponent::class)->name('advertisement-blocks');
+        Route::get('/advertisement-providers', ProvidersComponent::class)->name('advertisement-providers');
+
     });
 
     // Continent Manager

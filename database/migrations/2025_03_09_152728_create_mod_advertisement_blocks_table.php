@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('title');
             $table->text('content')->nullable();
             $table->string('link')->nullable();
-            $table->foreignId('provider_id')->constrained('mod_providers')->onDelete('cascade');
+            $table->string('type')->default('banner'); // 'banner', 'widget', 'script'
+            $table->text('script')->nullable();
+            $table->string('position')->nullable(); // z. B. 'sidebar', 'header', 'footer'
+            $table->foreignId('provider_id')->constrained('mod_providers')->onDelete('cascade'); // Fremdschlüssel
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

@@ -14,7 +14,25 @@
                         @endforeach
                     </select>
                 </div>
+<!-- Beispiel: Header -->
+<div class="header">
+    <x-ad-block slot="header" />
+</div>
 
+<style>
+    .ad-block {
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.ad-block img {
+    max-width: 100%;
+    height: auto;
+}
+</style>
                 <!-- Timeline aus Blade 1 integriert -->
                 <ul class="timeline">
                     @php
