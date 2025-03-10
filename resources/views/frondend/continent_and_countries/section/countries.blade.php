@@ -4,7 +4,7 @@
         <!-- Banner oberhalb -->
         <div class="row mb-4">
             <div class="col-12">
-                <x-ad-block position="above-experience" />
+                <x-ad-block position="above-experience" class="full-width" />
             </div>
         </div>
 
@@ -12,19 +12,37 @@
             $countriesArray = $countries->toArray();
             $totalCountries = count($countriesArray);
 
+            // Alle Inline-Anzeigen
             $ads = \App\Models\ModAdvertisementBlocks::where('is_active', 1)
-                ->where('position', 'inline')
+                ->where(function ($query) {
+                    $query->whereJsonContains('position', 'inline')
+                          ->orWhere('position', 'inline');
+                })
                 ->inRandomOrder()
-                ->limit(3)
+                ->limit(2)
                 ->get();
+
+            // Kiwi-Widget (rechts)
+            $kiwiAd = \App\Models\ModAdvertisementBlocks::where('is_active', 1)
+                ->where(function ($query) {
+                    $query->whereJsonContains('position', 'kiwi-widget')
+                          ->orWhere('position', 'kiwi-widget');
+                })
+                ->inRandomOrder()
+                ->first();
 
             $availableAds = $ads->count();
             $adCount = min(max(1, floor($totalCountries / 3)), $availableAds);
 
-            $adPositions = $totalCountries > 0 && $adCount > 0
-                ? array_rand(array_keys($countriesArray), $adCount)
-                : [];
-            $adPositions = is_array($adPositions) ? $adPositions : [$adPositions];
+            // Positionen für Werbe-Kacheln (nach jeweils 2-3 Länder-Kacheln)
+            $adPositions = [];
+            if ($totalCountries > 0 && $adCount > 0) {
+                $step = max(2, floor($totalCountries / ($adCount + 1))); // Schrittgröße für Werbe-Positionen
+                for ($i = 0; $i < $adCount; $i++) {
+                    $position = min($step * ($i + 1), $totalCountries - 1);
+                    $adPositions[] = $position;
+                }
+            }
 
             $adAssignments = [];
             foreach ($adPositions as $key => $position) {
@@ -32,61 +50,93 @@
             }
         @endphp
 
-        <div class="row g-4">
-            @foreach($countries as $index => $country)
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4 experience-item"
-                     data-aos="fade-up"
-                     data-aos-duration="400"
-                     data-aos-delay="{{ $index * 50 }}">
-                    @if(array_key_exists($index, $adAssignments))
-                        <!-- Werbe-Kachel -->
-                        <div class="experience-card card border-0 shadow-lg h-100 ad-card">
-                            <div class="card-body p-0">
-                                <div class="ad-content">
-                                    {!! $adAssignments[$index]->script !!}
-                                </div>
-                                <div class="ad-footer">
-                                    <small class="text-muted">Werbung | Ad ID: {{ $adAssignments[$index]->id }}</small>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <!-- Länder-Kachel -->
-                        @php
-                            $primaryImage = $country->primaryImage() ?? asset('img/default-location.png');
-                        @endphp
-                        <a href="{{ route('list-country-locations', ['continentAlias' => $continent->alias, 'countryAlias' => $country->alias]) }}"
-                           class="text-decoration-none">
-                            <div class="experience-card card border-0 shadow-lg">
-                                <div class="card-img-wrapper" style="background-image: url('{{ $primaryImage }}');">
-                                    <div class="card-overlay"></div>
-                                </div>
-                                <div class="card-body d-flex align-items-end">
-                                    <div class="card-title-wrapper bg-opacity-75 bg-white rounded text-dark p-3">
-                                        <h4 class="m-0 text-center">{{ $country->title }}</h4>
+        <div class="row">
+            <!-- Kacheln -->
+            <div class="{{ $kiwiAd ? 'col-12 col-md-8 col-lg-9' : 'col-12' }}" id="kacheln-container-wrapper">
+                <div class="row g-4" id="kacheln-container">
+                    @php
+                        $currentCountryIndex = 0;
+                    @endphp
+                    @for($i = 0; $i < $totalCountries + $adCount; $i++)
+                        @if(array_key_exists($currentCountryIndex, $adAssignments))
+                            <!-- Werbe-Kachel (doppelt breit) -->
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-8 experience-item mx-auto"
+                                 data-aos="fade-up"
+                                 data-aos-duration="400"
+                                 data-aos-delay="{{ $i * 50 }}">
+                                <div class="experience-card card border-0 shadow-lg h-100 ad-card">
+                                    <div class="card-body p-0">
+                                        <div class="ad-content">
+                                            {!! $adAssignments[$currentCountryIndex]->script !!}
+                                        </div>
+                                        <div class="ad-footer">
+                                            <small class="text-muted">Werbung | Ad ID: {{ $adAssignments[$currentCountryIndex]->id }}</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </a>
-
-                        @auth('admin')
-                            <div class="mt-2 text-center">
-                                <a href="{{ route('country-manager.edit', $country->id) }}"
-                                   target="_blank"
-                                   class="btn btn-sm btn-warning">
-                                    <i class="ti ti-edit"></i> Bearbeiten
+                            @php
+                                $currentCountryIndex++;
+                            @endphp
+                        @elseif($currentCountryIndex < $totalCountries)
+                            <!-- Länder-Kachel -->
+                            @php
+                                $country = $countries[$currentCountryIndex];
+                                $primaryImage = $country->primaryImage() ?? asset('img/default-location.png');
+                            @endphp
+                            <div class="col-12 col-sm-6 col-md-6 col-lg-4 experience-item"
+                                 data-aos="fade-up"
+                                 data-aos-duration="400"
+                                 data-aos-delay="{{ $i * 50 }}">
+                                <a href="{{ route('list-country-locations', ['continentAlias' => $continent->alias, 'countryAlias' => $country->alias]) }}"
+                                   class="text-decoration-none">
+                                    <div class="experience-card card border-0 shadow-lg">
+                                        <div class="card-img-wrapper" style="background-image: url('{{ $primaryImage }}');">
+                                            <div class="card-overlay"></div>
+                                        </div>
+                                        <div class="card-body d-flex align-items-end">
+                                            <div class="card-title-wrapper bg-opacity-75 bg-white rounded text-dark p-3">
+                                                <h4 class="m-0 text-center">{{ $country->title }}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </a>
+
+                                @auth('admin')
+                                    <div class="mt-2 text-center">
+                                        <a href="{{ route('country-manager.edit', $country->id) }}"
+                                           target="_blank"
+                                           class="btn btn-sm btn-warning">
+                                            <i class="ti ti-edit"></i> Bearbeiten
+                                        </a>
+                                    </div>
+                                @endauth
                             </div>
-                        @endauth
-                    @endif
+                            @php
+                                $currentCountryIndex++;
+                            @endphp
+                        @endif
+                    @endfor
                 </div>
-            @endforeach
+            </div>
+
+            <!-- Kiwi-Widget (rechts) -->
+            @if($kiwiAd)
+                <div class="col-md-4 col-lg-3 kiwi-widget">
+                    <div class="sticky-top" id="kiwi-widget-container">
+                        {!! $kiwiAd->script !!}
+                        <div class="ad-footer text-center mt-2">
+                            <small class="text-muted">Werbung | Ad ID: {{ $kiwiAd->id }}</small>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Banner unterhalb -->
         <div class="row mt-4">
             <div class="col-12">
-                <x-ad-block position="below-experience" />
+                <x-ad-block position="below-experience" class="full-width" />
             </div>
         </div>
 
@@ -96,10 +146,23 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     AOS.init({
-        duration: 400,  // Schnellere Animation
-        delay: 0,      // Basis-Delay (individuell via data-aos-delay)
-        once: true     // Nur einmal animieren
+        duration: 400,
+        delay: 0,
+        once: true
     });
+
+    // Höhe des Kiwi-Widgets an Kacheln-Container anpassen
+    const kachelnContainer = document.getElementById('kacheln-container');
+    const kiwiContainer = document.getElementById('kiwi-widget-container');
+    if (kachelnContainer && kiwiContainer) {
+        const adjustHeight = () => {
+            const kachelnHeight = kachelnContainer.offsetHeight;
+            kiwiContainer.style.maxHeight = `${kachelnHeight}px`;
+            kiwiContainer.style.overflowY = 'auto';
+        };
+        adjustHeight();
+        window.addEventListener('resize', adjustHeight);
+    }
 });
 </script>
 
@@ -132,16 +195,16 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 .experience-section .experience-card:hover .card-img-wrapper {
-    transform: scale(1.1); /* Zoom-Effekt */
+    transform: scale(1.1);
 }
 
 .experience-section .experience-card:hover .card-overlay {
-    opacity: 1; /* Farbüberlagerung bei Hover */
+    opacity: 1;
 }
 
 .experience-section .experience-card:hover {
-    transform: translateY(-5px); /* Leichtes Anheben */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); /* Stärkerer Schatten */
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
 .experience-section .card-body {
@@ -159,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 .experience-section .experience-card:hover .card-title-wrapper {
-    background-color: rgba(255, 255, 255, 0.9); /* Leichte Farbänderung */
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .experience-section .card-title-wrapper h4 {
@@ -167,26 +230,11 @@ document.addEventListener("DOMContentLoaded", () => {
     font-weight: bold;
 }
 
-@media (max-width: 992px) {
-    .experience-section .experience-card {
-        height: 300px;
-    }
-}
-
-@media (max-width: 768px) {
-    .experience-section .experience-card {
-        height: 250px;
-    }
-    .experience-section .card-title-wrapper h4 {
-        font-size: 1.25rem;
-    }
-}
-
 /* Werbe-Kacheln spezifisch */
 .ad-card {
     display: flex;
     flex-direction: column;
-    background-color: #f8f9fa; /* Leichter grauer Hintergrund */
+    background-color: #f8f9fa;
     padding: 15px;
     box-sizing: border-box;
 }
@@ -194,14 +242,14 @@ document.addEventListener("DOMContentLoaded", () => {
 .ad-card .card-body {
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Inhalt oben, Footer unten */
+    justify-content: space-between;
     height: 100%;
     width: 100%;
     position: relative;
 }
 
 .ad-card .ad-content {
-    flex-grow: 1; /* Nimmt den verfügbaren Raum ein */
+    flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -209,16 +257,71 @@ document.addEventListener("DOMContentLoaded", () => {
     overflow: hidden;
 }
 
+.ad-card .ad-content img {
+    width: 100%; /* Volle Breite des Containers */
+    height: auto; /* Automatische Höhe basierend auf Breite */
+    max-height: 100%; /* Begrenzt die Höhe auf den Container */
+    object-fit: contain; /* Proportionale Skalierung ohne Beschneidung */
+}
+
 .ad-card .ad-footer {
     text-align: center;
     padding-top: 10px;
     font-size: 0.85rem;
-    color: #6c757d; /* Muted Text */
-    background: rgba(255, 255, 255, 0.8); /* Leicht transparenter Hintergrund */
+    color: #6c757d;
+    background: rgba(255, 255, 255, 0.8);
     width: 100%;
 }
 
 .ad-card .ad-footer small {
     display: block;
+}
+
+/* Kiwi-Widget spezifisch */
+.kiwi-widget {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+}
+
+.kiwi-widget .sticky-top {
+    top: 15px;
+}
+
+#widget-holder {
+    width: 100%;
+    height: 100%;
+}
+
+/* Für above-experience und below-experience */
+.ad-card.full-width {
+    height: auto; /* Automatische Höhe basierend auf Inhalt */
+    max-width: 100%;
+}
+
+@media (max-width: 992px) {
+    .experience-section .experience-card {
+        height: 300px;
+    }
+    .kiwi-widget {
+        display: none;
+    }
+    #kacheln-container-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+    .ad-card.full-width {
+        height: auto; /* Anpassung für Tablet */
+    }
+}
+
+@media (max-width: 768px) {
+    .experience-section .experience-card {
+        height: 250px;
+    }
+    .ad-card.full-width {
+        height: auto; /* Anpassung für Mobile */
+        padding: 5px;
+    }
 }
 </style>

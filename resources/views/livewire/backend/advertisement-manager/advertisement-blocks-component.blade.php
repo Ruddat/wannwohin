@@ -1,3 +1,6 @@
+<div>
+
+
 <div class="container">
     <h1 class="mb-4">Werbeblöcke verwalten</h1>
 
@@ -21,7 +24,7 @@
 
                 <div class="mb-3">
                     <label for="type" class="form-label">Typ</label>
-                    <select id="type" class="form-select" wire:model="type">
+                    <select id="type" class="form-select" wire:model.change="type">
                         <option value="banner">Banner (Bild/Link)</option>
                         <option value="widget">Widget (HTML + JS)</option>
                         <option value="script">Skript (nur JS)</option>
@@ -39,13 +42,15 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="position" class="form-label">Position</label>
-                    <select id="position" class="form-select" wire:model="position">
+                    <label for="position" class="form-label">Positionen (Mehrfachauswahl möglich)</label>
+                    <select id="position" class="form-select" multiple wire:model="position">
                         @foreach($availablePositions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
+                    <small class="form-text text-muted">Halte Strg/Cmd gedrückt, um mehrere Positionen auszuwählen.</small>
                     @error('position') <span class="text-danger">{{ $message }}</span> @enderror
+                    @error('position.*') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="mb-3">
@@ -81,6 +86,7 @@
                 <th>Inhalt</th>
                 <th>Position</th>
                 <th>Anbieter</th>
+                <th>Status</th>
                 <th>Aktionen</th>
             </tr>
         </thead>
@@ -91,8 +97,22 @@
                     <td>{{ $advertisement->title }}</td>
                     <td>{{ ucfirst($advertisement->type) }}</td>
                     <td>{{ Str::limit($advertisement->script, 50) }}</td>
-                    <td>{{ $advertisement->position ? $availablePositions[$advertisement->position] : 'Keine' }}</td>
+                    <td>
+                        @if(is_array($advertisement->position) && !empty($advertisement->position))
+                            {{ implode(', ', array_map(fn($pos) => $availablePositions[$pos] ?? $pos, $advertisement->position)) }}
+                        @elseif($advertisement->position && !is_array($advertisement->position))
+                            {{ $availablePositions[$advertisement->position] ?? 'Keine' }}
+                        @else
+                            Keine
+                        @endif
+                    </td>
                     <td>{{ $advertisement->provider->name ?? 'N/A' }}</td>
+                    <td>
+                        <span class="badge {{ $advertisement->is_active ? 'badge-success' : 'badge-danger' }} status-toggle"
+                            wire:click="toggleActive({{ $advertisement->id }})">
+                          {{ $advertisement->is_active ? 'Aktiv' : 'Inaktiv' }}
+                      </span>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-warning" wire:click="edit({{ $advertisement->id }})">Bearbeiten</button>
                         <button class="btn btn-sm btn-danger" wire:click="delete({{ $advertisement->id }})">Löschen</button>
@@ -100,11 +120,67 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7">Keine Werbeblöcke gefunden.</td>
+                    <td colspan="8">Keine Werbeblöcke gefunden.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
     {{ $advertisements->links() }}
+</div>
+<style>
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.4em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    }
+
+    .badge-success {
+        color: #fff;
+        background-color: #28a745;
+    }
+
+    .badge-danger {
+        color: #fff;
+        background-color: #dc3545;
+    }
+
+    .status-toggle {
+        cursor: pointer;
+    }
+
+    .status-toggle:hover {
+        opacity: 0.8;
+    }
+
+    /* Verhindert, dass die gesamte Zeile klickbar wird */
+    tr {
+        pointer-events: none;
+    }
+
+    tr td {
+        pointer-events: auto;
+    }
+
+    tr td:last-child {
+        pointer-events: auto; /* Aktionen bleiben klickbar */
+    }
+
+    tr td:nth-child(7) .status-toggle {
+        pointer-events: auto; /* Nur das Badge ist klickbar */
+    }
+
+    /* Multiselect Styling */
+    select[multiple] {
+        height: 150px; /* Feste Höhe für bessere Übersicht */
+    }
+
+    </style>
 </div>

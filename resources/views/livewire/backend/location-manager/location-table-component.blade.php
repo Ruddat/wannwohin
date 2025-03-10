@@ -163,7 +163,7 @@
                                                         <i class="ti ti-trash"></i> Permanently Delete
                                                     </button>
                                                 @else
-                                                    <a href="{{ route('verwaltung.location-table-manager.edit', ['locationId' => $location->id]) }}"
+                                                    <a href="{{ route('verwaltung.site-manager.location-table-manager.edit', ['locationId' => $location->id]) }}"
                                                         class="btn btn-sm btn-primary">
                                                         <i class="ti ti-edit"></i> Edit
                                                     </a>

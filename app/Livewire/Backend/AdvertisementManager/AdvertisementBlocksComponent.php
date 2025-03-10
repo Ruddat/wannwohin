@@ -12,9 +12,9 @@ class AdvertisementBlocksComponent extends Component
     use WithPagination;
 
     public $title;
-    public $code; // Enthält den gesamten Code inkl. Link für Banner
+    public $code;
     public $type = 'banner';
-    public $position;
+    public $position = []; // Jetzt ein Array für Multiselect
     public $advertisementId;
     public $providerId;
     public $isEditing = false;
@@ -27,6 +27,15 @@ class AdvertisementBlocksComponent extends Component
         'inline' => 'Zwischen Inhalten (z. B. Kacheln)',
         'above-experience' => 'Oberhalb Experience-Sektion',
         'below-experience' => 'Unterhalb Experience-Sektion',
+        'above-destination' => 'Oberhalb Destination-Sektion',
+        'below-destination' => 'Unterhalb Destination-Sektion',
+        'above-destination-list' => 'Oberhalb Destination-Liste',
+        'below-destination-list' => 'Unterhalb Destination-Liste',
+        'above-locations' => 'Oberhalb Location-Sektion',
+        'below-locations' => 'Unterhalb Location-Sektion',
+        'kiwi-widget' => 'Kiwi-Widget',
+        'above-compare' => 'Oberhalb Vergleichs-Sektion',
+        'below-compare' => 'Unterhalb Vergleichs-Sektion',
     ];
 
     protected function rules()
@@ -35,7 +44,8 @@ class AdvertisementBlocksComponent extends Component
             'title' => 'required|string|max:255',
             'code' => 'required|string',
             'type' => 'required|in:banner,widget,script',
-            'position' => 'nullable|in:' . implode(',', array_keys($this->availablePositions)),
+            'position' => 'nullable|array', // Array von Positionen
+            'position.*' => 'in:' . implode(',', array_keys($this->availablePositions)), // Jede Position muss gültig sein
             'providerId' => 'required|exists:mod_providers,id',
         ];
     }
@@ -53,7 +63,7 @@ class AdvertisementBlocksComponent extends Component
         $this->title = '';
         $this->code = '';
         $this->type = 'banner';
-        $this->position = '';
+        $this->position = []; // Leeres Array
         $this->providerId = null;
         $this->advertisementId = null;
         $this->isEditing = false;
@@ -73,9 +83,10 @@ class AdvertisementBlocksComponent extends Component
             'content' => null, // Nicht mehr verwendet
             'link' => null,    // Nicht mehr verwendet
             'type' => $this->type,
-            'script' => $this->code, // Alles inkl. Link in script
-            'position' => $this->position,
+            'script' => $this->code,
+            'position' => $this->position, // Array speichern
             'provider_id' => $this->providerId,
+            'is_active' => true,
         ];
 
         if ($this->isEditing) {
@@ -94,9 +105,9 @@ class AdvertisementBlocksComponent extends Component
         $advertisement = ModAdvertisementBlocks::findOrFail($id);
         $this->advertisementId = $advertisement->id;
         $this->title = $advertisement->title;
-        $this->code = $advertisement->script; // Alles aus script
+        $this->code = $advertisement->script;
         $this->type = $advertisement->type;
-        $this->position = $advertisement->position;
+        $this->position = $advertisement->position ?? []; // Array oder leer
         $this->providerId = $advertisement->provider_id;
         $this->isEditing = true;
     }
@@ -105,5 +116,13 @@ class AdvertisementBlocksComponent extends Component
     {
         ModAdvertisementBlocks::findOrFail($id)->delete();
         session()->flash('message', 'Werbeblock gelöscht!');
+    }
+
+    public function toggleActive($id)
+    {
+        $advertisement = ModAdvertisementBlocks::findOrFail($id);
+        $newStatus = !$advertisement->is_active;
+        $advertisement->update(['is_active' => $newStatus]);
+        session()->flash('message', 'Status von Werbeblock #' . $advertisement->id . ' geändert auf ' . ($newStatus ? 'aktiv' : 'inaktiv') . '!');
     }
 }

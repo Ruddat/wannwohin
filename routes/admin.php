@@ -72,17 +72,46 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 
 
 
-    // Header Manager
-    Route::prefix('header-manager')->name('header-manager.')->group(function () {
+    // Site Manager Routes
+    Route::prefix('site-manager')->name('site-manager.')->group(function () {
+
+        // Header Manager
         Route::resource('header_contents', HeaderContentController::class);
+
+        Route::get('/quick-filter', QuickFilterComponent::class)->name('quick-filter');
+
+        // Park Manager
+        Route::prefix('park-manager')->name('park-manager.')->group(function () {
+            Route::get('/', ParkListComponent::class)->name('index');
+            Route::get('/create', ParkFormComponent::class)->name('create');
+            Route::get('/{id}/edit', ParkFormComponent::class)->name('edit');
+        });
+
+        // Continent Manager
+        Route::prefix('continent-manager')->name('continent-manager.')->group(function () {
+            Route::get('/', ContinentManagerComponent::class)->name('index');
+        });
+
+        // Country Manager
+        Route::prefix('country-manager')->name('country-manager.')->group(function () {
+            Route::get('/', CountryManagerComponent::class)->name('index');
+            Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('country-manager.edit');
+        });
+
+
+// Location Table Manager
+Route::prefix('location-table-manager')->name('location-table-manager.')->group(function () {
+    Route::get('/', LocationTableComponent::class)->name('index');
+    Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
+});
+
+
+
     });
 
-    // Park Manager
-    Route::prefix('park-manager')->name('park-manager.')->group(function () {
-        Route::get('/', ParkListComponent::class)->name('index');
-        Route::get('/create', ParkFormComponent::class)->name('create');
-        Route::get('/{id}/edit', ParkFormComponent::class)->name('edit');
-    });
+
+
+
 
     // Advertisement Manager
     Route::prefix('advertisement-manager')->name('advertisement-manager.')->group(function () {
@@ -91,16 +120,8 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 
     });
 
-    // Continent Manager
-    Route::prefix('continent-manager')->name('continent-manager.')->group(function () {
-        Route::get('/', ContinentManagerComponent::class)->name('index');
-    });
 
-    // Country Manager
-    Route::prefix('country-manager')->name('country-manager.')->group(function () {
-        Route::get('/', CountryManagerComponent::class)->name('index');
-    });
-    Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('country-manager.edit');
+
 
 
     // Translation Manager
@@ -110,10 +131,7 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 
 
 
-    // Translation Manager
-    Route::prefix('quickfilter-manager')->name('quickfilter-manager.')->group(function () {
-        Route::get('/', QuickFilterComponent::class)->name('index');
-    });
+
 
 
 // SiteSettings Manager SeoMetaTable Manager
@@ -127,11 +145,7 @@ Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function (
 
 
 
-// Location Table Manager
-Route::prefix('location-table-manager')->name('location-table-manager.')->group(function () {
-    Route::get('/', LocationTableComponent::class)->name('index');
-    Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
-});
+
 
 // Location Manager (falls benötigt)
 Route::prefix('location-manager')->name('location-manager.')->group(function () {

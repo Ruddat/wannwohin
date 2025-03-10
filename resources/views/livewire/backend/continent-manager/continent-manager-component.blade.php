@@ -1,14 +1,14 @@
 <div class="container mt-4">
     @if (session('status'))
-    <div class="alert alert-success">
-        {{ session('status') }}
-    </div>
-@endif
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
+    @endif
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
-                <h3 class="card-title">Continents</h3>
+                <h3 class="card-title mb-0">Continents</h3>
                 <p class="card-subtitle text-muted mt-1">
                     Hier können Kontinente verwaltet, bearbeitet und erstellt werden. Zusätzlich können individuelle Bilder hochgeladen oder Pixabay-Bilder verwendet werden.
                 </p>
@@ -37,13 +37,15 @@
                             <td>{{ $continent->id }}</td>
                             <td>{{ $continent->title }}</td>
                             <td>
-                                <div class="d-flex">
+                                <div class="images-overlap">
                                     @for ($i = 1; $i <= 3; $i++)
                                         @php
                                             $imagePath = $continent["image{$i}_path"];
                                         @endphp
                                         @if ($imagePath)
-                                            <img src="{{ Storage::url($imagePath) }}" alt="Image {{ $i }}" class="img-thumbnail me-2" width="50">
+                                            <div class="image-wrapper">
+                                                <img src="{{ Storage::url($imagePath) }}" alt="Image {{ $i }}" class="img-thumbnail" width="50">
+                                            </div>
                                         @endif
                                     @endfor
                                 </div>
@@ -67,7 +69,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No continents found.</td>
+                            <td colspan="7" class="text-center">No continents found.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -151,65 +153,62 @@
                         </div>
 
                         @if ($custom_images)
-                        <div class="row">
-                            @for ($i = 1; $i <= 3; $i++)
-                                <div class="col-md-4 mb-3 text-center">
-                                    <label for="image{{ $i }}_path" class="form-label">Custom Image {{ $i }}</label>
-                                    <input wire:model="image{{ $i }}_path" type="file" id="image{{ $i }}_path" class="form-control">
-                                    <div class="mt-2 position-relative">
-                                        @if (${"image{$i}_path"} instanceof \Livewire\TemporaryUploadedFile)
-                                            <img src="{{ ${"image{$i}_path"}->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
-                                            <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                    @error("image{$i}_path") <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
-                                </div>
-                            @endfor
-                        </div>
-                    @else
-                        <div class="row">
-                            @for ($i = 1; $i <= 3; $i++)
-                                <div class="col-md-4 mb-3 text-center">
-                                    <label>Pixabay Image {{ $i }}</label>
-                                    <div class="mt-2 position-relative">
-                                        @if (${"image{$i}_path"})
-                                            <img src="{{ Storage::url(${"image{$i}_path"}) }}" alt="Pixabay Image {{ $i }}" class="img-thumbnail" style="max-width: 150px;">
-                                            <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endfor
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="searchKeyword" class="form-label">Search Images on Pixabay</label>
-                            <div class="input-group">
-                                <input wire:model="searchKeyword" type="text" id="searchKeyword" class="form-control" placeholder="Enter keyword">
-                                <button wire:click="fetchImagesFromPixabay" class="btn btn-outline-secondary">Search</button>
-                            </div>
-                        </div>
-
-                        @if ($pixabayImages)
                             <div class="row">
-                                <h5 class="text-center">Pixabay Images</h5>
-                                @foreach ($pixabayImages as $index => $image)
-                                    <div class="col-md-3 mb-3 text-center">
-                                        <img src="{{ $image['previewURL'] }}" alt="Pixabay Image {{ $index }}" class="img-thumbnail" style="max-width: 100px;">
-                                        <button wire:click="selectPixabayImage({{ $index }})" class="btn btn-sm btn-primary mt-2">
-                                            Select
-                                        </button>
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <div class="col-md-4 mb-3 text-center">
+                                        <label for="image{{ $i }}_path" class="form-label">Custom Image {{ $i }}</label>
+                                        <input wire:model="image{{ $i }}_path" type="file" id="image{{ $i }}_path" class="form-control">
+                                        <div class="mt-2 position-relative">
+                                            @if (${"image{$i}_path"} instanceof \Livewire\TemporaryUploadedFile)
+                                                <img src="{{ ${"image{$i}_path"}->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                                                <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                        @error("image{$i}_path") <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
                                     </div>
-                                @endforeach
+                                @endfor
                             </div>
+                        @else
+                            <div class="row">
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <div class="col-md-4 mb-3 text-center">
+                                        <label>Pixabay Image {{ $i }}</label>
+                                        <div class="mt-2 position-relative">
+                                            @if (${"image{$i}_path"})
+                                                <img src="{{ Storage::url(${"image{$i}_path"}) }}" alt="Pixabay Image {{ $i }}" class="img-thumbnail" style="max-width: 150px;">
+                                                <button wire:click="deleteImage({{ $i }})" class="btn btn-sm btn-danger position-absolute top-0 end-0">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="searchKeyword" class="form-label">Search Images on Pixabay</label>
+                                <div class="input-group">
+                                    <input wire:model="searchKeyword" type="text" id="searchKeyword" class="form-control" placeholder="Enter keyword">
+                                    <button wire:click="fetchImagesFromPixabay" class="btn btn-outline-secondary">Search</button>
+                                </div>
+                            </div>
+
+                            @if ($pixabayImages)
+                                <div class="row">
+                                    <h5 class="text-center">Pixabay Images</h5>
+                                    @foreach ($pixabayImages as $index => $image)
+                                        <div class="col-md-3 mb-3 text-center">
+                                            <img src="{{ $image['previewURL'] }}" alt="Pixabay Image {{ $index }}" class="img-thumbnail" style="max-width: 100px;">
+                                            <button wire:click="selectPixabayImage({{ $index }})" class="btn btn-sm btn-primary mt-2">
+                                                Select
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         @endif
-
-
-                        @endif
-
 
                     </div>
                     <div class="modal-footer">
@@ -231,35 +230,65 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-document.addEventListener('livewire:init', () => {
-    Livewire.on('confirmDelete', ({ id, message }) => {
-        Swal.fire({
-            title: 'Confirm Deletion',
-            text: message,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Livewire.dispatch('confirmDelete', { id: id }); // Parameter als Objekt
-            }
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('confirmDelete', ({ id, message }) => {
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.dispatch('confirmDelete', { id: id });
+                    }
+                });
+            });
+
+            Livewire.on('success', (message) => {
+                Swal.fire('Success', message, 'success');
+            });
+
+            Livewire.on('error', (message) => {
+                Swal.fire('Error', message, 'error');
+            });
         });
-    });
+    </script>
 
-    Livewire.on('success', (message) => {
-        Swal.fire('Success', message, 'success');
-    });
-
-    Livewire.on('error', (message) => {
-        Swal.fire('Error', message, 'error');
-    });
-});
-
-</script>
-
-
+    <style scoped>
+        /* Card Header */
+        .card-header .card-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .card-header .card-subtitle {
+            font-size: 0.9rem;
+        }
+        /* Bilder in der Tabelle */
+        .images-overlap {
+            display: flex;
+            align-items: center;
+        }
+        .images-overlap .image-wrapper {
+            margin-right: -15px;
+        }
+        .images-overlap img {
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .images-overlap img:hover {
+            transform: scale(1.1);
+            z-index: 2;
+        }
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 
 </div>

@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('link')->nullable();
             $table->string('type')->default('banner'); // 'banner', 'widget', 'script'
             $table->text('script')->nullable();
-            $table->string('position')->nullable(); // z. B. 'sidebar', 'header', 'footer'
+          //  $table->string('position')->nullable(); // z. B. 'sidebar', 'header', 'footer'
+            $table->json('position')->nullable(); // Ändere von string zu json
             $table->foreignId('provider_id')->constrained('mod_providers')->onDelete('cascade'); // Fremdschlüssel
             $table->boolean('is_active')->default(true);
             $table->timestamps();

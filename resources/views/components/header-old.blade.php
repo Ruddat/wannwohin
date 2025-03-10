@@ -13,7 +13,7 @@
 
                 <!-- Admin-Button nur sichtbar für eingeloggte Admins -->
                 @if(Auth::guard('admin')->check())
-                    <a href="{{ route('verwaltung.header-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-3">
+                    <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-3">
                         Bearbeiten
                     </a>
                 @endif

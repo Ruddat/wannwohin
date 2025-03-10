@@ -75,7 +75,7 @@
                     @enderror
                 </div>
                 <div class="d-flex justify-content-end">
-                    <a href="{{ route('verwaltung.header-manager.header_contents.index') }}" class="btn btn-secondary me-2">
+                    <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" class="btn btn-secondary me-2">
                         <i class="ti ti-arrow-left"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-success">

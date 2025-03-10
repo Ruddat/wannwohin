@@ -32,7 +32,7 @@
                     <input type="datetime-local" class="form-control" wire:model="closed_from">
                 </div>
                 <button type="submit" class="btn btn-primary">Speichern</button>
-                <a href="{{ route('verwaltung.park-manager.index') }}" class="btn btn-secondary">Abbrechen</a>
+                <a href="{{ route('verwaltung.site-manager.park-manager.index') }}" class="btn btn-secondary">Abbrechen</a>
             </form>
         </div>
     </div>

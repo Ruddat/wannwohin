@@ -153,7 +153,7 @@
               </li>
 
 
-              <li class="nav-item dropdown {{ request()->is('verwaltung/*') ? 'show active' : '' }}">
+              <li class="nav-item dropdown {{ request()->is('verwaltung/site-manager/*') ? 'show active' : '' }}">
                 <a class="nav-link dropdown-toggle" href="#navbar-manager" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button"
                    aria-expanded="{{ request()->is('verwaltung/*') ? 'true' : 'false' }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -164,38 +164,38 @@
                         </svg>
                     </span>
                     <span class="nav-link-title">
-                        Manager
+                       Site-Manager
                     </span>
                 </a>
-                <div class="dropdown-menu {{ request()->is('verwaltung/*') ? 'show active' : '' }}">
+                <div class="dropdown-menu {{ request()->is('verwaltung/site-manager*') ? 'show active' : '' }}">
                     <div class="dropdown-menu-columns">
                         <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.header-manager.header_contents.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.header-manager.header_contents.index') }}">
-                                Header Manager
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.header_contents.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-manager.header_contents.index') }}">
+                                Header Text & Pic
                             </a>
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.quickfilter-manager.index') ? 'active' : '' }}"
-                                href="{{ route('verwaltung.quickfilter-manager.index') }}">
-                                 QuickFilter Manager
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.quick-filter') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.site-manager.quick-filter') }}">
+                                 QuickFilter Index
                              </a>
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.park-manager.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.park-manager.index') }}">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.park-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-manager.park-manager.index') }}">
                                 Park Manager
                             </a>
                         </div>
 
                         <div class="dropdown-menu-column">
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.continent-manager.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.continent-manager.index') }}">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.continent-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-manager.continent-manager.index') }}">
                                 Continent Manager
                             </a>
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.country-manager.index') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.country-manager.index') }}">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.country-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-manager.country-manager.index') }}">
                                 Country Manager
                             </a>
 
-                            <a class="dropdown-item {{ request()->routeIs('verwaltung.location-table-manager.*') ? 'active' : '' }}"
-                               href="{{ route('verwaltung.location-table-manager.index') }}">
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.site-manager.location-table-manager.index') ? 'active' : '' }}"
+                               href="{{ route('verwaltung.site-manager.location-table-manager.index') }}">
                                 City Manager
                             </a>
                         </div>

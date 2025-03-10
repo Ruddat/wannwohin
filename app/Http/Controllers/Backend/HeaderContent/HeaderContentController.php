@@ -58,7 +58,7 @@ class HeaderContentController extends Controller
         // Flash-Nachricht
         session()->flash('success', 'Header content created successfully!');
 
-        return redirect()->route('verwaltung.header-manager.header_contents.index');
+        return redirect()->route('verwaltung.site-manager.header_contents.index');
     }
 
     /**
@@ -106,7 +106,7 @@ class HeaderContentController extends Controller
          // Flash-Nachricht
          session()->flash('success', 'Header content updated successfully!');
 
-         return redirect()->route('verwaltung.header-manager.header_contents.index');
+         return redirect()->route('verwaltung.site-manager.header_contents.index');
      }
 
     /**
@@ -126,7 +126,7 @@ class HeaderContentController extends Controller
         // Flash-Nachricht
         session()->flash('success', 'Header content deleted successfully!');
 
-        return redirect()->route('verwaltung.header-manager.header_contents.index');
+        return redirect()->route('verwaltung.site-manager.header_contents.index');
     }
 
     /**
