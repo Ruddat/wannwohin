@@ -36,6 +36,11 @@ class AdvertisementBlocksComponent extends Component
         'kiwi-widget' => 'Kiwi-Widget',
         'above-compare' => 'Oberhalb Vergleichs-Sektion',
         'below-compare' => 'Unterhalb Vergleichs-Sektion',
+        // Neue Positionen Filtersektion
+        'above-filter' => 'Oberhalb Filter-Sektion',
+        'below-filter' => 'Unterhalb Filter-Sektion',
+        'inline-timeline' => 'Zwischen Timeline-Einträgen',
+        'sidebar-ad' => 'Sidebar-Werbung',
     ];
 
     protected function rules()

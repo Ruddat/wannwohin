@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('title', 50)->nullable();
             $table->string('alias', 50)->nullable();
             $table->string('iata_code', 30)->nullable();
+            $table->string('currency_code', 30)->nullable(); // 'currency_code'
             $table->float('flight_hours')->nullable();
             $table->integer('stop_over')->nullable();
             $table->integer('dist_from_FRA')->nullable();

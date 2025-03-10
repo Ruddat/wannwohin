@@ -206,7 +206,7 @@
         }
 
         .form-select {
-            width: 100%;
+            width: 100% !important;
             padding: 0.5rem;
             margin-top: 0.5rem;
         }

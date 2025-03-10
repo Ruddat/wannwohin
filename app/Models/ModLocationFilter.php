@@ -14,6 +14,10 @@ class ModLocationFilter extends Model
         'text_type',
         'uschrift',
         'text',
+        'category',
+        'addinfo',
+        'is_active',
+        
     ];
 
     public function location()

@@ -44,6 +44,8 @@ class FilterLocationImportController extends Controller
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
 
+//dd($rows);
+
             if (!empty($rows)) {
                 $this->processData($rows);
             }
@@ -59,32 +61,52 @@ class FilterLocationImportController extends Controller
     private function processData($rows)
     {
         foreach ($rows as $index => $row) {
-            if ($index == 0) continue; // Kopfzeile überspringen
-            if (count($row) < 5) continue; // Ungültige Zeilen überspringen
+            // Kopfzeile überspringen
+            if ($index == 0) continue;
 
-            $oldId = trim($row[1]); // Alte Standort-ID aus der Excel-Tabelle
-            $textType = trim($row[2]);
-            $uschrift = trim($row[3]);
-            $text = trim($row[4]);
-
-            // Standort anhand der `old_id` suchen
-            $location = WwdeLocation::where('old_id', $oldId)->first();
-
-            if (!$location) {
-                Log::warning("Kein Standort gefunden für OLD_ID: {$oldId}");
+            // Stelle sicher, dass mindestens 8 Spalten vorhanden sind
+            if (count($row) < 8) {
+                Log::warning("Zeile {$index} hat weniger als 8 Spalten: " . json_encode($row));
                 continue;
             }
 
-            // Daten speichern oder aktualisieren
+            // Excel-Spalten zuweisen (an Dokument anpassen)
+            $locationId = trim($row[1]); // location_id (z. B. 4)
+            $textType   = trim($row[2]); // text_type (z. B. Erlebnis)
+            $category   = trim($row[3]); // Kategorie
+            $uschrift   = trim($row[4]); // uschrift
+            $text       = trim($row[5]); // text
+            $addInfo    = trim($row[6]); // addinfo
+            $is_active  = trim($row[7]); // anzeigen (1 oder 0)
+
+            // Standort anhand location_id suchen
+            $location = WwdeLocation::where('old_id', $locationId)->first();
+
+//dd($location);
+
+            if (!$location) {
+                Log::warning("Kein Standort gefunden für location_id: {$locationId}");
+                continue;
+            }
+
+            // updateOrCreate mit korrekten Spaltennamen
             ModLocationFilter::updateOrCreate(
                 [
                     'location_id' => $location->id,
-                    'text_type' => $textType,
-                    'uschrift' => $uschrift,
+                    'text_type'   => $textType,
+                    'uschrift'    => $uschrift,
+                    'category'   => $category,
+                    'is_active'   => ($is_active == 1 || $is_active === '1' || strtolower($is_active) === 'true'),
+                    'addinfo'     => $addInfo ? $addInfo : null,
                 ],
-                ['text' => $text]
+                [
+                    'text' => $text,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
             );
         }
     }
+
 
 }
