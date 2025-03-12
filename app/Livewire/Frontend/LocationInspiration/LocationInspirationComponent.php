@@ -167,7 +167,7 @@ class LocationInspirationComponent extends Component
             if (preg_match('/^\d+\.\s*(.+?)\s*\[Ort:\s*(.+?)\]/', $line, $matches)) {
                 $suggestions[] = [
                     'text_type' => 'Random',
-                    'category' => 'DeepInfra Vorschlag',
+                    'category' => 'Ki Vorschlag',
                     'text' => trim($matches[1]),
                     'uschrift' => trim($matches[2]),
                     'id' => uniqid('di_', true),
@@ -178,7 +178,7 @@ class LocationInspirationComponent extends Component
                 $uschrift = $this->extractUschrift($suggestionText);
                 $suggestions[] = [
                     'text_type' => 'Random',
-                    'category' => 'DeepInfra Vorschlag',
+                    'category' => 'Ki Vorschlag',
                     'text' => $suggestionText,
                     'uschrift' => $uschrift ?: 'Aktivität',
                     'id' => uniqid('di_', true),
@@ -195,7 +195,7 @@ class LocationInspirationComponent extends Component
                     if (preg_match('/^\d+\.\s*(.+?)\s*\[Ort:\s*(.+?)\]/', $line, $matches)) {
                         $suggestions[] = [
                             'text_type' => 'Random',
-                            'category' => 'DeepInfra Vorschlag',
+                            'category' => 'Ki Vorschlag',
                             'text' => trim($matches[1]),
                             'uschrift' => trim($matches[2]),
                             'id' => uniqid('di_', true),
@@ -205,7 +205,7 @@ class LocationInspirationComponent extends Component
                         $uschrift = $this->extractUschrift($suggestionText);
                         $suggestions[] = [
                             'text_type' => 'Random',
-                            'category' => 'DeepInfra Vorschlag',
+                            'category' => 'Ki Vorschlag',
                             'text' => $suggestionText,
                             'uschrift' => $uschrift ?: 'Aktivität',
                             'id' => uniqid('di_', true),
@@ -328,6 +328,18 @@ class LocationInspirationComponent extends Component
             \Log::error('Item not found for Trip Plan:', ['id' => $id, 'randomSuggestions' => $this->randomSuggestions]);
         }
     }
+    public function getTripPlanData()
+    {
+        return $this->tripPlan;
+    }
+
+    public function clearTripPlan()
+    {
+        $this->tripPlan = [];
+        session()->put('trip_plan', $this->tripPlan);
+        \Log::info('Tripplan gelöscht');
+    }
+
 
     public function render()
     {
