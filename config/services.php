@@ -49,4 +49,16 @@ return [
     ],
 ],
 
+'xai' => [
+    'api_key' => env('XAI_API_KEY'),
+],
+'huggingface' => [
+    'api_token' => env('HF_API_TOKEN'),
+],
+
+'deepinfra' => [
+    'api_token' => env('DEEPINFRA_API_TOKEN'),
+],
+
+
 ];
