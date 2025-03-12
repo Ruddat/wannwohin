@@ -8,6 +8,14 @@
         <div role="main" class="main">
             @include('frondend.locationdetails.sections.main')
 
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+            <!-- Inspirationsbereich -->
+            @livewire('frontend.location-inspiration.location-inspiration-component', [
+                'locationId'    => $location->id,
+                'locationTitle' => $location->title
+            ])
+
 
 
             <section id="experience" class="section section-secondary section-no-border m-0 pt-0">

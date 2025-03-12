@@ -8,6 +8,7 @@ use App\Models\WwdeClimate;
 use App\Models\WwdeLocation;
 use App\Services\SeoService;
 use App\Services\WeatherService;
+use App\Models\ModLocationFilter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -73,6 +74,8 @@ $climates = WwdeClimate::where('location_id', $location->id)
     // SEO-Daten mit dem Service generieren oder speichern
     $seo = $seoService->getSeoData($location);
 
+    // Neue Inspirationsdaten hinzufügen
+    $inspirationData = $this->fetchInspirationData($location);
 
         return view('frondend.locationdetails._index', [
             'seo' => $seo,
@@ -98,8 +101,27 @@ $climates = WwdeClimate::where('location_id', $location->id)
             'price_trend' => $priceTrend,
             'hourly_weather' => $weather['hourly'],
             'weather_data_widget' => $weather['current'],
+            'inspiration_data' => $inspirationData, // Neue Variable
         ]);
     }
+
+
+/**
+ * Holt Inspirationsdaten für einen Standort aus mod_location_filters.
+ *
+ * @param WwdeLocation $location
+ * @return array
+ */
+private function fetchInspirationData(WwdeLocation $location): array
+{
+    return ModLocationFilter::where('location_id', $location->id)
+        ->where('is_active', 1)
+        ->get()
+        ->groupBy('text_type')
+        ->toArray();
+}
+
+
 
     /**
      * Holt einen Standort basierend auf Alias-Werten.
@@ -305,6 +327,11 @@ $climates = WwdeClimate::where('location_id', $location->id)
             Log::warning("Keine gültigen Klimadaten zum Speichern für Standort {$location->id}, Jahr {$previousYear}");
         }
     }
+
+
+
+
+
 
     // Neue Hilfsmethoden für sichere Berechnungen (unverändert)
     private function safeAvg(array $values): ?float

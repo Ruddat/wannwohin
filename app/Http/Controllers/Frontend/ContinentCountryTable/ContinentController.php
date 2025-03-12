@@ -8,6 +8,7 @@ use App\Services\SeoService;
 use App\Models\WwdeContinent;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use App\Repositories\ContinentRepository;
 
 class ContinentController extends Controller
