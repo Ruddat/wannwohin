@@ -1,5 +1,11 @@
 <section id="experience" class="section section-secondary section-no-border m-0">
     <div class="container">
+        <!-- Beispiel: Header -->
+<div class="header">
+    <x-ad-block slot="header" />
+</div>
+
+
         <div class="row">
             <div class="col">
                 <h2 class="text-color-dark text-uppercase font-weight-extra-bold mb-0">@autotranslate('WELCHER URLAUBSTYP SIND SIE?', app()->getLocale())</h2>
@@ -14,25 +20,7 @@
                         @endforeach
                     </select>
                 </div>
-<!-- Beispiel: Header -->
-<div class="header">
-    <x-ad-block slot="header" />
-</div>
 
-<style>
-    .ad-block {
-    margin: 20px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.ad-block img {
-    max-width: 100%;
-    height: auto;
-}
-</style>
                 <!-- Timeline aus Blade 1 integriert -->
                 <ul class="timeline">
                     @php
@@ -73,7 +61,7 @@
                                        class="card-link">
                                         <div class="card-details">
                                             <div class="card-header">
-                                                <h4 class="location-title">
+                                                <h4 class="location-title-2">
                                                     @autotranslate($type->title, app()->getLocale()) - @autotranslate($type->title_text, app()->getLocale())
                                                 </h4>
                                             </div>
@@ -227,8 +215,8 @@
         margin-bottom: 15px;
     }
 
-    .location-title {
-        font-size: 1.5rem;
+    .location-title-2 {
+        font-size: 1.2rem;
         font-weight: bold;
         color: #333;
     }
@@ -303,4 +291,18 @@
             max-width: 90%;
         }
     }
+</style>
+<style>
+    .ad-block {
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.ad-block img {
+    max-width: 100%;
+    height: auto;
+}
 </style>

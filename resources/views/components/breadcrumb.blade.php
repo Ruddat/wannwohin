@@ -1,5 +1,5 @@
 @if(!empty($breadcrumbs))
-    <section class="bg-color-light py-4">
+    <section class="bg-color-light py-2">
         <div class="container">
             <div class="row">
                 <div class="col align-self-center p-static">

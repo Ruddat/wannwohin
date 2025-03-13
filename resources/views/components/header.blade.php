@@ -10,7 +10,7 @@
     $headerTitleText = str_replace(['<p>', '</p>'], '', $headerTitleText ?? '');
 @endphp
 
-<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-position-1 custom-xs-bg-size-cover parallax-no-overflow m-0">
+<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-xs-bg-size-cover parallax-no-overflow m-0">
     <div class="parallax-background" style="background-image: url('{{ url($panoramaLocationPicture) }}');"></div>
     <div class="container">
         <div class="row align-items-center">
@@ -31,7 +31,7 @@
                     @endif
                 </div>
                 @if (Auth::guard('admin')->check())
-                    <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-3">
+                    <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-2">
                         Header Content Management
                     </a>
                 @endif
@@ -47,13 +47,13 @@
 
 <div class="custom-about-links bg-color-light">
     <div class="container">
-        <div class="links-row d-flex justify-content-end align-items-center gap-3">
+        <div class="links-row d-flex justify-content-end align-items-center gap-2">
             <div class="menu-toggle d-md-none">
                 <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="collapse d-md-flex justify-content-end align-items-center gap-3" id="mobileMenu">
+            <div class="collapse d-md-flex justify-content-end align-items-center gap-2" id="mobileMenu">
                 <div class="link-item col-md-6 col-12">
                     @livewire('frontend.header-search.header-search-component')
                 </div>
@@ -91,17 +91,17 @@
     }
 
     .parallax-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%; /* Höhe an die Sektion anpassen */
-    background-position: center;
-    background-size: cover;
-    transform: translateZ(0);
-    will-change: transform;
-    z-index: -1;
-}
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+        transform: translateZ(0);
+        will-change: transform;
+        z-index: -1;
+    }
 
     /* Header-Text */
     .heading-wrapper {
@@ -114,27 +114,27 @@
     }
 
     .travel-heading-with-bg {
-        font-size: 1.5rem;
+        font-size: 1.3rem; /* Kompakter */
         font-weight: bold;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         color: #333;
         background: rgba(255, 255, 255, 0.9);
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.8rem;
         margin: 0;
-        line-height: 1;
+        line-height: 1.2;
     }
 
     .travel-destination {
-        font-size: 3rem;
+        font-size: 2.5rem; /* Kompakter */
         font-weight: bold;
         text-transform: uppercase;
         color: #fff;
         background: rgba(0, 0, 0, 0.7);
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.8rem;
         margin: 0;
-        line-height: 1;
-        transform: translateX(3ch);
+        line-height: 1.2;
+        transform: translateX(2ch);
     }
 
     /* Hauptbild */
@@ -148,25 +148,25 @@
         border: 3px solid #ddd;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        max-height: 400px;
-        position: relative; /* Standardmäßig relativ */
+        max-height: 350px; /* Reduziert */
+        position: relative;
         z-index: 0;
     }
 
     /* Scroll-Icon */
     .custom-image-pos-1 {
-        max-width: 50px;
+        max-width: 40px; /* Kleiner */
         animation: bounce 2s infinite;
     }
 
     /* About-Links */
     .custom-about-links {
         background-color: #f9f9f9;
-        padding: 10px 0;
+        padding: 8px 0; /* Kompakter */
     }
 
     .links-row {
-        gap: 15px;
+        gap: 10px; /* Weniger Abstand */
     }
 
     .link-item {
@@ -179,8 +179,8 @@
 
     .custom-about-links .form-select {
         width: 100%;
-        padding: 0.5rem;
-        font-size: 14px;
+        padding: 0.4rem; /* Kompakter */
+        font-size: 13px; /* Kleiner */
         border: 1px solid #ccc;
         border-radius: 4px;
         background-color: #FDD55C;
@@ -192,8 +192,8 @@
 
     /* Wishlist-Icon anpassen */
     .sub-link-item .wishlist-component img {
-        width: 24px;
-        height: 24px;
+        width: 20px; /* Kleiner */
+        height: 20px;
         background: none;
         border: none;
     }
@@ -201,26 +201,26 @@
     /* Animation */
     @keyframes bounce {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-8px); }
     }
 
     /* Ergebnis-Text */
     .custom-results-text {
         background-color: #fdd55c;
-        padding: 8px 20px;
+        padding: 6px 15px; /* Kompakter */
         text-align: center;
-        border-radius: 8px;
+        border-radius: 6px;
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1rem; /* Kleiner */
         color: #333;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 15px;
+        margin-bottom: 10px; /* Weniger Abstand */
         display: inline-block;
     }
 
     .custom-text {
         margin: 0;
-        line-height: 1.4;
+        line-height: 1.3; /* Kompakter */
     }
 
     /* Hamburger-Menü */
@@ -231,11 +231,11 @@
     /* Responsive Anpassungen */
     @media (max-width: 992px) {
         .custom-header-section {
-            padding: 2rem 0;
+            padding: 1.5rem 0; /* Kompakter */
         }
         .custom-image-position-2 {
-            max-height: 300px;
-            position: static; /* Im Tablet-Modus statisch */
+            max-height: 280px; /* Reduziert */
+            position: static;
         }
     }
 
@@ -245,7 +245,7 @@
         }
         .links-row {
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 4px; /* Weniger Abstand */
             justify-content: flex-end;
         }
         #mobileMenu:not(.show) {
@@ -253,11 +253,11 @@
         }
         #mobileMenu.show {
             width: 100%;
-            padding: 10px;
+            padding: 8px; /* Kompakter */
             background: #f9f9f9;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
         .link-item.col-md-6 {
             flex: 0 0 100%;
@@ -267,7 +267,7 @@
             display: flex;
             flex-wrap: nowrap;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             width: 100%;
         }
         .sub-link-item {
@@ -275,25 +275,25 @@
             max-width: 48%;
         }
         .travel-heading-with-bg {
-            font-size: 1.2rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 1rem; /* Kleiner */
+            padding: 0.3rem 0.6rem;
             text-align: center;
         }
         .travel-destination {
-            font-size: 2rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 1.8rem; /* Kleiner */
+            padding: 0.3rem 0.6rem;
             transform: none;
             text-align: center;
         }
         .custom-image-position-2 {
-            max-height: 250px;
-            position: static; /* Im Mobile-Modus statisch */
+            max-height: 220px; /* Reduziert */
+            position: static;
         }
         .custom-image-pos-1 {
             display: none;
         }
         .custom-header-section {
-            padding: 1rem 0;
+            padding: 1rem 0; /* Kompakter */
         }
     }
 
@@ -311,39 +311,40 @@
             flex: 0 0 auto;
         }
         .custom-section-padding-1 {
-            padding-top: 200px !important;
-            padding-bottom: 70px !important;
+            padding-top: 150px !important; /* Reduziert */
+            padding-bottom: 50px !important; /* Reduziert */
         }
         .custom-image-position-2 {
             position: relative;
             max-width: 100%;
-            top: -60px;
+            top: -50px; /* Weniger Überlappung */
             z-index: 0;
-            height: 400px;
+            height: 350px; /* Reduziert */
         }
     }
 
     @media (max-width: 576px) {
         .custom-header-section {
-            padding: 1rem 0;
+            padding: 0.8rem 0; /* Noch kompakter */
         }
         .travel-heading-with-bg {
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .travel-destination {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
         }
         .custom-image-position-2 {
-            max-height: 200px;
+            max-height: 180px; /* Reduziert */
         }
         .custom-about-links {
-            padding: 5px 0;
+            padding: 4px 0; /* Kompakter */
         }
         .links-row {
-            gap: 8px;
+            gap: 6px;
         }
     }
-    </style>
+</style>
+
 <script>
     document.addEventListener('scroll', function () {
         const parallax = document.querySelector('.parallax-background');
@@ -351,9 +352,9 @@
         if (parallax && section) {
             const scrollPosition = window.pageYOffset;
             const sectionHeight = section.offsetHeight;
-            const maxScroll = sectionHeight; // Begrenze den Effekt an die Sektion-Höhe
-            const translateY = Math.min(scrollPosition * 0.5, maxScroll); // Begrenze die Verschiebung
-            parallax.style.transform = 'translateY(-' + translateY + 'px)'; // Negativ, um nach oben zu verschieben
+            const maxScroll = sectionHeight;
+            const translateY = Math.min(scrollPosition * 0.3, maxScroll); /* Sanfterer Effekt */
+            parallax.style.transform = 'translateY(-' + translateY + 'px)';
         }
     });
-    </script>
+</script>

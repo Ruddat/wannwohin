@@ -23,6 +23,7 @@ class LocationInspirationComponent extends Component
 
     public $deepInfraApiToken;
 
+    
     public function mount($locationId, $locationTitle)
     {
         $this->locationId = $locationId;
