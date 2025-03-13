@@ -1,4 +1,4 @@
-<section id="experience" class="experience-section section section-secondary mt-5 mb-5 pt-0">
+<section id="experience" class="experience-section py-5">
     <div class="container">
 
         <!-- Banner oberhalb -->

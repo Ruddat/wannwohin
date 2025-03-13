@@ -15,6 +15,7 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "@ckeditor/ckeditor5-build-classic": "^44.1.0"
+        "@ckeditor/ckeditor5-build-classic": "^44.1.0",
+        "sweetalert2": "^11.17.2"
     }
 }

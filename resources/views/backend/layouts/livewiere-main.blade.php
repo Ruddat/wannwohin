@@ -12,7 +12,7 @@
 
 @include('backend.layouts.partials.header-css')
 
-
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body  class=" layout-fluid">

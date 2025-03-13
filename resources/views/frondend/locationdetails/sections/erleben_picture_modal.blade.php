@@ -1,5 +1,11 @@
 <section class="section section-no-border m-0 pb-5 gallery-section" style="position: relative; overflow: hidden;">
-    <div class="parallax-bg" style="background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');"></div>
+    <!-- Parallax-Hintergrund -->
+    <div class="parallax-bg"
+         style="background-image: url('/assets/img/erleben_pictures.jpg');"
+         data-jarallax
+         data-speed="0.5">
+    </div>
+
     <div class="container position-relative z-index-2">
         <!-- Überschrift -->
         <div class="row mb-4">
@@ -72,13 +78,18 @@
 <!-- Animate.css -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
+<!-- Jarallax Library einbinden -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jarallax/1.12.6/jarallax.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // AOS Initialisierung
     AOS.init({
         duration: 1000,
         once: true,
     });
 
+    // GLightbox Initialisierung
     try {
         const lightbox = GLightbox({
             selector: '.glightbox',
@@ -94,15 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error('Fehler bei GLightbox-Initialisierung:', error);
     }
-});
 
-// Parallax-Effekt
-document.addEventListener('scroll', () => {
-    const parallax = document.querySelector('.parallax-bg');
-    if (parallax) {
-        const scrollPosition = window.pageYOffset;
-        parallax.style.transform = 'translateY(' + scrollPosition * 0.2 + 'px)';
-    }
+    // Jarallax Initialisierung
+    jarallax(document.querySelectorAll('[data-jarallax]'), {
+        speed: 0.5
+    });
 });
 </script>
 
@@ -121,7 +128,7 @@ document.addEventListener('scroll', () => {
         height: 100%;
         background-size: cover;
         background-position: center;
-        opacity: 0.15; /* Leichtes Overlay für Textur */
+        opacity: 0.5; /* Leichtes Overlay für Textur */
         z-index: 1;
         transform: translateZ(0);
         will-change: transform;

@@ -1,4 +1,4 @@
-<section class="section section-no-border bg-color-light m-0 pb-0" style="background-color: #eaeff5 !important;">
+<section class="section section-no-border bg-color-light m-0 pb-4" style="background-color: #eaeff5 !important;">
     <div class="container">
         <h1 class="text-center mb-4">@autotranslate("Locations in", app()->getLocale()) {{ $country->title }}</h1>
 
@@ -78,11 +78,11 @@
                                         'location' => $location->alias,
                                     ]) }}"
                                    class="text-decoration-none">
-                                    <div class="card-img-wrapper">
-                                        <img src="{{ $location->primaryImage() }}"
-                                             class="card-img-top"
-                                             alt="@autotranslate($location->title, app()->getLocale())">
-                                    </div>
+                                   <div class="card-img-wrapper">
+                                    <img src="{{ $location->primaryImage() ?: asset('img/placeholders/location-placeholder.jpg') }}"
+                                         class="card-img-top"
+                                         alt="@autotranslate($location->title, app()->getLocale())">
+                                </div>
                                 </a>
                                 <!-- Inhalt -->
                                 <div class="card-body d-flex flex-column">
@@ -137,7 +137,7 @@
             </div>
         </div>
 
-        <div class="mb-6"></div>
+        <div class="mb-4"></div>
     </div>
 </section>
 

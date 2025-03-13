@@ -131,7 +131,10 @@
         </section>
 
         <!-- Zusätzliche Sektionen -->
+        @include('frondend.locationdetails.sections.amusement_parks')
+
         @include('frondend.locationdetails.sections.climate_table')
+
         @if ($location->text_what_to_do)
             @include('frondend.locationdetails.sections.erleben')
         @endif
@@ -168,7 +171,7 @@
         height: 100%;
         background-size: cover;
         background-position: center;
-        opacity: 0.1;
+        opacity: 0.5;
         z-index: 1;
     }
 

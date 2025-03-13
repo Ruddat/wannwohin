@@ -54,28 +54,20 @@ class LocationDetailsController extends Controller
         $bestTravelMonths = $this->parseBestTravelMonths($location->best_traveltime_json);
 
         // Klimadaten für das laufende Jahr (2025)
+        //  $climates = $this->fetchClimateYearData($location, $currentYear);
+        //  $climates = $this->fetchSeasonalClimateYearData($location, $currentYear);
+        //  Hole und speichere Klimadaten für das Vorjahr (2024)
+        //  $climates = $this->fetchHistoricalClimateYearData($location, $currentYear);
+        // Klimadaten für das Vorjahr (2024)
         $currentYear = date('Y'); // 2025
-      //  $climates = $this->fetchClimateYearData($location, $currentYear);
-      //  $climates = $this->fetchSeasonalClimateYearData($location, $currentYear);
-      // Hole und speichere Klimadaten für das Vorjahr (2024)
-//$climates = $this->fetchHistoricalClimateYearData($location, $currentYear);
-$climates = $this->fetchAndStoreClimateData($location, $currentYear);
-
-// Klimadaten für das Vorjahr (2024) aus der Datenbank
-$currentYear = date('Y'); // 2025
-$climates = WwdeClimate::where('location_id', $location->id)
-    ->where('year', $currentYear - 1) // Vorjahr 2024
-    ->orderBy('month_id', 'asc')
-    ->get();
+        $climates = $this->fetchAndStoreClimateData($location, $currentYear); // Nutzt jetzt die Rückgabe
 
 
-    //  dd($climates);
+        // SEO-Daten mit dem Service generieren oder speichern
+        $seo = $seoService->getSeoData($location);
 
-    // SEO-Daten mit dem Service generieren oder speichern
-    $seo = $seoService->getSeoData($location);
-
-    // Neue Inspirationsdaten hinzufügen
-    $inspirationData = $this->fetchInspirationData($location);
+        // Neue Inspirationsdaten hinzufügen
+        $inspirationData = $this->fetchInspirationData($location);
 
         return view('frondend.locationdetails._index', [
             'seo' => $seo,
@@ -172,33 +164,44 @@ private function fetchInspirationData(WwdeLocation $location): array
         return $galleryImages;
     }
 
-    private function fetchAndStoreClimateData(WwdeLocation $location, int $year): void
+    private function fetchAndStoreClimateData(WwdeLocation $location, int $year): \Illuminate\Support\Collection
     {
-        $cacheKey = "climate_data_{$location->id}_{$year}";
         $previousYear = $year - 1;
+        $cacheKey = "climate_data_{$location->id}_{$previousYear}";
 
-        if (!$location->lat || !$location->lon) {
-            Log::error("Ungültige Koordinaten für Standort {$location->id}: lat={$location->lat}, lon={$location->lon}");
-            return;
-        }
-
-        // Prüfe, ob ALLE Monate für das Vorjahr vorhanden sind
+        // Hole vorhandene Monate aus der Datenbank
         $existingMonths = WwdeClimate::where('location_id', $location->id)
             ->where('year', $previousYear)
             ->pluck('month_id')
             ->toArray();
 
-        $allMonthsPresent = count($existingMonths) === 12 && array_diff(range('01', '12'), $existingMonths) === [];
+        // Wenn alle 12 Monate vorhanden sind, direkt aus der Datenbank zurückgeben
+        if (count($existingMonths) === 12 && array_diff(range('01', '12'), $existingMonths) === []) {
+            return WwdeClimate::where('location_id', $location->id)
+                ->where('year', $previousYear)
+                ->orderBy('month_id', 'asc')
+                ->get();
+        }
 
-        if ($allMonthsPresent) {
-            return; // Beende nur, wenn alle 12 Monate vorhanden sind
+        // Bestimme fehlende Monate
+        $missingMonths = array_diff(range('01', '12'), $existingMonths);
+
+        if (empty($missingMonths)) {
+            return WwdeClimate::where('location_id', $location->id)
+                ->where('year', $previousYear)
+                ->orderBy('month_id', 'asc')
+                ->get();
+        }
+
+        if (!$location->lat || !$location->lon) {
+            Log::error("Ungültige Koordinaten für Standort {$location->id}: lat={$location->lat}, lon={$location->lon}");
+            return WwdeClimate::where('location_id', $location->id)
+                ->where('year', $previousYear)
+                ->orderBy('month_id', 'asc')
+                ->get();
         }
 
         $climateData = Cache::remember($cacheKey, 24 * 60 * 60, function () use ($location, $previousYear) {
-            if (config('app.debug')) {
-                Log::debug("Open-Meteo Historical Weather Request für Standort {$location->id}: latitude={$location->lat}, longitude={$location->lon}, year={$previousYear}");
-            }
-
             $response = Http::get('https://archive-api.open-meteo.com/v1/archive', [
                 'latitude' => $location->lat,
                 'longitude' => $location->lon,
@@ -208,12 +211,8 @@ private function fetchInspirationData(WwdeLocation $location): array
                 'timezone' => 'auto',
             ]);
 
-            if (config('app.debug')) {
-                Log::debug("Open-Meteo Historical Weather Response: Status={$response->status()}");
-            }
-
             if (!$response->successful()) {
-                Log::error("API-Fehler bei Open-Meteo Historical Weather für {$location->id} im Jahr {$previousYear}: Status-Code {$response->status()}, Body: " . $response->body());
+                Log::error("API-Fehler bei Open-Meteo Historical Weather für {$location->id}: Status-Code {$response->status()}");
                 return [];
             }
 
@@ -223,7 +222,6 @@ private function fetchInspirationData(WwdeLocation $location): array
                 return [];
             }
 
-            $climates = [];
             $monthlyData = collect($data['time'])->reduce(function ($carry, $date, $key) use ($data) {
                 $month = Carbon::parse($date)->month;
                 $carry[$month] = $carry[$month] ?? [
@@ -248,18 +246,11 @@ private function fetchInspirationData(WwdeLocation $location): array
                 $carry[$month]['sunrises'][] = $data['sunrise'][$key] ?? null;
                 $carry[$month]['sunsets'][] = $data['sunset'][$key] ?? null;
 
-                if (config('app.debug')) {
-                    Log::debug("Tägliche Daten für {$date}: weather_code=" . ($data['weather_code'][$key] ?? 'null'));
-                }
-
                 return $carry;
             }, []);
 
+            $climates = [];
             foreach ($monthlyData as $month => $values) {
-                if (config('app.debug')) {
-                    Log::debug("Monatliche Daten für Monat {$month}: weather_codes=" . json_encode($values['weather_codes']));
-                }
-
                 $weatherCodes = collect($values['weather_codes'])->filter()->all();
                 $weatherId = !empty($weatherCodes) ? collect($weatherCodes)->mode()[0] ?? null : null;
 
@@ -299,33 +290,45 @@ private function fetchInspirationData(WwdeLocation $location): array
         });
 
         if (!empty($climateData) && is_array($climateData) && count($climateData) > 0) {
-            $insertData = array_map(function ($monthData) use ($location) {
-                if ($monthData['timezone'] === 'auto') {
-                    $monthData['timezone'] = null;
-                } elseif (is_string($monthData['timezone'])) {
-                    try {
-                        $timezone = new DateTimeZone($monthData['timezone']);
-                        $monthData['timezone'] = $timezone->getOffset(new DateTime());
-                    } catch (\Exception $e) {
-                        $monthData['timezone'] = null;
-                        Log::warning("Ungültige Zeitzone für Standort {$location->id}: {$monthData['timezone']}");
-                    }
-                }
-                return $monthData;
-            }, array_values($climateData)); // Sicherstellen, dass der Array-Index numerisch ist
+            // Nur fehlende Monate speichern
+            $insertData = array_filter($climateData, function ($monthData) use ($missingMonths) {
+                return in_array($monthData['month_id'], $missingMonths);
+            });
 
-            try {
-                WwdeClimate::upsert(
-                    $insertData,
-                    ['location_id', 'year', 'month_id'],
-                    array_keys($insertData[0])
-                );
-            } catch (\Exception $e) {
-                Log::error("Fehler beim Speichern der Klimadaten für Standort {$location->id}, Jahr {$previousYear}: " . $e->getMessage());
+            if (!empty($insertData)) {
+                $insertData = array_map(function ($monthData) use ($location) {
+                    if ($monthData['timezone'] === 'auto') {
+                        $monthData['timezone'] = null;
+                    } elseif (is_string($monthData['timezone'])) {
+                        try {
+                            $timezone = new DateTimeZone($monthData['timezone']);
+                            $monthData['timezone'] = $timezone->getOffset(new DateTime());
+                        } catch (\Exception $e) {
+                            $monthData['timezone'] = null;
+                            Log::warning("Ungültige Zeitzone für Standort {$location->id}: {$monthData['timezone']}");
+                        }
+                    }
+                    return $monthData;
+                }, array_values($insertData));
+
+                try {
+                    WwdeClimate::upsert(
+                        $insertData,
+                        ['location_id', 'year', 'month_id'],
+                        array_keys($insertData[0])
+                    );
+                    Log::info("Klimadaten für fehlende Monate von Standort {$location->id}, Jahr {$previousYear} erfolgreich gespeichert.");
+                } catch (\Exception $e) {
+                    Log::error("Fehler beim Speichern der Klimadaten für Standort {$location->id}, Jahr {$previousYear}: " . $e->getMessage());
+                }
             }
-        } else {
-            Log::warning("Keine gültigen Klimadaten zum Speichern für Standort {$location->id}, Jahr {$previousYear}");
         }
+
+        // Rückgabe der vollständigen Klimadaten aus der Datenbank
+        return WwdeClimate::where('location_id', $location->id)
+            ->where('year', $previousYear)
+            ->orderBy('month_id', 'asc')
+            ->get();
     }
 
 
@@ -657,7 +660,7 @@ private function fetchAllWeatherData(WwdeLocation $location): array
         return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location) {
             $amusementParks = DB::table('amusement_parks')
                 ->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
-                ->having('distance', '<=', 100)
+                ->having('distance', '<=', 150) // Maximal 150 km Entfernung
                 ->orderBy('distance', 'asc')
                 ->get();
 
