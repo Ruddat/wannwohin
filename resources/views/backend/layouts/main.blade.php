@@ -12,6 +12,8 @@
 
 @include('backend.layouts.partials.header-css')
 
+<meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF-Token hinzufügen -->
+<meta name="session-id" content="{{ Session::getId() }}">
 @vite(['resources/backend/css/app.css', 'resources/backend/js/app.js'])
 
 

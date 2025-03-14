@@ -283,10 +283,23 @@
                                 SEO Tabelle
                             </a>
 
+                            {{--
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.visitor.stats') ? 'active' : '' }}"
                                 href="{{ route('verwaltung.seo-table-manager.visitor.stats') }}">
                                 Visitor Stats
                              </a>
+                             --}}
+
+                             <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.visitor-stats') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.seo-table-manager.visitor-stats') }}">
+                                Visitor Stats
+                             </a>
+
+                             <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.backup.index') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.seo-table-manager.backup.index') }}">
+                                Backups
+                             </a>
+
 
                         </div>
                         <div class="dropdown-menu-column">

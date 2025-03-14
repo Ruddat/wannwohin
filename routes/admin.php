@@ -19,10 +19,12 @@ use App\Livewire\Backend\LocationManager\LocationTableComponent;
 use App\Livewire\Backend\AdvertisementManager\ProvidersComponent;
 use App\Livewire\Backend\QuickFilterManager\QuickFilterComponent;
 use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
+use App\Http\Controllers\Backend\SystemComponent\BackupController;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\SiteSettingsComponent\SiteSettingsManager;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
+use App\Http\Controllers\Backend\SeoStatistik\VisitorStatsController;
 use App\Livewire\Backend\StaticPageManager\StaticPageManagerComponent;
 use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
 use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
@@ -142,7 +144,13 @@ Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function (
     Route::get('/visitorstats', VisitorStats::class)->name('visitor.stats');
     Route::get('static-page-manager', StaticPageManagerComponent::class)->name('static-page-manager');
     Route::get('/site-settings', SiteSettingsManager::class)->name('site-settings');
+    Route::get('/visitor-stats', [VisitorStatsController::class, 'index'])->name('visitor-stats');
+    Route::get('/visitor-stats/data', [VisitorStatsController::class, 'getStats'])->name('visitor-stats.data');
 
+    Route::get('/backups', [BackupController::class, 'index'])->name('backup.index');
+    Route::post('/backups/run', [BackupController::class, 'run'])->name('backup.run');
+    Route::get('/backups/download/{path}', [BackupController::class, 'download'])->name('backup.download');
+    Route::delete('/backups/delete/{path}', [BackupController::class, 'delete'])->name('backup.delete');
 });
 
 

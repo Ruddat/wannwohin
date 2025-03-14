@@ -26,4 +26,10 @@ Schedule::command('currency:update-exchange-rates')->monthly();
 // Wartungsmodus-Check
 Schedule::command(CheckMaintenanceExpiration::class)->everyFiveMinutes();
 
+// Backup-Aufgaben
+Schedule::command('backup:run')->dailyAt('02:00'); // Täglich um 2:00 Uhr
+Schedule::command('backup:clean')->dailyAt('02:15'); // Alte Backups um 2:15 Uhr bereinigen
+
+
+
 // Schedule::command(FetchDailyWeatherData::class)->dailyAt('14:00');

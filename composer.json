@@ -20,6 +20,7 @@
         "mews/purifier": "^3.4",
         "phpoffice/phpspreadsheet": "^3.7",
         "spatie/image": "^3.8",
+        "spatie/laravel-backup": "^9.2",
         "spatie/laravel-data": "^4.11",
         "stichoza/google-translate-php": "^5.2",
         "symfony/dom-crawler": "^7.2"

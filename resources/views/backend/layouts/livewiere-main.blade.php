@@ -43,6 +43,7 @@
 
 
     @include('backend.layouts.partials.scripts')
+    @livewireScripts <!-- Livewire-Scripts -->
     <!-- Stack für Seiten-spezifische Skripte -->
     @stack('scripts')
 

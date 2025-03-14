@@ -3,8 +3,34 @@
 
 <!-- resources/views/livewire/backend/seo-meta-component/visitor-stats.blade.php -->
 <div class="container-xl">
+    <!-- Filter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label">Zeitraum</label>
+                    <select wire:model.live="timeRange" class="form-select">
+                        <option value="24h">Letzte 24 Stunden</option>
+                        <option value="7d">Letzte 7 Tage</option>
+                        <option value="30d">Letzte 30 Tage</option>
+                        <option value="all">Gesamter Zeitraum</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quelle</label>
+                    <select wire:model.live="sourceFilter" class="form-select">
+                        <option value="">Alle Quellen</option>
+                        @foreach ($sources as $source)
+                            <option value="{{ $source }}">{{ $source }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Übersichtskarten -->
     <div class="row g-4">
-        <!-- Übersichtskarten -->
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
@@ -44,7 +70,10 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Besuche pro Stunde (letzte 24h)</h5>
+                    <h5 class="mb-0">
+                        Besuche {{ $timeRange === '30d' || $timeRange === 'all' ? 'pro Monat' : 'pro Tag' }}
+                        ({{ $timeRange === '24h' ? 'letzte 24h' : ($timeRange === '7d' ? 'letzte 7 Tage' : ($timeRange === '30d' ? 'letzte 30 Tage' : 'gesamt')) }})
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div id="visits-chart" style="min-height: 300px;"></div>
@@ -63,12 +92,12 @@
                         @forelse ($topReferrals as $referral)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>
-                                    <span class="badge me-2">{{ $referral->source }}</span>
+                                    <span class="badge bg-primary me-2">{{ $referral->source }}</span>
                                     @if($referral->keyword)
-                                        <small>({{ $referral->keyword }})</small>
+                                        <small class="text-muted">({{ $referral->keyword }})</small>
                                     @endif
                                 </span>
-                                <span class="badge">{{ $referral->count }}</span>
+                                <span class="badge bg-light text-dark">{{ $referral->count }}</span>
                             </li>
                         @empty
                             <li class="list-group-item">Keine Daten verfügbar</li>
@@ -86,8 +115,10 @@
                     <ul class="list-group list-group-flush">
                         @forelse ($topLandingPages as $page)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ Str::limit($page->landing_page, 50) }}</span>
-                                <span class="badge">{{ $page->count }}</span>
+                                <a href="{{ $page->landing_page }}" target="_blank" class="text-truncate" style="max-width: 300px;">
+                                    {{ $page->landing_page }}
+                                </a>
+                                <span class="badge bg-light text-dark">{{ $page->count }}</span>
                             </li>
                         @empty
                             <li class="list-group-item">Keine Daten verfügbar</li>
@@ -101,23 +132,26 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            var options = {
+        let chart = null;
+
+        // Initialisiere den Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialOptions = {
                 chart: {
                     type: 'area',
                     height: 300,
-                    toolbar: { show: false },
+                    toolbar: { show: true },
                 },
                 series: [{
                     name: 'Besuche',
-                    data: @json($chartData)
+                    data: @json($chartData),
                 }],
                 xaxis: {
-                    categories: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
-                    title: { text: 'Stunde' }
+                    categories: @json($chartLabels),
+                    title: { text: '{{ $timeRange === "30d" || $timeRange === "all" ? "Monat" : "Tag" }}' },
                 },
                 yaxis: {
-                    title: { text: 'Anzahl Besuche' }
+                    title: { text: 'Anzahl Besuche' },
                 },
                 colors: ['#0d6efd'],
                 fill: {
@@ -126,14 +160,42 @@
                         shadeIntensity: 1,
                         opacityFrom: 0.7,
                         opacityTo: 0.3,
-                    }
+                    },
                 },
                 dataLabels: { enabled: false },
                 stroke: { curve: 'smooth', width: 2 },
+                tooltip: {
+                    x: { format: '{{ $timeRange === "30d" || $timeRange === "all" ? "MMM yyyy" : "dd.MM" }}' },
+                },
             };
-
-            var chart = new ApexCharts(document.querySelector("#visits-chart"), options);
+            chart = new ApexCharts(document.querySelector('#visits-chart'), initialOptions);
             chart.render();
+        });
+
+        // Warte auf Livewire und aktualisiere den Chart
+        function waitForLivewire(callback) {
+            if (typeof Livewire !== 'undefined') {
+                callback();
+            } else {
+                setTimeout(() => waitForLivewire(callback), 100);
+            }
+        }
+
+        waitForLivewire(() => {
+            Livewire.on('update-chart', ({ labels, data, timeRange }) => {
+                if (chart) {
+                    chart.updateOptions({
+                        xaxis: {
+                            categories: labels,
+                            title: { text: timeRange === '30d' || timeRange === 'all' ? 'Monat' : 'Tag' },
+                        },
+                        tooltip: {
+                            x: { format: timeRange === '30d' || timeRange === 'all' ? 'MMM yyyy' : 'dd.MM' },
+                        },
+                    });
+                    chart.updateSeries([{ data: data }]);
+                }
+            });
         });
     </script>
 @endpush
