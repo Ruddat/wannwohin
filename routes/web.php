@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
 use App\Http\Controllers\WetterTestController;
@@ -67,6 +68,7 @@ Route::get('/random-destination', [NewSearchController::class, 'randomDestinatio
 
 //Route::get('/compare/{ids}', [WishlistCompareController::class, 'index'])->name('compare');
 
+Route::post('/track-dwell-time', [VisitorController::class, 'trackDwellTime'])->name('track.dwell.time');
 
 
     Route::get('/wetter', [WetterTestController::class, 'showWeather']);
@@ -74,7 +76,7 @@ Route::get('/random-destination', [NewSearchController::class, 'randomDestinatio
 
 
 
-Route::middleware(['web', 'breadcrumbs'])->group(function () {
+Route::middleware(['web', 'breadcrumbs', 'track-referral'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
 
     Route::get('/urlaub/{urlaub_type}/month/{month_id}', [IndexController::class, 'searchResults'])

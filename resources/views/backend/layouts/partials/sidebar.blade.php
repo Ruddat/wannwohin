@@ -282,6 +282,12 @@
                                href="{{ route('verwaltung.seo-table-manager.seo.table') }}">
                                 SEO Tabelle
                             </a>
+
+                            <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.visitor.stats') ? 'active' : '' }}"
+                                href="{{ route('verwaltung.seo-table-manager.visitor.stats') }}">
+                                Visitor Stats
+                             </a>
+
                         </div>
                         <div class="dropdown-menu-column">
                             <a class="dropdown-item {{ request()->routeIs('verwaltung.seo-table-manager.site-settings') ? 'active' : '' }}"

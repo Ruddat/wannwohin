@@ -12,6 +12,9 @@
 
 @include('backend.layouts.partials.header-css')
 
+@vite(['resources/backend/css/app.css', 'resources/backend/js/app.js'])
+
+
 @stack('styles')
 
 </head>
@@ -38,7 +41,7 @@
         </div>
         <!-- Main Section end -->
       </div>
-   
+
 
 
 

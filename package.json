@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@ckeditor/ckeditor5-build-classic": "^44.1.0",
-        "sweetalert2": "^11.17.2"
+        "apexcharts": "^4.5.0",
+        "sweetalert2": "^11.6.13"
     }
 }

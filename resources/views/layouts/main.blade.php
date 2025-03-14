@@ -139,7 +139,10 @@
     <link rel="stylesheet" href="{{ asset('assets/css/theme-blog.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/theme-shop.css') }}">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="session-id" content="{{ Session::getId() }}">
+    @vite(['resources/frontend/css/app.css', 'resources/frontend/js/app.js'])
 
     <!-- Demo CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/demo-resume.css') }}">

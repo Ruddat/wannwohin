@@ -5,6 +5,7 @@ use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Livewire\Backend\SeoMetaComponent\SeoMetaEdit;
 use App\Livewire\Backend\SeoMetaComponent\SeoMetaTable;
+use App\Livewire\Backend\SeoMetaComponent\VisitorStats;
 use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Livewire\Backend\WeatherManager\ClimateDataManager;
@@ -138,6 +139,7 @@ Route::prefix('location-table-manager')->name('location-table-manager.')->group(
 Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function () {
     Route::get('/seo', SeoMetaTable::class)->name('seo.table');
     Route::get('/seo/edit/{id}', SeoMetaEdit::class)->name('seo.edit');
+    Route::get('/visitorstats', VisitorStats::class)->name('visitor.stats');
     Route::get('static-page-manager', StaticPageManagerComponent::class)->name('static-page-manager');
     Route::get('/site-settings', SiteSettingsManager::class)->name('site-settings');
 
