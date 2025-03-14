@@ -30,24 +30,22 @@
                     </thead>
                     <tbody>
                         @forelse ($backups as $backup)
-                            <tr>
-                                <td>{{ basename($backup['path']) }}</td>
-                                <td>{{ $backup['date'] }}</td>
-                                <td>{{ $backup['size'] }}</td>
-                                <td>
-                                    <a href="{{ route('verwaltung.seo-table-manager.backup.download', $backup['path']) }}" class="btn btn-sm btn-success">Download</a>
-                                    <form action="{{ route('verwaltung.seo-table-manager.backup.delete', $backup['path']) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Backup wirklich löschen?')">Löschen</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4">Keine Backups verfügbar.</td>
-                            </tr>
-                        @endforelse
+                        <tr>
+                            <td>{{ basename($backup['path']) }}</td>
+                            <td>{{ $backup['date'] }}</td>
+                            <td>{{ $backup['size'] }}</td>
+                            <td>
+                                <a href="{{ route('verwaltung.seo-table-manager.backup.download', $backup['path']) }}" class="btn btn-sm btn-success">Download</a>
+                                <form action="{{ route('verwaltung.seo-table-manager.backup.delete', $backup['path']) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Backup wirklich löschen?')">Löschen</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4">Keine Backups verfügbar.</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>

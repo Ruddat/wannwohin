@@ -139,6 +139,7 @@ Route::prefix('location-table-manager')->name('location-table-manager.')->group(
 
 // SiteSettings Manager SeoMetaTable Manager
 Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function () {
+    // Bestehende Routen
     Route::get('/seo', SeoMetaTable::class)->name('seo.table');
     Route::get('/seo/edit/{id}', SeoMetaEdit::class)->name('seo.edit');
     Route::get('/visitorstats', VisitorStats::class)->name('visitor.stats');
@@ -147,10 +148,20 @@ Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function (
     Route::get('/visitor-stats', [VisitorStatsController::class, 'index'])->name('visitor-stats');
     Route::get('/visitor-stats/data', [VisitorStatsController::class, 'getStats'])->name('visitor-stats.data');
 
+    // Backup-Routen
     Route::get('/backups', [BackupController::class, 'index'])->name('backup.index');
     Route::post('/backups/run', [BackupController::class, 'run'])->name('backup.run');
-    Route::get('/backups/download/{path}', [BackupController::class, 'download'])->name('backup.download');
-    Route::delete('/backups/delete/{path}', [BackupController::class, 'delete'])->name('backup.delete');
+   // Route::get('/backups/download/{path}', [BackupController::class, 'download'])->name('backup.download');
+
+   Route::get('download/{path}', [BackupController::class, 'download'])
+   ->where('path', '.*')
+   ->name('backup.download');
+
+   Route::delete('delete/{path}', [BackupController::class, 'delete'])
+    ->where('path', '.*')
+    ->name('backup.delete');
+
+//    Route::delete('/backups/delete/{path}', [BackupController::class, 'delete'])->name('backup.delete');
 });
 
 

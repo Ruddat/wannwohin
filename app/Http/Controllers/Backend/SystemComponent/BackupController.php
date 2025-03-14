@@ -32,16 +32,20 @@ class BackupController extends Controller
 
     public function download($path)
     {
-        $filePath = "backups/{$path}";
-        if (Storage::disk('backups')->exists($path)) {
-            return Storage::disk('backups')->download($path);
+
+        $exists = Storage::disk('backups')->exists($path);
+        $fullPath = Storage::disk('backups')->path($path);
+
+        if ($exists) {
+            $fileName = basename($path);
+            return response()->download($fullPath, $fileName);
         }
-        return redirect()->route('verwaltung.seo-table-manager.backup.index')->with('error', 'Backup-Datei nicht gefunden.');
+        return redirect()->route('verwaltung.seo-table-manager.backup.index')
+            ->with('error', "Backup-Datei nicht gefunden: {$path}");
     }
 
     public function delete($path)
     {
-        $filePath = "backups/{$path}";
         if (Storage::disk('backups')->exists($path)) {
             Storage::disk('backups')->delete($path);
             return redirect()->route('verwaltung.seo-table-manager.backup.index')->with('success', 'Backup wurde erfolgreich gelöscht.');

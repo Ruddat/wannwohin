@@ -74,8 +74,6 @@ Route::post('/track-dwell-time', [VisitorController::class, 'trackDwellTime'])->
     Route::get('/wetter', [WetterTestController::class, 'showWeather']);
 
 
-
-
 Route::middleware(['web', 'breadcrumbs', 'track-referral'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
 
