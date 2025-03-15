@@ -9,11 +9,6 @@
         <!-- Bootstrap CSS (falls nicht bereits im Layout enthalten) -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        <!-- Inspirationsbereich -->
-        @livewire('frontend.location-inspiration.location-inspiration-component', [
-            'locationId'    => $location->id,
-            'locationTitle' => $location->title
-        ])
 
         <!-- Erlebnis-Sektion -->
         <section id="experience" class="section section-no-border bg-light m-0 py-5 position-relative">
@@ -130,14 +125,22 @@
             </div>
         </section>
 
-        <!-- Zusätzliche Sektionen -->
-        @include('frondend.locationdetails.sections.amusement_parks')
-
         @include('frondend.locationdetails.sections.climate_table')
 
         @if ($location->text_what_to_do)
             @include('frondend.locationdetails.sections.erleben')
         @endif
+
+        <!-- Inspirationsbereich -->
+        @livewire('frontend.location-inspiration.location-inspiration-component', [
+            'locationId'    => $location->id,
+            'locationTitle' => $location->title
+        ])
+
+        <!-- Zusätzliche Sektionen -->
+        @include('frondend.locationdetails.sections.amusement_parks')
+
+
         @if ($gallery_images)
             @include('frondend.locationdetails.sections.erleben_picture_modal')
         @endif

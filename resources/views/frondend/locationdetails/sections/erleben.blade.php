@@ -25,32 +25,28 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
             <!-- Images -->
             <div class="col-md-4 text-center gallery-images">
                 @foreach ($randomImages as $key => $image)
-                @php
-                    // Zufällige Rotation zwischen -8 und 8 Grad
-                    $rotationValue = rand(-8, 8);
-                    // Dynamische vertikale Positionierung
-                    $topOffset = ($key * (90 / $imageCount)) . '%'; // 90% für kompaktere Verteilung
-                    // Horizontale Positionierung
-                    $horizontalOffset = rand(40, 80);
-                    $positionStyle = "top: {$topOffset}; left: {$horizontalOffset}px; transform: rotate({$rotationValue}deg);";
-
-                    $imagePath = Storage::exists($image->image_path) ? Storage::url($image->image_path) : asset($image->image_path);
-                @endphp
-                <div class="gallery-image position-absolute" style="{{ $positionStyle }}">
-                    <button class="border-0 p-0" data-bs-toggle="modal" data-bs-target="#erleben_picture{{ $key + 1 }}_modal">
-                        <img src="{{ $imagePath }}" class="figure-img img-fluid rounded shadow-lg custom-border my-zoom"
-                             alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
-                    </button>
-                </div>
+                    @php
+                        // Zufällige Rotation zwischen -5 und 5 Grad für Polaroid-Effekt
+                        $rotationValue = rand(-5, 5);
+                        $imagePath = Storage::exists($image->image_path) ? Storage::url($image->image_path) : asset($image->image_path);
+                    @endphp
+                    <div class="gallery-image" style="transform: rotate({{ $rotationValue }}deg);">
+                        <!-- Bild in einen Container einbetten, der den Schimmer-Effekt erhält -->
+                        <div class="polaroid">
+                            <button class="border-0 p-0" data-bs-toggle="modal" data-bs-target="#erleben_picture{{ $key + 1 }}_modal">
+                                <img src="{{ $imagePath }}" class="figure-img img-fluid" alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
+                            </button>
+                        </div>
+                    </div>
                 @endforeach
             </div>
 
             <!-- Text Content -->
-            <div class="col-md-8 bg-white p-3 rounded shadow">
+            <div class="col-md-8 bg-white p-3 rounded shadow text-content">
                 @if (!empty($location->text_what_to_do))
-                <div class="formatted-text">
-                    {!! app('autotranslate')->trans($location->text_what_to_do, app()->getLocale()) !!}
-                </div>
+                    <div class="formatted-text">
+                        {!! app('autotranslate')->trans($location->text_what_to_do, app()->getLocale()) !!}
+                    </div>
                 @else
                     <p class="text-muted">@autotranslate('Kein Text verfügbar.', app()->getLocale())</p>
                 @endif
@@ -94,46 +90,81 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
         height: 100%;
         background: url('/assets/img/slider.jpg') no-repeat center center;
         background-size: cover;
-        opacity: 0.25; /* Etwas dezenter */
+        opacity: 0.25;
         z-index: 1;
     }
 
     #erleben .container {
         position: relative;
         z-index: 2;
-        padding: 15px; /* Kompakter */
+        padding: 15px;
         border-radius: 8px;
     }
 
     .gallery-images {
-        position: relative;
-        height: 100%;
-        min-height: 360px; /* Reduzierte Mindesthöhe */
         display: flex;
         flex-direction: column;
-        justify-content: space-around;
-        align-items: flex-end;
-        padding: 20px 0; /* Weniger Padding */
+        gap: 10px; /* Abstand zwischen den Bildern */
+        align-items: center;
+        justify-content: center;
+        min-height: 360px;
+        padding: 20px 0;
     }
 
-    .gallery-image {
-        position: absolute;
-        transition: transform 0.3s ease-in-out;
-        z-index: 5;
-        margin: 20px 0; /* Reduzierter Abstand */
-    }
-
-    .gallery-image img {
-        width: 280px; /* Etwas kleiner */
+    /* Container für das Bild mit Polaroid- und Schimmer-Effekt */
+    .polaroid {
+        width: 250px;
         max-width: 100%;
-        height: auto;
-        object-fit: cover;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Subtiler Schatten */
+        position: relative; /* wichtig für das ::after Pseudo-Element */
+        overflow: hidden;   /* verhindert, dass der Schimmer aus dem Container herausragt */
+        background: #fff;
+        padding: 10px 10px 30px 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border: 1px solid #ddd;
+        transition: transform 0.3s ease-in-out;
     }
 
-    .gallery-image:hover {
-        transform: scale(1.1) rotate(0deg); /* Etwas kleinerer Zoom */
-        z-index: 10;
+    /* Schimmer-Effekt */
+    .polaroid::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.8) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        opacity: 0;
+        transform: translateX(-100%);
+        transition: opacity 0.3s ease;
+    }
+
+    /* Hover-Effekt: Container skalieren und Schimmer anzeigen */
+    .gallery-image:hover .polaroid {
+        transform: scale(1.05) rotate(2deg);
+    }
+
+    .gallery-image:hover .polaroid::after {
+        opacity: 1;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
 
     /* Textbereich */
@@ -159,15 +190,15 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
 
         .py-4 {
             padding-top: 2rem !important;
-            padding-bottom: 2rem !important; /* Kompakter */
+            padding-bottom: 2rem !important;
         }
 
         .mb-3 {
-            margin-bottom: 1rem !important; /* Weniger Abstand */
+            margin-bottom: 1rem !important;
         }
 
         .p-3 {
-            padding: 1.5rem !important; /* Weniger Padding */
+            padding: 1.5rem !important;
         }
     }
 </style>

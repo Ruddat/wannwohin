@@ -69,6 +69,8 @@ class LocationDetailsController extends Controller
         // Neue Inspirationsdaten hinzufügen
         $inspirationData = $this->fetchInspirationData($location);
 
+        //dd($weather['current']);
+
         return view('frondend.locationdetails._index', [
             'seo' => $seo,
             'location' => $location,
@@ -461,9 +463,16 @@ private function fetchAllWeatherData(WwdeLocation $location): array
         // Aktuelle Daten
         $currentWeatherCode = $data['current_weather']['weathercode'] ?? null;
         $currentWeather = [
-            'date' => $now->format('F d'),
-            'weekday' => $now->format('l'),
-            'time' => $now->format('h:i A'),
+            //'date' => $now->format('F d'),
+            'date' => $now->locale('de')->isoFormat('MMMM DD'),
+           // 'weekday' => $now->format('l'),
+            //'weekday' => $parsedDate->locale('de')->isoFormat('dddd'),
+'weekday' => $now->locale('de')->isoFormat('dddd'),
+
+            //'time' => $now->format('h:i A'),
+            // 'time' => $now->locale('de')->isoFormat('hh:mm A'),
+            'time' => $now->locale('de')->isoFormat('HH:mm'),
+
             'temperature' => $data['current_weather']['temperature'] ?? null,
             'description' => $this->mapWeatherCode($currentWeatherCode),
             'icon' => $this->mapWeatherIcon($currentWeatherCode),
@@ -493,7 +502,9 @@ private function fetchAllWeatherData(WwdeLocation $location): array
             $parsedDate = Carbon::parse($date);
             return [
                 'date' => $parsedDate->format('d.m.Y'),
-                'weekday' => $parsedDate->format('l'),
+//                'weekday' => $parsedDate->format('l'),
+                'weekday' => $parsedDate->locale('de')->isoFormat('dddd'),
+
                 'temp_max' => $data['daily']['temperature_2m_max'][$key] ?? null,
                 'temp_min' => $data['daily']['temperature_2m_min'][$key] ?? null,
                 'precipitation' => $data['daily']['precipitation_sum'][$key] ?? null,
@@ -833,8 +844,8 @@ private function fetchAllWeatherData(WwdeLocation $location): array
         $userTimezone = $this->getTimezoneFromIp(request()->ip()) ?? config('app.timezone', 'UTC');
 
         try {
+            $locationTime = new DateTime('now', new \DateTimeZone($locationTimezone));
             $userTime = new DateTime('now', new \DateTimeZone($userTimezone));
-            $locationTime = new \DateTime('now', new \DateTimeZone($locationTimezone));
             $offsetInHours = round(($locationTime->getOffset() - $userTime->getOffset()) / 3600, 1);
 
             return [
@@ -843,7 +854,12 @@ private function fetchAllWeatherData(WwdeLocation $location): array
             ];
         } catch (\Exception $e) {
             Log::error("Error calculating timezone for location: {$location->id}: {$e->getMessage()}");
-            return ['current_time' => null, 'offset' => null];
+            // Fallback auf Serverzeit
+            $fallbackTime = Carbon::now()->format('Y-m-d H:i:s');
+            return [
+                'current_time' => $fallbackTime,
+                'offset' => 0, // Kein Offset, da Fallback
+            ];
         }
     }
 

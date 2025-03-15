@@ -1,10 +1,9 @@
 <section class="timeline-box right custom-box-shadow-2 box-shadow-2 py-4">
     <div class="container weather-container">
-        <div class="row">
-
+        <div class="row align-items-stretch">
             <!-- Wetter-Widget -->
-            <div class="col-lg-4 col-sm-5 p-3 weather-widget-col">
-                <div class="widget">
+            <div class="col-lg-4 col-sm-5 weather-widget-col d-flex h-100">
+                <div class="widget flex-grow-1">
                     <div class="header">
                         <div class="date">
                             <div class="day">{{ $weather_data_widget['date'] }}</div>
@@ -17,7 +16,7 @@
                             <div class="city">{{ $location->title }}</div>
                             <div class="temperature">{{ $weather_data_widget['temperature'] }}°C</div>
                             <div class="details">
-                                Gefühlt: {{ $forecast[0]['real_feel'] }}°<br>
+                                Gefühlt: {{ $forecast[0]['real_feel'] }}°C<br>
                                 Wind: {{ $weather_data_widget['wind_direction'] }}, {{ $weather_data_widget['wind_speed'] }} km/h<br>
                                 Luftdruck: {{ $weather_data_widget['pressure'] }} hPa<br>
                                 Luftfeuchtigkeit: {{ $weather_data_widget['humidity'] }}%
@@ -43,48 +42,47 @@
                 </div>
             </div>
 
-<!-- Klimatabelle -->
-<div class="col-lg-8 col-sm-7 bg-color-light px-3 py-3 climate-table-col">
-    <h4 class="text-color-dark font-weight-semibold mb-4">Klimatabelle {{ $location->title }}</h4>
-    <table class="table table-striped table-bordered table-hover table-condensed location-climate-table climate-table mb-4">
-        <thead>
-            <tr>
-                <th class="center"><i class="far fa-calendar-alt text-weather" title="@autotranslate('Monat', app()->getLocale())"></i></th>
-                <th class="center"><i class="fas fa-cloud-sun text-weather" title="@autotranslate('Tagesdurchschnittstemperatur', app()->getLocale())"></i></th>
-                <th class="center"><i class="fas fa-cloud-moon text-weather" title="@autotranslate('Nachtdurchschnittstemperatur', app()->getLocale())"></i></th>
-                @if ($climates->first()?->water_temperature_avg > 1)
-                    <th class="center"><i class="fas fa-water text-weather" title="@autotranslate('Wassertemperatur', app()->getLocale())"></i></th>
-                @endif
-                <th class="center"><i class="fas fa-tint text-weather" title="@autotranslate('Luftfeuchtigkeit', app()->getLocale())"></i></th>
-                <th class="center"><i class="fas fa-sun text-weather" title="@autotranslate('Sonnenstunden', app()->getLocale())"></i></th>
-                <th class="center"><i class="fas fa-umbrella text-weather" title="@autotranslate('Regentage', app()->getLocale())"></i></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($climates as $climate)
-                <tr>
-                    <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->format('F') }}</td>
-                    <td class="center">{{ $climate->daily_temperature ? number_format($climate->daily_temperature, 1, ',', '.') : '-' }} °C</td>
-                    <td class="center">{{ $climate->night_temperature ? number_format($climate->night_temperature, 1, ',', '.') : '-' }} °C</td>
-                    @if ($climates->first()?->water_temperature_avg > 1)
-                        <td class="center">{{ $climate->water_temperature ? number_format($climate->water_temperature, 1, ',', '.') : '-' }} °C</td>
-                    @endif
-                    <td class="center">{{ $climate->humidity ? number_format($climate->humidity, 1, ',', '.').' %' : '-' }}</td>
-                    <td class="center">{{ $climate->sunshine_per_day ? number_format($climate->sunshine_per_day, 1, ',', '.') : '-' }} h</td>
-                    <td class="center">{{ $climate->rainy_days ? number_format($climate->rainy_days, 1, ',', '.') : '-' }} t</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    {{--
-    <livewire:frontend.climate-table.climate-table-component :locationId="$location->id" />
-    --}}
-    <div class="text-start">
-        <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}.htm">
-            @autotranslate('Mehr zu Klima & Wetter', app()->getLocale())
-        </a>
-    </div>
-</div>
+            <!-- Klimatabelle -->
+            <div class="col-lg-8 col-sm-7 bg-color-light px-3 py-3 climate-table-col d-flex h-100">
+                <div class="flex-grow-1">
+                    <h4 class="text-color-dark font-weight-semibold mb-4">Durchschnittliche Klimawerte {{ $location->title }}</h4>
+                    <table class="table table-striped table-bordered table-hover table-condensed location-climate-table climate-table mb-4">
+                        <thead>
+                            <tr>
+                                <th class="center"><i class="far fa-calendar-alt text-weather" title="Monat"></i></th>
+                                <th class="center"><i class="fas fa-cloud-sun text-weather" title="Durchschnittstemperatur tagsüber"></i></th>
+                                <th class="center"><i class="fas fa-cloud-moon text-weather" title="Durchschnittstemperatur nachts"></i></th>
+                                @if ($climates->first()?->water_temperature_avg > 1)
+                                    <th class="center"><i class="fas fa-water text-weather" title="Wassertemperatur"></i></th>
+                                @endif
+                                <th class="center"><i class="fas fa-tint text-weather" title="Luftfeuchtigkeit"></i></th>
+                                <th class="center"><i class="fas fa-sun text-weather" title="Sonnenstunden"></i></th>
+                                <th class="center"><i class="fas fa-umbrella text-weather" title="Regentage"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($climates as $climate)
+                                <tr>
+                                    <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->locale('de')->format('F') }}</td>
+                                    <td class="center">{{ $climate->daily_temperature ? number_format($climate->daily_temperature, 1, ',', '.') : '-' }} °C</td>
+                                    <td class="center">{{ $climate->night_temperature ? number_format($climate->night_temperature, 1, ',', '.') : '-' }} °C</td>
+                                    @if ($climates->first()?->water_temperature_avg > 1)
+                                        <td class="center">{{ $climate->water_temperature ? number_format($climate->water_temperature, 1, ',', '.') : '-' }} °C</td>
+                                    @endif
+                                    <td class="center">{{ $climate->humidity ? number_format($climate->humidity, 1, ',', '.') . ' %' : '-' }}</td>
+                                    <td class="center">{{ $climate->sunshine_per_day ? number_format($climate->sunshine_per_day, 1, ',', '.') : '-' }} h</td>
+                                    <td class="center">{{ $climate->rainy_days ? number_format($climate->rainy_days, 1, ',', '.') : '-' }} Tage</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div class="text-start">
+                        <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}.htm">
+                            Mehr zu Klima & Wetter
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -106,6 +104,8 @@
     border-radius: 15px;
     padding: 20px;
     text-align: center;
+    /* Damit das Widget die volle Höhe der Spalte einnimmt */
+    height: 100%;
 }
 
 .header {
@@ -245,16 +245,15 @@
 }
 
 .text-weather {
-    color: #089bbc; /* Farbe für Font Awesome-Icons in der Klimatabelle */
+    color: #089bbc;
 }
-
 
 .weather-icon, .weather-icon-small {
     transition: transform 0.3s ease;
 }
 
 .weather-icon:hover, .weather-icon-small:hover {
-    transform: scale(1.1); /* Leichtes Vergrößern beim Überfahren */
+    transform: scale(1.1);
 }
 
 /* Spezifische Animation für sonnige oder windige Icons */
@@ -277,13 +276,25 @@
     0%, 100% { transform: translateX(0); }
     50% { transform: translateX(5px); }
 }
-/* klimatabelle */
+
 .climate-table tbody tr:nth-child(even) {
     background-color: #f0f7ff;
 }
 
 .climate-table tbody tr:nth-child(odd) {
     background-color: #e6f0ff;
+}
+
+.weather-widget-col, .climate-table-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.widget, .climate-table-col > div {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 @media (max-width: 768px) {
@@ -299,6 +310,10 @@
 
     .weather-icon-small {
         margin: 5px 0;
+    }
+
+    .weather-widget-col, .climate-table-col {
+        height: auto;
     }
 }
 </style>

@@ -63,80 +63,76 @@
                     </div>
                 </div>
 
-<!-- Modal für Wartezeiten -->
-<div class="modal fade" id="waitingTimesModal{{ $item['park']->id }}" tabindex="-1"
-    aria-labelledby="waitingTimesLabel{{ $item['park']->id }}" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-centered">
-       <div class="modal-content border-0 shadow-2xl rounded-xl overflow-hidden transform transition-all duration-300">
-           <!-- Header -->
-           <div class="modal-header bg-gradient-to-r from-primary via-blue-500 to-indigo-600 text-white p-4 animate__animated animate__fadeInDown">
-               <h5 class="modal-title font-weight-bold text-lg tracking-wide" id="waitingTimesLabel{{ $item['park']->id }}">
-                   Wartezeiten: {{ $item['park']->name }}
-               </h5>
-               <button type="button" class="btn-close btn-close-white opacity-80 hover:opacity-100 transition-opacity"
-                       data-bs-dismiss="modal" aria-label="Schließen"></button>
-           </div>
-           <!-- Body -->
-           <div class="modal-body p-5 bg-gradient-to-b from-gray-50 to-white">
-               @if (!empty($item['waiting_times']))
-                   <div class="table-responsive rounded-lg shadow-md overflow-hidden">
-                       <table class="table table-hover align-middle bg-white border-0">
-                           <thead class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800">
-                               <tr>
-                                   <th class="p-4 text-left font-semibold rounded-tl-lg">Attraktion</th>
-                                   <th class="p-4 text-center font-semibold">Wartezeit</th>
-                                   <th class="p-4 text-right font-semibold rounded-tr-lg">Status</th>
-                               </tr>
-                           </thead>
-                           <tbody>
-                               @foreach ($item['waiting_times'] as $wait)
-                                   @php
-                                       $statusColor = match (true) {
-                                           $wait['waitingtime'] <= 10 => 'bg-success text-white',
-                                           $wait['waitingtime'] <= 30 => 'bg-warning text-gray-900',
-                                           $wait['waitingtime'] > 30 => 'bg-danger text-white',
-                                           default => 'bg-secondary text-white',
-                                       };
-                                   @endphp
-                                   <tr class="animate__animated animate__fadeInUp animate__faster hover:bg-gray-50 transition-colors duration-200">
-                                       <td class="p-4 text-left">{{ $wait['name'] }}</td>
-                                       <td class="p-4 text-center">
-                                           <span class="badge {{ $statusColor }} px-4 py-2 rounded-full font-semibold shadow-sm transform transition-transform hover:scale-105">
-                                               {{ $wait['waitingtime'] ?? 'N/A' }} Min
-                                           </span>
-                                       </td>
-                                       <td class="p-4 text-right font-medium">
-                                           <span class="inline-block px-3 py-1 rounded-full {{ $wait['status'] === 'opened' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                               {{ $wait['status'] === 'opened' ? 'Geöffnet' : 'Geschlossen' }}
-                                           </span>
-                                       </td>
-                                   </tr>
-                               @endforeach
-                           </tbody>
-                       </table>
-                   </div>
-               @else
-                   <p class="text-danger font-italic text-center animate__animated animate__fadeIn">Keine Wartezeiten verfügbar</p>
-               @endif
-           </div>
-           <!-- Optional: Footer -->
-           <div class="modal-footer bg-gray-50 border-t-0 p-4">
-               <button type="button" class="btn btn-outline-primary btn-sm rounded-full px-4 py-2" data-bs-dismiss="modal">
-                   Schließen
-               </button>
-           </div>
-       </div>
-   </div>
-</div>
-
-
-
+                <!-- Modal für Wartezeiten -->
+                <div class="modal fade" id="waitingTimesModal{{ $item['park']->id }}" tabindex="-1"
+                     aria-labelledby="waitingTimesLabel{{ $item['park']->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+                        <div class="modal-content border-0 shadow-2xl rounded-xl overflow-hidden transform transition-all duration-300">
+                            <!-- Header -->
+                            <div class="modal-header bg-gradient-to-r from-primary via-blue-500 to-indigo-600 text-white p-4 animate__animated animate__fadeInDown">
+                                <h5 class="modal-title font-weight-bold text-lg tracking-wide" id="waitingTimesLabel{{ $item['park']->id }}">
+                                    Wartezeiten: {{ $item['park']->name }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white opacity-80 hover:opacity-100 transition-opacity"
+                                        data-bs-dismiss="modal" aria-label="Schließen"></button>
+                            </div>
+                            <!-- Body -->
+                            <div class="modal-body p-5 bg-gradient-to-b from-gray-50 to-white">
+                                @if (!empty($item['waiting_times']))
+                                    <div class="table-responsive rounded-lg shadow-md overflow-hidden">
+                                        <table class="table table-hover align-middle bg-white border-0">
+                                            <thead class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800">
+                                                <tr>
+                                                    <th class="p-4 text-left font-semibold rounded-tl-lg">Attraktion</th>
+                                                    <th class="p-4 text-center font-semibold">Wartezeit</th>
+                                                    <th class="p-4 text-right font-semibold rounded-tr-lg">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($item['waiting_times'] as $wait)
+                                                    @php
+                                                        $statusColor = match (true) {
+                                                            $wait['waitingtime'] <= 10 => 'bg-success text-white',
+                                                            $wait['waitingtime'] <= 30 => 'bg-warning text-gray-900',
+                                                            $wait['waitingtime'] > 30 => 'bg-danger text-white',
+                                                            default => 'bg-secondary text-white',
+                                                        };
+                                                    @endphp
+                                                    <tr class="animate__animated animate__fadeInUp animate__faster hover:bg-gray-50 transition-colors duration-200">
+                                                        <td class="p-4 text-left">{{ $wait['name'] }}</td>
+                                                        <td class="p-4 text-center">
+                                                            <span class="badge {{ $statusColor }} px-4 py-2 rounded-full font-semibold shadow-sm transform transition-transform hover:scale-105">
+                                                                {{ $wait['waitingtime'] ?? 'N/A' }} Min
+                                                            </span>
+                                                        </td>
+                                                        <td class="p-4 text-right font-medium">
+                                                            <span class="inline-block px-3 py-1 rounded-full {{ $wait['status'] === 'opened' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                                {{ $wait['status'] === 'opened' ? 'Geöffnet' : 'Geschlossen' }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <p class="text-danger font-italic text-center animate__animated animate__fadeIn">Keine Wartezeiten verfügbar</p>
+                                @endif
+                            </div>
+                            <!-- Footer -->
+                            <div class="modal-footer bg-gray-50 border-t-0 p-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-full px-4 py-2" data-bs-dismiss="modal">
+                                    Schließen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             @endforeach
         </div>
     </div>
 </section>
 @endif
-
 
 <style>
     /* Parallax-Hintergrund */
@@ -148,14 +144,14 @@
         height: 100%;
         background-size: cover;
         background-position: center;
-        opacity: 0.5; /* Leicht transparent, damit der Inhalt lesbar bleibt */
+        opacity: 0.5;
         z-index: 1;
         transform: translateZ(0);
         will-change: transform;
     }
 
     .z-index-2 {
-        z-index: 2; /* Inhalt über dem Parallax */
+        z-index: 2;
     }
 
     /* Sektion */
@@ -233,108 +229,100 @@
     .bg-danger { background-color: #ef4444; color: white; }
     .bg-secondary { background-color: #6b7280; color: white; }
 
+    /* Modal Styling */
+    .modal-dialog {
+        max-width: 90%;
+        margin: 1rem auto;
+    }
 
+    .modal-content {
+        border-radius: 1rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+    }
 
-/* Modal Styling */
-.modal-content {
-    border-radius: 1rem;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
+    .modal.show .modal-content {
+        transform: scale(1);
+    }
 
-.modal.show .modal-content {
-    transform: scale(1);
-}
+    .modal-header {
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(to right, #007bff, #4f46e5);
+        color: white;
+    }
 
-.modal-header {
-    border-bottom: none;
-    padding: 1.5rem 2rem;
-    background: linear-gradient(to right, #007bff, #4f46e5);
-    color: white;
-}
+    .modal-body {
+        padding: 2rem;
+        background: linear-gradient(to bottom, #f9fafb, #ffffff);
+        overflow-y: auto;
+        max-height: 70vh;
+    }
 
-.modal-body {
-    padding: 2rem;
-    background: linear-gradient(to bottom, #f9fafb, #ffffff);
-}
+    .modal-footer {
+        border-top: none;
+        justify-content: center;
+    }
 
-.modal-footer {
-    border-top: none;
-    justify-content: center;
-}
+    .table-responsive {
+        overflow-x: auto;
+    }
 
-/* Tabelle */
-.table {
-    margin-bottom: 0;
-    border-collapse: separate;
-    border-spacing: 0;
-}
+    /* Tabelle */
+    .table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
 
-.table th {
-    background: linear-gradient(to right, #f3f4f6, #e5e7eb);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
+    .table th {
+        background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 
-.table td {
-    vertical-align: middle;
-}
+    .table td {
+        vertical-align: middle;
+    }
 
-.table-hover tbody tr:hover {
-    background-color: #f9fafb;
-}
+    .table-hover tbody tr:hover {
+        background-color: #f9fafb;
+    }
 
-/* Badges */
-.badge {
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px; /* Vollständig rund */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
+    /* Badges */
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
 
-.badge:hover {
-    transform: scale(1.05);
-}
+    .badge:hover {
+        transform: scale(1.05);
+    }
 
-/* Statusanzeige */
-.bg-green-100 {
-    background-color: #dcfce7;
-}
+    /* Statusanzeige */
+    .bg-green-100 { background-color: #dcfce7; }
+    .text-green-700 { color: #15803d; }
+    .bg-red-100 { background-color: #fee2e2; }
+    .text-red-700 { color: #b91c1c; }
 
-.text-green-700 {
-    color: #15803d;
-}
+    /* Button im Footer */
+    .btn-outline-primary {
+        border: 2px solid #007bff;
+        color: #007bff;
+        transition: all 0.3s ease;
+    }
 
-.bg-red-100 {
-    background-color: #fee2e2;
-}
-
-.text-red-700 {
-    color: #b91c1c;
-}
-
-/* Button im Footer */
-.btn-outline-primary {
-    border: 2px solid #007bff;
-    color: #007bff;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-primary:hover {
-    background-color: #007bff;
-    color: white;
-    transform: translateY(-2px);
-}
-
-
-
-
-
-
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+        transform: translateY(-2px);
+    }
 
     /* Responsive Anpassungen */
     @media (max-width: 768px) {
@@ -357,6 +345,14 @@
         .section:hover .divider {
             width: 120px;
         }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .table th, .table td {
+            padding: 0.75rem;
+        }
     }
 
     @media (max-width: 576px) {
@@ -371,6 +367,29 @@
         .status-badge {
             font-size: 0.8rem;
             padding: 0.4rem 1rem;
+        }
+
+        .modal-dialog {
+            max-width: 100%;
+            margin: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+            max-height: 60vh;
+        }
+
+        .table {
+            font-size: 0.85rem;
+        }
+
+        .table th, .table td {
+            padding: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
         }
     }
 </style>

@@ -27,14 +27,10 @@ class ContinentController extends Controller
         $continent = $this->fetchContinent($continentAlias);
         $countries = $this->fetchCountries($continent->id);
         $images = $this->getContinentImages($continent);
-//dd($images);
 
-        //$this->storeHeaderData($continent, $images);
-        // Nur Continent als Datenquelle
         $this->storeHeaderData($continent, $continent, $images);
 
-// Generiere SEO-Daten für den Kontinent
-$seo = $this->seoService->getSeoData($continent);
+        $seo = $this->seoService->getSeoData($continent);
 
         return view('frondend.continent_and_countries.index', [
             'continent' => $continent,
@@ -42,7 +38,7 @@ $seo = $this->seoService->getSeoData($continent);
             'panorama_location_picture' => $images['bgImgPath'],
             'main_location_picture' => $images['mainImgPath'],
             'panorama_location_text' => $continent->continent_header_text ?? null,
-            'seo' => $seo, // Teile SEO-Daten mit der View
+            'seo' => $seo,
         ]);
     }
 
@@ -51,18 +47,11 @@ $seo = $this->seoService->getSeoData($continent);
         $continent = $this->fetchContinent($continentAlias);
         $country = $this->fetchCountry($countryAlias);
         $locations = $this->fetchLocations($country->id);
-        $images = $this->getContinentImages($continent);
+        $images = $this->getCountryImages($country, $continent);
 
-     //   $this->storeHeaderData($continent, $images);
-      //  $this->storeHeaderData($country, $images, [
-        //    'continent' => $continent->title,
-      //  ]);
-    // Land als Hauptquelle, Kontinent als Fallback
-    $this->storeHeaderData($country, $continent, $images);
-    //dd($continent, $country, $locations, $images);
+        $this->storeHeaderData($country, $continent, $images);
 
-    // Generiere SEO-Daten für das Land
-    $seo = $this->seoService->getSeoData($country);
+        $seo = $this->seoService->getSeoData($country);
 
         return view('frondend.continent_and_countries.locations', [
             'continent' => $continent,
@@ -70,8 +59,8 @@ $seo = $this->seoService->getSeoData($continent);
             'locations' => $locations,
             'panorama_location_picture' => $images['bgImgPath'],
             'main_location_picture' => $images['mainImgPath'],
-            'panorama_location_text' => $continent->continent_header_text ?? null,
-            'seo' => $seo, // Teile SEO-Daten mit der View
+            'panorama_location_text' => $country->country_header_text ?? $continent->continent_header_text ?? null,
+            'seo' => $seo,
         ])->with('h1', "Reiseziele in {$country->title} 2025: {$continent->title}");
     }
 
@@ -87,6 +76,10 @@ $seo = $this->seoService->getSeoData($continent);
         return Cache::remember("countries_{$continentId}", 15 * 60, fn() =>
             WwdeCountry::where('continent_id', $continentId)
                 ->where('status', 'active')
+                ->whereHas('locations', function ($query) {
+                    $query->where('status', 'active')
+                          ->where('finished', '1');
+                })
                 ->orderBy('title')
                 ->get()
         );
@@ -128,26 +121,55 @@ $seo = $this->seoService->getSeoData($continent);
         });
     }
 
+    private function getCountryImages(WwdeCountry $country, WwdeContinent $continent): array
+    {
+        $cacheKey = "country_images_{$country->alias}";
+        return Cache::remember($cacheKey, 60 * 60, function () use ($country, $continent) {
+            $images = [
+                'bgImgPath' => null,
+                'mainImgPath' => null,
+            ];
+
+            if ($country->panorama_image_path && Storage::exists($country->panorama_image_path)) {
+                $images['bgImgPath'] = Storage::url($country->panorama_image_path);
+            }
+            if ($country->header_image_path && Storage::exists($country->header_image_path)) {
+                $images['mainImgPath'] = Storage::url($country->header_image_path);
+            }
+
+            if (!$images['bgImgPath'] || !$images['mainImgPath']) {
+                $continentImages = $this->getContinentImages($continent);
+                $images['bgImgPath'] = $images['bgImgPath'] ?? $continentImages['bgImgPath'];
+                $images['mainImgPath'] = $images['mainImgPath'] ?? $continentImages['mainImgPath'];
+            }
+
+            if (!$images['bgImgPath'] || !$images['mainImgPath']) {
+                $headerContent = Cache::remember('header_content_random', 60 * 60, fn() =>
+                    \App\Models\HeaderContent::inRandomOrder()->first()
+                );
+                $images['bgImgPath'] = $images['bgImgPath'] ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
+                $images['mainImgPath'] = $images['mainImgPath'] ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
+            }
+
+            return $images;
+        });
+    }
+
     private function storeHeaderData(object $entity, WwdeContinent $continent, array $images, array $additionalData = []): void
     {
         session([
             'headerData' => array_merge([
                 'bgImgPath' => $images['bgImgPath'] ?? null,
                 'mainImgPath' => $images['mainImgPath'] ?? null,
-                // Falls `country_headert_titel` existiert und nicht leer ist → nutzen, sonst `continent_headert_titel`, sonst `title`
                 'title' => $this->cleanEditorContent(
                     !empty($entity->country_headert_titel) ? $entity->country_headert_titel :
                     (!empty($entity->continent_headert_titel) ? $entity->continent_headert_titel : $entity->title)
                 ),
-                // Falls `country_header_text` existiert und nicht leer ist → nutzen, sonst `continent_header_text`
                 'title_text' => $this->cleanEditorContent($entity->country_header_text)
-                ?? $this->cleanEditorContent($continent->continent_header_text),
+                    ?? $this->cleanEditorContent($continent->continent_header_text),
             ], $additionalData)
         ]);
     }
-
-
-
 
     private function cleanEditorContent(?string $content): ?string
     {
@@ -155,14 +177,12 @@ $seo = $this->seoService->getSeoData($continent);
             return null;
         }
 
-        // HTML-Tags entfernen und Leerzeichen trimmen
-        $cleaned = trim(strip_tags($content, '<img><a>')); // Bilder und Links beibehalten, wenn nötig
+        $cleaned = trim(strip_tags($content, '<img><a>'));
 
-        // Bestimmte "leere" HTML-Strukturen explizit als leer markieren
         $emptyPatterns = [
-            '/^<p>\s*<br\s*\/?>\s*<\/p>$/i', // <p><br></p>
-            '/^<p>\s*&nbsp;\s*<\/p>$/i', // <p>&nbsp;</p>
-            '/^\s*$/', // Leere Zeichenketten oder nur Leerzeichen
+            '/^<p>\s*<br\s*\/?>\s*<\/p>$/i',
+            '/^<p>\s* \s*<\/p>$/i',
+            '/^\s*$/',
         ];
 
         foreach ($emptyPatterns as $pattern) {
@@ -173,8 +193,4 @@ $seo = $this->seoService->getSeoData($continent);
 
         return empty($cleaned) ? null : $content;
     }
-
-
-
-
 }

@@ -103,12 +103,13 @@
                                 <td class="text-center">
                                     <strong><i class="fas fa-clock me-2"></i>@autotranslate('Datum & Uhrzeit', app()->getLocale())</strong>
                                     <div id="live-clock" class="d-flex flex-column align-items-center"
-                                        data-offset="{{ $time_offset ?? 0 }}">
+                                         data-offset="{{ $time_offset ?? 0 }}"
+                                         data-initial-time="{{ $current_time }}">
                                         <span id="live-date" class="text-muted" style="font-weight: normal;">
-                                            {{ \Carbon\Carbon::now()->format('d.m.Y') }}
+                                            {{ \Carbon\Carbon::parse($current_time)->format('d.m.Y') }}
                                         </span>
                                         <span id="live-time" class="text-muted" style="font-weight: normal;">
-                                            {{ \Carbon\Carbon::now()->format('H:i:s') }}
+                                            {{ \Carbon\Carbon::parse($current_time)->format('H:i:s') }}
                                         </span>
                                     </div>
                                 </td>
@@ -591,28 +592,58 @@
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const clockElement = document.getElementById("live-clock");
+        if (!clockElement) return;
+
+        const dateElement = document.getElementById("live-date");
+        const timeElement = document.getElementById("live-time");
+        if (!dateElement || !timeElement) return;
+
+        // Initiale Serverzeit aus dem data-attribut oder direkt aus dem DOM holen
+        const initialTime = clockElement.dataset.initialTime || "{{ $current_time ?? now() }}";
+        const timeOffset = parseFloat(clockElement.dataset.offset) || 0;
+
+        // Basiszeit von der Serverzeit aus
+        let baseTime = new Date(initialTime);
+        if (isNaN(baseTime.getTime())) {
+            console.error("Ungültige initiale Zeit:", initialTime);
+            baseTime = new Date(); // Fallback auf Client-Zeit
+        }
+
         function updateClock() {
-            let clockElement = document.getElementById("live-clock");
-            if (!clockElement) return;
+            // Zeit seit Seite geladen (in Millisekunden)
+            const elapsed = Date.now() - pageLoadTime;
+            const currentTime = new Date(baseTime.getTime() + elapsed);
 
-            let timeOffset = parseFloat(clockElement.dataset.offset) || 0;
-            let now = new Date();
-
-            // Zeitverschiebung hinzufügen
-            now.setHours(now.getHours() + timeOffset);
-
-            let dateStr = now.toLocaleDateString("de-DE");
-            let timeStr = now.toLocaleTimeString("de-DE", {
+            // Datum und Uhrzeit formatieren (passend zu d.m.Y und H:i:s)
+            const dateStr = currentTime.toLocaleDateString("de-DE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }).replace(/\//g, ".");
+            const timeStr = currentTime.toLocaleTimeString("de-DE", {
                 hour: "2-digit",
                 minute: "2-digit",
                 second: "2-digit"
             });
 
-            document.getElementById("live-date").textContent = dateStr;
-            document.getElementById("live-time").textContent = timeStr;
+            dateElement.textContent = dateStr;
+            timeElement.textContent = timeStr;
         }
 
+        // Zeitpunkt des Seitenladens merken
+        const pageLoadTime = Date.now();
+
         updateClock();
-        setInterval(updateClock, 1000);
+        let intervalId = setInterval(updateClock, 1000);
+
+        // Interval stoppen, wenn Seite nicht sichtbar ist
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                clearInterval(intervalId);
+            } else {
+                intervalId = setInterval(updateClock, 1000);
+            }
+        });
     });
-</script>
+    </script>

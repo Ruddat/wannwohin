@@ -62,6 +62,8 @@ class WwdeCountry extends Model
         'image3_path',
         'custom_images',
         'status',
+        'panorama_image_path',
+        'header_image_path',
     ];
 
     /**

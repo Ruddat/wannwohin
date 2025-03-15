@@ -64,7 +64,7 @@ class LocationEditDataComponent extends Component
         ]);
 
         session()->flash('success', 'Daten erfolgreich gespeichert.');
-        $this->emit('refreshLocations');
+        $this->dispatch('refreshLocations');
     }
 
     public function render()

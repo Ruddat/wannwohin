@@ -36,7 +36,9 @@ class CountryManagerComponent extends Component
 
     public $currency_conversion;
     public $population_capital;
-
+    public $panorama_image_path, $header_image_path;
+    // Alternativ, falls du einen separaten Upload-Mechanismus nutzen möchtest:
+    public $newPanoramaImage, $newHeaderImage;
 
     // Pixabay-Spezifisch
     public $searchKeyword = '';
@@ -52,6 +54,12 @@ class CountryManagerComponent extends Component
     protected $queryString = ['search'];
 
 
+    public $panoramaPixabayImages = [];
+    public $headerPixabayImages = [];
+    public $panoramaSearchKeyword;
+    public $headerSearchKeyword;
+
+
     // Validierungsregeln
     public function rules()
     {
@@ -65,10 +73,8 @@ class CountryManagerComponent extends Component
             'currency_name' => 'nullable|string|max:50',
             'country_code' => 'required|string|max:3',
             'country_text' => 'nullable|string|max:3000',
-            //'currency_conversion' => 'nullable|string|max:255',
             'population' => 'nullable|integer',
             'capital' => 'nullable|string|max:255',
-           // 'population_capital' => 'nullable|integer',
             'area' => 'nullable|integer',
             'official_language' => 'nullable|string|max:255',
             'language_ezmz' => 'nullable|string|max:255',
@@ -90,13 +96,13 @@ class CountryManagerComponent extends Component
             'price_tendency' => 'nullable|string|max:10',
             'status' => 'required|in:active,pending,inactive',
             'custom_images' => 'boolean',
+            'newPanoramaImage' => 'nullable|image|max:4096',
+            'newHeaderImage' => 'nullable|image|max:2048',
         ];
 
-        if ($this->custom_images) {
-         //   $rules['image1_path'] = 'nullable|image|max:2048';
-        //    $rules['image2_path'] = 'nullable|image|max:2048';
-        //    $rules['image3_path'] = 'nullable|image|max:2048';
-        }
+        // Bedingte Regeln für gespeicherte Pfade
+        $rules['panorama_image_path'] = $this->custom_images && $this->newPanoramaImage ? 'nullable|image|max:4096' : 'nullable|string';
+        $rules['header_image_path'] = $this->custom_images && $this->newHeaderImage ? 'nullable|image|max:2048' : 'nullable|string';
 
         return $rules;
     }
@@ -132,25 +138,24 @@ class CountryManagerComponent extends Component
     // Land speichern
     public function save()
     {
-        $this->validate();
+        try {
+            $this->validate();
+            $data = $this->prepareData();
+            $country = WwdeCountry::updateOrCreate(['id' => $this->countryId], $data);
 
-        $data = $this->prepareData();
-        $data['country_headert_titel'] = $this->country_headert_titel;
-        $data['country_header_text'] = $this->country_header_text;
+            if ($country) {
+                Cache::forget("country_{$country->alias}");
+                Cache::forget("countries_{$country->continent_id}");
+                Cache::forget("continent_{$country->continent_id}");
+                Cache::forget("continent_images_{$country->continent_id}");
+            }
 
-        // Speichern oder aktualisieren und sicherstellen, dass ein Objekt zurückkommt
-        $country = WwdeCountry::updateOrCreate(['id' => $this->countryId], $data);
-
-        if ($country) {
-            // Cache für dieses Land und den zugehörigen Kontinent löschen
-            Cache::forget("country_{$country->alias}");
-            Cache::forget("countries_{$country->continent_id}");
-            Cache::forget("continent_{$country->continent_id}");
-            Cache::forget("continent_images_{$country->continent_id}");
+            $this->resetInputFields();
+            $this->dispatch('success', 'Country saved successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Fehler beim Speichern: ' . $e->getMessage());
+            $this->dispatch('error', 'Fehler beim Speichern: ' . $e->getMessage());
         }
-
-        $this->resetInputFields();
-        $this->dispatch('success', 'Country saved successfully.');
     }
 
     // Land löschen
@@ -212,40 +217,62 @@ class CountryManagerComponent extends Component
     {
         $data = $this->validate();
 
-        if ($this->custom_images && count($this->newImages) > 0) {
-            // Stelle sicher, dass alte Bilder gelöscht werden
-            for ($i = 1; $i <= 3; $i++) {
-                $imageField = "image{$i}_path";
-                if ($this->$imageField && Storage::exists($this->$imageField)) {
-                    Storage::delete($this->$imageField);
+        if ($this->custom_images) {
+            // Standardbilder (max. 3 Bilder)
+            if (count($this->newImages) > 0) {
+                for ($i = 1; $i <= 3; $i++) {
+                    $imageField = "image{$i}_path";
+                    if ($this->$imageField && Storage::exists($this->$imageField)) {
+                        Storage::delete($this->$imageField);
+                    }
                 }
+                $paths = [];
+                foreach ($this->newImages as $index => $image) {
+                    $paths[] = $image->store('uploads/images/countries', 'public');
+                }
+                $data['image1_path'] = $paths[0] ?? null;
+                $data['image2_path'] = $paths[1] ?? null;
+                $data['image3_path'] = $paths[2] ?? null;
+                $this->newImages = [];
+            } else {
+                $data['image1_path'] = $this->image1_path;
+                $data['image2_path'] = $this->image2_path;
+                $data['image3_path'] = $this->image3_path;
             }
 
-            // Speichere die neuen Bilder
-            $paths = [];
-            foreach ($this->newImages as $index => $image) {
-                $paths[] = $image->store('uploads/images/countries', 'public');
+            // Panorama-Bild
+            if ($this->newPanoramaImage) {
+                if ($this->panorama_image_path && Storage::exists($this->panorama_image_path)) {
+                    Storage::delete($this->panorama_image_path);
+                }
+                $data['panorama_image_path'] = $this->newPanoramaImage->store('uploads/images/countries', 'public');
+                $this->newPanoramaImage = null;
+            } else {
+                $data['panorama_image_path'] = $this->panorama_image_path;
             }
 
-            // Speichere maximal 3 Bilder
-            $data['image1_path'] = $paths[0] ?? null;
-            $data['image2_path'] = $paths[1] ?? null;
-            $data['image3_path'] = $paths[2] ?? null;
-
-            // Nach dem Speichern das Array zurücksetzen
-            $this->newImages = [];
+            // Header-Bild
+            if ($this->newHeaderImage) {
+                if ($this->header_image_path && Storage::exists($this->header_image_path)) {
+                    Storage::delete($this->header_image_path);
+                }
+                $data['header_image_path'] = $this->newHeaderImage->store('uploads/images/countries', 'public');
+                $this->newHeaderImage = null;
+            } else {
+                $data['header_image_path'] = $this->header_image_path;
+            }
         } else {
-            // Falls Pixabay genutzt wird, speichere die Pfade der Pixabay-Bilder
-            for ($i = 1; $i <= 3; $i++) {
-                $imageField = "image{$i}_path";
-                if ($this->$imageField && !($this->$imageField instanceof \Livewire\TemporaryUploadedFile)) {
-                    $data[$imageField] = $this->$imageField; // Speichere den Pfad direkt
-                }
-            }
+            // Pixabay-Bilder oder bestehende Pfade
+            $data['image1_path'] = $this->image1_path;
+            $data['image2_path'] = $this->image2_path;
+            $data['image3_path'] = $this->image3_path;
+            $data['panorama_image_path'] = $this->panorama_image_path;
+            $data['header_image_path'] = $this->header_image_path;
         }
 
         return $data;
     }
+
 
 
     // Status umschalten
@@ -260,13 +287,13 @@ class CountryManagerComponent extends Component
     public function updatedCustomImages($value)
     {
         if ($value) {
-            // Falls Custom Images aktiviert sind, entferne Pixabay-Bilder
             if (!($this->image1_path instanceof \Livewire\TemporaryUploadedFile)) $this->image1_path = null;
             if (!($this->image2_path instanceof \Livewire\TemporaryUploadedFile)) $this->image2_path = null;
             if (!($this->image3_path instanceof \Livewire\TemporaryUploadedFile)) $this->image3_path = null;
+            if (!($this->panorama_image_path instanceof \Livewire\TemporaryUploadedFile)) $this->panorama_image_path = null;
+            if (!($this->header_image_path instanceof \Livewire\TemporaryUploadedFile)) $this->header_image_path = null;
         } else {
-            // Falls Pixabay aktiviert ist, entferne hochgeladene Bilder
-            $this->reset(['image1_path', 'image2_path', 'image3_path']);
+            $this->reset(['image1_path', 'image2_path', 'image3_path', 'panorama_image_path', 'header_image_path']);
         }
     }
 
@@ -491,10 +518,102 @@ public function deleteImage($index)
     }
 
 
-    public function updatedSearch()
+
+
+    public function fetchPanoramaImages()
 {
-    $this->resetPage(); // Setzt die Paginierung zurück, damit die erste Seite angezeigt wird.
+    $keyword = $this->panoramaSearchKeyword ?: $this->title;
+    $response = Http::get("https://pixabay.com/api/", [
+        'key' => env('PIXABAY_API_KEY'),
+        'q' => $keyword,
+        'image_type' => 'photo',
+        'orientation' => 'horizontal',
+        'category' => 'nature',
+        'per_page' => 10,
+    ]);
+
+    if ($response->ok() && isset($response['hits'])) {
+        $this->panoramaPixabayImages = collect($response['hits'])->take(10);
+    } else {
+        $this->dispatch('error', 'Keine Panorama Bilder auf Pixabay gefunden.');
+    }
 }
+
+public function fetchHeaderImages()
+{
+    $keyword = $this->headerSearchKeyword ?: $this->title;
+    $response = Http::get("https://pixabay.com/api/", [
+        'key' => env('PIXABAY_API_KEY'),
+        'q' => $keyword,
+        'image_type' => 'photo',
+        'orientation' => 'horizontal',
+        'category' => 'nature',
+        'per_page' => 10,
+    ]);
+
+    if ($response->ok() && isset($response['hits'])) {
+        $this->headerPixabayImages = collect($response['hits'])->take(10);
+    } else {
+        $this->dispatch('error', 'Keine Header Bilder auf Pixabay gefunden.');
+    }
+}
+
+
+public function selectPanoramaImage($index)
+{
+    if (isset($this->panoramaPixabayImages[$index])) {
+        $imageData = $this->panoramaPixabayImages[$index];
+        $path = "uploads/images/countries/" . uniqid() . ".jpg";
+        Storage::disk('public')->put($path, file_get_contents($imageData['largeImageURL']));
+        $this->panorama_image_path = $path;
+    }
+}
+
+public function selectHeaderImage($index)
+{
+    if (isset($this->headerPixabayImages[$index])) {
+        $imageData = $this->headerPixabayImages[$index];
+        $path = "uploads/images/countries/" . uniqid() . ".jpg";
+        Storage::disk('public')->put($path, file_get_contents($imageData['largeImageURL']));
+        $this->header_image_path = $path;
+    }
+}
+
+
+
+    public function deleteHeaderImage()
+    {
+        if ($this->header_image_path && Storage::exists($this->header_image_path)) {
+            Storage::delete($this->header_image_path);
+        }
+
+        $this->header_image_path = null;
+
+        // Falls eine ID existiert, aktualisiere das Land in der Datenbank
+        if ($this->countryId) {
+            WwdeCountry::where('id', $this->countryId)
+                ->update(['header_image_path' => null]);
+        }
+    }
+
+    public function deletePanoramaImage()
+    {
+        if ($this->panorama_image_path && Storage::exists($this->panorama_image_path)) {
+            Storage::delete($this->panorama_image_path);
+        }
+
+        $this->panorama_image_path = null;
+
+        if ($this->countryId) {
+            WwdeCountry::where('id', $this->countryId)
+                ->update(['panorama_image_path' => null]);
+        }
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage(); // Setzt die Paginierung zurück, damit die erste Seite angezeigt wird.
+    }
 
 
 }

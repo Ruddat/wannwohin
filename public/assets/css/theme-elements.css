@@ -18289,12 +18289,6 @@ small, .small {
 }
 
 /* Paragraphs */
-p {
-	/* color: #777; old */
-    color: #fff;
-	line-height: 26px;
-	margin: 0 0 20px;
-}
 
 p.featured {
 	font-size: 1.6em;
