@@ -1,7 +1,7 @@
-<section class="section section-no-border bg-color-light m-0 pb-0" style="background-color: #eaeff5 !important;">
+<section class="section section-no-border bg-color-light m-0 pb-4" style="background-color: #eaeff5 !important;">
     <div class="container" style="background-color: #eaeff5">
         <!-- Überschrift -->
-        <div class="row mb-4" data-aos="fade-down" data-aos-delay="100">
+        <div class="row mb-4" data-aos="fade-down" data-aos-delay="1000">
             <div class="col-12 text-center">
                 <h2 class="fw-bold text-uppercase">
                     @autotranslate("{$location->title}: Alles Wichtige auf einen Blick", app()->getLocale())
@@ -22,7 +22,7 @@
                     style="background-repeat: no-repeat; background-size: cover; background-position: center;
                             background-image: url('{{ $location->text_pic2 ? asset($location->text_pic2) : asset('img/placeholders/location-placeholder.jpg') }}');
                             height: 100%; min-height: 400px;"
-                    data-aos="fade-up" data-aos-delay="200">
+                    data-aos="fade-up" data-aos-delay="1200">
                     <!-- Schicker Bildtext im unteren Bereich -->
 
                     <div class="image-caption">
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Faktenkarte -->
-            <div class="col-lg-5 col-md-12" data-aos="fade-left" data-aos-delay="300">
+            <div class="col-lg-5 col-md-12" data-aos="fade-left" data-aos-delay="1300">
                 <div class="card">
                     <!-- Card-Header mit Flagge, Name, Standort und Land -->
                     <div class="card-header-fact text-center"
@@ -584,10 +584,18 @@
         });
 
         // AOS initialisieren
-        AOS.init({
-            duration: 1000,
-            once: true,
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+    // Alle Elemente mit einem AOS-Attribut auswählen
+    const animatedElements = document.querySelectorAll('[data-aos]');
+
+    animatedElements.forEach((el, index) => {
+        // Beispiel: Delay basiert auf dem Index (100ms pro Element)
+        el.setAttribute('data-aos-delay', index * 1500);
+    });
+
+    // AOS auffrischen, damit die neuen Delay-Werte übernommen werden
+    AOS.refresh();
+});
     });
 </script>
 <script>

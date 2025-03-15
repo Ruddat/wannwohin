@@ -1,3 +1,4 @@
+<!-- resources/views/partials/picture.blade.php -->
 <section class="section section-no-border m-0 pb-5 gallery-section" style="position: relative; overflow: hidden;">
     <!-- Parallax-Hintergrund -->
     <div class="parallax-bg"
@@ -67,56 +68,20 @@
     </div>
 </section>
 
-<!-- GLightbox -->
+<!-- GLightbox (bleibt vorerst CDN) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-<!-- AOS -->
+{{--
+
+<!-- AOS (in npm) -->
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-<!-- Jarallax Library einbinden -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jarallax/1.12.6/jarallax.min.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // AOS Initialisierung
-    AOS.init({
-        duration: 1000,
-        once: true,
-    });
-
-    // GLightbox Initialisierung
-    try {
-        const lightbox = GLightbox({
-            selector: '.glightbox',
-            loop: true,
-            touchNavigation: true,
-            zoomable: true,
-            openEffect: 'zoom',
-            closeEffect: 'fade',
-            slideThumbnails: true,
-            touchFollowAxis: true
-        });
-        console.log('GLightbox erfolgreich initialisiert');
-    } catch (error) {
-        console.error('Fehler bei GLightbox-Initialisierung:', error);
-    }
-
-    // Jarallax Initialisierung
-    jarallax(document.querySelectorAll('[data-jarallax]'), {
-        speed: 0.5
-    });
-});
-</script>
+--}}
 
 <style>
-    /* Hintergrund und Parallax */
-    .gallery-section {
-        background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); /* Sanfter Gradient */
-        position: relative;
-    }
-
+    /* Parallax-Hintergrund */
     .parallax-bg {
         position: absolute;
         top: 0;
@@ -125,20 +90,21 @@ document.addEventListener('DOMContentLoaded', () => {
         height: 100%;
         background-size: cover;
         background-position: center;
-        opacity: 0.5; /* Leichtes Overlay für Textur */
+        opacity: 0.5;
         z-index: 1;
         transform: translateZ(0);
         will-change: transform;
     }
 
     .z-index-2 {
-        z-index: 1; /* Container über dem Parallax */
+        z-index: 2;
     }
 
-    /* Überschrift */
-    .text-color-dark {
-        color: #2d3748;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Gallery Section */
+    .gallery-section {
+        background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        position: relative;
+        z-index: 1;
     }
 
     .gallery-divider {
@@ -160,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         position: relative;
         cursor: pointer;
+        z-index: 2;
     }
 
     .custom-border {
@@ -200,42 +167,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     @media (max-width: 768px) {
-        .figure-img {
-            height: 160px;
-        }
-
-        .polaroid-frame {
-            padding: 10px 10px 20px 10px;
-        }
-
-        .polaroid-caption {
-            font-size: 0.8rem;
-            padding: 6px;
-        }
-
-        .col-lg-4:nth-child(odd) .polaroid-frame,
-        .col-lg-4:nth-child(even) .polaroid-frame {
-            transform: rotate(0);
-        }
-
-        .col-lg-4:nth-child(odd) .polaroid-frame:hover,
-        .col-lg-4:nth-child(even) .polaroid-frame:hover {
-            transform: scale(1.05) rotate(0deg);
-        }
+        .figure-img { height: 160px; }
+        .polaroid-frame { padding: 10px 10px 20px 10px; }
+        .polaroid-caption { font-size: 0.8rem; padding: 6px; }
+        .col-lg-4:nth-child(odd) .polaroid-frame, .col-lg-4:nth-child(even) .polaroid-frame { transform: rotate(0); }
+        .col-lg-4:nth-child(odd) .polaroid-frame:hover, .col-lg-4:nth-child(even) .polaroid-frame:hover { transform: scale(1.05) rotate(0deg); }
     }
 
     @media (max-width: 576px) {
-        .figure-img {
-            height: 140px;
-        }
-
-        .polaroid-frame {
-            padding: 8px 8px 15px 8px;
-        }
-
-        .polaroid-caption {
-            font-size: 0.75rem;
-            padding: 5px;
-        }
+        .figure-img { height: 140px; }
+        .polaroid-frame { padding: 8px 8px 15px 8px; }
+        .polaroid-caption { font-size: 0.75rem; padding: 5px; }
     }
 </style>
+
+@push('scripts')
+@vite(['resources/backend/js/app.js']) <!-- Jarallax wird hierüber geladen -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // AOS Initialisierung
+    AOS.init({
+        duration: 1000,
+        once: true,
+    });
+    console.log('AOS initialisiert');
+
+    // GLightbox Initialisierung
+    try {
+        const lightbox = GLightbox({
+            selector: '.glightbox',
+            loop: true,
+            touchNavigation: true,
+            zoomable: true,
+            openEffect: 'zoom',
+            closeEffect: 'fade',
+            slideThumbnails: true,
+            touchFollowAxis: true
+        });
+        console.log('GLightbox erfolgreich initialisiert');
+    } catch (error) {
+        console.error('Fehler bei GLightbox-Initialisierung:', error);
+    }
+});
+</script>
+@endpush

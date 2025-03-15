@@ -9,7 +9,6 @@
         <!-- Bootstrap CSS (falls nicht bereits im Layout enthalten) -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-
         <!-- Erlebnis-Sektion -->
         <section id="experience" class="section section-no-border bg-light m-0 py-5 position-relative">
             <div class="parallax-bg" style="background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');"></div>
@@ -140,7 +139,6 @@
         <!-- Zusätzliche Sektionen -->
         @include('frondend.locationdetails.sections.amusement_parks')
 
-
         @if ($gallery_images)
             @include('frondend.locationdetails.sections.erleben_picture_modal')
         @endif
@@ -148,7 +146,10 @@
 </div>
 
 
-<!-- AOS -->
+
+{{--
+
+<!-- AOS in npm-->
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
@@ -160,6 +161,10 @@
         });
     });
 </script>
+
+--}}
+
+
 
 <style>
     .bg-light {
@@ -180,6 +185,43 @@
 
     .z-index-2 {
         z-index: 2;
+    }
+
+
+
+    /* Modal im Vordergrund (global definiert) */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1055; /* Über dem Backdrop und anderen Inhalten */
+    }
+
+    .modal-dialog {
+        z-index: 1060; /* Noch höher für Modal-Inhalte */
+        position: relative;
+    }
+
+    .modal-content {
+        border-radius: 1rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+        background: white;
+    }
+
+    .modal.show .modal-content {
+        transform: scale(1);
+    }
+
+    /* Sektionen tiefer halten */
+    .section {
+        position: relative;
+       /*
+        z-index: 1; /* Unter dem Modal */
     }
 
     .card {

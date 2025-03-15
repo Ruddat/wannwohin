@@ -1,10 +1,9 @@
 <section id="experience" class="section section-secondary section-no-border m-0">
     <div class="container">
         <!-- Beispiel: Header -->
-<div class="header">
-    <x-ad-block slot="header" />
-</div>
-
+        <div class="header">
+            <x-ad-block slot="header" />
+        </div>
 
         <div class="row">
             <div class="col">
@@ -21,7 +20,7 @@
                     </select>
                 </div>
 
-                <!-- Timeline aus Blade 1 integriert -->
+                <!-- Timeline mit AOS -->
                 <ul class="timeline">
                     @php
                         $travelTypes = \App\Models\ModQuickFilterItem::where('status', 1)
@@ -45,8 +44,8 @@
                         ];
                     @endphp
 
-                    @forelse($travelTypes as $type)
-                        <li>
+                    @forelse($travelTypes as $index => $type)
+                        <li data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
                             <div class="timeline-content">
                                 <div class="card-container">
                                     <!-- Image Section -->
@@ -84,6 +83,8 @@
     </div>
 </section>
 
+@vite(['resources/backend/css/app.css', 'resources/backend/js/app.js'])
+
 <script>
     const urlaubTypeMap = @json($urlaubTypeMap);
 
@@ -99,9 +100,8 @@
     }
 </script>
 
-<!-- CSS mit neuem Hover-Effekt -->
 <style>
-    /* Timeline-Grundstruktur bleibt gleich */
+    /* Timeline-Grundstruktur */
     ul.timeline {
         list-style-type: none;
         position: relative;
@@ -167,45 +167,45 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         margin-bottom: 30px;
-        min-height: 200px; /* Optional: Stabilisiert die Höhe */
+        min-height: 200px;
     }
 
-    /* Einheitliche Bildgröße mit Hover-Effekt */
+    /* Einheitliche Bildbreite und Höhe */
     .card-image {
         background-size: cover;
         background-position: center;
-        width: 25%;
-        height: 200px; /* Feste Höhe */
+        width: 200px; /* Feste Breite für alle Bilder */
+        height: 200px; /* Feste Höhe für Konsistenz */
         position: relative;
-        transition: transform 0.5s ease, box-shadow 0.3s ease; /* Sanfte Übergänge für Zoom und Schatten */
-        overflow: hidden; /* Verhindert Überlaufen des Schimmers */
+        transition: transform 0.5s ease, box-shadow 0.3s ease;
+        overflow: hidden;
     }
 
     /* Hover-Effekt für das Bild */
     .card-image:hover {
-        transform: scale(1.1); /* Leichtes Vergrößern */
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Stärkerer Schatten */
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
-    /* Schimmer-Effekt mit Pseudo-Element */
+    /* Schimmer-Effekt */
     .card-image::before {
         content: '';
         position: absolute;
         top: 0;
-        left: -75%; /* Startet außerhalb des Bildes */
+        left: -75%;
         width: 50%;
         height: 100%;
         background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1));
-        transform: skewX(-25deg); /* Schräger Schimmer */
-        transition: left 0.7s ease-in-out; /* Bewegung des Schimmers */
+        transform: skewX(-25deg);
+        transition: left 0.7s ease-in-out;
     }
 
     .card-image:hover::before {
-        left: 125%; /* Bewegt den Schimmer über das Bild */
+        left: 125%;
     }
 
     .card-details {
-        width: 75%;
+        width: calc(100% - 200px); /* Restliche Breite nach Bild */
         padding: 20px;
     }
 
@@ -246,17 +246,17 @@
     @media (max-width: 768px) {
         .card-container {
             flex-direction: column;
-            min-height: unset; /* Entfernt die minimale Höhe auf Mobilgeräten */
+            min-height: unset;
         }
 
         .card-image {
-            width: 100%;
-            height: 150px; /* Kleinere feste Höhe für Mobilgeräte */
+            width: 100%; /* Volle Breite auf Mobilgeräten */
+            height: 150px; /* Kleinere feste Höhe */
         }
 
         .card-image:hover {
-            transform: none; /* Deaktiviert den Zoom auf Mobilgeräten, falls gewünscht */
-            box-shadow: none; /* Optional: Entfernt Schatten auf Mobilgeräten */
+            transform: none; /* Optional: Deaktiviert Zoom auf Mobilgeräten */
+            box-shadow: none;
         }
 
         .card-details {
@@ -292,17 +292,18 @@
         }
     }
 </style>
+
 <style>
     .ad-block {
-    margin: 20px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
 
-.ad-block img {
-    max-width: 100%;
-    height: auto;
-}
+    .ad-block img {
+        max-width: 100%;
+        height: auto;
+    }
 </style>

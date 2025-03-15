@@ -1,6 +1,7 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
 @import './wishlist-compare.css';
 @import './wishlist-box.css';
 @import './index-details-timeline.css';
 @import './footer.css';
 @import './animate.min.css';
-
+@import 'aos/dist/aos.css';

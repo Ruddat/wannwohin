@@ -17,7 +17,10 @@
     "dependencies": {
         "@ckeditor/ckeditor5-build-classic": "^44.3.0",
         "animate.css": "^4.1.1",
+        "aos": "^2.3.4",
         "apexcharts": "^4.5.0",
+        "bootstrap": "^5.3.3",
+        "jarallax": "^2.2.1",
         "leaflet": "^1.9.4",
         "sweetalert2": "^11.6.13"
     }

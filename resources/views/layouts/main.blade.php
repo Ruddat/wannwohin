@@ -124,7 +124,15 @@
         rel="stylesheet" type="text/css">
 
     <!-- Vendor CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
+
+    {{--
+
+    via npn
+        <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
+
+    --}}
+
+
     <link rel="stylesheet" href="{{ asset('assets\vendor\fontawesome-free-6.7.2-web\css\all.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/animate/animate.compat.css') }}">
@@ -401,8 +409,19 @@
 <script src={{ asset('assets/js/cookie-consent.js') }}></script>
 
 
+
+{{--
+
+via npm installiert
+
+
 <!-- AOS JS -->
 <script src="{{ asset('assets\vendor\aos\aos.js') }}"></script>
+
+--}}
+
+
+
 
 <script>
     let token = '{{ csrf_token() }}';

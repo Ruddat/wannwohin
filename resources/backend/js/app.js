@@ -5,6 +5,7 @@ import ApexCharts from 'apexcharts';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'animate.css'; // Animate.css importieren
+import AOS from 'aos';
 
 // Globale Zuweisungen
 window.Swal = Swal;
@@ -17,6 +18,12 @@ L.Icon.Default.mergeOptions({
     iconRetinaUrl: '/images/leaflet/marker-icon-2x.png',
     iconUrl: '/images/leaflet/marker-icon.png',
     shadowUrl: '/images/leaflet/marker-shadow.png',
+});
+
+AOS.init({
+    duration: 800, // Animation-Dauer in Millisekunden
+    once: true,    // Animation nur einmal ausführen
+    // Weitere Optionen: https://github.com/michalsnik/aos#initialization
 });
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,5 +1,25 @@
 import './bootstrap';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import 'bootstrap'; // Lädt das gesamte Bootstrap-JS (inkl. Popper.js)
+import { jarallax } from 'jarallax';
+import 'animate.css'; // Animate.css importieren
+import AOS from 'aos';
+
+
+
+AOS.init({
+    duration: 1000, // Animation-Dauer in Millisekunden
+    once: true,    // Animation nur einmal ausführen
+    // Weitere Optionen: https://github.com/michalsnik/aos#initialization
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    jarallax(document.querySelectorAll('[data-jarallax]'), {
+        speed: 0.5
+    });
+    console.log('Jarallax erfolgreich initialisiert');
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const editorElement = document.querySelector('#editor');

@@ -135,9 +135,10 @@
 @endif
 
 
+
 <style>
-    /* Parallax-Hintergrund */
-    .parallax-bg {
+/* Parallax-Hintergrund */
+.parallax-bg {
     position: absolute;
     top: 0;
     left: 0;
@@ -151,14 +152,14 @@
     will-change: transform;
 }
 
-.z-index-2 {
-    z-index: 2;
+/* Wenn ein Modal geöffnet ist, blurriere nur den Parallax-Hintergrund */
+body.modal-open #freizeitparks .parallax-bg {
+    filter: blur(10px);
 }
 
-/* Modal-Backdrop Blur */
-.modal-backdrop.show {
-    opacity: 0.5;
-    backdrop-filter: blur(10px);
+/* Container-Z-Index */
+.z-index-2 {
+    z-index: 2;
 }
 
     /* Sektion */
@@ -400,6 +401,9 @@
         }
     }
 </style>
+
+{{--
+in npm
 <!-- Jarallax Library einbinden -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jarallax/1.12.6/jarallax.min.js"></script>
 <script>
@@ -407,3 +411,4 @@
         speed: 0.5
     });
 </script>
+--}}
