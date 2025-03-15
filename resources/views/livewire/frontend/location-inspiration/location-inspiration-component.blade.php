@@ -178,17 +178,17 @@
 
     <!-- Alpine.js & Livewire -->
     <div id="tripPlanContainer"
-    class="container"
-    x-data="{
-        selectedType: @entangle('selectedType'),
-        randomMode: @entangle('randomMode'),
-        selected: @entangle('selected'),
-        tripPlan: @entangle('tripPlan'),
-        showTripPlan: true,
-        init() {
-            Alpine.store('tripPlan', this.tripPlan);
-        }
-    }">
+         class="container"
+         x-data="{
+             selectedType: @entangle('selectedType'),
+             randomMode: @entangle('randomMode'),
+             selected: @entangle('selected'),
+             tripPlan: @entangle('tripPlan'),
+             showTripPlan: true,
+             init() {
+                 Alpine.store('tripPlan', this.tripPlan);
+             }
+         }">
         <!-- Neuer Hero-Bereich -->
         <div class="hero">
             <h1>Entdecke dein nächstes Abenteuer in {{ $locationTitle }}!</h1>
@@ -312,82 +312,92 @@
                     <p>In deinem Tripplan befinden sich {{ count($tripPlan) }} Aktivitäten.</p>
                     <button id="shareTripPlan" class="share-btn">Tripplan per WhatsApp teilen</button>
                     <button id="exportPdf" class="share-btn bg-blue-500">Als PDF exportieren</button>
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-                    <script>
-document.getElementById('exportPdf')?.addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    // Zugriff auf Alpine-Komponentendaten über _x_dataStack
-    const container = document.getElementById('tripPlanContainer');
-    const alpineData = container._x_dataStack ? container._x_dataStack[0] : {};
-    let tripPlan = alpineData.tripPlan || [];
-    const currentUrl = window.location.href;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("Mein Tripplan durch {{ $locationTitle }}", 105, 20, { align: "center" });
-
-    doc.setLineWidth(0.5);
-    doc.line(20, 25, 185, 25);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    let yPosition = 35;
-    const lineHeight = 7;
-    const margin = 20;
-    const maxWidth = 165;
-
-    tripPlan.forEach((item, index) => {
-        let text = `${index + 1}. ${item.category}`;
-        if (item.uschrift) {
-            text += ` - ${item.uschrift}`;
-        }
-        text += `: ${item.text}`;
-
-        const splitText = doc.splitTextToSize(text, maxWidth);
-        if (yPosition + splitText.length * lineHeight > 280) {
-            doc.addPage();
-            yPosition = margin;
-        }
-        doc.text(splitText, margin, yPosition);
-        yPosition += splitText.length * lineHeight + 5;
-    });
-
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(10);
-    doc.text("Mehr Infos: " + currentUrl, 105, yPosition + 10, { align: "center" });
-
-    doc.save('tripplan.pdf');
-});
-
-
-document.getElementById('shareTripPlan')?.addEventListener('click', function() {
-    var container = document.getElementById('tripPlanContainer');
-    var alpineData = container._x_dataStack ? container._x_dataStack[0] : {};
-    var tripPlan = alpineData.tripPlan || [];
-    var currentUrl = window.location.href;
-    var message = "Mein Tripplan durch {{ $locationTitle }}:\n";
-    tripPlan.forEach(function(item) {
-        var line = "- " + item.category;
-        if (item.uschrift) {
-            line += " - " + item.uschrift;
-        }
-        line += ": " + item.text.substring(0, 250) + "...";
-        message += line + "\n";
-    });
-    message += "\nMehr Infos: " + currentUrl;
-    var encodedMessage = encodeURIComponent(message);
-    var isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    var whatsappUrl = isMobile
-        ? "whatsapp://send?text=" + encodedMessage
-        : "https://web.whatsapp.com/send?text=" + encodedMessage;
-    window.open(whatsappUrl, '_blank');
-});
-                    </script>
                 </div>
                 @endif
             </div>
         </div>
     </div>
+
+    <!-- jsPDF Bibliothek und Skript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.addEventListener('livewire:updated', function () {
+            const exportPdf = document.getElementById('exportPdf');
+            const shareTripPlan = document.getElementById('shareTripPlan');
+            const container = document.getElementById('tripPlanContainer');
+            const tripPlan = container ? (container._x_dataStack ? container._x_dataStack[0].tripPlan : []) : [];
+
+            if (exportPdf) {
+                exportPdf.onclick = function() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    const currentUrl = window.location.href;
+
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(20);
+                    doc.text("Mein Tripplan durch {{ $locationTitle }}", 105, 20, { align: "center" });
+
+                    doc.setLineWidth(0.5);
+                    doc.line(20, 25, 185, 25);
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(12);
+                    let yPosition = 35;
+                    const lineHeight = 7;
+                    const margin = 20;
+                    const maxWidth = 165;
+
+                    tripPlan.forEach((item, index) => {
+                        let text = `${index + 1}. ${item.category}`;
+                        if (item.uschrift) {
+                            text += ` - ${item.uschrift}`;
+                        }
+                        text += `: ${item.text}`;
+
+                        const splitText = doc.splitTextToSize(text, maxWidth);
+                        if (yPosition + splitText.length * lineHeight > 280) {
+                            doc.addPage();
+                            yPosition = margin;
+                        }
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * lineHeight + 5;
+                    });
+
+                    doc.setFont("helvetica", "italic");
+                    doc.setFontSize(10);
+                    doc.text("Mehr Infos: " + currentUrl, 105, yPosition + 10, { align: "center" });
+
+                    doc.save('tripplan.pdf');
+                };
+            }
+
+            if (shareTripPlan) {
+                shareTripPlan.onclick = function() {
+                    const currentUrl = window.location.href;
+                    let message = "Mein Tripplan durch {{ $locationTitle }}:\n";
+                    tripPlan.forEach(function(item) {
+                        let line = "- " + item.category;
+                        if (item.uschrift) {
+                            line += " - " + item.uschrift;
+                        }
+                        line += ": " + item.text.substring(0, 250) + "...";
+                        message += line + "\n";
+                    });
+                    message += "\nMehr Infos: " + currentUrl;
+                    const encodedMessage = encodeURIComponent(message);
+                    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+                    const whatsappUrl = isMobile
+                        ? "whatsapp://send?text=" + encodedMessage
+                        : "https://web.whatsapp.com/send?text=" + encodedMessage;
+                    window.open(whatsappUrl, '_blank');
+                };
+            }
+        });
+
+        // Initialisierung beim Laden der Seite
+        document.addEventListener('DOMContentLoaded', function () {
+            document.dispatchEvent(new Event('livewire:updated'));
+        });
+    </script>
 </div>

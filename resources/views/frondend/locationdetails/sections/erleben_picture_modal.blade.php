@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     .z-index-2 {
-        z-index: 2; /* Container über dem Parallax */
+        z-index: 1; /* Container über dem Parallax */
     }
 
     /* Überschrift */

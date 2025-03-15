@@ -67,7 +67,7 @@
                 <div class="modal fade" id="waitingTimesModal{{ $item['park']->id }}" tabindex="-1"
                      aria-labelledby="waitingTimesLabel{{ $item['park']->id }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
-                        <div class="modal-content border-0 shadow-2xl rounded-xl overflow-hidden transform transition-all duration-300">
+                        <div class="modal-content border-0 shadow-2xl rounded-xl overflow-hidden transform transition-all duration-300 animate__animated animate__zoomIn">
                             <!-- Header -->
                             <div class="modal-header bg-gradient-to-r from-primary via-blue-500 to-indigo-600 text-white p-4 animate__animated animate__fadeInDown">
                                 <h5 class="modal-title font-weight-bold text-lg tracking-wide" id="waitingTimesLabel{{ $item['park']->id }}">
@@ -134,25 +134,32 @@
 </section>
 @endif
 
+
 <style>
     /* Parallax-Hintergrund */
     .parallax-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        opacity: 0.5;
-        z-index: 1;
-        transform: translateZ(0);
-        will-change: transform;
-    }
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    z-index: 1;
+    transform: translateZ(0);
+    will-change: transform;
+}
 
-    .z-index-2 {
-        z-index: 2;
-    }
+.z-index-2 {
+    z-index: 2;
+}
+
+/* Modal-Backdrop Blur */
+.modal-backdrop.show {
+    opacity: 0.5;
+    backdrop-filter: blur(10px);
+}
 
     /* Sektion */
     .section {

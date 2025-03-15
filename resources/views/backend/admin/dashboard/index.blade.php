@@ -87,7 +87,6 @@
     <!-- Weitere Inhalte (Traffic Summary, Top 10 Locations, Map) -->
     <div class="row">
         <!-- Traffic Summary -->
-        <!-- Traffic Summary -->
         <div class="col-lg-4 mb-4">
             <div class="card shadow">
                 <div class="card-header">
@@ -139,77 +138,20 @@
         </div>
     </div>
 </div>
+
+<!-- Daten für JavaScript -->
+<script>
+    window.trafficSummaryData = {!! json_encode($trafficSummary->pluck('total_searches')->toArray()) !!};
+    window.trafficSummaryMonths = {!! json_encode($trafficSummary->pluck('month')->toArray()) !!};
+    window.topLocations = {!! json_encode($topLocations) !!};
+</script>
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-    // Traffic Summary Chart mit ApexCharts
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const trafficSummaryOptions = {
-            series: [{
-                name: 'Searches',
-                data: {!! json_encode($trafficSummary->pluck('total_searches')->toArray()) !!}
-            }],
-            chart: {
-                type: 'bar',
-                height: 350,
-                toolbar: {
-                    show: false
-                },
-                animations: {
-                    enabled: true,
-                    easing: 'easeinout',
-                    speed: 800
-                }
-            },
-            xaxis: {
-                categories: {!! json_encode($trafficSummary->pluck('month')->toArray()) !!},
-            },
-            responsive: [
-                {
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            height: 300
-                        },
-                        xaxis: {
-                            labels: {
-                                show: true,
-                                style: {
-                                    fontSize: '10px'
-                                }
-                            }
-                        }
-                    }
-                }
-            ]
-        };
-
-        const trafficSummaryChart = new ApexCharts(document.querySelector("#trafficSummaryChart"), trafficSummaryOptions);
-        trafficSummaryChart.render();
-
-        // Locations Map
-        const map = L.map('map-world').setView([20, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        const locations = {!! json_encode($topLocations) !!};
-        locations.forEach(location => {
-            L.marker([location.lat, location.lon])
-                .addTo(map)
-                .bindPopup(`<b>${location.title}</b><br>Suchen: ${location.search_count}`);
-        });
-    });
-</script>
+@vite(['resources/backend/js/app.js'])
 @endpush
 
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
     #map-world {
         height: 100%;
@@ -222,12 +164,10 @@
     .row-deck {
         gap: 1rem;
     }
-
     #trafficSummaryChart {
-    width: 100%;
-    max-width: 100%;
-    height: 100%;
-}
-
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+    }
 </style>
 @endpush
