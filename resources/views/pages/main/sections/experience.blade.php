@@ -107,6 +107,7 @@
         position: relative;
         padding: 0;
         margin: 0;
+        z-index: 0; /* Basis-z-index für die Timeline */
     }
 
     ul.timeline:before {
@@ -117,13 +118,14 @@
         left: 30px;
         width: 2px;
         height: 100%;
-        z-index: 400;
+        z-index: 1; /* Linie auf niedrigem Level */
     }
 
     ul.timeline > li {
         margin: 50px 0;
         padding-left: 60px;
         position: relative;
+        z-index: 2; /* Li über der Linie */
     }
 
     ul.timeline > li:before {
@@ -138,7 +140,7 @@
         border: 3px solid #22c0e8;
         width: 20px;
         height: 20px;
-        z-index: 401;
+        z-index: 3; /* Punkt über allem */
         transition: background 0.3s ease;
     }
 
@@ -153,6 +155,8 @@
         box-shadow: none;
         transition: transform 0.2s ease-in-out;
         text-align: left;
+        position: relative;
+        z-index: 2; /* Inhalt über der Linie */
     }
 
     ul.timeline > li:hover .timeline-content {
@@ -168,14 +172,16 @@
         overflow: hidden;
         margin-bottom: 30px;
         min-height: 200px;
+        position: relative;
+        z-index: 2; /* Card über der Linie */
     }
 
     /* Einheitliche Bildbreite und Höhe */
     .card-image {
+        flex: 0 0 200px; /* Feste Breite mit flex */
+        height: 200px; /* Feste Höhe */
         background-size: cover;
         background-position: center;
-        width: 200px; /* Feste Breite für alle Bilder */
-        height: 200px; /* Feste Höhe für Konsistenz */
         position: relative;
         transition: transform 0.5s ease, box-shadow 0.3s ease;
         overflow: hidden;
@@ -205,7 +211,7 @@
     }
 
     .card-details {
-        width: calc(100% - 200px); /* Restliche Breite nach Bild */
+        flex: 1; /* Nimmt den restlichen Platz ein */
         padding: 20px;
     }
 
@@ -250,12 +256,13 @@
         }
 
         .card-image {
-            width: 100%; /* Volle Breite auf Mobilgeräten */
-            height: 150px; /* Kleinere feste Höhe */
+            flex: 0 0 auto; /* Zurück auf auto für volle Breite */
+            width: 100%;
+            height: 150px;
         }
 
         .card-image:hover {
-            transform: none; /* Optional: Deaktiviert Zoom auf Mobilgeräten */
+            transform: none;
             box-shadow: none;
         }
 
