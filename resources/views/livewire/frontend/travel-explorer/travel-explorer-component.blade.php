@@ -108,8 +108,7 @@ style="background-image: url('{{ $location->text_pic2 ? asset($location->text_pi
         @endif
     </div>
 
-<!-- Animate.css für Animationen -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
 
 <style scoped>
 .travel-explorer {

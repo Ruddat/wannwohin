@@ -75,9 +75,6 @@
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-<!-- Animate.css -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-
 <!-- Jarallax Library einbinden -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jarallax/1.12.6/jarallax.min.js"></script>
 
