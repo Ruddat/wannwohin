@@ -6,21 +6,23 @@ use Illuminate\Support\Facades\Schedule;
 use App\Console\Commands\FetchDailyWeatherData;
 use App\Console\Commands\CheckMaintenanceExpiration;
 use App\Console\Commands\UpdateLocationDetails;
+use App\Console\Commands\FetchMonthlyClimateData; // Neu hinzugefügt
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
 // Regelmäßige Datenaktualisierungen (mehrfach täglich)
-Schedule::command('climate:fetch-daily')->cron('0 */6 * * *'); // Alle 6 Stunden
+// Schedule::command('climate:fetch-daily')->cron('0 */6 * * *'); // Alle 6 Stunden
 Schedule::command(UpdateLocationDetails::class, ['--field' => 'time_zone', '--force-timezone'])->cron('0 */4 * * *'); // Alle 4 Stunden
+Schedule::command('climate:fetch-monthly')->everyThreeHours()->withoutOverlapping(); // Alle 3 Stunden, neu hinzugefügt
 
 // Tägliche Datenaktualisierungen
 Schedule::command(UpdateLocationDetails::class, ['--limit' => 100])->dailyAt('02:30')->withoutOverlapping();
 Schedule::command('flights:fetch-prices')->dailyAt('03:00');
 Schedule::command('hotels:fetch-prices')->dailyAt('03:30');
 Schedule::command('rentalcars:fetch-prices')->dailyAt('04:30');
-Schedule::command(FetchDailyWeatherData::class)->dailyAt('14:00');
+// Schedule::command(FetchDailyWeatherData::class)->dailyAt('14:00');
 
 // Monatliche Aufgaben
 Schedule::command('scrape:travel-warnings')->monthly();

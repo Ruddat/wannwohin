@@ -177,7 +177,7 @@ private function fetchInspirationData(WwdeLocation $location): array
             ->pluck('month_id')
             ->toArray();
 
-        // Wenn alle 12 Monate vorhanden sind, direkt aus der Datenbank zurückgeben
+        // Wenn alle 12 Monate vorhanden sind, direkt zurückgeben
         if (count($existingMonths) === 12 && array_diff(range('01', '12'), $existingMonths) === []) {
             return WwdeClimate::where('location_id', $location->id)
                 ->where('year', $previousYear)
@@ -188,6 +188,7 @@ private function fetchInspirationData(WwdeLocation $location): array
         // Bestimme fehlende Monate
         $missingMonths = array_diff(range('01', '12'), $existingMonths);
 
+        // Wenn keine Monate fehlen, Daten zurückgeben
         if (empty($missingMonths)) {
             return WwdeClimate::where('location_id', $location->id)
                 ->where('year', $previousYear)
@@ -209,128 +210,97 @@ private function fetchInspirationData(WwdeLocation $location): array
                 'longitude' => $location->lon,
                 'start_date' => "$previousYear-01-01",
                 'end_date' => "$previousYear-12-31",
-                'daily' => 'weather_code,temperature_2m_max,sunshine_duration,temperature_2m_min,sunrise,sunset,daylight_duration,precipitation_sum,rain_sum,snowfall_sum,precipitation_hours,wind_direction_10m_dominant',
+                'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,sunshine_duration,relative_humidity_2m_mean,pressure_msl_mean,wind_speed_10m_max,wind_direction_10m_dominant,precipitation_sum,precipitation_hours,cloud_cover_mean',
                 'timezone' => 'auto',
             ]);
 
-            if (!$response->successful()) {
-                Log::error("API-Fehler bei Open-Meteo Historical Weather für {$location->id}: Status-Code {$response->status()}");
-                return [];
+            if (!$response->successful() || empty($response->json()['daily']['time'])) {
+                Log::warning("Keine Klimadaten von Open-Meteo für Standort {$location->id}, Jahr {$previousYear}");
+                return []; // Leeres Array als Fallback
             }
 
-            $data = $response->json()['daily'] ?? [];
-            if (empty($data['time'])) {
-                Log::warning("Keine Daten von Open-Meteo für Standort {$location->id}, Jahr {$previousYear}");
-                return [];
-            }
-
+            $data = $response->json()['daily'];
             $monthlyData = collect($data['time'])->reduce(function ($carry, $date, $key) use ($data) {
                 $month = Carbon::parse($date)->month;
                 $carry[$month] = $carry[$month] ?? [
-                    'temps_max' => [],
-                    'temps_min' => [],
-                    'sunshine_durations' => [],
-                    'precipitation_sums' => [],
-                    'precipitation_hours' => [],
-                    'weather_codes' => [],
-                    'wind_directions' => [],
-                    'sunrises' => [],
-                    'sunsets' => [],
+                    'temps_max' => [], 'temps_min' => [], 'sunshine_durations' => [], 'humidities' => [],
+                    'pressures' => [], 'wind_speeds' => [], 'wind_directions' => [], 'precipitation_hours' => [],
+                    'cloud_covers' => [], 'weather_codes' => [],
                 ];
 
                 $carry[$month]['temps_max'][] = $data['temperature_2m_max'][$key] ?? null;
                 $carry[$month]['temps_min'][] = $data['temperature_2m_min'][$key] ?? null;
                 $carry[$month]['sunshine_durations'][] = $data['sunshine_duration'][$key] ?? null;
-                $carry[$month]['precipitation_sums'][] = $data['precipitation_sum'][$key] ?? null;
-                $carry[$month]['precipitation_hours'][] = $data['precipitation_hours'][$key] ?? null;
-                $carry[$month]['weather_codes'][] = $data['weather_code'][$key] ?? null;
+                $carry[$month]['humidities'][] = $data['relative_humidity_2m_mean'][$key] ?? null;
+                $carry[$month]['pressures'][] = $data['pressure_msl_mean'][$key] ?? null;
+                $carry[$month]['wind_speeds'][] = $data['wind_speed_10m_max'][$key] ?? null;
                 $carry[$month]['wind_directions'][] = $data['wind_direction_10m_dominant'][$key] ?? null;
-                $carry[$month]['sunrises'][] = $data['sunrise'][$key] ?? null;
-                $carry[$month]['sunsets'][] = $data['sunset'][$key] ?? null;
+                $carry[$month]['precipitation_hours'][] = $data['precipitation_hours'][$key] ?? null;
+                $carry[$month]['cloud_covers'][] = $data['cloud_cover_mean'][$key] ?? null;
+                $carry[$month]['weather_codes'][] = $data['weather_code'][$key] ?? null;
 
                 return $carry;
             }, []);
 
             $climates = [];
             foreach ($monthlyData as $month => $values) {
-                $weatherCodes = collect($values['weather_codes'])->filter()->all();
-                $weatherId = !empty($weatherCodes) ? collect($weatherCodes)->mode()[0] ?? null : null;
-
+                $weatherId = !empty($values['weather_codes']) ? collect($values['weather_codes'])->mode()[0] ?? null : null;
                 $climates[$month] = [
                     'year' => $previousYear,
                     'location_id' => $location->id,
                     'month_id' => sprintf('%02d', $month),
                     'month' => Carbon::create()->month($month)->format('F'),
-                    'daily_temperature' => !empty($values['temps_max']) ? $this->safeAvg($values['temps_max']) : null,
-                    'night_temperature' => !empty($values['temps_min']) ? $this->safeAvg($values['temps_min']) : null,
-                    'water_temperature' => null,
-                    'humidity' => null,
-                    'sunshine_per_day' => !empty($values['sunshine_durations']) ? $this->safeAvg($values['sunshine_durations']) / 3600 : null,
-                    'rainy_days' => !empty($values['precipitation_hours']) ? $this->safeSum($values['precipitation_hours']) / 24 : null,
-                    'cloudiness' => null,
+                    'daily_temperature' => $this->safeAvg($values['temps_max']),
+                    'night_temperature' => $this->safeAvg($values['temps_min']),
+                    'water_temperature' => null, // Noch nicht implementiert
+                    'humidity' => $this->safeAvg($values['humidities']),
+                    'sunshine_per_day' => $this->safeAvg($values['sunshine_durations']) / 3600,
+                    'rainy_days' => $this->safeSum($values['precipitation_hours']) / 24,
+                    'cloudiness' => $this->safeAvg($values['cloud_covers']),
+                    'pressure' => $this->safeAvg($values['pressures']),
+                    'wind_speed' => $this->safeAvg($values['wind_speeds']),
+                    'wind_deg' => $this->safeAvg($values['wind_directions']),
                     'weather_id' => $weatherId,
-                    'feels_like' => null,
-                    'temp_min' => !empty($values['temps_min']) ? min($values['temps_min']) : null,
-                    'temp_max' => !empty($values['temps_max']) ? max($values['temps_max']) : null,
-                    'pressure' => null,
-                    'wind_speed' => null,
-                    'wind_deg' => !empty($values['wind_directions']) ? $this->safeAvg($values['wind_directions']) : null,
-                    'clouds_all' => null,
-                    'dt' => !empty($data['time']) ? Carbon::parse(end($data['time']))->timestamp : null,
-                    'timezone' => 'auto',
-                    'country' => $location->country->country_code ?? null,
-                    'sunrise' => !empty($values['sunrises']) ? $this->safeAvg($values['sunrises']) : null,
-                    'sunset' => !empty($values['sunsets']) ? $this->safeAvg($values['sunsets']) : null,
                     'weather_main' => $this->mapWeatherCode($weatherId),
                     'weather_description' => $this->mapWeatherCode($weatherId, true),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
             }
-
             return $climates;
         });
 
-        if (!empty($climateData) && is_array($climateData) && count($climateData) > 0) {
-            // Nur fehlende Monate speichern
+        // Prüfe, ob $climateData leer ist, bevor upsert ausgeführt wird
+        if (!empty($climateData) && is_array($climateData)) {
             $insertData = array_filter($climateData, function ($monthData) use ($missingMonths) {
+
                 return in_array($monthData['month_id'], $missingMonths);
             });
 
+            // Nur upsert ausführen, wenn $insertData nicht leer ist
             if (!empty($insertData)) {
-                $insertData = array_map(function ($monthData) use ($location) {
-                    if ($monthData['timezone'] === 'auto') {
-                        $monthData['timezone'] = null;
-                    } elseif (is_string($monthData['timezone'])) {
-                        try {
-                            $timezone = new DateTimeZone($monthData['timezone']);
-                            $monthData['timezone'] = $timezone->getOffset(new DateTime());
-                        } catch (\Exception $e) {
-                            $monthData['timezone'] = null;
-                            Log::warning("Ungültige Zeitzone für Standort {$location->id}: {$monthData['timezone']}");
-                        }
-                    }
-                    return $monthData;
-                }, array_values($insertData));
-
                 try {
                     WwdeClimate::upsert(
-                        $insertData,
+                        array_values($insertData),
                         ['location_id', 'year', 'month_id'],
-                        array_keys($insertData[0])
+                        array_keys(reset($insertData)) // Verwende reset() statt $insertData[0]
                     );
-                    Log::info("Klimadaten für fehlende Monate von Standort {$location->id}, Jahr {$previousYear} erfolgreich gespeichert.");
+                    Log::info("Klimadaten für Standort {$location->id}, Jahr {$previousYear} erfolgreich gespeichert.");
                 } catch (\Exception $e) {
-                    Log::error("Fehler beim Speichern der Klimadaten für Standort {$location->id}, Jahr {$previousYear}: " . $e->getMessage());
+                    Log::error("Fehler beim Upsert für Standort {$location->id}: " . $e->getMessage());
                 }
+            } else {
+                Log::info("Keine neuen Klimadaten zum Speichern für Standort {$location->id}, Jahr {$previousYear}");
             }
+        } else {
+            Log::warning("Keine Klimadaten verfügbar für Standort {$location->id}, Jahr {$previousYear}");
         }
 
-        // Rückgabe der vollständigen Klimadaten aus der Datenbank
+        // Rückgabe der Datenbank-Daten, auch wenn nichts neu eingefügt wurde
         return WwdeClimate::where('location_id', $location->id)
             ->where('year', $previousYear)
             ->orderBy('month_id', 'asc')
-            ->get();
+            ->get() ?? collect();
     }
 
 

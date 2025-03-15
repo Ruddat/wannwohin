@@ -241,7 +241,7 @@
 }
 
 .climate-table-col {
-    border-radius: 0 15px 15px 0;
+    border-radius: 15px 15px 15px 15px;
 }
 
 .text-weather {
