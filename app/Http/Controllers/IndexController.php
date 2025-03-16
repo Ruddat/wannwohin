@@ -97,22 +97,29 @@ class IndexController extends Controller
             return [];
         }
 
+        $currentMonth = (int) date('n'); // z. B. 3 für März
+        $currentYear = (int) date('Y'); // 2025
+
         $locations = WwdeLocation::query()
             ->whereIn('id', $topTenIds)
             ->with(['climates', 'continent', 'country'])
             ->get()
-            ->map(function ($location) {
+            ->map(function ($location) use ($currentMonth, $currentYear) {
                 $this->updateMissingIsoCodes($location);
 
-                $climateData = $location->climates->first() ?? (object)[
-                    'daily_temperature' => 'N/A',
-                    'night_temperature' => 'N/A',
-                    'humidity' => 'N/A',
-                    'sunshine_per_day' => 'N/A',
-                    'water_temperature' => 'N/A',
-                    'weather_description' => 'N/A',
-                    'icon' => 'default.png',
-                ];
+                // Klimadaten für aktuellen Monat/Jahr oder Fallback
+                $climateData = $location->climates
+                    ->where('month_id', sprintf('%02d', $currentMonth))
+                    ->where('year', $currentYear)
+                    ->first() ?? $location->climates->first() ?? (object)[
+                        'daily_temperature' => 'N/A',
+                        'night_temperature' => 'N/A',
+                        'humidity' => 'N/A',
+                        'sunshine_per_day' => 'N/A',
+                        'water_temperature' => 'N/A',
+                        'weather_description' => 'N/A',
+                        'icon' => 'default',
+                    ];
 
                 return [
                     'location_id' => $location->id,
@@ -129,10 +136,12 @@ class IndexController extends Controller
                         'sunshine_per_day' => (int)($climateData->sunshine_per_day ?? 'N/A'),
                         'water_temperature' => (int)($climateData->water_temperature ?? 'N/A'),
                         'weather_description' => $climateData->weather_description ?? 'N/A',
-                        'weather_icon' => $climateData->icon ?? 'default.png',
+                        'icon' => $climateData->icon ?? 'default',
                     ],
                 ];
             })->all();
+
+        Log::info('Top 10 Locations Data', ['locations' => $locations]);
 
         return array_slice($locations, 0, 10);
     }

@@ -35,7 +35,7 @@
             <!-- Language Switcher -->
             <div class="col-12 col-md-3 text-center">
                 <h5 class="mb-3">Sprache</h5>
-                <div class="dropdown d-inline-block">
+                <div class="dropdown d-inline-block" wire:ignore>
                     <a href="#" class="dropdown-toggle d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" style="text-decoration: none; color: #fff;">
                         @php
                             $currentLocale = config('app.available_locales')[App::getLocale()];
@@ -59,6 +59,7 @@
                     </ul>
                 </div>
             </div>
+
 
             <!-- Newsletter Section -->
             <div class="col-12 col-md-3 text-center text-md-start">

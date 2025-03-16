@@ -374,7 +374,9 @@
 <script src="{{ asset('assets/vendor/jquery.appear/jquery.appear.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.easing/jquery.easing.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.cookie/jquery.cookie.min.js') }}"></script>
+{{--
 <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+--}}
 <script src="{{ asset('assets/vendor/jquery.validation/jquery.validate.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.easy-pie-chart/jquery.easypiechart.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.gmap/jquery.gmap.min.js') }}"></script>
@@ -394,14 +396,14 @@
 
 <!-- Demo -->
 <script src="{{ asset('assets/js/demo-resume.js') }}"></script>
-
+{{--
 <!-- Theme Custom -->
 <script src="{{ asset('assets/js/custom.js') }}"></script>
-
-
+ --}}
+{{--
 <!-- Theme Initialization Files -->
 <script src="{{ asset('assets/js/theme.init.js') }}"></script>
-
+--}}
 <!-- jquery UI extra added from hani.masoud@gmx.de -->
 <script src={{ asset('assets/js/jquery-ui.js') }}></script>
 

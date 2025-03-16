@@ -1,18 +1,33 @@
-import './bootstrap';
+import 'bootstrap';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import 'bootstrap'; // Lädt das gesamte Bootstrap-JS (inkl. Popper.js)
 import { jarallax } from 'jarallax';
-import 'animate.css'; // Animate.css importieren
+import 'animate.css';
 import AOS from 'aos';
+import Swal from 'sweetalert2';
+import GLightbox from 'glightbox';
+import 'glightbox/dist/css/glightbox.min.css'; // Import the CSS
 
+console.log('Bootstrap JS geladen'); // Prüfe, ob das Skript lädt
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const lightbox = GLightbox({
+        selector: '.glightbox', // Matches your <a class="glightbox"> elements
+        loop: true,
+        touchNavigation: true,
+        zoomable: true,
+        openEffect: 'zoom',
+        closeEffect: 'fade',
+        slideThumbnails: true,
+        touchFollowAxis: true
+    });
+});
 
 
 AOS.init({
-    duration: 1000, // Animation-Dauer in Millisekunden
-    once: true,    // Animation nur einmal ausführen
-    // Weitere Optionen: https://github.com/michalsnik/aos#initialization
+    duration: 1000,
+    once: true,
 });
-
 
 document.addEventListener('DOMContentLoaded', () => {
     jarallax(document.querySelectorAll('[data-jarallax]'), {
@@ -33,15 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 });
-import Swal from 'sweetalert2';
+
 window.Swal = Swal;
 
 // Verweildauer-Tracking
 let startTime = Date.now();
 
 function sendDwellTime() {
-    const dwellTime = Math.floor((Date.now() - startTime) / 1000); // Sekunden
-    const sessionId = document.querySelector('meta[name="session-id"]').content; // Session-ID aus Meta-Tag
+    const dwellTime = Math.floor((Date.now() - startTime) / 1000);
+    const sessionId = document.querySelector('meta[name="session-id"]').content;
     const pageUrl = window.location.href;
 
     fetch('/track-dwell-time', {
@@ -58,12 +73,9 @@ function sendDwellTime() {
     }).catch(error => console.error('Fehler beim Senden der Verweildauer:', error));
 }
 
-// Sende Daten, wenn die Seite verlassen wird
 window.addEventListener('beforeunload', sendDwellTime);
 
-// Optional: Sende regelmäßig Updates (z. B. alle 10 Sekunden)
 setInterval(() => {
     sendDwellTime();
-    startTime = Date.now(); // Reset für nächste Messung
+    startTime = Date.now();
 }, 10000);
-
