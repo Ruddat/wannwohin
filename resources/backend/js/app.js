@@ -6,7 +6,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'animate.css'; // Animate.css importieren
 import AOS from 'aos';
-import 'bootstrap'; // Lädt das gesamte Bootstrap-JS (inkl. Popper.js)
 
 // Globale Zuweisungen
 window.Swal = Swal;

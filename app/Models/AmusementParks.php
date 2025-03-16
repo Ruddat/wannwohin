@@ -10,6 +10,14 @@ class AmusementParks extends Model
 
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name', 'country', 'location', 'latitude', 'longitude',
+        'open_from', 'closed_from', 'external_id',
+        'url', 'description', 'opening_hours' // Neue Felder hinzufügen
+    ];
+
+    protected $casts = [
+        'opening_hours' => 'array', // JSON wird automatisch als Array geparst
+    ];
 
 }

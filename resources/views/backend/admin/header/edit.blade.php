@@ -7,7 +7,7 @@
             <h3 class="card-title">Edit Header Content</h3>
         </div>
         <div class="card-body">
-            <form action="{{ route('verwaltung.header-manager.header_contents.update', $headerContent->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('verwaltung.site-manager.header_contents.update', $headerContent->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">

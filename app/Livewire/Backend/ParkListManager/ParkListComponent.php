@@ -18,15 +18,13 @@ class ParkListComponent extends Component
     public $parkIdToDelete;
     public $countries = [];
     public $perPage = 10;
-    public $sortBy = 'created_at'; // Standard: Sortieren nach Erstellungsdatum
-    public $sortDirection = 'desc'; // Standard: Absteigend
-
+    public $sortBy = 'created_at';
+    public $sortDirection = 'desc';
 
     protected $geocodeService;
 
     public function mount()
     {
-        // Länderliste laden
         $this->countries = AmusementParks::select('country')->distinct()->pluck('country')->toArray();
     }
 
@@ -60,52 +58,27 @@ class ParkListComponent extends Component
         $park = AmusementParks::find($id);
 
         if (!$park || !$park->name) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
-                'title' => 'Fehler',
-                'text' => 'Standortinformationen fehlen oder der Park existiert nicht.',
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Standortinformationen fehlen oder der Park existiert nicht.');
             return;
         }
 
         try {
-            // GeocodeService instanziieren
             $geocodeService = app(GeocodeService::class);
-
-            // Koordinaten über den GeocodeService abrufen
             $coordinates = $geocodeService->searchByParkName($park->name);
 
             if (!isset($coordinates[0]['lat']) || !isset($coordinates[0]['lon'])) {
                 throw new \Exception('Ungültige Koordinaten vom GeocodeService erhalten.');
             }
 
-
-            // Koordinaten speichern
             $park->latitude = (float) $coordinates[0]['lat'];
             $park->longitude = (float) $coordinates[0]['lon'];
-          //  dd($park);
             $park->save();
 
-            // Erfolgsmeldung
-            $this->dispatch('swal', [
-                'icon' => 'success',
-                'title' => 'Erfolgreich',
-                'text' => 'Koordinaten wurden erfolgreich aktualisiert.',
-            ]);
+            $this->dispatch('show-toast', type: 'success', message: 'Koordinaten wurden erfolgreich aktualisiert.');
         } catch (\Exception $e) {
-            // Fehlermeldung anzeigen
-            $this->dispatch('swal', [
-                'icon' => 'error',
-                'title' => 'Fehler',
-                'text' => $e->getMessage(),
-            ]);
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler: ' . $e->getMessage());
         }
     }
-
-
-
-
-
 
     public function confirmDelete($id)
     {
@@ -128,13 +101,7 @@ class ParkListComponent extends Component
             $park->delete();
             $this->parkIdToDelete = null;
 
-            $this->dispatch('swal', [
-                'icon' => 'success',
-                'title' => 'Gelöscht!',
-                'text' => 'Der Park wurde erfolgreich gelöscht.',
-            ]);
-
-            session()->flash('success', 'Park erfolgreich gelöscht.');
+            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich gelöscht.');
         }
     }
 
@@ -148,7 +115,7 @@ class ParkListComponent extends Component
             ->when($this->country, function ($query) {
                 $query->where('country', $this->country);
             })
-            ->orderBy($this->sortBy, $this->sortDirection); // Sortieren nach Auswahl
+            ->orderBy($this->sortBy, $this->sortDirection);
 
         $parks = $this->perPage === 'all'
             ? $query->get()

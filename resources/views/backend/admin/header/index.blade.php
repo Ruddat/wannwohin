@@ -3,33 +3,31 @@
 @section('main-content')
 <div class="container-xl">
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Header Content Management</h3>
             <div class="ms-auto">
                 <a href="{{ route('verwaltung.site-manager.header_contents.create') }}" class="btn btn-primary">
-                    <i class="ti ti-plus"></i> Add New Header Content
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14" />
+                        <path d="M5 12l14 0" />
+                    </svg>
+                    Add New Header Content
                 </a>
             </div>
         </div>
 
         <div class="card-body">
-            @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
+                <table class="table table-vcenter table-hover card-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Background Image</th>
                             <th>Main Image</th>
-                            <th>Title - Überschrift</th>
+                            <th>Title</th>
                             <th>Main Text</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,58 +38,64 @@
                                     @php
                                         $bgImgPath = null;
                                         if (Storage::exists($content->bg_img)) {
-                                            $bgImgPath = Storage::url($content->bg_img); // Bild aus Storage
+                                            $bgImgPath = Storage::url($content->bg_img);
                                         } elseif (file_exists(public_path($content->bg_img))) {
-                                            $bgImgPath = asset($content->bg_img); // Bild aus Public
+                                            $bgImgPath = asset($content->bg_img);
                                         }
                                     @endphp
-
                                     @if ($bgImgPath)
-                                        <img src="{{ $bgImgPath }}" alt="Background Image" class="img-thumbnail" style="width: 100px;">
+                                        <img src="{{ $bgImgPath }}" alt="Background Image" class="img-fluid rounded" style="max-width: 100px;">
                                     @else
-                                        <span class="text-danger">No Image Found</span>
+                                        <span class="text-muted">–</span>
                                     @endif
                                 </td>
-
                                 <td>
                                     @php
                                         $mainImgPath = null;
                                         if (Storage::exists($content->main_img)) {
-                                            $mainImgPath = Storage::url($content->main_img); // Bild aus Storage
+                                            $mainImgPath = Storage::url($content->main_img);
                                         } elseif (file_exists(public_path($content->main_img))) {
-                                            $mainImgPath = asset($content->main_img); // Bild aus Public
+                                            $mainImgPath = asset($content->main_img);
                                         }
                                     @endphp
-
                                     @if ($mainImgPath)
-                                        <img src="{{ $mainImgPath }}" alt="Main Image" class="img-thumbnail" style="width: 100px;">
+                                        <img src="{{ $mainImgPath }}" alt="Main Image" class="img-fluid rounded" style="max-width: 100px;">
                                     @else
-                                        <span class="text-danger">No Image Found</span>
+                                        <span class="text-muted">–</span>
                                     @endif
                                 </td>
-                                <td>{{ $content->title ?? '-' }}</td>
+                                <td>{{ $content->title ?? '–' }}</td>
                                 <td style="max-width: 300px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                                     {!! $content->main_text !!}
                                 </td>
-
-                                <td>
-                                    <div class="btn-list">
-                                        <a href="{{ route('verwaltung.site-manager.header_contents.edit', $content->id) }}" class="btn btn-warning btn-sm">
-                                            <i class="ti ti-edit"></i> Edit
+                                <td class="text-end">
+                                    <div class="btn-list flex-nowrap">
+                                        <a href="{{ route('verwaltung.site-manager.header_contents.edit', $content->id) }}" class="btn btn-sm btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                            Edit
                                         </a>
-                                        <form action="{{ route('verwaltung.site-manager.header_contents.destroy', $content->id) }}" method="POST" style="display: inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('verwaltung.site-manager.header_contents.destroy', $content->id) }}')">
-                                                <i class="ti ti-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('{{ route('verwaltung.site-manager.header_contents.destroy', $content->id) }}')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M4 7l16 0" />
+                                                <path d="M10 11l0 6" />
+                                                <path d="M14 11l0 6" />
+                                                <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                            </svg>
+                                            Delete
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">No header content found.</td>
+                                <td colspan="6" class="text-center text-muted">No header content found.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -101,40 +105,49 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this header content? This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+@push('scripts')
+    <script>
+        // Toast für Flash-Nachrichten
+        @if(session('toast'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: '{{ session('toast.type') }}',
+                title: '{{ session('toast.message') }}',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'swal2-tabler-toast'
+                }
+            });
+        @endif
 
-
-<script>
-    function confirmDelete(url) {
-        const deleteForm = document.getElementById('deleteForm');
-        deleteForm.action = url;
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-    }
-</script>
-
-
-
-
-
+        // Bestätigungsdialog für Löschen
+        function confirmDelete(url) {
+            Swal.fire({
+                title: 'Sind Sie sicher?',
+                text: 'Dieser Header-Inhalt wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#206bc4', // Tabler Primary
+                cancelButtonColor: '#d63939', // Tabler Danger
+                confirmButtonText: 'Ja, löschen!',
+                cancelButtonText: 'Abbrechen'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    form.innerHTML = `
+                        @csrf
+                        @method('DELETE')
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+@endpush
 @endsection
