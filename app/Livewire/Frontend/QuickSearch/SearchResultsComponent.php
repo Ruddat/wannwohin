@@ -177,35 +177,23 @@ class SearchResultsComponent extends Component
             }
         }
 
+        // Filter nur über wwde_climates für Sonnenstunden
         if (!empty($this->sonnenstunden) && !empty($this->urlaub) && is_numeric($this->urlaub)) {
             $minHours = (int) str_replace('more_', '', $this->sonnenstunden);
-            $currentYear = now()->subYear()->year;
 
-            $query->where(function ($q) use ($minHours, $currentYear) {
-                $q->whereHas('climates', function ($subQuery) use ($minHours) {
-                    $subQuery->where('month_id', (int) $this->urlaub)
-                             ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
-                })->orWhereHas('monthlyClimates', function ($subQuery) use ($minHours, $currentYear) {
-                    $subQuery->where('month', (int) $this->urlaub)
-                             ->where('year', $currentYear)
-                             ->whereRaw('COALESCE(sunshine_hours, 0) >= ?', [$minHours]);
-                });
+            $query->whereHas('climates', function ($subQuery) use ($minHours) {
+                $subQuery->where('month_id', (int) $this->urlaub)
+                         ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
             });
         }
 
-        if (!empty($this->wassertemperatur) && !empty($this->urlaub)) {
+        // Filter nur über wwde_climates für Wassertemperatur
+        if (!empty($this->wassertemperatur) && !empty($this->urlaub) && is_numeric($this->urlaub)) {
             $minTemp = (int) str_replace('more_', '', $this->wassertemperatur);
-            $lastYear = now()->subYear()->year;
 
-            $query->where(function ($q) use ($minTemp, $lastYear) {
-                $q->whereHas('climates', function ($subQuery) use ($minTemp) {
-                    $subQuery->where('month_id', (int) $this->urlaub)
-                             ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
-                })->orWhereHas('historicalClimates', function ($subQuery) use ($minTemp, $lastYear) {
-                    $subQuery->where('month', (int) $this->urlaub)
-                             ->where('year', $lastYear)
-                             ->whereRaw('COALESCE(temperature_avg, 0) >= ?', [$minTemp]);
-                });
+            $query->whereHas('climates', function ($subQuery) use ($minTemp) {
+                $subQuery->where('month_id', (int) $this->urlaub)
+                         ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
             });
         }
 
@@ -265,19 +253,32 @@ class SearchResultsComponent extends Component
             $locations = collect();
         } else {
             $query = WwdeLocation::query()
-                ->with(['climates', 'historicalClimates' => fn($q) => $q->where('year', '>=', now()->subYear()->year)])
-                ->active()
-                ->whereIn('id', $filteredLocationIds);
+                ->with(['climates', 'country'])
+                ->where('status', 'active')
+                ->whereNotNull('country_id')
+                ->whereIn('wwde_locations.id', $filteredLocationIds); // Explizite Tabellenangabe vor dem Join
 
-            $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours'];
+            $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours', 'water_temperature'];
+
             if (in_array($this->sortBy, $allowedSortFields)) {
-                $query->orderBy($this->sortBy, $this->sortDirection);
+                if ($this->sortBy === 'country_id') {
+                    $query->with(['country' => fn($q) => $q->orderBy('title', $this->sortDirection)]);
+                    $query->orderBy('country_id', $this->sortDirection);
+                } elseif ($this->sortBy === 'water_temperature') {
+                    $query->select('wwde_locations.*') // Nur wwde_locations-Felder auswählen
+                          ->leftJoin('wwde_climates', function ($join) {
+                              $join->on('wwde_locations.id', '=', 'wwde_climates.location_id')
+                                   ->where('wwde_climates.month_id', '=', (int) $this->urlaub);
+                          })->orderByRaw('COALESCE(wwde_climates.water_temperature, 0) ' . $this->sortDirection);
+                } else {
+                    $query->orderBy($this->sortBy, $this->sortDirection);
+                }
             } elseif ($this->sortBy === 'climate_data->main->temp') {
-                $query->orderByRaw("COALESCE(
-                    (SELECT MAX(temperature_avg) FROM climate_monthly_data WHERE location_id = wwde_locations.id AND year >= ?),
-                    (SELECT MAX(temperature_max) FROM climate_monthly_data WHERE location_id = wwde_locations.id AND year >= ?),
-                    (SELECT MAX(temperature_min) FROM climate_monthly_data WHERE location_id = wwde_locations.id AND year >= ?)
-                ) {$this->sortDirection}", [now()->subYear()->year, now()->subYear()->year, now()->subYear()->year]);
+                $query->select('wwde_locations.*') // Nur wwde_locations-Felder auswählen
+                      ->leftJoin('wwde_climates', function ($join) {
+                          $join->on('wwde_locations.id', '=', 'wwde_climates.location_id')
+                               ->where('wwde_climates.month_id', '=', (int) $this->urlaub);
+                      })->orderByRaw('COALESCE(wwde_climates.daily_temperature, 0) ' . $this->sortDirection);
             } else {
                 $query->orderBy('title', 'asc');
             }
@@ -298,9 +299,8 @@ class SearchResultsComponent extends Component
     {
         $month = (int) $this->urlaub;
         $minHours = !empty($this->sonnenstunden) ? (int) str_replace('more_', '', $this->sonnenstunden) : null;
-        $currentYear = now()->subYear()->year;
 
-        // Primär: wwde_climates
+        // Nur wwde_climates verwenden
         $climate = $location->climates
             ->where('month_id', $month)
             ->filter(function ($data) use ($minHours) {
@@ -311,38 +311,30 @@ class SearchResultsComponent extends Component
         if ($climate) {
             $location->climate_data = [
                 'main' => ['temp' => $climate->daily_temperature ?? null],
-                'temp_max' => $climate->daily_temperature ?? null, // Kein max/min direkt
+                'temp_max' => $climate->daily_temperature ?? null,
                 'temp_min' => $climate->night_temperature ?? null,
                 'sunshine_hours' => $climate->sunshine_per_day ?? null,
+                'water_temperature' => $climate->water_temperature ?? null,
+                'rainy_days' => $climate->rainy_days ?? null, // Annahme: Spalte 'rainy_days' existiert in wwde_climates
             ];
         } else {
-            // Fallback: climate_monthly_data
-            $monthly = $location->monthlyClimates
-                ->where('month', $month)
-                ->where('year', $currentYear)
-                ->filter(function ($data) use ($minHours) {
-                    return $minHours === null || ($data->sunshine_hours && $data->sunshine_hours >= $minHours);
-                })
-                ->sortByDesc('year')
-                ->first();
-
-            if ($monthly) {
-                $location->climate_data = [
-                    'main' => ['temp' => $monthly->temperature_avg ?? null],
-                    'temp_max' => $monthly->temperature_max ?? null,
-                    'temp_min' => $monthly->temperature_min ?? null,
-                    'sunshine_hours' => $monthly->sunshine_hours ?? null,
-                ];
-            } else {
-                $location->climate_data = [];
-            }
+            $location->climate_data = [
+                'main' => ['temp' => null],
+                'temp_max' => null,
+                'temp_min' => null,
+                'sunshine_hours' => null,
+                'water_temperature' => null,
+                'rainy_days' => null,
+            ];
         }
 
         \Log::info('Enriched Location Data', [
             'location_id' => $location->id,
             'sunshine_hours' => $location->climate_data['sunshine_hours'] ?? 'N/A',
+            'water_temperature' => $location->climate_data['water_temperature'] ?? 'N/A',
+            'rainy_days' => $location->climate_data['rainy_days'] ?? 'N/A',
             'month' => $month,
-            'source' => $climate ? 'wwde_climates' : ($monthly ? 'climate_monthly_data' : 'none'),
+            'source' => $climate ? 'wwde_climates' : 'none',
         ]);
 
         return $location;

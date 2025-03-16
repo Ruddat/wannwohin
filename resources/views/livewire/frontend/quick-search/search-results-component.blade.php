@@ -81,6 +81,7 @@
                                 <option value="continent_id">Kontinent</option>
                                 <option value="country_id">Land</option>
                                 <option value="flight_hours">Flugdauer</option>
+                                <option value="water_temperature">Wassertemperatur</option>
                             </select>
                             <button wire:click="toggleSortDirection" class="btn btn-outline-secondary btn-sm shadow-sm d-none d-md-inline-flex" title="Aufsteigend sortieren">
                                 <i class="fas fa-sort-amount-up" @if ($sortDirection === 'asc') style="color:#22c0e8;" @endif></i>
@@ -250,13 +251,7 @@
                                                         <span>Wasser</span>
                                                         <span>
                                                             @php
-                                                                $waterTemperature = $location->climate_data['water_temperature'] ?? null;
-                                                                if (is_null($waterTemperature) && isset($location->historicalClimates)) {
-                                                                    $lastHistoricalData = $location->historicalClimates->last();
-                                                                    $waterTemperature = $lastHistoricalData
-                                                                        ? $lastHistoricalData->temperature_avg
-                                                                        : 'N/A';
-                                                                }
+                                                                $waterTemperature = $location->climate_data['water_temperature'] ?? 'N/A';
                                                             @endphp
                                                             {{ is_numeric($waterTemperature) ? intval($waterTemperature) . '°C' : 'N/A' }}
                                                         </span>
@@ -274,15 +269,9 @@
                                                         <span>Regentage</span>
                                                         <span>
                                                             @php
-                                                                $rain = $location->climate_data['rain']['1h'] ?? null;
-                                                                if (is_null($rain) && isset($location->historicalClimates)) {
-                                                                    $lastHistoricalData = $location->historicalClimates->last();
-                                                                    $rain = $lastHistoricalData
-                                                                        ? $lastHistoricalData->precipitation
-                                                                        : null;
-                                                                }
+                                                                $rainyDays = $location->climate_data['rainy_days'] ?? 'N/A';
                                                             @endphp
-                                                            {{ is_numeric($rain) ? intval($rain) . ' Tage' : 'N/A' }}
+                                                            {{ is_numeric($rainyDays) ? intval($rainyDays) . ' Tage' : 'N/A' }}
                                                         </span>
                                                     </div>
                                                     @php

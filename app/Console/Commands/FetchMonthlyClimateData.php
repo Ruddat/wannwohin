@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 class FetchMonthlyClimateData extends Command
 {
     protected $signature = 'climate:fetch-monthly';
-    protected $description = 'Fetch and store monthly climate data for all locations for the previous year, updating only if older than 3 hours';
+    protected $description = 'Fetch and store monthly climate data including water temperature for all locations for the previous year, updating only if older than 3 hours';
 
     public function __construct()
     {
@@ -24,16 +24,15 @@ class FetchMonthlyClimateData extends Command
     {
         $this->info('Starting monthly climate data fetching...');
         $previousYear = now()->year - 1;
-        $lastProcessedId = Cache::get('climate_fetch_last_id', 0); // Letzte verarbeitete ID
+        $lastProcessedId = Cache::get('climate_fetch_last_id', 0);
 
         $locations = WwdeLocation::whereNotNull('lat')
             ->whereNotNull('lon')
-            ->where('id', '>', $lastProcessedId) // Fortfahren ab letzter ID
+            ->where('id', '>', $lastProcessedId)
             ->orderBy('id')
             ->chunkById(50, function ($locations) use ($previousYear) {
                 foreach ($locations as $location) {
                     try {
-                        // Prüfe, ob Daten älter als 3 Stunden sind
                         $latestClimate = WwdeClimate::where('location_id', $location->id)
                             ->where('year', $previousYear)
                             ->orderBy('updated_at', 'desc')
@@ -50,12 +49,12 @@ class FetchMonthlyClimateData extends Command
 
                         if ($result === 'limit_reached') {
                             $this->warn("API limit reached at location {$location->id}. Pausing run.");
-                            Cache::put('climate_fetch_last_id', $location->id - 1, 24 * 60 * 60); // Vorherige ID speichern
-                            return false; // Beendet den Chunk
+                            Cache::put('climate_fetch_last_id', $location->id - 1, 24 * 60 * 60);
+                            return false;
                         }
 
                         Cache::put('climate_fetch_last_id', $location->id, 24 * 60 * 60);
-                        sleep(1); // 1 Sekunde Pause zwischen Anfragen
+                        sleep(1);
                     } catch (\Exception $e) {
                         $this->error("Failed to process location: {$location->title}. Error: {$e->getMessage()}");
                         Log::error("Climate data fetching error for location ID {$location->id}: {$e->getMessage()}");
@@ -65,7 +64,7 @@ class FetchMonthlyClimateData extends Command
             });
 
         if ($locations !== false) {
-            Cache::forget('climate_fetch_last_id'); // Reset bei vollständigem Durchlauf
+            Cache::forget('climate_fetch_last_id');
             $this->info('Monthly climate data fetching completed.');
         } else {
             $this->info('Paused due to API limit. Will resume next run from ID ' . Cache::get('climate_fetch_last_id'));
@@ -75,18 +74,24 @@ class FetchMonthlyClimateData extends Command
     private function fetchAndStoreClimateData(WwdeLocation $location, int $previousYear)
     {
         $cacheKey = "climate_data_{$location->id}_{$previousYear}";
+        $currentYear = (int) now()->year; // 2025
 
-        // Hole vorhandene Monate
-        $existingMonths = WwdeClimate::where('location_id', $location->id)
+        // Existierende Monate für beide Jahre prüfen
+        $existingMonthsPrevious = WwdeClimate::where('location_id', $location->id)
             ->where('year', $previousYear)
             ->pluck('month_id')
             ->toArray();
 
-        $missingMonths = array_diff(range('01', '12'), $existingMonths);
+        $existingMonthsCurrent = WwdeClimate::where('location_id', $location->id)
+            ->where('year', $currentYear)
+            ->pluck('month_id')
+            ->toArray();
 
-        // Wenn keine Monate fehlen, überspringen
-        if (empty($missingMonths)) {
-            $this->info("All months already present for location {$location->id}, year {$previousYear}");
+        $missingMonthsPrevious = array_diff(range('01', '12'), $existingMonthsPrevious);
+        $missingMonthsCurrent = array_diff(range('01', '12'), $existingMonthsCurrent);
+
+        if (empty($missingMonthsPrevious) && empty($missingMonthsCurrent)) {
+            $this->info("All months already present for location {$location->id}, years {$previousYear} and {$currentYear}");
             return true;
         }
 
@@ -97,7 +102,8 @@ class FetchMonthlyClimateData extends Command
 
         $climateData = Cache::get($cacheKey);
         if ($climateData === null) {
-            $response = Http::get('https://archive-api.open-meteo.com/v1/archive', [
+            // Wetterdaten von Open-Meteo Archive API für 2024
+            $weatherResponse = Http::get('https://archive-api.open-meteo.com/v1/archive', [
                 'latitude' => $location->lat,
                 'longitude' => $location->lon,
                 'start_date' => "$previousYear-01-01",
@@ -106,18 +112,19 @@ class FetchMonthlyClimateData extends Command
                 'timezone' => 'auto',
             ]);
 
-            if ($response->status() === 429) {
-                Log::warning("API limit reached for location {$location->id}. Skipping this run.");
+            if ($weatherResponse->status() === 429) {
+                Log::warning("Weather API limit reached for location {$location->id}. Skipping this run.");
                 return 'limit_reached';
             }
 
-            if (!$response->successful() || empty($response->json()['daily']['time'])) {
-                Log::warning("No climate data from Open-Meteo for location {$location->id}, year {$previousYear}. Status: {$response->status()}");
+            if (!$weatherResponse->successful() || empty($weatherResponse->json()['daily']['time'])) {
+                Log::warning("No weather data from Open-Meteo for location {$location->id}, year {$previousYear}. Status: {$weatherResponse->status()}");
                 return true;
             }
 
-            $data = $response->json()['daily'];
-            $monthlyData = collect($data['time'])->reduce(function ($carry, $date, $key) use ($data) {
+            $weatherData = $weatherResponse->json()['daily'];
+
+            $monthlyData = collect($weatherData['time'])->reduce(function ($carry, $date, $key) use ($weatherData) {
                 $month = Carbon::parse($date)->month;
                 $carry[$month] = $carry[$month] ?? [
                     'temps_max' => [], 'temps_min' => [], 'sunshine_durations' => [], 'humidities' => [],
@@ -125,16 +132,16 @@ class FetchMonthlyClimateData extends Command
                     'cloud_covers' => [], 'weather_codes' => [],
                 ];
 
-                $carry[$month]['temps_max'][] = $data['temperature_2m_max'][$key] ?? null;
-                $carry[$month]['temps_min'][] = $data['temperature_2m_min'][$key] ?? null;
-                $carry[$month]['sunshine_durations'][] = $data['sunshine_duration'][$key] ?? null;
-                $carry[$month]['humidities'][] = $data['relative_humidity_2m_mean'][$key] ?? null;
-                $carry[$month]['pressures'][] = $data['pressure_msl_mean'][$key] ?? null;
-                $carry[$month]['wind_speeds'][] = $data['wind_speed_10m_max'][$key] ?? null;
-                $carry[$month]['wind_directions'][] = $data['wind_direction_10m_dominant'][$key] ?? null;
-                $carry[$month]['precipitation_hours'][] = $data['precipitation_hours'][$key] ?? null;
-                $carry[$month]['cloud_covers'][] = $data['cloud_cover_mean'][$key] ?? null;
-                $carry[$month]['weather_codes'][] = $data['weather_code'][$key] ?? null;
+                $carry[$month]['temps_max'][] = $weatherData['temperature_2m_max'][$key] ?? null;
+                $carry[$month]['temps_min'][] = $weatherData['temperature_2m_min'][$key] ?? null;
+                $carry[$month]['sunshine_durations'][] = $weatherData['sunshine_duration'][$key] ?? null;
+                $carry[$month]['humidities'][] = $weatherData['relative_humidity_2m_mean'][$key] ?? null;
+                $carry[$month]['pressures'][] = $weatherData['pressure_msl_mean'][$key] ?? null;
+                $carry[$month]['wind_speeds'][] = $weatherData['wind_speed_10m_max'][$key] ?? null;
+                $carry[$month]['wind_directions'][] = $weatherData['wind_direction_10m_dominant'][$key] ?? null;
+                $carry[$month]['precipitation_hours'][] = $weatherData['precipitation_hours'][$key] ?? null;
+                $carry[$month]['cloud_covers'][] = $weatherData['cloud_cover_mean'][$key] ?? null;
+                $carry[$month]['weather_codes'][] = $weatherData['weather_code'][$key] ?? null;
 
                 return $carry;
             }, []);
@@ -142,14 +149,16 @@ class FetchMonthlyClimateData extends Command
             $climates = [];
             foreach ($monthlyData as $month => $values) {
                 $weatherId = !empty($values['weather_codes']) ? collect($values['weather_codes'])->mode()[0] ?? null : null;
-                $climates[$month] = [
-                    'year' => $previousYear,
+                $dailyTemp = $this->safeAvg($values['temps_max']);
+                $nightTemp = $this->safeAvg($values['temps_min']);
+                $avgAirTemp = ($dailyTemp + $nightTemp) / 2; // Durchschnitt aus Tag- und Nachttemperatur
+
+                $baseData = [
                     'location_id' => $location->id,
                     'month_id' => sprintf('%02d', $month),
                     'month' => Carbon::create()->month($month)->format('F'),
-                    'daily_temperature' => $this->safeAvg($values['temps_max']),
-                    'night_temperature' => $this->safeAvg($values['temps_min']),
-                    'water_temperature' => null,
+                    'daily_temperature' => $dailyTemp,
+                    'night_temperature' => $nightTemp,
                     'humidity' => $this->safeAvg($values['humidities']),
                     'sunshine_per_day' => $this->safeAvg($values['sunshine_durations']) / 3600,
                     'rainy_days' => $this->safeSum($values['precipitation_hours']) / 24,
@@ -164,22 +173,50 @@ class FetchMonthlyClimateData extends Command
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
+
+                // Wassertemperatur für 2024 berechnen
+                $waterTemp2024 = $this->calculateWaterTemperature($avgAirTemp, $location->lat, $month);
+
+                // Daten für 2024
+                $climates["{$previousYear}_{$month}"] = array_merge($baseData, [
+                    'year' => $previousYear,
+                    'water_temperature' => $waterTemp2024,
+                ]);
+
+                // Prognose für 2025 (leicht angepasst)
+                $climates["{$currentYear}_{$month}"] = array_merge($baseData, [
+                    'year' => $currentYear,
+                    'daily_temperature' => $dailyTemp + 0.5,
+                    'night_temperature' => $nightTemp + 0.5,
+                    'water_temperature' => $waterTemp2024 !== null ? $waterTemp2024 + 0.5 : null,
+                ]);
+
+                Log::info("Calculated water temperature for location {$location->id}, month {$month}", [
+                    'air_temp' => $avgAirTemp,
+                    'water_temp_2024' => $waterTemp2024,
+                    'water_temp_2025' => $waterTemp2024 !== null ? $waterTemp2024 + 0.5 : null,
+                ]);
             }
+
             Cache::put($cacheKey, $climates, 24 * 60 * 60);
             $climateData = $climates;
         }
 
         if (!empty($climateData) && is_array($climateData)) {
-            $insertData = array_filter($climateData, fn($monthData) => in_array($monthData['month_id'], $missingMonths));
+            $insertDataPrevious = array_filter($climateData, fn($monthData) => $monthData['year'] == $previousYear && in_array($monthData['month_id'], $missingMonthsPrevious));
+            $insertDataCurrent = array_filter($climateData, fn($monthData) => $monthData['year'] == $currentYear && in_array($monthData['month_id'], $missingMonthsCurrent));
+
+            $insertData = array_merge(array_values($insertDataPrevious), array_values($insertDataCurrent));
+
             if (!empty($insertData)) {
                 WwdeClimate::upsert(
-                    array_values($insertData),
+                    $insertData,
                     ['location_id', 'year', 'month_id'],
                     array_keys(reset($insertData))
                 );
-                $this->info("Climate data stored for location {$location->id}, year {$previousYear}");
+                $this->info("Climate data stored for location {$location->id}, years {$previousYear} and {$currentYear}");
             } else {
-                $this->info("No new climate data to store for location {$location->id}, year {$previousYear}");
+                $this->info("No new climate data to store for location {$location->id}, years {$previousYear} and {$currentYear}");
             }
         } else {
             $this->warn("No climate data available for location {$location->id}, year {$previousYear}");
@@ -226,4 +263,52 @@ class FetchMonthlyClimateData extends Command
         ];
         return $map[$code] ?? 'cloudy';
     }
+
+
+/**
+ * Schätzt die Wassertemperatur basierend auf der Lufttemperatur, Breitengrad und Monat.
+ *
+ * @param float|null $airTemp
+ * @param float $latitude
+ * @param int $month
+ * @return float|null
+ */
+private function calculateWaterTemperature($airTemp, $latitude, $month)
+{
+    if ($airTemp === null) {
+        return null; // Wenn keine Lufttemperatur vorliegt, keine Schätzung möglich
+    }
+
+    // Differenz basierend auf Jahreszeit und Breitengrad
+    if ($latitude >= -30 && $latitude <= 30) { // Tropische Regionen
+        $difference = rand(1, 3);
+    } else { // Gemäßigte Zonen
+        if ($month >= 6 && $month <= 8) { // Sommer
+            $difference = rand(2, 4);
+        } elseif ($month >= 12 || $month <= 2) { // Winter
+            $difference = rand(4, 6);
+        } else { // Frühling/Herbst
+            $difference = rand(3, 5);
+        }
+    }
+
+    // Wassertemperatur berechnen
+    $waterTemp = $airTemp - $difference;
+
+    // Extremwerte begrenzen
+    $waterTemp = max($waterTemp, 0);  // Minimum 0°C
+    $waterTemp = min($waterTemp, 30); // Maximum 30°C
+
+    return round($waterTemp, 1);
+}
+
+
+
+
+
+
+
+
+
+
 }
