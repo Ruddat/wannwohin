@@ -81,7 +81,7 @@
 <div class="col-sm-6 col-md-2">
     <div class="mb-3">
         <label for="iso2" class="form-label">ISO2</label>
-        <input wire:model="iso2" type="text" class="form-control" id="iso2" readonly>
+        <input wire:model="iso2" type="text" class="form-control" id="iso2">
     </div>
 </div>
 
@@ -89,7 +89,7 @@
 <div class="col-sm-6 col-md-2">
     <div class="mb-3">
         <label for="iso3" class="form-label">ISO3</label>
-        <input wire:model="iso3" type="text" class="form-control" id="iso3" readonly>
+        <input wire:model="iso3" type="text" class="form-control" id="iso3">
     </div>
 </div>
 
@@ -97,7 +97,7 @@
 <div class="col-sm-6 col-md-4">
     <div class="mb-3">
         <label for="lat" class="form-label">Breitengrad</label>
-        <input wire:model="lat" type="text" class="form-control" id="lat" readonly>
+        <input wire:model="lat" type="text" class="form-control" id="lat">
     </div>
 </div>
 
@@ -105,7 +105,7 @@
 <div class="col-sm-6 col-md-4">
     <div class="mb-3">
         <label for="lon" class="form-label">Längengrad</label>
-        <input wire:model="lon" type="text" class="form-control" id="lon" readonly>
+        <input wire:model="lon" type="text" class="form-control" id="lon">
     </div>
 </div>
 

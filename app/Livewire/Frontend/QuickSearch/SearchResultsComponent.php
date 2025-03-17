@@ -254,18 +254,20 @@ class SearchResultsComponent extends Component
         } else {
             $query = WwdeLocation::query()
                 ->with(['climates', 'country'])
-                ->where('status', 'active')
+                ->where('wwde_locations.status', 'active') // Explizite Tabellenangabe
                 ->whereNotNull('country_id')
-                ->whereIn('wwde_locations.id', $filteredLocationIds); // Explizite Tabellenangabe vor dem Join
+                ->whereIn('wwde_locations.id', $filteredLocationIds);
 
             $allowedSortFields = ['price_flight', 'title', 'continent_id', 'country_id', 'flight_hours', 'water_temperature'];
 
             if (in_array($this->sortBy, $allowedSortFields)) {
                 if ($this->sortBy === 'country_id') {
-                    $query->with(['country' => fn($q) => $q->orderBy('title', $this->sortDirection)]);
-                    $query->orderBy('country_id', $this->sortDirection);
+                    $query->select('wwde_locations.*')
+                          ->leftJoin('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
+                          ->orderByRaw('wwde_countries.title COLLATE utf8mb4_german2_ci ' . $this->sortDirection)
+                          ->with('country');
                 } elseif ($this->sortBy === 'water_temperature') {
-                    $query->select('wwde_locations.*') // Nur wwde_locations-Felder auswählen
+                    $query->select('wwde_locations.*')
                           ->leftJoin('wwde_climates', function ($join) {
                               $join->on('wwde_locations.id', '=', 'wwde_climates.location_id')
                                    ->where('wwde_climates.month_id', '=', (int) $this->urlaub);
@@ -274,7 +276,7 @@ class SearchResultsComponent extends Component
                     $query->orderBy($this->sortBy, $this->sortDirection);
                 }
             } elseif ($this->sortBy === 'climate_data->main->temp') {
-                $query->select('wwde_locations.*') // Nur wwde_locations-Felder auswählen
+                $query->select('wwde_locations.*')
                       ->leftJoin('wwde_climates', function ($join) {
                           $join->on('wwde_locations.id', '=', 'wwde_climates.location_id')
                                ->where('wwde_climates.month_id', '=', (int) $this->urlaub);

@@ -52,7 +52,7 @@
                                 <th class="center"><i class="far fa-calendar-alt text-weather" title="Monat"></i></th>
                                 <th class="center"><i class="fas fa-cloud-sun text-weather" title="Durchschnittstemperatur tagsüber"></i></th>
                                 <th class="center"><i class="fas fa-cloud-moon text-weather" title="Durchschnittstemperatur nachts"></i></th>
-                                @if ($climates->first()?->water_temperature_avg > 1)
+                                @if ($climates->first()?->water_temperature_avg < 1)
                                     <th class="center"><i class="fas fa-water text-weather" title="Wassertemperatur"></i></th>
                                 @endif
                                 <th class="center"><i class="fas fa-tint text-weather" title="Luftfeuchtigkeit"></i></th>
@@ -66,7 +66,7 @@
                                     <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->locale('de')->format('F') }}</td>
                                     <td class="center">{{ $climate->daily_temperature ? number_format($climate->daily_temperature, 1, ',', '.') : '-' }} °C</td>
                                     <td class="center">{{ $climate->night_temperature ? number_format($climate->night_temperature, 1, ',', '.') : '-' }} °C</td>
-                                    @if ($climates->first()?->water_temperature_avg > 1)
+                                    @if ($climates->first()?->water_temperature_avg < 1)
                                         <td class="center">{{ $climate->water_temperature ? number_format($climate->water_temperature, 1, ',', '.') : '-' }} °C</td>
                                     @endif
                                     <td class="center">{{ $climate->humidity ? number_format($climate->humidity, 1, ',', '.') . ' %' : '-' }}</td>

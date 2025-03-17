@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 .experience-section .experience-card {
     height: 350px;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible; /* Erlaubt es dem Inhalt, über die Karte hinauszugehen */
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     position: absolute;
     bottom: 0;
     width: 100%;
+    overflow: visible; /* Verhindert Abschneiden innerhalb der card-body */
 }
 
 .experience-section .card-title-wrapper {
@@ -219,6 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
     max-width: 100%;
     font-size: 1.2rem;
     transition: background-color 0.3s ease;
+    white-space: normal; /* Erlaubt Zeilenumbrüche */
+    overflow: visible; /* Verhindert Abschneiden */
 }
 
 .experience-section .experience-card:hover .card-title-wrapper {
@@ -228,6 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
 .experience-section .card-title-wrapper h4 {
     font-size: 1.5rem;
     font-weight: bold;
+    white-space: normal; /* Erlaubt Zeilenumbrüche im h4-Element */
+    overflow: visible; /* Verhindert Abschneiden */
+    line-height: 1.2; /* Reduziert die Zeilenhöhe für bessere Darstellung */
 }
 
 /* Werbe-Kacheln spezifisch */
@@ -303,15 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
     .experience-section .experience-card {
         height: 300px;
     }
-    .kiwi-widget {
-        display: none;
+    .experience-section .card-title-wrapper h4 {
+        font-size: 1.1rem; /* Kleinere Schriftgröße auf Tablets */
     }
-    #kacheln-container-wrapper {
-        width: 100%;
-        max-width: 100%;
-    }
-    .ad-card.full-width {
-        height: auto; /* Anpassung für Tablet */
+    .experience-section .card-title-wrapper {
+        padding: 0.5rem; /* Noch kleinerer Padding */
     }
 }
 
@@ -319,9 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
     .experience-section .experience-card {
         height: 250px;
     }
-    .ad-card.full-width {
-        height: auto; /* Anpassung für Mobile */
-        padding: 5px;
+    .experience-section .card-title-wrapper h4 {
+        font-size: 1rem; /* Kleinere Schriftgröße auf Mobilgeräten */
+    }
+    .experience-section .card-title-wrapper {
+        padding: 0.5rem;
     }
 }
 </style>

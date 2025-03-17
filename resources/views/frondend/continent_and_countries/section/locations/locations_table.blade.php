@@ -90,8 +90,8 @@
                                     <h5 class="card-title text-truncate text-center">{{ $location->title }}</h5>
                                     <!-- Text -->
                                     <p class="card-text">
-                                        @if (!empty($location->text_short))
-                                            @autotranslate(Str::limit(strip_tags($location->text_short), 150), app()->getLocale())
+                                        @if (!empty($location->image_short_text))
+                                            @autotranslate(Str::limit(strip_tags($location->image_short_text), 250), app()->getLocale())
                                         @endif
                                     </p>
                                 </div>

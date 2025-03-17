@@ -70,6 +70,7 @@ class LocationDetailsController extends Controller
         $inspirationData = $this->fetchInspirationData($location);
 
         //dd($weather['current']);
+//dd($climates);
 
         return view('frondend.locationdetails._index', [
             'seo' => $seo,

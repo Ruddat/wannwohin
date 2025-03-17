@@ -1,4 +1,4 @@
-<div class="row d-flex flex-wrap w-100 bg-white py-2 my-2 text-center box-shadow-2"
+<div class="row d-flex flex-wrap align-items-center w-100 bg-white py-2 my-2 text-center box-shadow-2"
     style="margin-right: 0.10rem!important; margin-left: 0.10rem!important;">
     @if ($location->list_beach)
         <div class="col-4 d-flex border-right justify-content-start">
@@ -18,6 +18,7 @@
             <span class="ms-3 text-color-grey bold">Sport</span>
         </div>
     @endif
+
     @if ($location->list_island)
         <div class="col-4 d-flex border-right justify-content-start">
             <img src="{{ asset('img/insel-icon.png') }}" alt="Insel" title="Insel" style="height: 30px;">
@@ -79,9 +80,10 @@
         </div>
     @endif
     @if ($location->list_animal_park)
-        <div class="col-4 d-flex border-right justify-content-start">
+        <div class="col-4 d-flex border-right justify-content-start align-items-center">
             <i class="fas fa-paw fa-lg me-1" title="Tierpark"></i>
             <span class="ms-3 text-color-grey bold">Tierpark</span>
         </div>
     @endif
 </div>
+

@@ -5,6 +5,16 @@
         </div>
         <div class="card-body">
 
+            <!-- New: Short Text under Image -->
+            <div class="mb-4">
+                <label for="imageShortText" class="form-label fw-bold">Kurzer Text unter dem Location Bild max 250 Zeichen</label>
+                <livewire:jodit-text-editor
+                    wire:model.live="imageShortText"
+                    :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link']"
+                    tabindex="1"
+                />
+            </div>
+
             <!-- Gruppe: Panorama Informationen -->
             <div class="mb-4 p-4 border rounded bg-light bg-opacity-10">
                 <h5 class="text-success">🌄 Panorama-Informationen</h5>
@@ -12,7 +22,7 @@
                 <!-- Panorama Titel -->
                 <div class="mb-3">
                     <label for="panoramaTitle" class="form-label fw-bold">Panorama-Titel</label>
-                    <input type="text" wire:model.live="panoramaTitle" class="form-control border-success" tabindex="1">
+                    <input type="text" wire:model.live="panoramaTitle" class="form-control border-success" tabindex="2">
                 </div>
 
                 <!-- Panorama Kurztext -->
@@ -21,7 +31,7 @@
                     <livewire:jodit-text-editor
                         wire:model.live="panoramaShortText"
                         :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
-                        tabindex="2"
+                        tabindex="3"
                     />
                 </div>
             </div>
@@ -37,7 +47,7 @@
                         <livewire:jodit-text-editor
                             wire:model.live="pic1Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
-                            tabindex="3"
+                            tabindex="4"
                         />
                     </div>
                     <div class="ms-3">
@@ -56,7 +66,7 @@
                         <livewire:jodit-text-editor
                             wire:model.live="pic2Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
-                            tabindex="4"
+                            tabindex="5"
                         />
                     </div>
                     <div class="ms-3">
@@ -71,11 +81,11 @@
                 <!-- Bildtext 3 -->
                 <div class="mb-3 d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <label for="pic3Text" class="form-label fw-bold">Bildtext (Header-Bild optional) </label>
+                        <label for="pic3Text" class="form-label fw-bold">Bildtext (Header-Bild optional)</label>
                         <livewire:jodit-text-editor
                             wire:model.live="pic3Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
-                            tabindex="5"
+                            tabindex="6"
                         />
                     </div>
                     <div class="ms-3">
@@ -94,7 +104,7 @@
                 <livewire:jodit-text-editor
                     wire:model.live="textHeadline"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', 'paragraph', '|', 'left', 'center', 'right', 'justify', '|', 'link', 'image']"
-                    tabindex="6"
+                    tabindex="7"
                 />
             </div>
 
@@ -103,7 +113,7 @@
                 <livewire:jodit-text-editor
                     wire:model.live="textShort"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
-                    tabindex="7"
+                    tabindex="8"
                 />
             </div>
 
@@ -112,7 +122,7 @@
                 <livewire:jodit-text-editor
                     wire:model.live="textWhatToDo"
                     :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', 'paragraph', 'fontsize', '|', 'link', 'unorderedList', 'orderedList']"
-                    tabindex="8"
+                    tabindex="9"
                 />
             </div>
 
@@ -121,37 +131,34 @@
                 <livewire:jodit-text-editor
                     wire:model.live="textLocationClimate"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'table', '|', 'undo', 'redo']"
-                    tabindex="9"
+                    tabindex="10"
                 />
             </div>
 
             <div class="mb-4">
-                <label for="panoramaTextAndStyle" class="form-label">Panorama-Text und Stil (optional) {{ $locationTitle }} </label>
+                <label for="panoramaTextAndStyle" class="form-label">Panorama-Text und Stil (optional) {{ $locationTitle }}</label>
                 <livewire:jodit-text-editor
                     wire:model.live="panoramaTextAndStyle"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'table']"
-                    tabindex="10"
+                    tabindex="11"
                 />
             </div>
         </div>
 
         <!-- Footer mit Speichern-Button -->
         <div class="card-footer text-end">
-            <button wire:click="save" class="btn btn-primary" tabindex="11">
+            <button wire:click="save" class="btn btn-primary" tabindex="12">
                 <i class="ti ti-check"></i> Speichern
             </button>
 
             @if (session()->has('success'))
-            <div class="alert alert-success mt-3 text-center">
-                {{ session('success') }}
-            </div>
-        @endif
+                <div class="alert alert-success mt-3 text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
         </div>
-
-
     </div>
 </div>
-
 
 @assets
 <!-- Include Jodit CSS Styling -->
@@ -160,3 +167,22 @@
 <!-- Include the Jodit JS Library -->
 <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
 @endassets
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('show-toast', ({ type, message }) => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: type,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: type === 'success' ? '#d4edda' : '#f8d7da',
+                    color: '#000',
+                });
+            });
+        });
+    </script>
+@endpush

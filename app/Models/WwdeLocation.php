@@ -102,6 +102,7 @@ class WwdeLocation extends Model
         'iso3',
         'currency',
         'best_traveltime_json',
+        'image_short_text',
     ];
 
 

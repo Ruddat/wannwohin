@@ -3,6 +3,7 @@
 namespace App\Livewire\Backend\LocationManager\Partials;
 
 use Livewire\Component;
+use App\Models\WwdeCountry;
 use App\Models\WwdeLocation;
 use Illuminate\Support\Facades\Cache;
 
@@ -24,8 +25,9 @@ class LocationEditTexts extends Component
     public $textSports;
     public $textAmusementParks;
     public $panoramaTextAndStyle;
-    public $panoramaTitle; // Neues Feld
-    public $panoramaShortText; // Neues Feld
+    public $panoramaTitle;
+    public $panoramaShortText;
+    public $imageShortText; // New field for short text under the image
 
     public function mount($locationId)
     {
@@ -47,8 +49,9 @@ class LocationEditTexts extends Component
         $this->textSports = $location->text_sports;
         $this->textAmusementParks = $location->text_amusement_parks;
         $this->panoramaTextAndStyle = $location->panorama_text_and_style;
-        $this->panoramaTitle = $location->panorama_title; // Neues Feld
-        $this->panoramaShortText = $location->panorama_short_text; // Neues Feld
+        $this->panoramaTitle = $location->panorama_title;
+        $this->panoramaShortText = $location->panorama_short_text;
+        $this->imageShortText = $location->image_short_text; // Load the new field
     }
 
     public function save()
@@ -66,30 +69,45 @@ class LocationEditTexts extends Component
             'panorama_text_and_style' => $this->cleanEditorContent($this->panoramaTextAndStyle),
             'panorama_title' => $this->cleanEditorContent($this->panoramaTitle),
             'panorama_short_text' => $this->cleanEditorContent($this->panoramaShortText),
+            'image_short_text' => $this->cleanEditorContent($this->imageShortText), // Save the new field
         ]);
 
+        // Cache für die aktuellen Location-Textdaten löschen
+        Cache::forget("location_texts_{$this->locationId}");
 
-    // Hier wird der Cache für diese Location gelöscht,
-    // damit zukünftige Anfragen die aktualisierten Daten erhalten.
-    Cache::forget("location_texts_{$this->locationId}");
+        // Cache für Länder und Locations basierend auf country_id löschen
+        if ($location->country_id) {
+            // Lösche den Cache für alle Locations des Landes
+            Cache::forget("locations_{$location->country_id}");
 
-        session()->flash('success', 'Texte erfolgreich gespeichert.');
+            // Hole das zugehörige Land, um den alias zu erhalten
+            $country = WwdeCountry::find($location->country_id);
+            if ($country) {
+                Cache::forget("country_{$country->alias}");
+            }
+
+            // Lösche den Cache für Länder, die den gleichen continent_id haben (falls nötig)
+            // Dies erfordert, dass wir den continent_id des Landes kennen
+            if ($country && $country->continent_id) {
+                Cache::forget("countries_{$country->continent_id}");
+            }
+        }
+
+        // Toast-Nachricht dispatchen
+        $this->dispatch('show-toast', type: 'success', message: 'Texte erfolgreich gespeichert.');
     }
-/**
- * Prüft den Editor-Text und entfernt leere Inhalte wie "<p><br></p>".
- */
-private function cleanEditorContent($content)
-{
-    // Entfernt Leerzeichen, HTML-Kommentare und überprüft, ob nur "<p><br></p>" o.ä. übrig bleibt.
-    $cleaned = trim(strip_tags($content, '<img><a>')); // Erlaubt Bilder und Links
 
-    return empty($cleaned) ? null : $content;
-}
+    private function cleanEditorContent($content)
+    {
+        $cleaned = trim(strip_tags($content, '<img><a>'));
+
+        return empty($cleaned) ? null : $content;
+    }
 
     public function render()
     {
         return view('livewire.backend.location-manager.partials.location-edit-texts', [
-            'locationTitle' => $this->locationTitle // 🔹 Titel an die View übergeben
+            'locationTitle' => $this->locationTitle
         ]);
     }
 }

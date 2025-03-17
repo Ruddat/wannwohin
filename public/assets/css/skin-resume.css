@@ -17,10 +17,13 @@
 
 a {
 	color: #FDD55C;
+        text-decoration: none;
+
 }
 
 a:hover {
-	color: #fddb75;
+	color: #747474;
+    text-decoration: none;
 }
 
 a:focus {

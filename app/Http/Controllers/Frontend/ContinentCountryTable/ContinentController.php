@@ -16,13 +16,16 @@ class ContinentController extends Controller
     protected $repository;
     protected $seoService;
 
+    private const CACHE_TTL_SHORT = 15 * 60;  // 15 Minuten
+    private const CACHE_TTL_LONG = 60 * 60;   // 1 Stunde
+
     public function __construct(ContinentRepository $repository, SeoService $seoService)
     {
         $this->repository = $repository;
         $this->seoService = $seoService;
     }
 
-    public function showCountries($continentAlias)
+    public function showCountries(string $continentAlias): \Illuminate\View\View
     {
         $continent = $this->fetchContinent($continentAlias);
         $countries = $this->fetchCountries($continent->id);
@@ -42,7 +45,7 @@ class ContinentController extends Controller
         ]);
     }
 
-    public function showLocations($continentAlias, $countryAlias)
+    public function showLocations(string $continentAlias, string $countryAlias): \Illuminate\View\View
     {
         $continent = $this->fetchContinent($continentAlias);
         $country = $this->fetchCountry($countryAlias);
@@ -64,57 +67,75 @@ class ContinentController extends Controller
         ])->with('h1', "Reiseziele in {$country->title} 2025: {$continent->title}");
     }
 
-    private function fetchContinent($alias): WwdeContinent
+    private function fetchContinent(string $alias): WwdeContinent
     {
-        return Cache::remember("continent_{$alias}", 15 * 60, fn() =>
-            WwdeContinent::where('alias', $alias)->firstOrFail()
-        );
+        try {
+            return Cache::remember("continent_{$alias}", self::CACHE_TTL_SHORT, fn() =>
+                WwdeContinent::where('alias', $alias)->firstOrFail()
+            );
+        } catch (\Exception $e) {
+            abort(404, 'Kontinent nicht gefunden');
+        }
     }
 
-    private function fetchCountries($continentId): \Illuminate\Database\Eloquent\Collection
+    private function fetchCountries(int $continentId): \Illuminate\Database\Eloquent\Collection
     {
-        return Cache::remember("countries_{$continentId}", 15 * 60, fn() =>
-            WwdeCountry::where('continent_id', $continentId)
-                ->where('status', 'active')
-                ->whereHas('locations', function ($query) {
-                    $query->where('status', 'active')
-                          ->where('finished', '1');
-                })
-                ->orderBy('title')
-                ->get()
-        );
+        try {
+            return Cache::remember("countries_{$continentId}", self::CACHE_TTL_SHORT, fn() =>
+                WwdeCountry::where('continent_id', $continentId)
+                    ->where('status', 'active')
+                    ->whereHas('locations', function ($query) {
+                        $query->where('status', 'active')
+                              ->where('finished', '1');
+                    })
+                    ->orderBy('title')
+                    ->get()
+            );
+        } catch (\Exception $e) {
+            abort(500, 'Fehler beim Laden der Länder');
+        }
     }
 
-    private function fetchCountry($alias): WwdeCountry
+    private function fetchCountry(string $alias): WwdeCountry
     {
-        return Cache::remember("country_{$alias}", 15 * 60, fn() =>
-            WwdeCountry::where('alias', $alias)->with('travelWarning')->firstOrFail()
-        );
+        try {
+            return Cache::remember("country_{$alias}", self::CACHE_TTL_SHORT, fn() =>
+                WwdeCountry::where('alias', $alias)
+                    ->with('travelWarning')
+                    ->firstOrFail()
+            );
+        } catch (\Exception $e) {
+            abort(404, 'Land nicht gefunden');
+        }
     }
 
-    private function fetchLocations($countryId): \Illuminate\Database\Eloquent\Collection
+    private function fetchLocations(int $countryId): \Illuminate\Database\Eloquent\Collection
     {
-        return Cache::remember("locations_{$countryId}", 15 * 60, fn() =>
-            WwdeLocation::where('country_id', $countryId)
-                ->where('status', 'active')
-                ->where('finished', '1')
-                ->orderBy('title')
-                ->get()
-        );
+        try {
+            return Cache::remember("locations_{$countryId}", self::CACHE_TTL_SHORT, fn() =>
+                WwdeLocation::where('country_id', $countryId)
+                    ->where('status', 'active')
+                    ->where('finished', '1')
+                    ->orderBy('title')
+                    ->get()
+            );
+        } catch (\Exception $e) {
+            abort(500, 'Fehler beim Laden der Reiseziele');
+        }
     }
 
     private function getContinentImages(WwdeContinent $continent): array
     {
         $cacheKey = "continent_images_{$continent->alias}";
-        return Cache::remember($cacheKey, 60 * 60, function () use ($continent) {
+        return Cache::remember($cacheKey, self::CACHE_TTL_LONG, function () use ($continent) {
             $images = $this->repository->getAndStoreContinentImages($continent);
 
             if (!$images['bgImgPath'] || !$images['mainImgPath']) {
-                $headerContent = Cache::remember('header_content_random', 60 * 60, fn() =>
+                $headerContent = Cache::remember('header_content_random', self::CACHE_TTL_LONG, fn() =>
                     \App\Models\HeaderContent::inRandomOrder()->first()
                 );
-                $images['bgImgPath'] = $images['bgImgPath'] ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
-                $images['mainImgPath'] = $images['mainImgPath'] ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
+                $images['bgImgPath'] = $images['bgImgPath'] ?? ($headerContent?->bg_img ? Storage::url($headerContent->bg_img) : null);
+                $images['mainImgPath'] = $images['mainImgPath'] ?? ($headerContent?->main_img ? Storage::url($headerContent->main_img) : null);
             }
 
             return $images;
@@ -124,7 +145,7 @@ class ContinentController extends Controller
     private function getCountryImages(WwdeCountry $country, WwdeContinent $continent): array
     {
         $cacheKey = "country_images_{$country->alias}";
-        return Cache::remember($cacheKey, 60 * 60, function () use ($country, $continent) {
+        return Cache::remember($cacheKey, self::CACHE_TTL_LONG, function () use ($country, $continent) {
             $images = [
                 'bgImgPath' => null,
                 'mainImgPath' => null,
@@ -144,11 +165,11 @@ class ContinentController extends Controller
             }
 
             if (!$images['bgImgPath'] || !$images['mainImgPath']) {
-                $headerContent = Cache::remember('header_content_random', 60 * 60, fn() =>
+                $headerContent = Cache::remember('header_content_random', self::CACHE_TTL_LONG, fn() =>
                     \App\Models\HeaderContent::inRandomOrder()->first()
                 );
-                $images['bgImgPath'] = $images['bgImgPath'] ?? ($headerContent->bg_img ? Storage::url($headerContent->bg_img) : null);
-                $images['mainImgPath'] = $images['mainImgPath'] ?? ($headerContent->main_img ? Storage::url($headerContent->main_img) : null);
+                $images['bgImgPath'] = $images['bgImgPath'] ?? ($headerContent?->bg_img ? Storage::url($headerContent->bg_img) : null);
+                $images['mainImgPath'] = $images['mainImgPath'] ?? ($headerContent?->main_img ? Storage::url($headerContent->main_img) : null);
             }
 
             return $images;

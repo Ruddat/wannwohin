@@ -23,18 +23,12 @@
                 </div>
 
                 <div class="row g-4">
-                    <!-- Karte & Route -->
-                    <div class="col-lg-6 col-md-12" data-aos="fade-up">
-                        <div class="card h-100 shadow-lg border-0">
-                            <div class="card-body p-4">
-                                <h4 class="card-title text-primary fw-bold mb-3">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    @autotranslate("Karte & Route", app()->getLocale())
-                                </h4>
-                                @include('frondend.locationdetails.sections.maps')
-                            </div>
-                        </div>
-                    </div>
+<!-- Karte & Route -->
+<div class="col-lg-6 col-md-12" data-aos="fade-up">
+    <div class="card h-100 shadow-lg border-0">
+        @include('frondend.locationdetails.sections.maps')
+    </div>
+</div>
 
                     <!-- Flug -->
                     <div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="100">
@@ -50,32 +44,21 @@
                     </div>
 
                     <!-- Beste Reisezeit -->
-                    <div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="200">
-                        <div class="card h-100 shadow-lg border-0">
-                            <div class="card-body p-4">
-                                <h4 class="card-title text-primary fw-bold mb-3">
-                                    <i class="fas fa-calendar-alt me-2"></i>
-                                    @autotranslate("Beste Reisezeit", app()->getLocale())
-                                </h4>
-                                @include('frondend.locationdetails.sections.best-travel')
-                            </div>
-                        </div>
-                    </div>
+<!-- Beste Reisezeit -->
+<div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="200">
+    <div class="card h-100 shadow-lg border-0">
+        @include('frondend.locationdetails.sections.best-travel')
+    </div>
+</div>
 
-                    <!-- Lage und Klima -->
-                    @if ($location->text_what_to_do)
-                        <div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="300">
-                            <div class="card h-100 shadow-lg border-0">
-                                <div class="card-body p-4">
-                                    <h4 class="card-title text-primary fw-bold mb-3">
-                                        <i class="fas fa-cloud-sun me-2"></i>
-                                        @autotranslate("Lage und Klima", app()->getLocale())
-                                    </h4>
-                                    @include('frondend.locationdetails.sections.location-climate')
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+<!-- Lage und Klima -->
+@if ($location->text_what_to_do)
+<div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="300">
+    <div class="card h-100 shadow-lg border-0">
+        @include('frondend.locationdetails.sections.location-climate')
+    </div>
+</div>
+@endif
 
                     <!-- Sport & Aktivitäten -->
                     @if ($location->text_sports)
@@ -144,6 +127,43 @@
         @endif
     </div>
 </div>
+
+
+    <!-- Google Maps Modal -->
+    <div class="modal fade" id="google_map_modal" tabindex="-1" aria-labelledby="googleMapModalLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="googleMapModalLabel">Position auf der Karte</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" style="min-height: 400px">
+                        <div class="col-12">
+                            <div class="mapouter">
+                                <div class="gmap_canvas">
+                                    <iframe
+                                        width="100%"
+                                        height="400"
+                                        id="gmap_canvas"
+                                        src="https://maps.google.com/maps?q={{ urlencode($location->title) }}&t=&z=10&ie=UTF8&iwloc=&output=embed"
+                                        frameborder="0"
+                                        scrolling="no"
+                                        marginheight="0"
+                                        marginwidth="0"
+                                    ></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 

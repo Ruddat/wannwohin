@@ -2,7 +2,7 @@
     <!-- Button to open the modal -->
 <!-- Währungsrechner Button -->
 <button wire:click="openModal" class="electric-button">
-    <i class="fas fa-exchange-alt"></i> @autotranslate('Währungsrechner', app()->getLocale())
+    <i class="fas fa-exchange-alt"></i> @autotranslate('Rechner', app()->getLocale())
     <span class="arrow-container">
         <span class="arrow-icon">➜</span>
     </span>
