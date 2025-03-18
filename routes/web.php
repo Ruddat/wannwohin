@@ -59,6 +59,8 @@ Route::get('/search-locations', [NewSearchController::class, 'search'])->name('s
 Route::get('/random-destination', [NewSearchController::class, 'randomDestination'])->name('search.random');
 
 
+Route::get('/amusement-parks', [LocationDetailsController::class, 'getAmusementParks'])->name('amusement.parks');
+
 //Route::get('/compare-locations', function () {
 //    $ids = request('ids') ? explode(',', request('ids')) : [];
 //    $locations = \App\Models\WwdeLocation::whereIn('id', $ids)->get();

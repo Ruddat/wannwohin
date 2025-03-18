@@ -2,14 +2,17 @@
 
 namespace App\Livewire\Backend\ParkListManager;
 
-use Illuminate\Support\Str;
 use Livewire\Component;
+use Illuminate\Support\Str;
 use App\Models\AmusementParks;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Symfony\Component\DomCrawler\Crawler;
 
 class ParkFormComponent extends Component
 {
     public $parkId;
-    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description;
+    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl;
     public $opening_hours = [
         'monday' => ['open' => '', 'close' => ''],
         'tuesday' => ['open' => '', 'close' => ''],
@@ -22,6 +25,7 @@ class ParkFormComponent extends Component
     public $applyToAll = false;
     public $defaultOpen = '';
     public $defaultClose = '';
+    public $hasVideo = false;
 
     protected $rules = [
         'name' => 'required|string',
@@ -33,6 +37,7 @@ class ParkFormComponent extends Component
         'closed_from' => 'nullable|date|after:open_from',
         'url' => 'nullable|url',
         'description' => 'nullable|string|max:500',
+        'videoUrl' => 'nullable|url',
         'defaultOpen' => 'nullable|date_format:H:i',
         'defaultClose' => 'nullable|date_format:H:i|after:defaultOpen',
         'opening_hours.monday.open' => 'nullable|date_format:H:i',
@@ -66,8 +71,10 @@ class ParkFormComponent extends Component
                     'closed_from' => $park->closed_from,
                     'url' => $park->url,
                     'description' => $park->description,
+                    'videoUrl' => $park->video_url,
                 ]);
                 $this->parkId = $park->id;
+                $this->hasVideo = !empty($park->video_url);
 
                 if ($park->opening_hours && $park->opening_hours !== 'null') {
                     $decoded = json_decode($park->opening_hours, true);
@@ -134,6 +141,7 @@ class ParkFormComponent extends Component
             'closed_from' => $this->closed_from,
             'url' => $this->url,
             'description' => $this->description,
+            'video_url' => $this->videoUrl,
             'opening_hours' => $hasOpeningHours ? json_encode($openingHours) : null,
             'external_id' => $externalId,
         ];
@@ -142,14 +150,81 @@ class ParkFormComponent extends Component
             $park = AmusementParks::findOrFail($this->parkId);
             $park->update($data);
             $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich aktualisiert.');
-
         } else {
             AmusementParks::create($data);
-            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich aktualisiert.');
-
+            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich erstellt.');
         }
 
         return redirect()->route('verwaltung.site-manager.park-manager.index');
+    }
+
+    public function scrapeData()
+    {
+        $this->validate([
+            'url' => 'required|url',
+        ]);
+
+        try {
+            $response = Http::get($this->url);
+            $html = $response->body();
+            $crawler = new Crawler($html);
+
+            // Name aus <title>
+            $this->name = $crawler->filter('title')->count() ? trim(explode(' I ', $crawler->filter('title')->text())[0]) : 'Unbekannt';
+            Log::info('Gescrapter Name:', ['name' => $this->name]);
+
+            // Description aus <meta>
+            $this->description = $crawler->filter('meta[name="description"]')->count() ? $crawler->filter('meta[name="description"]')->attr('content') : '';
+            Log::info('Gescrapte Beschreibung:', ['description' => $this->description]);
+
+            // Location (anpassen an echte Struktur)
+            $this->location = $crawler->filter('.address')->count() ? $crawler->filter('.address')->text() : '';
+            Log::info('Gescrapter Standort:', ['location' => $this->location]);
+
+            // Land (z. B. aus HTML lang-Attribut)
+            $this->country = $crawler->filter('html')->count() ? strtoupper($crawler->filter('html')->attr('lang')) : 'DE';
+            Log::info('Gescraptes Land:', ['country' => $this->country]);
+
+            // Öffnungszeiten (Platzhalter, anpassen an echte Seite)
+            $hours = $crawler->filter('.opening-hours')->count() ? $crawler->filter('.opening-hours')->text() : '';
+            Log::info('Gescrapte Öffnungszeiten:', ['hours' => $hours]);
+            if ($hours) {
+                $this->defaultOpen = '09:00';
+                $this->defaultClose = '18:00';
+                $this->applyToAll = true;
+            }
+
+            // Video-Check und URL extrahieren
+            $this->hasVideo = false;
+            $this->videoUrl = null;
+            $videoElement = $crawler->filter('video[src]');
+            if ($videoElement->count() > 0) {
+                $this->hasVideo = true;
+                $this->videoUrl = $videoElement->attr('src');
+                $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
+            } else {
+                // Prüfe <source> innerhalb von <video>
+                $sourceElement = $crawler->filter('video source[src]');
+                if ($sourceElement->count() > 0) {
+                    $this->hasVideo = true;
+                    $this->videoUrl = $sourceElement->attr('src');
+                    $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
+                } else {
+                    // Prüfe YouTube/Vimeo iframes
+                    $iframeElement = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]');
+                    if ($iframeElement->count() > 0) {
+                        $this->hasVideo = true;
+                        $this->videoUrl = $iframeElement->attr('src');
+                    }
+                }
+            }
+            Log::info('Video-Details:', ['hasVideo' => $this->hasVideo, 'videoUrl' => $this->videoUrl]);
+
+            $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich gescraped!');
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Scrapen:', ['error' => $e->getMessage()]);
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Scrapen: ' . $e->getMessage());
+        }
     }
 
     public function render()

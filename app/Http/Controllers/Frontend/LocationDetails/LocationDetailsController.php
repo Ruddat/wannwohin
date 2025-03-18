@@ -20,7 +20,7 @@ use RalphJSmit\Laravel\SEO\Models\SEO;
 use Illuminate\Support\Facades\Storage;
 use App\Library\WeatherDataManagerLibrary;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
-
+use Illuminate\Http\Request;
 
 class LocationDetailsController extends Controller
 {
@@ -630,28 +630,121 @@ private function fetchAllWeatherData(WwdeLocation $location): array
         return $directions[$index];
     }
 
-    /**
-     * Holt Vergnügungsparks in der Nähe eines Standorts.
-     *
-     * @param WwdeLocation $location
-     * @return \Illuminate\Support\Collection
+/**
+     * Holt Freizeitparks für eine AJAX-Anfrage.
      */
-    private function fetchAmusementParks(WwdeLocation $location): \Illuminate\Support\Collection
+    public function getAmusementParks(Request $request)
     {
-        $cacheKey = "amusement_parks_{$location->id}_" . date('Y-m-d');
-        return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location) {
+        $locationId = $request->query('location_id');
+        $radius = $request->query('radius', 150);
+
+        $location = WwdeLocation::findOrFail($locationId);
+        $parksWithOpeningTimes = $this->fetchAmusementParks($location, $radius);
+
+        return response()->json($parksWithOpeningTimes);
+    }
+
+    private function fetchAmusementParks(WwdeLocation $location, int $radius = 150): \Illuminate\Support\Collection
+    {
+        $cacheKey = "amusement_parks_{$location->id}_radius_{$radius}_" . date('Y-m-d');
+        return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location, $radius) {
             $amusementParks = DB::table('amusement_parks')
                 ->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
-                ->having('distance', '<=', 150) // Maximal 150 km Entfernung
+                ->having('distance', '<=', $radius)
                 ->orderBy('distance', 'asc')
                 ->get();
 
             return $amusementParks->map(function ($park) {
-                $openingTimes = $this->fetchApiData("https://api.wartezeiten.app/v1/openingtimes", ['park' => $park->external_id])[0] ?? null;
-                $waitingTimes = $this->fetchApiData("https://api.wartezeiten.app/v1/waitingtimes", ['park' => $park->external_id, 'language' => 'de']) ?? [];
-                return ['park' => $park, 'opening_times' => $openingTimes, 'waiting_times' => $waitingTimes];
+                $openingTimes = is_string($park->opening_hours) && json_decode($park->opening_hours, true) ? json_decode($park->opening_hours, true) : $park->opening_hours;
+                $waitingTimes = $park->queue_times_id ? $this->fetchQueueTimes($park->queue_times_id) : [];
+                $lastUpdatedFormatted = $waitingTimes && isset($waitingTimes[0]['last_updated'])
+                    ? Carbon::parse($waitingTimes[0]['last_updated'])->locale('de')->isoFormat('D. MMMM YYYY, HH:mm')
+                    : null;
+
+                return [
+                    'park' => $park,
+                    'opening_times' => $this->formatOpeningTimes($openingTimes),
+                    'waiting_times' => $waitingTimes,
+                    'coolness_score' => $park->coolness_score ?? 0,
+                    'last_updated' => $lastUpdatedFormatted,
+                ];
             });
         });
+    }
+
+    private function fetchQueueTimes(int $parkId): array
+    {
+        $cacheKey = "queue_times_park_{$parkId}_" . date('H');
+        return Cache::remember($cacheKey, 60 * 60, function () use ($parkId) {
+            $response = Http::get("https://queue-times.com/parks/{$parkId}/queue_times.json");
+            if (!$response->successful()) {
+                Log::error("API-Fehler bei queue-times.com für Park {$parkId}: Status-Code {$response->status()}, Body: " . $response->body());
+                return [];
+            }
+
+            $data = $response->json();
+            $rides = [];
+            foreach ($data['lands'] as $land) {
+                foreach ($land['rides'] as $ride) {
+                    $rides[] = [
+                        'name' => $ride['name'],
+                        'waitingtime' => $ride['wait_time'],
+                        'status' => $ride['is_open'] ? 'opened' : 'closed',
+                        'last_updated' => $ride['last_updated'], // Zeitstempel mitnehmen
+                    ];
+                }
+            }
+            foreach ($data['rides'] as $ride) {
+                $rides[] = [
+                    'name' => $ride['name'],
+                    'waitingtime' => $ride['wait_time'],
+                    'status' => $ride['is_open'] ? 'opened' : 'closed',
+                    'last_updated' => $ride['last_updated'],
+                ];
+            }
+            return $rides;
+        });
+    }
+
+    private function formatOpeningTimes($openingTimes): ?array
+    {
+        // Fall 1: $openingTimes ist null
+        if (is_null($openingTimes)) {
+            return null;
+        }
+
+        // Fall 2: $openingTimes ist ein Array (z. B. aus JSON)
+        if (is_array($openingTimes)) {
+            $today = Carbon::now()->locale('de')->isoFormat('dddd');
+            $todayKey = strtolower($today);
+            if (!isset($openingTimes[$todayKey])) {
+                return null;
+            }
+
+            $times = $openingTimes[$todayKey];
+            return [
+                'opened_today' => !empty($times['open']) && !empty($times['close']),
+                'open_from' => $times['open'] ?? null,
+                'closed_from' => $times['close'] ?? null,
+            ];
+        }
+
+        // Fall 3: $openingTimes ist ein String (z. B. "09:00-17:00")
+        if (is_string($openingTimes)) {
+            // Versuche, einfache Zeitangaben wie "09:00-17:00" zu parsen
+            if (preg_match('/^(\d{2}:\d{2})-(\d{2}:\d{2})$/', $openingTimes, $matches)) {
+                return [
+                    'opened_today' => true,
+                    'open_from' => $matches[1],
+                    'closed_from' => $matches[2],
+                ];
+            }
+            // Wenn kein gültiges Format, gib null zurück
+            return null;
+        }
+
+        // Fallback: Unbekannter Typ
+        return null;
     }
 
     /**

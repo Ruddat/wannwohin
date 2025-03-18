@@ -29,23 +29,43 @@
                         <input type="text" class="form-control" wire:model="longitude" placeholder="z. B. 11.576124">
                     </div>
                 </div>
-
-              {{--
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Geöffnet von</label>
-                        <input type="datetime-local" class="form-control" wire:model="open_from">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Geschlossen von</label>
-                        <input type="datetime-local" class="form-control" wire:model="closed_from">
-                    </div>
-                </div>
-                --}}
                 <div class="mb-4">
                     <label class="form-label">URL</label>
-                    <input type="url" class="form-control" wire:model="url" placeholder="https://example.com">
+                    <div class="input-group">
+                        <input type="url" class="form-control" wire:model="url" placeholder="https://example.com">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="scrapeData">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-world-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                                <path d="M3.6 9h16.8" />
+                                <path d="M3.6 15h16.8" />
+                                <path d="M11.5 3a17 17 0 0 0 0 18" />
+                                <path d="M12.5 3a17 17 0 0 1 0 18" />
+                                <path d="M12 16v5" />
+                                <path d="M9 19l3 3l3 -3" />
+                            </svg>
+                            Daten scrapen
+                        </button>
+                    </div>
                     @error('url') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @if($hasVideo)
+                        <small class="text-muted mt-2">
+                            Video gefunden:
+                            <a href="{{ $videoUrl }}" target="_blank">Video ansehen</a>
+                        </small>
+                        <div class="mt-2">
+                            @if($videoUrl && (str_contains($videoUrl, 'youtube.com') || str_contains($videoUrl, 'vimeo.com')))
+                                <iframe width="560" height="315" src="{{ $videoUrl }}" frameborder="0" allowfullscreen></iframe>
+                            @elseif($videoUrl)
+                                <video width="560" height="315" controls>
+                                    <source src="{{ $videoUrl }}" type="video/mp4">
+                                    Ihr Browser unterstützt das Video-Tag nicht.
+                                </video>
+                            @endif
+                        </div>
+                    @elseif($hasVideo === false && $url)
+                        <small class="text-muted mt-2">Kein Video gefunden.</small>
+                    @endif
                 </div>
                 <div class="mb-4">
                     <label class="form-label">Beschreibung</label>

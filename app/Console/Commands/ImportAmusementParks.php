@@ -8,7 +8,7 @@ use App\Services\AmusementParkService;
 class ImportAmusementParks extends Command
 {
     protected $signature = 'parks:import';
-    protected $description = 'Import amusement parks from Wartezeiten.APP API';
+    protected $description = 'Import amusement parks from Wartezeiten.APP and Queue-Times APIs';
 
     public function __construct()
     {

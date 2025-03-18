@@ -8,83 +8,61 @@ use Carbon\Carbon;
 
 class AmusementParkService
 {
-    protected $apiUrl = 'https://api.wartezeiten.app/v1/parks';
+    protected $queueTimesApiUrl = 'https://queue-times.com/parks.json'; // Echte API für Parkliste
     protected $geocodeService;
-    protected $openingTimesService;
 
-    public function __construct(GeocodeService $geocodeService, AmusementParkOpeningTimesService $openingTimesService)
+    public function __construct(GeocodeService $geocodeService)
     {
         $this->geocodeService = $geocodeService;
-        $this->openingTimesService = $openingTimesService;
     }
 
-    // Freizeitparks abrufen
-    public function getParks()
+    // Parks von Queue-Times abrufen
+    public function getQueueTimesParks()
     {
-        $response = Http::withHeaders([
-            'accept' => 'application/json',
-            'language' => 'de',
-        ])->get($this->apiUrl);
+        $response = Http::get($this->queueTimesApiUrl);
 
         if ($response->successful()) {
             return $response->json();
         }
 
-        throw new \Exception("Failed to fetch parks: " . $response->body());
+        throw new \Exception("Failed to fetch parks from Queue-Times: " . $response->body());
     }
 
     // Freizeitparks in die Datenbank importieren
     public function importParksToDatabase()
     {
-        $parks = $this->getParks();
+        $queueTimesParks = $this->getQueueTimesParks();
 
-        foreach ($parks as $park) {
-            $coordinates = $this->getCoordinates($park['name']);
-            $openingTimes = $this->getParkOpeningTimes($park['id']);
+        foreach ($queueTimesParks as $group) {
+            foreach ($group['parks'] as $park) {
+                // Prüfe, ob Koordinaten vorhanden sind, sonst Fallback auf Geocode
+                $latitude = $park['latitude'] ?? $this->getCoordinates($park['name'])['lat'];
+                $longitude = $park['longitude'] ?? $this->getCoordinates($park['name'])['lon'];
 
-            // Zeitstempel konvertieren
-            $openToday = $openingTimes['opened_today'] ?? null;
-            $openFrom = isset($openingTimes['open_from'])
-                ? Carbon::parse($openingTimes['open_from'])->format('Y-m-d H:i:s')
-                : null;
-            $closedFrom = isset($openingTimes['closed_from'])
-                ? Carbon::parse($openingTimes['closed_from'])->format('Y-m-d H:i:s')
-                : null;
+                // Eindeutige external_id generieren, falls nicht vorhanden (z. B. Name als Slug)
+                $externalId = strtolower(str_replace(' ', '-', $park['name']));
 
-            DB::table('amusement_parks')->updateOrInsert(
-                ['external_id' => $park['id']],
-                [
-                    'name' => $park['name'],
-                    'land' => $park['land'], // Neues Feld hinzugefügt
-                    'country' => $park['land'], // Optional, falls das alte Feld "country" beibehalten wird
-                    'latitude' => $coordinates['lat'] ?? null,
-                    'longitude' => $coordinates['lon'] ?? null,
-                    'open_today' => $openToday,
-                    'open_from' => $openFrom,
-                    'closed_from' => $closedFrom,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+                DB::table('amusement_parks')->updateOrInsert(
+                    ['external_id' => $externalId],
+                    [
+                        'queue_times_id' => $park['id'], // ID von queue-times.com
+                        'group_id' => $group['id'],
+                        'name' => $park['name'],
+                        'group_name' => $group['name'],
+                        'country' => $park['country'],
+                        'continent' => $park['continent'],
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'timezone' => $park['timezone'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
         }
     }
 
-    // Öffnungszeiten für einen Park abrufen
-    protected function getParkOpeningTimes(string $externalId)
-    {
-        try {
-            return $this->openingTimesService->getOpeningTimes($externalId);
-        } catch (\Exception $e) {
-            \Log::error("Failed to fetch opening times for park ID {$externalId}: " . $e->getMessage());
-            return [
-                'opened_today' => null,
-                'open_from' => null,
-                'closed_from' => null,
-            ];
-        }
-    }
-
-    // Koordinaten abrufen (nur nach Parknamen)
+    // Koordinaten abrufen (Fallback)
     protected function getCoordinates($parkName)
     {
         try {

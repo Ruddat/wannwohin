@@ -12,8 +12,7 @@ class AmusementParks extends Model
 
     protected $fillable = [
         'name', 'country', 'location', 'latitude', 'longitude',
-        'open_from', 'closed_from', 'external_id',
-        'url', 'description', 'opening_hours' // Neue Felder hinzufügen
+        'open_from', 'closed_from', 'external_id', 'continent', 'timezone', 'group_name', 'group_id', 'url', 'description', 'opening_hours', 'video_url', 'has_video' // Neue Felder hinzufügen
     ];
 
     protected $casts = [
