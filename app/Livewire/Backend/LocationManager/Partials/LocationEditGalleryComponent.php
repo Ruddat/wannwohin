@@ -66,7 +66,8 @@ class LocationEditGalleryComponent extends Component
         try {
             $this->searchResults = $this->imageSearchService->searchImages($this->query, $this->perPage);
         } catch (\Exception $e) {
-            session()->flash('error', 'Fehler bei der Bildersuche: ' . $e->getMessage());
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler bei der Bildersuche: ' . $e->getMessage());
+
         }
     }
 
@@ -106,7 +107,8 @@ class LocationEditGalleryComponent extends Component
 
         $this->newImage = null;
         $this->loadGallery();
-        session()->flash('success', 'Bild erfolgreich hochgeladen.');
+        $this->dispatch('show-toast', type: 'success', message: 'Bild erfolgreich hinzugefügt.');
+
     }
 
     public function selectImage($imageUrl, $description = null, $imageType = 'gallery')
@@ -135,9 +137,10 @@ class LocationEditGalleryComponent extends Component
             ]);
 
             $this->loadGallery();
-            session()->flash('success', 'Bild erfolgreich hinzugefügt.');
+            // Toast-Nachricht dispatchen
+            $this->dispatch('show-toast', type: 'success', message: 'Bild erfolgreich hinzugefügt.');
         } catch (\Exception $e) {
-            session()->flash('error', 'Fehler beim Hinzufügen des Bildes: ' . $e->getMessage());
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Hinzufügen des Bildes: ' . $e->getMessage());
         }
     }
 
@@ -177,7 +180,8 @@ class LocationEditGalleryComponent extends Component
         unset($this->captions[$index]);
 
         $this->loadGallery();
-        session()->flash('success', 'Bild erfolgreich hochgeladen.');
+        // Toast-Nachricht dispatchen
+        $this->dispatch('show-toast', type: 'success', message: 'Bild erfolgreich hochgeladen.');
     }
 
     public function updateCaption($imageId, $caption)
@@ -189,7 +193,8 @@ class LocationEditGalleryComponent extends Component
         $image = ModLocationGalerie::findOrFail($imageId);
         if ($image) {
             $image->update(['image_caption' => $caption]);
-            session()->flash('success', 'Bildunterschrift erfolgreich aktualisiert.');
+            // Toast-Nachricht dispatchen
+            $this->dispatch('show-toast', type: 'success', message: 'Bildunterschrift erfolgreich aktualisiert.');
         }
     }
 
@@ -208,7 +213,7 @@ class LocationEditGalleryComponent extends Component
 
         $image->delete();
         $this->loadGallery();
-        session()->flash('success', 'Bild erfolgreich gelöscht.');
+        $this->dispatch('show-toast', type: 'success', message: 'Bild erfolgreich gelöscht.');
     }
 
 

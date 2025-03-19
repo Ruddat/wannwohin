@@ -16,42 +16,32 @@ class LocationTableComponent extends Component
 
     public $search = '';
     public $perPage = 10;
-    public $filterCountry = ''; // Länderfilter
-    public $filterStatus = ''; // Statusfilter
-    public $sortField = 'id'; // Standard-Sortierfeld
-    public $sortDirection = 'asc'; // Standard-Sortierreihenfolge
-    public $filterDeleted = ''; // Soft-Delete-Filter
+    public $filterCountry = '';
+    public $filterStatus = '';
+    public $sortField = 'id';
+    public $sortDirection = 'asc';
+    public $filterDeleted = '';
 
-    protected $listeners = ['refreshLocations' => '$refresh',
-                            'deleteConfirmed' => 'deleteLocation',
-                            'forceDeleteConfirmed' => 'forceDeleteLocation'];
+    protected $listeners = [
+        'refreshLocations' => '$refresh',
+        'deleteConfirmed' => 'deleteLocation',
+        'forceDeleteConfirmed' => 'forceDeleteLocation',
+    ];
 
     public function updatingSearch()
     {
         $this->resetPage();
     }
 
-    public function sortBy($field)
-    {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
-        }
-    }
-
     public function toggleStatus($locationId)
     {
         $location = WwdeLocation::find($locationId);
-
         if ($location) {
-            $nextStatus = match ($location->status) {
+            $location->status = match ($location->status) {
                 'active' => 'pending',
                 'pending' => 'inactive',
                 default => 'active',
             };
-            $location->status = $nextStatus;
             $location->save();
             $this->dispatch('refreshLocations');
         }
@@ -61,6 +51,11 @@ class LocationTableComponent extends Component
     {
         $this->reset(['search', 'filterCountry', 'filterStatus', 'perPage', 'sortField', 'sortDirection']);
         $this->resetPage();
+    }
+
+    public function openEditModal($locationId)
+    {
+        $this->dispatch('openEditModal', $locationId); // Ereignis an LocationManagerComponent senden
     }
 
     public function exportLocations()
@@ -170,27 +165,27 @@ class LocationTableComponent extends Component
 
     public function confirmDelete($locationId)
     {
-        // Sendet ein Event, das das JavaScript aufruft
         $this->dispatch('triggerDeleteConfirmation', $locationId);
     }
 
     public function deleteLocation($locationId)
     {
-        $location = WwdeLocation::find($locationId);
-
-        if ($location) {
-            $location->delete(); // Nutzt jetzt SoftDeletes
+        $location = WwdeLocation::find($locationId); // Gibt ein Model oder null zurück
+        if ($location instanceof WwdeLocation) { // Sicherstellen, dass es ein Model ist
+            $location->delete();
             $this->dispatch('refreshLocations');
             $this->dispatch('showSuccessMessage', 'Die Location wurde erfolgreich gelöscht.');
+        } else {
+            \Log::warning('Keine gültige Location gefunden für ID:', ['locationId' => $locationId]);
+            $this->dispatch('showSuccessMessage', 'Location nicht gefunden.');
         }
     }
 
     public function restoreLocation($locationId)
     {
         $location = WwdeLocation::withTrashed()->find($locationId);
-
         if ($location) {
-            $location->restore(); // Wiederherstellen
+            $location->restore();
             $this->dispatch('refreshLocations');
             $this->dispatch('showSuccessMessage', 'Die Location wurde erfolgreich wiederhergestellt.');
         }
@@ -199,40 +194,45 @@ class LocationTableComponent extends Component
     public function forceDeleteLocation($locationId)
     {
         $location = WwdeLocation::withTrashed()->find($locationId);
-
         if ($location) {
-            $location->forceDelete(); // Endgültig löschen
+            $location->forceDelete();
             $this->dispatch('refreshLocations');
             $this->dispatch('showSuccessMessage', 'Die Location wurde dauerhaft gelöscht.');
         }
     }
 
+    public function sortBy($field)
+    {
+        // Liste der erlaubten Felder zur Sicherheit
+        $sortableFields = ['id', 'title', 'iata_code', 'country', 'status'];
+        if (!in_array($field, $sortableFields)) {
+            return; // Ungültiges Feld ignorieren
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage(); // Zurück zur ersten Seite nach Sortierung
+    }
+
     public function render()
     {
         $locations = WwdeLocation::query()
-            ->with('country') // Beziehungen laden
-            ->when($this->search, function ($query) {
-                $query->where('title', 'like', "%{$this->search}%")
-                      ->orWhere('iata_code', 'like', "%{$this->search}%");
-            })
-            ->when($this->filterCountry, function ($query) {
-                $query->where('country_id', $this->filterCountry);
-            })
-            ->when($this->filterStatus, function ($query) {
-                $query->where('status', $this->filterStatus);
-            })
+            ->with('country')
+            ->when($this->search, fn($query) => $query->where('title', 'like', "%{$this->search}%")->orWhere('iata_code', 'like', "%{$this->search}%"))
+            ->when($this->filterCountry, fn($query) => $query->where('country_id', $this->filterCountry))
+            ->when($this->filterStatus, fn($query) => $query->where('status', $this->filterStatus))
+            ->when($this->filterDeleted === 'only_deleted', fn($query) => $query->onlyTrashed())
+            ->when($this->filterDeleted === 'with_deleted', fn($query) => $query->withTrashed())
             ->when($this->sortField === 'country', function ($query) {
                 $query->join('wwde_countries as c', 'c.id', '=', 'wwde_locations.country_id')
                       ->orderBy('c.title', $this->sortDirection)
-                      ->select('wwde_locations.*');
+                      ->select('wwde_locations.*'); // Vermeide Spaltenkonflikte
             }, function ($query) {
                 $query->orderBy($this->sortField, $this->sortDirection);
-            })
-            ->when($this->filterDeleted === 'only_deleted', function ($query) {
-                $query->onlyTrashed(); // Zeigt nur gelöschte Locations
-            })
-            ->when($this->filterDeleted === 'with_deleted', function ($query) {
-                $query->withTrashed(); // Zeigt alle, inklusive gelöschte Locations
             })
             ->paginate($this->perPage);
 
@@ -243,5 +243,4 @@ class LocationTableComponent extends Component
             'countries' => $countries,
         ])->layout('backend.layouts.livewiere-main');
     }
-
 }

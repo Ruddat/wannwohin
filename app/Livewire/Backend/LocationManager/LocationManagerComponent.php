@@ -10,11 +10,14 @@ class LocationManagerComponent extends Component
     public $locationId;
     public $location;
     public $activeTab = 'info';
+    public $isModalOpen = false;
+
+    protected $listeners = [
+        'openEditModal' => 'edit', // Lauscht auf das Ereignis
+    ];
 
     public function mount($locationId = null)
     {
-        \Log::info("LocationManagerComponent mount() aufgerufen mit locationId: " . ($locationId ?? 'NULL'));
-
         if ($locationId) {
             $this->edit($locationId);
         }
@@ -24,11 +27,13 @@ class LocationManagerComponent extends Component
     {
         $this->locationId = $id;
         $this->location = WwdeLocation::find($id);
-
-        \Log::info("edit() aufgerufen mit ID: " . $id);
-        \Log::info("Gefundene Location: " . ($this->location ? $this->location->title : 'NICHT GEFUNDEN'));
-
+        $this->isModalOpen = true;
         $this->activeTab = 'info';
+    }
+
+    public function closeModal()
+    {
+        $this->isModalOpen = false;
     }
 
     public function setActiveTab($tab)
@@ -38,11 +43,6 @@ class LocationManagerComponent extends Component
 
     public function render()
     {
-        return view('livewire.backend.location-manager.location-manager-component', [
-            'locationId' => $this->locationId,
-            'location' => $this->location,
-
-            'activeTab' => $this->activeTab,
-        ])->layout('backend.layouts.livewiere-main');
+        return view('livewire.backend.location-manager.location-manager-component');
     }
 }

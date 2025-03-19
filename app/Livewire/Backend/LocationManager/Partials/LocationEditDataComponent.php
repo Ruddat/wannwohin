@@ -63,7 +63,8 @@ class LocationEditDataComponent extends Component
             'price_rental' => $this->price_rental,
         ]);
 
-        session()->flash('success', 'Daten erfolgreich gespeichert.');
+        $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich gespeichert.');
+
         $this->dispatch('refreshLocations');
     }
 

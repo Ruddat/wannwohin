@@ -57,7 +57,7 @@ class LocationEditImagesComponent extends Component
             "query{$index}" => 'required|string|max:255',
         ]);
 
-        $results = $this->imageService->searchImages($query, 10);
+        $results = $this->imageService->searchImages($query, 20);
         $this->{"searchResults{$index}"} = $results;
     }
 
@@ -82,7 +82,11 @@ class LocationEditImagesComponent extends Component
         // Setze das neue Bild im Livewire-Status
         $this->{"textPic{$index}"} = $path;
 
-        session()->flash('status', "Bild {$index} erfolgreich geändert.");
+        //session()->flash('status', "Bild {$index} erfolgreich geändert.");
+
+        // Toast-Nachricht dispatchen
+        $this->dispatch('show-toast', type: 'status', message: 'Bild ' . $index . ' erfolgreich geändert.');
+
     }
 
     public function uploadImage($index)
@@ -114,7 +118,8 @@ class LocationEditImagesComponent extends Component
         $this->{"textPic{$index}"} = Storage::url($path);
         $this->{"newImage{$index}"} = null;
 
-        session()->flash('success', "Bild {$index} erfolgreich hochgeladen.");
+        // Toast-Nachricht dispatchen
+        $this->dispatch('show-toast', type: 'status', message: 'Bild ' . $index . ' erfolgreich hochgeladen.');
     }
 
 

@@ -66,6 +66,16 @@
                     @elseif($hasVideo === false && $url)
                         <small class="text-muted mt-2">Kein Video gefunden.</small>
                     @endif
+
+                    @if($logoUrl)
+                    <small class="text-muted mt-2">Logo gefunden:</small>
+                    <div class="mt-2">
+                        <img src="{{ $logoUrl }}" alt="Park Logo" class="img-fluid" style="max-width: 200px; max-height: 100px;">
+                    </div>
+                @elseif($logoUrl === null && $url)
+                    <small class="text-muted mt-2">Kein Logo gefunden.</small>
+                @endif
+
                 </div>
                 <div class="mb-4">
                     <label class="form-label">Beschreibung</label>

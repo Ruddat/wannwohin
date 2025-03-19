@@ -6,13 +6,14 @@ use Livewire\Component;
 use Illuminate\Support\Str;
 use App\Models\AmusementParks;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ParkFormComponent extends Component
 {
     public $parkId;
-    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl;
+    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl, $logoUrl;
     public $opening_hours = [
         'monday' => ['open' => '', 'close' => ''],
         'tuesday' => ['open' => '', 'close' => ''],
@@ -177,15 +178,15 @@ class ParkFormComponent extends Component
             $this->description = $crawler->filter('meta[name="description"]')->count() ? $crawler->filter('meta[name="description"]')->attr('content') : '';
             Log::info('Gescrapte Beschreibung:', ['description' => $this->description]);
 
-            // Location (anpassen an echte Struktur)
+            // Location
             $this->location = $crawler->filter('.address')->count() ? $crawler->filter('.address')->text() : '';
             Log::info('Gescrapter Standort:', ['location' => $this->location]);
 
-            // Land (z. B. aus HTML lang-Attribut)
+            // Land
             $this->country = $crawler->filter('html')->count() ? strtoupper($crawler->filter('html')->attr('lang')) : 'DE';
             Log::info('Gescraptes Land:', ['country' => $this->country]);
 
-            // Öffnungszeiten (Platzhalter, anpassen an echte Seite)
+            // Öffnungszeiten
             $hours = $crawler->filter('.opening-hours')->count() ? $crawler->filter('.opening-hours')->text() : '';
             Log::info('Gescrapte Öffnungszeiten:', ['hours' => $hours]);
             if ($hours) {
@@ -194,7 +195,7 @@ class ParkFormComponent extends Component
                 $this->applyToAll = true;
             }
 
-            // Video-Check und URL extrahieren
+            // Video
             $this->hasVideo = false;
             $this->videoUrl = null;
             $videoElement = $crawler->filter('video[src]');
@@ -203,14 +204,12 @@ class ParkFormComponent extends Component
                 $this->videoUrl = $videoElement->attr('src');
                 $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
             } else {
-                // Prüfe <source> innerhalb von <video>
                 $sourceElement = $crawler->filter('video source[src]');
                 if ($sourceElement->count() > 0) {
                     $this->hasVideo = true;
                     $this->videoUrl = $sourceElement->attr('src');
                     $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
                 } else {
-                    // Prüfe YouTube/Vimeo iframes
                     $iframeElement = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]');
                     if ($iframeElement->count() > 0) {
                         $this->hasVideo = true;
@@ -220,12 +219,64 @@ class ParkFormComponent extends Component
             }
             Log::info('Video-Details:', ['hasVideo' => $this->hasVideo, 'videoUrl' => $this->videoUrl]);
 
+            // Logo scrapen
+            $logoUrl = null;
+            $logoElement = $crawler->filter('img.logo, img[alt*="logo"], header img');
+            if ($logoElement->count() > 0) {
+                try {
+                    $logoUrl = $logoElement->first()->attr('src');
+                    $logoUrl = filter_var($logoUrl, FILTER_VALIDATE_URL) ? $logoUrl : rtrim($this->url, '/') . '/' . ltrim($logoUrl, '/');
+                    Log::info('Gescraptes Logo:', ['logoUrl' => $logoUrl]);
+
+                    $response = Http::timeout(10)->get($logoUrl);
+                    if ($response->successful() && $response->header('Content-Type') && str_contains($response->header('Content-Type'), 'image')) {
+                        $logoContent = $response->body();
+                        $extension = pathinfo($logoUrl, PATHINFO_EXTENSION) ?: 'jpg';
+                        $fileName = 'logo_' . Str::slug($this->name) . '_' . time() . '.' . $extension;
+
+                        $directory = public_path('logos');
+                        File::ensureDirectoryExists($directory);
+
+                        $filePath = $directory . '/' . $fileName;
+                        file_put_contents($filePath, $logoContent);
+
+                        if (file_exists($filePath) && filesize($filePath) > 0) {
+                            $this->logoUrl = '/logos/' . $fileName;
+                            Log::info('Logo erfolgreich gespeichert:', ['path' => $this->logoUrl]);
+                        } else {
+                            throw new \Exception('Logo konnte nicht korrekt gespeichert werden.');
+                        }
+                    } else {
+                        throw new \Exception('Kein gültiges Bild von URL erhalten: ' . $logoUrl);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Fehler beim Scrapen oder Speichern des Logos:', [
+                        'url' => $logoUrl,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->logoUrl = null;
+                    $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Logo-Scraping: ' . $e->getMessage());
+                }
+            }
+
             $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich gescraped!');
         } catch (\Exception $e) {
             Log::error('Fehler beim Scrapen:', ['error' => $e->getMessage()]);
             $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Scrapen: ' . $e->getMessage());
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function render()
     {

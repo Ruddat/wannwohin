@@ -1,3 +1,5 @@
+{{-- main.blade.php --}}
+
 <section class="section section-no-border bg-color-light m-0 pb-4" style="background-color: #eaeff5 !important;">
     <div class="container" style="background-color: #eaeff5">
         <!-- Überschrift -->
@@ -398,6 +400,12 @@
 
 <!-- Styles -->
 <style>
+
+.x-location-activities i,
+.x-location-activities img {
+    height: 30px;
+}
+
     .card-header-fact.text-center {
         background-color: #d1d1d1;
         position: relative;

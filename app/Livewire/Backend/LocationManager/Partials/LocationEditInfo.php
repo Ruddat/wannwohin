@@ -145,7 +145,7 @@ public function updatedContinentId($continentId)
         try {
             $location->update($data);
            // dump('After update', $location->fresh()->toArray());
-            session()->flash('success', 'Standortinformationen erfolgreich gespeichert.');
+            $this->dispatch('show-toast', type: 'success', message: 'Standortinformationen erfolgreich gespeichert.');
         } catch (\Throwable $e) { // Fängt Fehler und Exceptions
           //  dd('Error during update', $e->getMessage(), $e->getTraceAsString());
         } finally {
@@ -157,7 +157,7 @@ public function updatedContinentId($continentId)
     {
         // Prüfen, ob ein Titel (Stadtname) vorhanden ist
         if (empty($this->title)) {
-            session()->flash('error', 'Bitte geben Sie zuerst einen Titel (Stadtname) ein.');
+            $this->dispatch('show-toast', type: 'error', message: 'Bitte geben Sie zuerst einen Titel (Stadtname) ein.');
             return;
         }
 
@@ -169,7 +169,7 @@ public function updatedContinentId($continentId)
 
         // Prüfen, ob ein gültiges Array zurückgegeben wurde
         if (!is_array($result) || empty($result)) {
-            session()->flash('error', 'Keine gültigen Geodaten gefunden. Bitte überprüfen Sie den Stadtnamen.');
+            $this->dispatch('show-toast', type: 'error', message: 'Keine gültigen Geodaten gefunden. Bitte überprüfen Sie den Stadtnamen.');
             return;
         }
 
@@ -177,7 +177,7 @@ public function updatedContinentId($continentId)
         $address = $result['address'] ?? [];
 
         if (!is_array($address)) {
-            session()->flash('error', 'Ungültige Geodaten erhalten.');
+            $this->dispatch('show-toast', type: 'error', message: 'Ungültige Geodaten erhalten.');
             return;
         }
 
@@ -192,22 +192,21 @@ public function updatedContinentId($continentId)
         $this->region = $address['region'] ?? null; // Falls eine Region existiert
 
         // Land anhand des country_codes aus der Datenbank suchen und setzen
-if (!empty($this->iso2)) {
-    $country = WwdeCountry::where('country_code', strtoupper($this->iso2))->first();
+        if (!empty($this->iso2)) {
+            $country = WwdeCountry::where('country_code', strtoupper($this->iso2))->first();
 
-    if ($country) {
-        $this->countryId = $country->id;
-        $this->continentId = $country->continent_id;
+            if ($country) {
+                $this->countryId = $country->id;
+                $this->continentId = $country->continent_id;
+                //dd("Nach dem Setzen:", "Continent ID:", $this->continentId, "Country ID:", $this->countryId);
 
-        //dd("Nach dem Setzen:", "Continent ID:", $this->continentId, "Country ID:", $this->countryId);
-
-        $this->updatedContinentId($this->continentId);
-        $this->countries = WwdeCountry::where('continent_id', $this->continentId)->get();
-    }
-}
-$this->dispatch('updateCountrySelect', $this->countryId);
+                $this->updatedContinentId($this->continentId);
+                $this->countries = WwdeCountry::where('continent_id', $this->continentId)->get();
+            }
+        }
+        $this->dispatch('updateCountrySelect', $this->countryId);
         // Erfolgsmeldung
-        session()->flash('success', 'Daten erfolgreich abgerufen und eingetragen.');
+        $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich abgerufen und eingetragen.');
     }
 
 

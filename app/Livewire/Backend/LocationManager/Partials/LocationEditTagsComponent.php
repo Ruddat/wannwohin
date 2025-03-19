@@ -87,7 +87,8 @@ class LocationEditTagsComponent extends Component
                 'text_amusement_parks' => $this->cleanEditorContent($this->text_amusement_parks),
             ]));
 
-            session()->flash('success', 'Tags erfolgreich aktualisiert!');
+            // Toast-Nachricht dispatchen
+            $this->dispatch('show-toast', type: 'success', message: 'Tags & Reisezeiten erfolgreich aktualisiert!');
         }
     }
 

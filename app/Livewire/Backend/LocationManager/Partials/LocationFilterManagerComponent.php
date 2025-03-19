@@ -3,48 +3,169 @@
 namespace App\Livewire\Backend\LocationManager\Partials;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\ModLocationFilter;
 
 class LocationFilterManagerComponent extends Component
 {
+    use WithPagination;
+
     public $locationId;
     public $selectedTypes = [];
     public $selectedUschrift = [];
     public $textTypeOptions = [];
     public $uschrifts = [];
-    public $texts = [];
 
-    // Eingabefelder für neue Texte
-    public $newTextType;
-    public $newUschrift;
-    public $newText;
+    // Formularfelder (für Hinzufügen und Bearbeiten)
+    public $formTextType;
+    public $formUschrift;
+    public $formText;
+    public $formCategory;
+    public $formAddinfo;
+    public $formActiveStatus = true; // Standardwert bleibt true
+    public $isFormVisible = false;
+    public $editingTextId = null;
 
     public function mount($locationId)
     {
         $this->locationId = $locationId;
-
-        // Lade alle verfügbaren Kategorien (text_type)
         $this->textTypeOptions = ModLocationFilter::distinct()->pluck('text_type')->toArray();
-
-        $this->loadTexts();
     }
 
     public function updatedSelectedTypes()
     {
-        // Lade alle passenden Überschriften basierend auf der Auswahl der Kategorie
         $this->uschrifts = ModLocationFilter::where('location_id', $this->locationId)
             ->whereIn('text_type', $this->selectedTypes)
             ->distinct()
             ->pluck('uschrift')
             ->toArray();
+        $this->resetPage();
     }
 
     public function updatedSelectedUschrift()
     {
-        $this->loadTexts();
+        $this->resetPage();
     }
 
-    public function loadTexts()
+    public function resetFilters()
+    {
+        $this->selectedTypes = [];
+        $this->selectedUschrift = [];
+        $this->uschrifts = [];
+        $this->resetPage();
+    }
+
+    public function showForm()
+    {
+        $this->isFormVisible = true;
+        $this->resetFormFields();
+        $this->editingTextId = null;
+    }
+
+    public function hideForm()
+    {
+        $this->isFormVisible = false;
+        $this->resetFormFields();
+        $this->editingTextId = null;
+    }
+
+    public function addText()
+    {
+        $this->validate([
+            'formTextType' => 'required',
+            'formUschrift' => 'required',
+            'formText' => 'required',
+            'formCategory' => 'nullable|string|max:255',
+            'formAddinfo' => 'nullable|string',
+            'formActiveStatus' => 'boolean',
+        ]);
+
+        ModLocationFilter::create([
+            'location_id' => $this->locationId,
+            'text_type' => $this->formTextType,
+            'uschrift' => $this->formUschrift,
+            'text' => $this->formText,
+            'category' => $this->formCategory,
+            'addinfo' => $this->formAddinfo,
+            'is_active' => $this->formActiveStatus, // Mapping auf Datenbankfeld
+        ]);
+
+        $this->hideForm();
+        $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich hinzugefügt.');
+    }
+
+    public function editFilterText($id)
+    {
+        $text = ModLocationFilter::find($id);
+        //dd($text);
+
+        if ($text) {
+            $this->editingTextId = $id;
+            $this->formTextType = $text->text_type;
+            $this->formUschrift = $text->uschrift;
+            $this->formText = $text->text;
+            $this->formCategory = $text->category;
+            $this->formAddinfo = $text->addinfo;
+            $this->formActiveStatus = (bool) $text->is_active; // Explizite Typkonvertierung
+            $this->isFormVisible = true;
+        }
+
+        //dd($this->formActiveStatus);
+    }
+
+    public function updateText()
+    {
+        $this->validate([
+            'formTextType' => 'required',
+            'formUschrift' => 'required',
+            'formText' => 'required',
+            'formCategory' => 'nullable|string|max:255',
+            'formAddinfo' => 'nullable|string',
+            'formActiveStatus' => 'boolean',
+        ]);
+
+        $text = ModLocationFilter::find($this->editingTextId);
+        if ($text) {
+            $text->update([
+                'text_type' => $this->formTextType,
+                'uschrift' => $this->formUschrift,
+                'text' => $this->formText,
+                'category' => $this->formCategory,
+                'addinfo' => $this->formAddinfo,
+                'is_active' => $this->formActiveStatus, // Mapping auf Datenbankfeld
+            ]);
+            $this->hideForm();
+            $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich aktualisiert.');
+        }
+    }
+
+    public function toggleActive($id)
+    {
+        $text = ModLocationFilter::find($id);
+        if ($text) {
+            $text->is_active = !$text->is_active;
+            $text->save();
+            $this->dispatch('show-toast', type: 'status', message: 'Status von Text #' . $text->id . ' geändert.');
+        }
+    }
+
+    public function deleteText($id)
+    {
+        ModLocationFilter::find($id)?->delete();
+        $this->dispatch('show-toast', type: 'status', message: 'Text erfolgreich gelöscht.');
+    }
+
+    private function resetFormFields()
+    {
+        $this->formTextType = '';
+        $this->formUschrift = '';
+        $this->formText = '';
+        $this->formCategory = '';
+        $this->formAddinfo = '';
+        $this->formActiveStatus = true;
+    }
+
+    public function render()
     {
         $query = ModLocationFilter::where('location_id', $this->locationId);
 
@@ -56,39 +177,10 @@ class LocationFilterManagerComponent extends Component
             $query->whereIn('uschrift', $this->selectedUschrift);
         }
 
-        $this->texts = $query->get();
-    }
+        $texts = $query->paginate(10);
 
-    public function addText()
-    {
-        $this->validate([
-            'newTextType' => 'required',
-            'newUschrift' => 'required',
-            'newText' => 'required',
+        return view('livewire.backend.location-manager.partials.location-filter-manager-component', [
+            'texts' => $texts,
         ]);
-
-        ModLocationFilter::create([
-            'location_id' => $this->locationId,
-            'text_type' => $this->newTextType,
-            'uschrift' => $this->newUschrift,
-            'text' => $this->newText,
-        ]);
-
-        $this->newTextType = '';
-        $this->newUschrift = '';
-        $this->newText = '';
-
-        $this->loadTexts();
-    }
-
-    public function deleteText($id)
-    {
-        ModLocationFilter::find($id)?->delete();
-        $this->loadTexts();
-    }
-
-    public function render()
-    {
-        return view('livewire.backend.location-manager.partials.location-filter-manager-component');
     }
 }
