@@ -1,7 +1,7 @@
 {{-- resources\views\raadmin\layout\master.blade.php --}}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ config('site.language', 'de') }}">
 
 <head>
     <!-- All meta and title start -->
