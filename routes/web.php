@@ -10,6 +10,7 @@ use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Tools\ScreenshotController;
 use App\Http\Controllers\Backend\Admin\AuthController;
 use App\Http\Controllers\Frontend\StaticPageController;
+use App\Http\Controllers\Backend\HeaderWeatherController;
 use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Http\Controllers\Backend\Imports\CountryImportController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Frontend\WishlistCompare\WishlistCompareController;
 // Login
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::post('/weather/update', [HeaderWeatherController::class, 'update'])->name('weather.update');
 
 Route::get('/generate-screenshot', [ScreenshotController::class, 'generate']);
 

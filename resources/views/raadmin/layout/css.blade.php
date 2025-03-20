@@ -33,6 +33,8 @@
 
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/ra-admin/css/style.css') }}">
 
+<!-- Responsive css-->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/ra-admin/css/responsive.css') }}">
 
 
 @yield('css')

@@ -12,80 +12,167 @@
 
                 <ul class="d-flex align-items-center">
 
-                    <li class="header-cloud">
-                        <a href="#" class="head-icon" role="button" data-bs-toggle="offcanvas"
-                           data-bs-target="#cloudoffcanvasTops" aria-controls="cloudoffcanvasTops">
-                            <i class="ph-duotone  ph-cloud-sun text-primary f-s-26 me-1"></i>
-                            <span>26 <sup class="f-s-10">°C</sup></span>
-                        </a>
 
-                        <div class="offcanvas offcanvas-end header-cloud-canvas" tabindex="-1" id="cloudoffcanvasTops"
-                             aria-labelledby="cloudoffcanvasTops">
+
+                    <li class="header-cloud">
+                        <a href="#" class="head-icon" role="button" data-bs-toggle="offcanvas" data-bs-target="#cloudoffcanvasTops" aria-controls="cloudoffcanvasTops">
+                            <i class="ph-duotone {{ mapWeatherCodeToIcon(session('weather_data.current.weathercode', 0)) }} text-primary f-s-26 me-1" id="weather-icon"></i>
+                            <span id="current-temp">{{ session('weather_data.current.temperature', 'N/A') }} <sup class="f-s-10">°C</sup></span>
+                        </a>
+                        <!-- Popover-Trigger -->
+                        <span class="ms-2" role="button" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true" data-bs-content='<input type="text" id="location-input" class="form-control" placeholder="Ort eingeben" style="width: 200px;">'>
+                            <i class="ph-duotone ph-pencil-simple text-primary f-s-20"></i>
+                        </span>
+
+                        <div class="offcanvas offcanvas-end header-cloud-canvas" tabindex="-1" id="cloudoffcanvasTops" aria-labelledby="cloudoffcanvasTops">
                             <div class="offcanvas-body p-0">
                                 <div class="cloud-body">
-
-                                    <div class="cloud-content-box">
-                                        <div class="cloud-box bg-primary-900">
-                                            <p class="mb-3">Mon</p>
-                                            <h6 class="mt-4 f-s-13"> +29°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-cloud-fog text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 2%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-800">
-                                            <p class="mb-3">Tue</p>
-                                            <h6 class="mt-4 f-s-13"> +29°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-cloud-sun text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 2%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-700">
-                                            <p class="mb-3 text-light">Wed</p>
-                                            <h6 class="mt-4 f-s-13"> +20°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-sun-dim text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 1%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-600">
-                                            <p class="mb-3">Thu</p>
-                                            <h6 class="mt-4 f-s-13"> +17°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-sun-dim text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 1%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-500">
-                                            <p class="mb-3">Fri</p>
-                                            <h6 class="mt-4 f-s-13"> +18°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-sun-dim text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 1%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-400">
-                                            <p class="mb-3">Sat</p>
-                                            <h6 class="mt-4 f-s-13"> +16°C</h6>
-                                            <span>
-                                <i class="ph-duotone  ph-sun-dim text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 1%</p>
-                                        </div>
-                                        <div class="cloud-box bg-primary-300">
-                                            <p class="mb-3">Sun</p>
-                                            <h6 class="mt-4 f-s-13"> +29°C</h6>
-                                            <span class="mb-3">
-                                <i class="ph-duotone  ph-sun-dim text-white f-s-25"></i>
-                              </span>
-                                            <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> 1%</p>
-                                        </div>
+                                    <div class="cloud-content-box" id="forecast-container">
+                                        @foreach (session('weather_data.forecast', []) as $index => $day)
+                                            <div class="cloud-box bg-primary-{{ 700 - $index * 100 }}">
+                                                <p class="mb-3">{{ $day['weekday'] }}</p>
+                                                <h6 class="mt-4 f-s-13">+{{ $day['temp_max'] }}°C</h6>
+                                                <span><i class="ph-duotone {{ mapWeatherCodeToIcon($day['weathercode'] ?? 0) }} text-white f-s-25"></i></span>
+                                                <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> {{ $day['precipitation'] }}%</p>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </li>
+
+                    @push('scripts')
+                    <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const updateWeatherDisplay = (data) => {
+                            console.log('Wetterdaten für Anzeige:', data);
+                            document.getElementById('current-temp').innerHTML = `${data.current.temperature} <sup class="f-s-10">°C</sup>`;
+                            document.getElementById('weather-icon').className = `ph-duotone ${data.current.icon} text-primary f-s-26 me-1`;
+
+                            const forecastContainer = document.getElementById('forecast-container');
+                            forecastContainer.innerHTML = data.forecast.map(day => `
+                                <div class="cloud-box bg-primary-${700 - day.index * 100}">
+                                    <p class="mb-3">${day.weekday}</p>
+                                    <h6 class="mt-4 f-s-13">+${day.temp_max}°C</h6>
+                                    <span><i class="ph-duotone ${day.icon} text-white f-s-25"></i></span>
+                                    <p class="f-s-13 mt-3"><i class="wi wi-raindrop"></i> ${day.precipitation}%</p>
+                                </div>
+                            `).join('');
+                        };
+
+                        // Initiale Daten aus der Session mit Fallback
+                        const initialData = @json(session('weather_data')) || {
+                            current: { temperature: 'N/A', weathercode: 0 },
+                            forecast: []
+                        };
+                        console.log('Initiale Session-Daten:', initialData);
+
+                        if (initialData) {
+                            updateWeatherDisplay({
+                                current: {
+                                    temperature: initialData.current?.temperature ?? 'N/A',
+                                    icon: '{{ mapWeatherCodeToIcon(session("weather_data.current.weathercode", 0)) }}'
+                                },
+                                forecast: initialData.forecast.map((day, index) => ({
+                                    weekday: day.weekday,
+                                    temp_max: day.temp_max,
+                                    icon: '{{ mapWeatherCodeToIcon("") }}'.replace('', day.weathercode ?? 0),
+                                    precipitation: day.precipitation,
+                                    index: index
+                                }))
+                            });
+                        }
+
+                        // Geolokalisierung
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                pos => {
+                                    console.log('Geolokalisierung erfolgreich:', pos.coords.latitude, pos.coords.longitude);
+                                    fetch(`/weather/update?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`, {
+                                        method: 'POST',
+                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                                    })
+                                        .then(response => {
+                                            if (!response.ok) throw new Error(`HTTP-Fehler: ${response.status}`);
+                                            return response.json();
+                                        })
+                                        .then(data => updateWeatherDisplay(data))
+                                        .catch(error => console.error('Fehler bei Geolokalisierung:', error));
+                                },
+                                error => console.log('Geolokalisierung abgelehnt:', error.message)
+                            );
+                        }
+
+                        // Popover initialisieren
+                        const popoverTrigger = document.querySelector('[data-bs-toggle="popover"]');
+                        const popover = new bootstrap.Popover(popoverTrigger, {
+                            trigger: 'click',
+                            boundary: 'viewport'
+                        });
+
+                        // Manuelle Eingabe im Popover
+                        popoverTrigger.addEventListener('shown.bs.popover', () => {
+                            const locationInput = document.getElementById('location-input');
+                            if (locationInput) {
+                                locationInput.focus();
+                                locationInput.addEventListener('change', (e) => {
+                                    const location = e.target.value;
+                                    console.log('Ort eingegeben:', location);
+                                    fetch(`/weather/update?location=${location}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        }
+                                    })
+                                        .then(response => {
+                                            if (!response.ok) throw new Error(`HTTP-Fehler: ${response.status}`);
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            updateWeatherDisplay(data);
+                                            popover.hide();
+                                        })
+                                        .catch(error => console.error('Fehler bei Ortsänderung:', error));
+                                });
+                            }
+                        });
+                    });
+                    </script>
+                    @endpush
+
+                    <style>
+                    /* CSS für größeres Popover */
+                    .popover {
+                        max-width: 250px; /* Breiteres Popover */
+                    }
+                    .popover-body {
+                        padding: 10px; /* Mehr Platz im Inneren */
+                    }
+                    #location-input {
+                        width: 200px !important; /* Feste Breite für das Input-Feld */
+                    }
+                    </style>
+
+                    @php
+                    // Inline PHP für Icon-Mapping (in Blade)
+                    function mapWeatherCodeToIcon($weatherCode) {
+                        $iconMap = [
+                            0 => 'ph-sun',
+                            1 => 'ph-cloud-sun',
+                            2 => 'ph-cloud',
+                            3 => 'ph-cloud',
+                            61 => 'ph-cloud-rain',
+                            63 => 'ph-cloud-rain',
+                            65 => 'ph-cloud-rain',
+                            95 => 'ph-cloud-lightning',
+                        ];
+                        return $iconMap[$weatherCode] ?? 'ph-cloud';
+                    }
+                    @endphp
+
+
 {{--
                     <li class="header-language">
                         <div id="lang_selector" class="flex-shrink-0 dropdown">

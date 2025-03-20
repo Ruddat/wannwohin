@@ -4,6 +4,7 @@ use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\TrackReferral;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\LoadWeatherData;
 use App\Http\Middleware\GenerateBreadcrumbs;
 use App\Http\Middleware\TrackVisitorSession;
 use App\Http\Middleware\CheckMaintenanceMode;
@@ -32,10 +33,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'maintenance' => CheckMaintenanceMode::class, // Alias korrekt definiert
             'track-referral' => TrackReferral::class, // Alias für TrackReferral hinzufügen
             'track-visitor' => TrackVisitorSession::class, // Neuer Alias
+            'weather' => LoadWeatherData::class, // Neuer Alias für LoadWeatherData
         ]);
 
         // Globale Middleware hinzufügen
         $middleware->append(SetLocale::class);
+       // $middleware->append(LoadWeatherData::class); // Global hinzufügen
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception-Handling konfigurieren

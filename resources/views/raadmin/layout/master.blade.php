@@ -11,6 +11,7 @@
     <!-- css start -->
     @include('raadmin.layout.css')
     @vite(['resources/backend/css/app.css']) <!-- Vite für CSS -->
+    @stack('styles') <!-- Seiten-spezifische Styles -->
     <!-- css end -->
     <!-- Livewire Styles -->
     @livewireStyles
@@ -20,6 +21,12 @@
     <!-- Loader start -->
     <div class="app-wrapper">
         <!-- Loader end -->
+
+
+        <div class="loader-wrapper">
+            <div class="loader_16"></div>
+          </div>
+
 
         <!-- Menu Navigation start -->
         @include('raadmin.layout.sidebar')

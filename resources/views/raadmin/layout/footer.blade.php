@@ -7,7 +7,7 @@
             <div class="col-md-9 col-12">
                 <ul class="footer-text">
                     <li>
-                        <p class="mb-0">Copyright © 2024 ra-admin. All rights reserved 💖</p>
+                        <p class="mb-0">Copyright © 2025 Wann-Wohin.de. All rights reserved 💖</p>
                     </li>
                     <li> <a href="#"> V1.0.0 </a></li>
                 </ul>

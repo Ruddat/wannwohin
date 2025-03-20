@@ -1,8 +1,28 @@
-<div class="container-xl mt-4">
+<div class="container-fluid">
+    <!-- Breadcrumb start -->
+    <div class="row m-1">
+        <div class="col-12">
+            <h4 class="main-title">Freizeitparks</h4>
+            <ul class="app-line-breadcrumbs mb-3">
+                <li>
+                    <a href="#" class="f-s-14 f-w-500">
+                        <span>
+                            <i class="fas fa-folder f-s-16"></i> Verwaltung
+                        </span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="#" class="f-s-14 f-w-500">Freizeitparks</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- Breadcrumb end -->
+
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title">Freizeitparks</h3>
-            <div class="d-flex align-items-center gap-2">
+        <div class="card-header">
+            <h5>Freizeitparks</h5>
+            <div class="float-end d-flex align-items-center gap-2">
                 <input type="text" class="form-control" placeholder="Suche nach Name oder Standort" wire:model.live.throttle.150ms="search">
                 <select class="form-select" wire:model.change="country">
                     <option value="">Alle Länder</option>
@@ -27,17 +47,13 @@
                     <option value="all">Alle</option>
                 </select>
                 <a href="{{ route('verwaltung.site-manager.park-manager.create') }}" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
-                    Neuer Park
+                    <i class="fas fa-plus f-s-16"></i> Neuer Park
                 </a>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-vcenter card-table table-hover">
+
+        <div class="card-body">
+            <table class="table table-vcenter">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -61,9 +77,9 @@
                             <td>{{ $park->longitude }}</td>
                             <td>
                                 @if($park->url)
-                                    <a href="{{ $park->url }}" target="_blank" class="text-muted">{{ Str::limit($park->url, 20) }}</a>
+                                    <a href="{{ $park->url }}" target="_blank" class="text-secondary">{{ Str::limit($park->url, 20) }}</a>
                                 @else
-                                    <span class="text-muted">–</span>
+                                    <span class="text-secondary">–</span>
                                 @endif
                             </td>
                             <td>{{ Str::limit($park->description ?? 'Keine Beschreibung', 50) }}</td>
@@ -75,58 +91,74 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                <div class="btn-list flex-nowrap">
-                                    <a href="{{ route('verwaltung.site-manager.park-manager.edit', $park->id) }}" class="btn btn-sm btn-primary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
-                                            <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
-                                            <path d="M16 5l3 3" />
-                                        </svg>
-                                        Bearbeiten
-                                    </a>
-                                    <button wire:click="updateCoordinates({{ $park->id }})" class="btn btn-sm btn-outline-secondary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <circle cx="12" cy="11" r="3" />
-                                            <path d="M17.657 16.657a8 8 0 1 0 -11.314 0l5.657 5.657l5.657 -5.657z" />
-                                        </svg>
-                                        Koordinaten
-                                    </button>
-                                    <button wire:click="confirmDelete({{ $park->id }})" class="btn btn-sm btn-danger">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M4 7l16 0" />
-                                            <path d="M10 11l0 6" />
-                                            <path d="M14 11l0 6" />
-                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                        </svg>
-                                        Löschen
-                                    </button>
-                                </div>
+                                <a href="{{ route('verwaltung.site-manager.park-manager.edit', $park->id) }}" class="btn btn-success icon-btn b-r-4">
+                                    <i class="fas fa-edit f-s-16"></i>
+                                </a>
+                                <button wire:click="updateCoordinates({{ $park->id }})" class="btn btn-outline-secondary icon-btn b-r-4">
+                                    <i class="fas fa-map-marker-alt f-s-16"></i>
+                                </button>
+                                <button wire:click="confirmDelete({{ $park->id }})" class="btn btn-danger icon-btn b-r-4">
+                                    <i class="fas fa-trash f-s-16"></i>
+                                </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted">Keine Einträge gefunden</td>
+                            <td colspan="9" class="text-center text-secondary">Keine Einträge gefunden</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="card-footer d-flex justify-content-between align-items-center">
-            <div class="text-muted">
-                @if($parks instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    Zeige {{ $parks->firstItem() }} bis {{ $parks->lastItem() }} von {{ $parks->total() }} Einträgen
-                @else
-                    Zeige alle {{ $parks->count() }} Einträge
-                @endif
-            </div>
-            <div>
-                {{ $parks instanceof \Illuminate\Pagination\LengthAwarePaginator ? $parks->links() : '' }}
+
+        <div class="card-footer">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <select wire:model.change="perPage" class="form-select form-select-sm">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="app-pagination-link">
+                        <ul class="pagination app-pagination justify-content-center mb-0">
+                            <li class="page-item {{ $parks->onFirstPage() ? 'disabled' : '' }}">
+                                <a class="page-link b-r-left" wire:click="previousPage" href="#" aria-label="Previous">
+                                    Previous
+                                </a>
+                            </li>
+                            @php
+                                $currentPage = $parks->currentPage();
+                                $lastPage = $parks->lastPage();
+                                $range = 2;
+                                $start = max(1, $currentPage - $range);
+                                $end = min($lastPage, $currentPage + $range);
+                            @endphp
+                            @for ($i = $start; $i <= $end; $i++)
+                                <li class="page-item {{ $currentPage == $i ? 'active' : '' }}" aria-current="{{ $currentPage == $i ? 'page' : '' }}">
+                                    <a class="page-link" wire:click="gotoPage({{ $i }})" href="#">{{ $i }}</a>
+                                </li>
+                            @endfor
+                            <li class="page-item {{ $parks->hasMorePages() ? '' : 'disabled' }}">
+                                <a class="page-link b-r-right" wire:click="nextPage" href="#" aria-label="Next">
+                                    Next
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted">
+                        Zeigt {{ $parks->firstItem() }} bis {{ $parks->lastItem() }} von {{ $parks->total() }} Einträgen
+                    </span>
+                </div>
             </div>
         </div>
+
+
+
     </div>
 </div>
 
@@ -154,8 +186,8 @@
                     text: data.text || 'Dieser Vorgang kann nicht rückgängig gemacht werden.',
                     icon: data.icon || 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#206bc4', // Tabler Primary
-                    cancelButtonColor: '#d63939', // Tabler Danger
+                    confirmButtonColor: '#206bc4',
+                    cancelButtonColor: '#d63939',
                     confirmButtonText: data.confirmButtonText || 'Ja, löschen!',
                     cancelButtonText: data.cancelButtonText || 'Abbrechen',
                 }).then((result) => {
