@@ -111,6 +111,6 @@ class CountryImageUpdater extends Component
     {
         return view('livewire.backend.stuff-updater.country-image-updater', [
             'currentCountry' => $this->currentCountry, // Neu: Übergeben an das Blade
-        ]);
+        ])->layout('raadmin.layout.master');
     }
 }

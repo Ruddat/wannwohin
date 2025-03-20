@@ -1,53 +1,39 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
-
 <head>
-    <!-- All meta and title start-->
+    <!-- Meta-Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- Für Livewire/AJAX -->
+    <title>{{ config('app.name', 'Location Manager') }} - @yield('title')</title>
 
-<!-- meta and title end-->
+    <!-- CSS -->
+    @include('backend.layouts.partials.header-css') <!-- Partielle CSS-Einbindung -->
+    @vite(['resources/backend/css/app.css']) <!-- Vite für CSS -->
 
-    <!-- css start-->
-
-<!-- css end-->
-
-@include('backend.layouts.partials.header-css')
-
-@vite(['resources/backend/css/app.css', 'resources/backend/js/app.js'])
-
+    <!-- Livewire Styles -->
+    @livewireStyles
+    @stack('styles') <!-- Seiten-spezifische Skripte -->
 </head>
-
-<body  class=" layout-fluid">
-
-    <script src="{{asset('backend/dist/js/demo-theme.min.js?1692870487')}}"></script>
+<body class="layout-fluid">
     <div class="page">
+        <!-- Sidebar -->
+        @include('backend.layouts.partials.sidebar')
 
-      <!-- Sidebar -->
-      @include('backend.layouts.partials.sidebar')
-
-
-      <div class="page-wrapper">
-        <!-- Main Section start -->
-        <div class="page-body">
-
-
-            {{-- main body content --}}
-            @yield('main-content')
-
-
-            {{ $slot }}
-        </div>
-        <!-- Main Section end -->
+        <div class="page-wrapper">
+            <!-- Main Section -->
+            <div class="page-body">
+                @yield('main-content') <!-- Traditionelle Blade-Inhalte -->
+                {{ $slot }} <!-- Livewire-Komponenten -->
+            </div>
         </div>
     </div>
 
-
-
-    @include('backend.layouts.partials.scripts')
-    @livewireScripts <!-- Livewire-Scripts -->
-    <!-- Stack für Seiten-spezifische Skripte -->
-    @stack('scripts')
-
+    <!-- Skripte -->
+    @vite(['resources/backend/js/app.js']) <!-- Vite für JS -->
+    <script src="{{ asset('backend/dist/js/demo-theme.min.js') }}"></script> <!-- Ohne manuelle Version -->
+    @include('backend.layouts.partials.scripts') <!-- Partielle Skripte -->
+    @livewireScripts <!-- Livewire-Skripte -->
+    @stack('scripts') <!-- Seiten-spezifische Skripte -->
 </body>
-
-
 </html>

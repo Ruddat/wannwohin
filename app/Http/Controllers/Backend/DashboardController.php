@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
       //  dd($trafficSummary);
 
-    return view('backend.admin.dashboard.index', compact(
+    return view('raadmin.index', compact(
         'totalLocations',
         'totalCountries',
         'totalParks',

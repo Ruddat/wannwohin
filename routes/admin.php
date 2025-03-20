@@ -105,7 +105,7 @@ Route::prefix('verwaltung')->name('verwaltung.')->group(function () {
 // Location Table Manager
 Route::prefix('location-table-manager')->name('location-table-manager.')->group(function () {
     Route::get('/', LocationTableComponent::class)->name('index');
-    Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
+ //   Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
 });
 
 

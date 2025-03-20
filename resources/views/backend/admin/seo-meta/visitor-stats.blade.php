@@ -1,5 +1,5 @@
 <!-- resources/views/backend/admin/seo-meta/visitor-stats.blade.php -->
-@extends('backend.layouts.main')
+@extends('raadmin.layout.master')
 
 @section('main-content')
     <div class="container-xl">

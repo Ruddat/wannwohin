@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('raadmin.layout.master')
 
 @section('content')
 <div class="container mt-5">

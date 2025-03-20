@@ -36,7 +36,7 @@ class StaticPageManagerComponent extends Component
 
         return view('livewire.backend.static-page-manager.static-page-manager-component', [
             'staticPages' => $staticPages,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
     public function sortBy($field)

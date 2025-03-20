@@ -6,13 +6,14 @@ use Livewire\Component;
 use App\Models\WwdeCountry;
 use App\Models\WwdeLocation;
 use Livewire\WithPagination;
+use Livewire\WithoutUrlPagination;
 use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class LocationTableComponent extends Component
 {
-    use WithPagination;
+    use WithPagination, WithoutUrlPagination;
 
     public $search = '';
     public $perPage = 10;
@@ -32,6 +33,12 @@ class LocationTableComponent extends Component
     {
         $this->resetPage();
     }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
 
     public function toggleStatus($locationId)
     {
@@ -55,6 +62,7 @@ class LocationTableComponent extends Component
 
     public function openEditModal($locationId)
     {
+        $this->isLoading = true; // Ladeanzeige beenden
         $this->dispatch('openEditModal', $locationId); // Ereignis an LocationManagerComponent senden
     }
 
@@ -165,19 +173,18 @@ class LocationTableComponent extends Component
 
     public function confirmDelete($locationId)
     {
+        \Log::info('confirmDelete called with ID:', ['locationId' => $locationId]);
         $this->dispatch('triggerDeleteConfirmation', $locationId);
     }
 
     public function deleteLocation($locationId)
     {
-        $location = WwdeLocation::find($locationId); // Gibt ein Model oder null zurück
-        if ($location instanceof WwdeLocation) { // Sicherstellen, dass es ein Model ist
+        \Log::info('deleteLocation called with ID:', ['locationId' => $locationId]);
+        $location = WwdeLocation::find($locationId);
+        if ($location instanceof WwdeLocation) {
             $location->delete();
             $this->dispatch('refreshLocations');
             $this->dispatch('showSuccessMessage', 'Die Location wurde erfolgreich gelöscht.');
-        } else {
-            \Log::warning('Keine gültige Location gefunden für ID:', ['locationId' => $locationId]);
-            $this->dispatch('showSuccessMessage', 'Location nicht gefunden.');
         }
     }
 
@@ -241,6 +248,6 @@ class LocationTableComponent extends Component
         return view('livewire.backend.location-manager.location-table-component', [
             'locations' => $locations,
             'countries' => $countries,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 }

@@ -182,6 +182,7 @@ class ImportStartpageImages extends Component
 
     public function render()
     {
-        return view('livewire.backend.image-imports.import-startpage-images');
+        return view('livewire.backend.image-imports.import-startpage-images')
+        ->layout('raadmin.layout.master');
     }
 }

@@ -60,7 +60,7 @@ class AdvertisementBlocksComponent extends Component
         return view('livewire.backend.advertisement-manager.advertisement-blocks-component', [
             'advertisements' => ModAdvertisementBlocks::with('provider')->paginate(10),
             'providers' => ModProviders::where('is_active', true)->get(),
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
     public function resetFields()

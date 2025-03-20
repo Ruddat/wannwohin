@@ -22,7 +22,7 @@ class ProvidersComponent extends Component
     {
         return view('livewire.backend.advertisement-manager.providers-component', [
             'providers' => ModProviders::paginate(10),
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
     public function resetFields()

@@ -70,7 +70,7 @@ class ClimateDataManager extends Component
         $climateData = $query->orderBy('year', 'desc')->orderBy('month', 'asc')->paginate(12);
 
         return view('livewire.backend.weather-manager.climate-data-manager', compact('climateData'))
-            ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 
     public function edit($id)

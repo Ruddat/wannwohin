@@ -153,6 +153,6 @@ class SeoMetaEdit extends Component
     {
         return view('livewire.backend.seo-meta-component.seo-meta-edit', [
             'commonKeywordKeys' => $this->commonKeywordKeys,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 }

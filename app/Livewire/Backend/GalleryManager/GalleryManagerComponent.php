@@ -38,7 +38,7 @@ class GalleryManagerComponent extends Component
     {
         return view('livewire.backend.gallery-manager.gallery-manager-component', [
             'galleries' => ModLocationGalerie::paginate(10),
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
     public function edit($id)

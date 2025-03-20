@@ -4,13 +4,13 @@
             <h3 class="card-title">Texte bearbeiten -> {{ $locationTitle }}</h3>
         </div>
         <div class="card-body">
-
             <!-- New: Short Text under Image -->
             <div class="mb-4">
                 <label for="imageShortText" class="form-label fw-bold">Kurzer Text unter dem Location Bild max 250 Zeichen</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="imageShortText"
+                    wire:model.debounce.500ms="imageShortText"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link']"
+                    key="editor-imageShortText-{{ $locationId }}"
                     tabindex="1"
                 />
             </div>
@@ -29,8 +29,9 @@
                 <div class="mb-3">
                     <label for="panoramaShortText" class="form-label fw-bold">Panorama-Kurztext</label>
                     <livewire:jodit-text-editor
-                        wire:model.live="panoramaShortText"
+                        wire:model.debounce.500ms="panoramaShortText"
                         :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
+                        key="editor-panoramaShortText-{{ $locationId }}"
                         tabindex="3"
                     />
                 </div>
@@ -45,8 +46,9 @@
                     <div class="flex-grow-1">
                         <label for="pic1Text" class="form-label fw-bold">Bildtext (Faktencheck-Bild)</label>
                         <livewire:jodit-text-editor
-                            wire:model.live="pic1Text"
+                            wire:model.debounce.500ms="pic1Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
+                            key="editor-pic1Text-{{ $locationId }}"
                             tabindex="4"
                         />
                     </div>
@@ -64,8 +66,9 @@
                     <div class="flex-grow-1">
                         <label for="pic2Text" class="form-label fw-bold">Bildtext (Panorama-Bild optional)</label>
                         <livewire:jodit-text-editor
-                            wire:model.live="pic2Text"
+                            wire:model.debounce.500ms="pic2Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
+                            key="editor-pic2Text-{{ $locationId }}"
                             tabindex="5"
                         />
                     </div>
@@ -83,8 +86,9 @@
                     <div class="flex-grow-1">
                         <label for="pic3Text" class="form-label fw-bold">Bildtext (Header-Bild optional)</label>
                         <livewire:jodit-text-editor
-                            wire:model.live="pic3Text"
+                            wire:model.debounce.500ms="pic3Text"
                             :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image']"
+                            key="editor-pic3Text-{{ $locationId }}"
                             tabindex="6"
                         />
                     </div>
@@ -102,8 +106,9 @@
             <div class="mb-4">
                 <label for="textHeadline" class="form-label">Überschrift</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="textHeadline"
+                    wire:model.debounce.500ms="textHeadline"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', 'paragraph', '|', 'left', 'center', 'right', 'justify', '|', 'link', 'image']"
+                    key="editor-textHeadline-{{ $locationId }}"
                     tabindex="7"
                 />
             </div>
@@ -111,8 +116,9 @@
             <div class="mb-4">
                 <label for="textShort" class="form-label">Kurzer Text</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="textShort"
+                    wire:model.debounce.500ms="textShort"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
+                    key="editor-textShort-{{ $locationId }}"
                     tabindex="8"
                 />
             </div>
@@ -120,8 +126,9 @@
             <div class="mb-4">
                 <label for="textWhatToDo" class="form-label">Was kann man in {{ $locationTitle }} erleben?</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="textWhatToDo"
+                    wire:model.debounce.500ms="textWhatToDo"
                     :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', 'paragraph', 'fontsize', '|', 'link', 'unorderedList', 'orderedList']"
+                    key="editor-textWhatToDo-{{ $locationId }}"
                     tabindex="9"
                 />
             </div>
@@ -129,8 +136,9 @@
             <div class="mb-4">
                 <label for="textLocationClimate" class="form-label">Lage und Klima in {{ $locationTitle }}</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="textLocationClimate"
+                    wire:model.debounce.500ms="textLocationClimate"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'table', '|', 'undo', 'redo']"
+                    key="editor-textLocationClimate-{{ $locationId }}"
                     tabindex="10"
                 />
             </div>
@@ -138,8 +146,9 @@
             <div class="mb-4">
                 <label for="panoramaTextAndStyle" class="form-label">Panorama-Text und Stil (optional) {{ $locationTitle }}</label>
                 <livewire:jodit-text-editor
-                    wire:model.live="panoramaTextAndStyle"
+                    wire:model.debounce.500ms="panoramaTextAndStyle"
                     :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'table']"
+                    key="editor-panoramaTextAndStyle-{{ $locationId }}"
                     tabindex="11"
                 />
             </div>
@@ -161,12 +170,10 @@
 </div>
 
 @assets
-<!-- Include Jodit CSS Styling -->
-<link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
-
-<!-- Include the Jodit JS Library -->
-<script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
+    <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
+    <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
 @endassets
+
 @push('scripts')
     <script>
         document.addEventListener('livewire:init', () => {

@@ -14,7 +14,7 @@ class HeaderContentController extends Controller
     public function index()
     {
         $headerContents = HeaderContent::all();
-        return view('backend.admin.header.index', compact('headerContents'));
+        return view('backend.admin.header.index', compact('headerContents'));        ;
     }
 
     public function create()

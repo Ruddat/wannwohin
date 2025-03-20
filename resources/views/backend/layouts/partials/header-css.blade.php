@@ -7,7 +7,7 @@
 <!-- CSS files -->
 
     <!-- CSS files -->
-    <link href="{{asset('backend/dist/css/tabler.min.css?1692870487')}}" rel="stylesheet"/>
+    <link href="{{ asset('backend/dist/css/tabler.css') }}" rel="stylesheet" />
     <link href="{{asset('backend/dist/css/tabler-flags.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/tabler-payments.min.css?1692870487')}}" rel="stylesheet"/>
     <link href="{{asset('backend/dist/css/tabler-vendors.min.css?1692870487')}}" rel="stylesheet"/>

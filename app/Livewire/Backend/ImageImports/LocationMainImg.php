@@ -271,6 +271,7 @@ class LocationMainImg extends Component
 
     public function render()
     {
-        return view('livewire.backend.image-imports.location-main-img');
+        return view('livewire.backend.image-imports.location-main-img')
+        ->layout('raadmin.layout.master');
     }
 }

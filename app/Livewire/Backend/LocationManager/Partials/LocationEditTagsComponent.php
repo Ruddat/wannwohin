@@ -7,8 +7,8 @@ use App\Models\WwdeLocation;
 
 class LocationEditTagsComponent extends Component
 {
-    public $locationId;
-    public $location;
+    public $locationId; // Deklariere als öffentliche Eigenschaft
+    public $location;   // Deklariere als öffentliche Eigenschaft
     public $tags = [];
     public $best_traveltime = [];
     public $best_traveltime_text;
@@ -47,27 +47,24 @@ class LocationEditTagsComponent extends Component
                 'list_animal_park' => $this->location->list_animal_park,
             ];
 
-        // Beste Reisezeit aus der Datenbank holen
-        $best_traveltime_numbers = json_decode($this->location->best_traveltime_json, true) ?? [];
+            // Beste Reisezeit aus der Datenbank holen
+            $best_traveltime_numbers = json_decode($this->location->best_traveltime_json, true) ?? [];
 
-        // Zahlen in Monatsnamen umwandeln
-        $this->best_traveltime = $this->convertNumbersToMonths($best_traveltime_numbers);
+            // Zahlen in Monatsnamen umwandeln
+            $this->best_traveltime = array_filter($this->convertNumbersToMonths($best_traveltime_numbers));
 
-        // Weitere Initialisierungen
-        $this->best_traveltime_text = $this->location->text_best_traveltime;
-        $this->text_sports = $this->location->text_sports;
-        $this->text_amusement_parks = $this->location->text_amusement_parks;
+            // Weitere Initialisierungen
+            $this->best_traveltime_text = $this->location->text_best_traveltime;
+            $this->text_sports = $this->location->text_sports;
+            $this->text_amusement_parks = $this->location->text_amusement_parks;
+
+            // UI-Optionen (Monatsnamen) initialisieren
+            $this->travel_time_options = array_keys($this->months);
+        }
     }
-
-    // UI-Optionen (Monatsnamen)
-    $this->travel_time_options = array_keys($this->months);
-}
 
     public function updateTags()
     {
-        // Debugging: Zeige das aktuelle Array an
-       // dd($this->best_traveltime);
-
         if ($this->location) {
             // Monatsnamen in Zahlen umwandeln
             $best_traveltime_numbers = $this->convertMonthsToNumbers($this->best_traveltime);
@@ -81,7 +78,7 @@ class LocationEditTagsComponent extends Component
             // Daten speichern
             $this->location->update(array_merge($this->tags, [
                 'best_traveltime_json' => json_encode($best_traveltime_numbers, JSON_UNESCAPED_UNICODE),
-                'best_traveltime' => implode(' - ', [reset($best_traveltime_numbers), end($best_traveltime_numbers)]),
+                'best_traveltime' => $best_traveltime_numbers ? implode(' - ', [reset($best_traveltime_numbers), end($best_traveltime_numbers)]) : null,
                 'text_best_traveltime' => $this->cleanEditorContent($this->best_traveltime_text),
                 'text_sports' => $this->cleanEditorContent($this->text_sports),
                 'text_amusement_parks' => $this->cleanEditorContent($this->text_amusement_parks),
@@ -118,19 +115,16 @@ class LocationEditTagsComponent extends Component
         }, $numbers);
     }
 
+    /**
+     * Prüft den Editor-Text und entfernt leere Inhalte wie "<p><br></p>".
+     */
+    private function cleanEditorContent($content)
+    {
+        // Entfernt Leerzeichen, HTML-Kommentare und überprüft, ob nur "<p><br></p>" o.ä. übrig bleibt.
+        $cleaned = trim(strip_tags($content, '<img><a>')); // Erlaubt Bilder und Links
 
-/**
- * Prüft den Editor-Text und entfernt leere Inhalte wie "<p><br></p>".
- */
-private function cleanEditorContent($content)
-{
-    // Entfernt Leerzeichen, HTML-Kommentare und überprüft, ob nur "<p><br></p>" o.ä. übrig bleibt.
-    $cleaned = trim(strip_tags($content, '<img><a>')); // Erlaubt Bilder und Links
-
-    return empty($cleaned) ? null : $content;
-}
-
-
+        return empty($cleaned) ? null : $content;
+    }
 
     public function render()
     {

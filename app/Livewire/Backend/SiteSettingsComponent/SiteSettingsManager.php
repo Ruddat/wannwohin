@@ -222,6 +222,6 @@ class SiteSettingsManager extends Component
     public function render()
     {
         return view('livewire.backend.site-settings-component.site-settings-manager')
-        ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 }

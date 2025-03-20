@@ -1,4 +1,4 @@
-@extends('backend.layouts.main')
+@extends('raadmin.layout.master')
 
 @section('main-content')
 

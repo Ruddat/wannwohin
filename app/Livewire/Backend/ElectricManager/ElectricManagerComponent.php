@@ -165,6 +165,6 @@ class ElectricManagerComponent extends Component
 
         return view('livewire.backend.electric-manager.electric-manager-component', [
             'standards' => $standards,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 }

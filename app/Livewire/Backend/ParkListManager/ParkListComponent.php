@@ -122,6 +122,6 @@ class ParkListComponent extends Component
             : $query->paginate($this->perPage);
 
         return view('livewire.backend.park-list-manager.park-list-component', compact('parks'))
-            ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 }

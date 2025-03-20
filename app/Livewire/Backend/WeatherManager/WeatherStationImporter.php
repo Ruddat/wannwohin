@@ -31,6 +31,6 @@ class WeatherStationImporter extends Component
     public function render()
     {
         return view('livewire.backend.weather-manager.weather-station-importer')
-        ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 }

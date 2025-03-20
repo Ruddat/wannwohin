@@ -395,7 +395,7 @@
                   </svg>
               </span>
               <span class="nav-link-title">
-                Weather
+                Weather 
               </span>
             </a>
             <div class="dropdown-menu {{ request()->is('verwaltung/weather*') ? 'show' : '' }}">
@@ -430,6 +430,7 @@
 
           <li class="nav-item">
             <form action="{{ route('verwaltung.logout') }}" method="POST">
+
                 @csrf
                 <button type="submit" class="nav-link btn btn-link" style="text-decoration: none;">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">

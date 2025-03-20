@@ -293,6 +293,6 @@ class ContinentManagerComponent extends Component
             ->paginate(10);
 
         return view('livewire.backend.continent-manager.continent-manager-component', compact('continents'))
-            ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 }

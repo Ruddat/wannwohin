@@ -272,7 +272,7 @@ class QuickFilterComponent extends Component
 
         return view('livewire.backend.quick-filter-manager.quick-filter-component', [
             'galleryItems' => $this->orderedItems
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
 

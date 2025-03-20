@@ -514,7 +514,7 @@ public function deleteImage($index)
         return view('livewire.backend.country-manager.country-manager-component', [
             'countries' => $query->orderBy('title')->paginate(10),
             'continents' => WwdeContinent::all(),
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 
 

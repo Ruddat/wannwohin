@@ -105,6 +105,6 @@ class WeatherStationsComponent extends Component
             ->paginate(10);
 
         return view('livewire.backend.weather-manager.weather-stations-component', compact('stations'))
-            ->layout('backend.layouts.livewiere-main');
+        ->layout('raadmin.layout.master');
     }
 }

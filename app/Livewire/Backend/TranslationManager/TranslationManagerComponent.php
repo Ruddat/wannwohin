@@ -103,6 +103,6 @@ class TranslationManagerComponent extends Component
 
         return view('livewire.backend.translation-manager.translation-manager-component', [
             'translations' => $translations,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 }
