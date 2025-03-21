@@ -21,7 +21,7 @@ class WwdeRange extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true; // Timestamps aktiviert nach der Migration
 
     /**
      * The attributes that are mass assignable.
@@ -29,8 +29,8 @@ class WwdeRange extends Model
      * @var array
      */
     protected $fillable = [
-        'Sort',
-        'Range_to_show',
-        'Type',
+        'sort',
+        'range_to_show',
+        'type',
     ];
 }

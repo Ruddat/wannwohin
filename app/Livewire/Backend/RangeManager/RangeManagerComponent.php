@@ -4,6 +4,7 @@ namespace App\Livewire\Backend\RangeManager;
 
 use Livewire\Component;
 use App\Models\WwdeRange;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Cache;
 
@@ -23,8 +24,6 @@ class RangeManagerComponent extends Component
         'range_to_show' => 'required|string|max:255',
         'type' => 'required|in:Flight,Hotel,Rental,Travel',
     ];
-
-    protected $listeners = ['confirmDelete'];
 
     public function mount()
     {
@@ -76,19 +75,21 @@ class RangeManagerComponent extends Component
 
     public function delete($id)
     {
-        $this->dispatch('confirmDelete', [
-            'id' => $id,
-            'message' => 'Are you sure you want to delete this range?',
-        ]);
+        // Browser-Bestätigung hinzufügen
+        $this->dispatch('confirm-delete', id: $id);
     }
 
-    #[On('confirmDelete')]
-    public function confirmDelete($id)
+    #[On('confirmedDelete')]
+    public function confirmedDelete($id)
     {
-        $range = WwdeRange::findOrFail($id);
-        $range->delete();
-        $this->clearRangeCache($range);
-        $this->dispatch('success', 'Range deleted successfully.');
+        try {
+            $range = WwdeRange::findOrFail($id);
+            $range->delete();
+            $this->clearRangeCache($range);
+            $this->dispatch('success', 'Range deleted successfully.');
+        } catch (\Exception $e) {
+            $this->dispatch('error', 'Fehler beim Löschen: ' . $e->getMessage());
+        }
     }
 
     public function resetInputFields()
@@ -121,10 +122,6 @@ class RangeManagerComponent extends Component
             })
             ->orderBy('sort')
             ->paginate($this->perPage);
-
-        // Debugging: Prüfen, ob Daten an View übergeben werden
-        // Wenn du das ausprobieren willst, uncomment die nächste Zeile
-        // dd($ranges);
 
         return view('livewire.backend.range-manager.range-manager-component', ['ranges' => $ranges])
             ->layout('raadmin.layout.master');

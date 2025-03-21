@@ -196,3 +196,31 @@
         </div>
     @endif
 </div>
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('confirm-delete', (event) => {
+                Swal.fire({
+                    title: 'Sind Sie sicher?',
+                    text: 'Möchten Sie diesen Range wirklich löschen?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ja, löschen',
+                    cancelButtonText: 'Abbrechen'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.dispatch('confirmedDelete', { id: event.id });
+                    }
+                });
+            });
+
+            Livewire.on('success', (message) => {
+                Swal.fire('Erfolg', message, 'success');
+            });
+
+            Livewire.on('error', (message) => {
+                Swal.fire('Fehler', message, 'error');
+            });
+        });
+    </script>
+@endpush
