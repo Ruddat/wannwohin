@@ -19,8 +19,8 @@
                             <i class="ph-duotone {{ mapWeatherCodeToIcon(session('weather_data.current.weathercode', 0)) }} text-primary f-s-26 me-1" id="weather-icon"></i>
                             <span id="current-temp">{{ session('weather_data.current.temperature', 'N/A') }} <sup class="f-s-10">°C</sup></span>
                         </a>
-                        <!-- Popover-Trigger -->
-                        <span class="ms-2" role="button" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true" data-bs-content='<input type="text" id="location-input" class="form-control" placeholder="Ort eingeben" style="width: 200px;">'>
+                        <!-- Popover-Trigger mit breiterem Input -->
+                        <span class="ms-2" role="button" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true" data-bs-content='<input type="text" id="location-input" class="form-control" placeholder="Ort eingeben" style="width: 250px !important;">'>
                             <i class="ph-duotone ph-pencil-simple text-primary f-s-20"></i>
                         </span>
 
@@ -108,15 +108,23 @@
                         const popoverTrigger = document.querySelector('[data-bs-toggle="popover"]');
                         const popover = new bootstrap.Popover(popoverTrigger, {
                             trigger: 'click',
-                            boundary: 'viewport'
+                            boundary: 'viewport',
+                            sanitize: false
                         });
 
                         // Manuelle Eingabe im Popover
                         popoverTrigger.addEventListener('shown.bs.popover', () => {
                             const locationInput = document.getElementById('location-input');
                             if (locationInput) {
-                                locationInput.focus();
-                                locationInput.addEventListener('change', (e) => {
+                                console.log('Input-Feld gefunden, fokussiere...');
+                                locationInput.focus(); // Fokus setzen
+                                locationInput.removeAttribute('disabled'); // Sicherstellen, dass es nicht disabled ist
+
+                                // Entferne alte Listener, um Doppelungen zu vermeiden
+                                locationInput.removeEventListener('change', handleLocationChange);
+                                locationInput.addEventListener('change', handleLocationChange);
+
+                                function handleLocationChange(e) {
                                     const location = e.target.value;
                                     console.log('Ort eingegeben:', location);
                                     fetch(`/weather/update?location=${location}`, {
@@ -135,25 +143,28 @@
                                             popover.hide();
                                         })
                                         .catch(error => console.error('Fehler bei Ortsänderung:', error));
+                                }
+
+                                // Zusätzlich Enter-Taste unterstützen
+                                locationInput.addEventListener('keypress', (e) => {
+                                    if (e.key === 'Enter') {
+                                        handleLocationChange(e);
+                                    }
                                 });
+                            } else {
+                                console.error('Input-Feld nicht gefunden!');
+                            }
+
+                            // Popover-Größe anpassen
+                            const popoverElement = document.querySelector('.popover');
+                            if (popoverElement) {
+                                popoverElement.style.maxWidth = '300px';
+                                popoverElement.style.width = '300px';
                             }
                         });
                     });
                     </script>
                     @endpush
-
-                    <style>
-                    /* CSS für größeres Popover */
-                    .popover {
-                        max-width: 250px; /* Breiteres Popover */
-                    }
-                    .popover-body {
-                        padding: 10px; /* Mehr Platz im Inneren */
-                    }
-                    #location-input {
-                        width: 200px !important; /* Feste Breite für das Input-Feld */
-                    }
-                    </style>
 
                     @php
                     // Inline PHP für Icon-Mapping (in Blade)

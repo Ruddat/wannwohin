@@ -78,8 +78,10 @@ Route::post('/track-dwell-time', [VisitorController::class, 'trackDwellTime'])->
     Route::get('/wetter', [WetterTestController::class, 'showWeather']);
 
 
-Route::middleware(['web', 'breadcrumbs', 'track-referral'])->group(function () {
+Route::middleware(['web', 'breadcrumbs', 'track-referral', 'weather'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
+
+    Route::post('/weather/update', [HeaderWeatherController::class, 'update'])->name('weather.update');
 
     Route::get('/urlaub/{urlaub_type}/month/{month_id}', [IndexController::class, 'searchResults'])
         ->name('search.results');

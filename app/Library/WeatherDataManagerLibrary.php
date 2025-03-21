@@ -231,7 +231,8 @@ public function fetchEightDayForecast($latitude, $longitude, $location_id)
         return null;
     }
 
-    $cacheKey = "weather_forecast_{$location_id}";
+    // Dynamischer Cache-Schlüssel mit Koordinaten
+    $cacheKey = "weather_forecast_{$location_id}_{$latitude}_{$longitude}";
 
     if (Cache::has($cacheKey)) {
         return Cache::get($cacheKey);
@@ -246,15 +247,12 @@ public function fetchEightDayForecast($latitude, $longitude, $location_id)
         'timezone' => 'Europe/Berlin'
     ]);
 
-//dd($response->json());
-
     if ($response->successful()) {
         $forecastData = $response->json();
         $current = $forecastData['current_weather'];
         $daily = $forecastData['daily'];
         $hourly = $forecastData['hourly'];
 
-        // Aktuelle Daten
         $currentData = [
             'date' => Carbon::now()->format('F d'),
             'weekday' => Carbon::now()->format('l'),
@@ -264,9 +262,9 @@ public function fetchEightDayForecast($latitude, $longitude, $location_id)
             'icon' => $this->getWeatherIcon($current['weathercode']),
             'wind_speed' => $current['windspeed'],
             'wind_direction' => $this->getWindDirection($current['winddirection']),
+            'weathercode' => $current['weathercode'], // Für den Controller
         ];
 
-        // 8-Tage-Vorhersage
         $eightDayForecast = [];
         foreach ($daily['time'] as $key => $date) {
             $weatherCode = $daily['weathercode'][$key];
@@ -282,10 +280,10 @@ public function fetchEightDayForecast($latitude, $longitude, $location_id)
                 'sunset' => Carbon::parse($daily['sunset'][$key])->format('h:i A'),
                 'real_feel' => $daily['apparent_temperature_max'][$key],
                 'wind_speed' => $daily['windspeed_10m_max'][$key],
+                'weathercode' => $weatherCode, // Für den Controller
             ];
-        }
+        };
 
-        // Zusätzliche aktuelle Details (Feuchtigkeit, Druck) aus hourly für den aktuellen Tag
         $currentHourIndex = Carbon::now()->hour;
         $currentData['humidity'] = $hourly['relativehumidity_2m'][$currentHourIndex] ?? null;
         $currentData['pressure'] = $hourly['pressure_msl'][$currentHourIndex] ?? null;

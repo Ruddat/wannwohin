@@ -58,6 +58,7 @@ class CountryManagerComponent extends Component
     public $headerPixabayImages = [];
     public $panoramaSearchKeyword;
     public $headerSearchKeyword;
+    public $perPage = 10;
 
 
     // Validierungsregeln
@@ -512,7 +513,7 @@ public function deleteImage($index)
         //\Log::info('Generierte SQL:', ['query' => $query->toSql()]);
 
         return view('livewire.backend.country-manager.country-manager-component', [
-            'countries' => $query->orderBy('title')->paginate(10),
+            'countries' => $query->orderBy('title')->paginate($this->perPage),
             'continents' => WwdeContinent::all(),
         ])->layout('raadmin.layout.master');
     }
