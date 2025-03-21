@@ -22,7 +22,7 @@ class LocationFilterManagerComponent extends Component
     public $formText;
     public $formCategory;
     public $formAddinfo;
-    public $formActiveStatus = true; // Standardwert bleibt true
+    public $formActiveStatus = true;
     public $isFormVisible = false;
     public $editingTextId = null;
 
@@ -40,11 +40,13 @@ class LocationFilterManagerComponent extends Component
             ->pluck('uschrift')
             ->toArray();
         $this->resetPage();
+        $this->isFormVisible = false; // Formular ausblenden
     }
 
     public function updatedSelectedUschrift()
     {
         $this->resetPage();
+        $this->isFormVisible = false; // Formular ausblenden
     }
 
     public function resetFilters()
@@ -87,7 +89,7 @@ class LocationFilterManagerComponent extends Component
             'text' => $this->formText,
             'category' => $this->formCategory,
             'addinfo' => $this->formAddinfo,
-            'is_active' => $this->formActiveStatus, // Mapping auf Datenbankfeld
+            'is_active' => $this->formActiveStatus,
         ]);
 
         $this->hideForm();
@@ -97,8 +99,6 @@ class LocationFilterManagerComponent extends Component
     public function editFilterText($id)
     {
         $text = ModLocationFilter::find($id);
-        //dd($text);
-
         if ($text) {
             $this->editingTextId = $id;
             $this->formTextType = $text->text_type;
@@ -106,11 +106,9 @@ class LocationFilterManagerComponent extends Component
             $this->formText = $text->text;
             $this->formCategory = $text->category;
             $this->formAddinfo = $text->addinfo;
-            $this->formActiveStatus = (bool) $text->is_active; // Explizite Typkonvertierung
+            $this->formActiveStatus = (bool) $text->is_active;
             $this->isFormVisible = true;
         }
-
-        //dd($this->formActiveStatus);
     }
 
     public function updateText()
@@ -132,7 +130,7 @@ class LocationFilterManagerComponent extends Component
                 'text' => $this->formText,
                 'category' => $this->formCategory,
                 'addinfo' => $this->formAddinfo,
-                'is_active' => $this->formActiveStatus, // Mapping auf Datenbankfeld
+                'is_active' => $this->formActiveStatus,
             ]);
             $this->hideForm();
             $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich aktualisiert.');
@@ -145,14 +143,19 @@ class LocationFilterManagerComponent extends Component
         if ($text) {
             $text->is_active = !$text->is_active;
             $text->save();
-            $this->dispatch('show-toast', type: 'status', message: 'Status von Text #' . $text->id . ' geändert.');
+            $this->dispatch('show-toast', type: 'success', message: 'Status von Text #' . $text->id . ' geändert.');
         }
+    }
+
+    public function confirmDelete($id)
+    {
+        $this->dispatch('confirm-delete', id: $id);
     }
 
     public function deleteText($id)
     {
         ModLocationFilter::find($id)?->delete();
-        $this->dispatch('show-toast', type: 'status', message: 'Text erfolgreich gelöscht.');
+        $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich gelöscht.');
     }
 
     private function resetFormFields()

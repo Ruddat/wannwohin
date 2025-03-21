@@ -243,7 +243,7 @@ class QuickSearchComponent extends Component
         $priceRange = WwdeRange::find($this->price);
 
         if ($priceRange) {
-            $rangeToShow = $priceRange->Range_to_show;
+            $rangeToShow = $priceRange->range_to_show;
 
             if (str_contains($rangeToShow, '-')) {
                 [$minPrice, $maxPrice] = array_map('intval', explode('-', str_replace(['€', ' '], '', $rangeToShow)));
@@ -297,7 +297,7 @@ class QuickSearchComponent extends Component
     {
         return view('livewire.frontend.quick-search.quick-search-component', [
             'continents' => WwdeContinent::select('id', 'title')->get(),
-            'ranges' => WwdeRange::where('Type', 'Flight')->orderBy('sort')->get(),
+            'ranges' => WwdeRange::where('type', 'flight')->orderBy('sort')->get(),
             'months' => config('custom.months'),
         ]);
     }

@@ -245,7 +245,7 @@
                   <div class="dropdown-menu-columns">
                     <div class="dropdown-menu-column">
                       <a class="dropdown-item {{ request()->routeIs('verwaltung.filters-table-manager.index') ? 'active' : '' }}"
-                         href="{{ route('verwaltung.filters-table-manager.index') }}">
+                         href="{{ route('verwaltung.filters-table-manager.index') }}"> 
                          Location Filters
                       </a>
                     </div>
@@ -395,7 +395,7 @@
                   </svg>
               </span>
               <span class="nav-link-title">
-                Weather 
+                Weather
               </span>
             </a>
             <div class="dropdown-menu {{ request()->is('verwaltung/weather*') ? 'show' : '' }}">

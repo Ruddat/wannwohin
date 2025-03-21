@@ -15,7 +15,7 @@ export default defineConfig({
         }),
     ],
     build: {
-        chunkSizeWarningLimit: 2000, // Erhöht das Limit auf 2000 kB
+        chunkSizeWarningLimit: 4000, // Erhöht das Limit auf 2000 kB
         rollupOptions: {
             output: {
                 // Separate Verzeichnisse für Frontend und Backend

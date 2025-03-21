@@ -4,7 +4,9 @@
     {{-- Button zum Hinzufügen --}}
     @if(!$isFormVisible)
         <div class="mb-4">
-            <button class="btn btn-success" wire:click="showForm">Neuen Text hinzufügen</button>
+            <button class="btn btn-success" wire:click="showForm">
+                <i class="bi bi-plus-lg me-1"></i> Neuen Text hinzufügen
+            </button>
         </div>
     @endif
 
@@ -48,11 +50,19 @@
                     </div>
                     <div class="col-12">
                         @if($editingTextId)
-                            <button class="btn btn-primary me-2" wire:click="updateText">Speichern</button>
-                            <button class="btn btn-secondary" wire:click="hideForm">Abbrechen</button>
+                            <button class="btn btn-primary me-2" wire:click="updateText">
+                                <i class="bi bi-save me-1"></i> Speichern
+                            </button>
+                            <button class="btn btn-secondary" wire:click="hideForm">
+                                <i class="bi bi-x-lg me-1"></i> Abbrechen
+                            </button>
                         @else
-                            <button class="btn btn-primary" wire:click="addText">Hinzufügen</button>
-                            <button class="btn btn-secondary" wire:click="hideForm">Abbrechen</button>
+                            <button class="btn btn-primary" wire:click="addText">
+                                <i class="bi bi-plus-lg me-1"></i> Hinzufügen
+                            </button>
+                            <button class="btn btn-secondary" wire:click="hideForm">
+                                <i class="bi bi-x-lg me-1"></i> Abbrechen
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -91,50 +101,53 @@
     </div>
 
     {{-- Ergebnisse mit Pagination --}}
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Kategorie</th>
-                    <th>Zusätzliche Kategorie</th>
-                    <th>Überschrift</th>
-                    <th>Text</th>
-                    <th>Zusatzinfo</th>
-                    <th>Aktiv</th>
-                    <th>Aktionen</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($texts as $text)
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
                     <tr>
-                        <td>{{ $text->text_type }}</td>
-                        <td>{{ $text->category ?? 'N/A' }}</td>
-                        <td>{{ $text->uschrift }}</td>
-                        <td>{{ $text->text }}</td>
-                        <td>{{ $text->addinfo ?? 'N/A' }}</td>
-                        <td>
-                            <span class="badge bg-{{ $text->is_active ? 'success' : 'secondary' }}" wire:click="toggleActive({{ $text->id }})" style="cursor: pointer;">
-                                {{ $text->is_active ? 'Ja' : 'Nein' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary btn-sm me-2" wire:click="editFilterText({{ $text->id }})">
-                                Bearbeiten
-                            </button>
-                            <button class="btn btn-danger btn-sm" wire:click="deleteText({{ $text->id }})">
-                                Löschen
-                            </button>
-                        </td>
+                        <th class="d-none d-md-table-cell">Kategorie</th>
+                        <th class="d-none d-md-table-cell">Zusätzliche Kategorie</th>
+                        <th>Überschrift</th>
+                        <th class="d-none d-lg-table-cell">Text</th>
+                        <th class="d-none d-lg-table-cell">Zusatzinfo</th>
+                        <th>Aktiv</th>
+                        <th>Aktionen</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center">Keine passenden Texte gefunden.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($texts as $text)
+                        <tr>
+                            <td class="d-none d-md-table-cell">{{ $text->text_type }}</td>
+                            <td class="d-none d-md-table-cell">{{ $text->category ?? 'N/A' }}</td>
+                            <td>{{ $text->uschrift }}</td>
+                            <td class="d-none d-lg-table-cell">{{ Str::limit($text->text, 50) }}</td>
+                            <td class="d-none d-lg-table-cell">{{ $text->addinfo ? Str::limit($text->addinfo, 50) : 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-{{ $text->is_active ? 'success' : 'secondary' }}" wire:click="toggleActive({{ $text->id }})" style="cursor: pointer;">
+                                    {{ $text->is_active ? 'Ja' : 'Nein' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm" wire:click="editFilterText({{ $text->id }})" title="Bearbeiten">
+                                        <i class="ti ti-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" wire:click="confirmDelete({{ $text->id }})" title="Löschen">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">Keine passenden Texte gefunden.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-
     {{-- Pagination --}}
     @if($texts->hasPages())
         <div class="mt-3">
@@ -146,17 +159,38 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
         <script>
-            document.addEventListener('livewire:initialized', () => {
+            document.addEventListener('livewire:init', () => {
                 console.log('Livewire initialized');
-            });
 
-            Livewire.on('show-toast', ({ type, message }) => {
-                Swal.fire({
-                    icon: type === 'success' ? 'success' : 'info',
-                    title: type === 'success' ? 'Erfolg' : 'Status',
-                    text: message,
-                    timer: 2000,
-                    showConfirmButton: false
+                Livewire.on('show-toast', ({ type, message }) => {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: type,
+                        title: message,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        background: type === 'success' ? '#d4edda' : '#f8d7da',
+                        color: '#000',
+                    });
+                });
+
+                Livewire.on('confirm-delete', ({ id }) => {
+                    Swal.fire({
+                        title: 'Sind Sie sicher?',
+                        text: 'Möchten Sie diesen Text wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ja, löschen!',
+                        cancelButtonText: 'Abbrechen'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Livewire.dispatch('deleteText', { id });
+                        }
+                    });
                 });
             });
         </script>

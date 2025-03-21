@@ -5,15 +5,20 @@ namespace App\Livewire\Backend\ParkListManager;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use App\Models\AmusementParks;
+use App\Services\GeocodeService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
+use Livewire\WithFileUploads;
 
 class ParkFormComponent extends Component
 {
+    use WithFileUploads;
+
     public $parkId;
-    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl, $logoUrl;
+    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl, $logoUrl, $embedCode;
+    public $logoFile;
     public $opening_hours = [
         'monday' => ['open' => '', 'close' => ''],
         'tuesday' => ['open' => '', 'close' => ''],
@@ -39,7 +44,9 @@ class ParkFormComponent extends Component
         'url' => 'nullable|url',
         'description' => 'nullable|string|max:500',
         'videoUrl' => 'nullable|url',
-        'logoUrl' => 'nullable|string', // Neue Regel für logoUrl
+        'embedCode' => 'nullable|string', // Neues Feld für Embed-Code
+        'logoUrl' => 'nullable|string',
+        'logoFile' => 'nullable|image|mimes:jpg,png,svg,webp|max:2048|dimensions:min_width=50,min_height=50',
         'defaultOpen' => 'nullable|date_format:H:i',
         'defaultClose' => 'nullable|date_format:H:i|after:defaultOpen',
         'opening_hours.monday.open' => 'nullable|date_format:H:i',
@@ -64,6 +71,7 @@ class ParkFormComponent extends Component
             $park = AmusementParks::find($id);
             if ($park) {
                 $this->fill([
+                    'parkId' => $park->id,
                     'name' => $park->name,
                     'country' => $park->country,
                     'location' => $park->location,
@@ -74,11 +82,10 @@ class ParkFormComponent extends Component
                     'url' => $park->url,
                     'description' => $park->description,
                     'videoUrl' => $park->video_url,
-                    'logoUrl' => $park->logo_url, // Neue Spalte laden
+                    'embedCode' => $park->embed_code, // Neues Feld laden
+                    'logoUrl' => $park->logo_url,
                 ]);
-                $this->parkId = $park->id;
-                $this->hasVideo = !empty($park->video_url);
-
+                $this->hasVideo = !empty($park->video_url) || !empty($park->embed_code);
                 if ($park->opening_hours && $park->opening_hours !== 'null') {
                     $decoded = json_decode($park->opening_hours, true);
                     if (is_array($decoded)) {
@@ -112,6 +119,61 @@ class ParkFormComponent extends Component
         }
     }
 
+    public function updatedLogoFile()
+    {
+        try {
+            $this->validateOnly('logoFile');
+            $parkName = $this->name ?: 'unnamed_park';
+            $fileName = 'logo_' . Str::slug($parkName) . '_' . time() . '.' . $this->logoFile->extension();
+            $directory = public_path('img/parklogos');
+            File::ensureDirectoryExists($directory);
+            $this->logoFile->storeAs('', $fileName, 'public_parklogos');
+            $this->logoUrl = '/img/parklogos/' . $fileName;
+            $this->dispatch('show-toast', type: 'success', message: 'Logo erfolgreich hochgeladen.');
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Hochladen des Logos:', ['error' => $e->getMessage()]);
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Hochladen des Logos: ' . $e->getMessage());
+        }
+    }
+
+    public function updateCoordinates()
+    {
+        if (!$this->name) {
+            $this->dispatch('show-toast', type: 'error', message: 'Parkname fehlt.');
+            return;
+        }
+
+        try {
+            $geocodeService = app(\App\Services\GeocodeService::class);
+            $results = $geocodeService->searchByParkName($this->name);
+
+            if (empty($results) || !isset($results[0]['lat']) || !isset($results[0]['lon'])) {
+                throw new \Exception('Keine Koordinaten für "' . $this->name . '" gefunden.');
+            }
+
+            $result = $results[0];
+            $this->latitude = (float) $result['lat'];
+            $this->longitude = (float) $result['lon'];
+
+            $address = $result['address'] ?? [];
+            $this->country = $address['country'] ?? $this->country;
+            $this->location = $address['town'] ?? $address['city'] ?? $address['village'] ?? $this->location;
+
+            $park = $this->parkId ? AmusementParks::find($this->parkId) : null;
+            if ($park) {
+                $park->latitude = $this->latitude;
+                $park->longitude = $this->longitude;
+                $park->country = $this->country;
+                $park->location = $this->location;
+                $park->save();
+            }
+
+            $this->dispatch('show-toast', type: 'success', message: 'Koordinaten und Adressdaten wurden erfolgreich aktualisiert.');
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', type: 'error', message: 'Fehler: ' . $e->getMessage());
+        }
+    }
+
     public function save()
     {
         $this->validate();
@@ -128,7 +190,7 @@ class ParkFormComponent extends Component
 
         $hasOpeningHours = false;
         foreach ($openingHours as $day) {
-            if (isset($day['open']) && !empty($day['open']) || isset($day['close']) && !empty($day['close'])) {
+            if (!empty($day['open']) || !empty($day['close'])) {
                 $hasOpeningHours = true;
                 break;
             }
@@ -145,7 +207,8 @@ class ParkFormComponent extends Component
             'url' => $this->url,
             'description' => $this->description,
             'video_url' => $this->videoUrl,
-            'logo_url' => $this->logoUrl, // Neue Spalte speichern
+            'embed_code' => $this->embedCode, // Neues Feld speichern
+            'logo_url' => $this->logoUrl,
             'opening_hours' => $hasOpeningHours ? json_encode($openingHours) : null,
             'external_id' => $externalId,
         ];
@@ -173,110 +236,97 @@ class ParkFormComponent extends Component
             $html = $response->body();
             $crawler = new Crawler($html);
 
-            // Name aus <title>
             $this->name = $crawler->filter('title')->count() ? trim(explode(' I ', $crawler->filter('title')->text())[0]) : 'Unbekannt';
-            Log::info('Gescrapter Name:', ['name' => $this->name]);
-
-            // Description aus <meta>
             $this->description = $crawler->filter('meta[name="description"]')->count() ? $crawler->filter('meta[name="description"]')->attr('content') : '';
-            Log::info('Gescrapte Beschreibung:', ['description' => $this->description]);
-
-            // Location
             $this->location = $crawler->filter('.address')->count() ? $crawler->filter('.address')->text() : '';
-            Log::info('Gescrapter Standort:', ['location' => $this->location]);
-
-            // Land
             $this->country = $crawler->filter('html')->count() ? strtoupper($crawler->filter('html')->attr('lang')) : 'DE';
-            Log::info('Gescraptes Land:', ['country' => $this->country]);
 
-            // Öffnungszeiten
             $hours = $crawler->filter('.opening-hours')->count() ? $crawler->filter('.opening-hours')->text() : '';
-            Log::info('Gescrapte Öffnungszeiten:', ['hours' => $hours]);
             if ($hours) {
                 $this->defaultOpen = '09:00';
                 $this->defaultClose = '18:00';
                 $this->applyToAll = true;
             }
 
-            // Video
             $this->hasVideo = false;
             $this->videoUrl = null;
+            $this->embedCode = null;
+
             $videoElement = $crawler->filter('video[src]');
             if ($videoElement->count() > 0) {
                 $this->hasVideo = true;
                 $this->videoUrl = $videoElement->attr('src');
                 $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
-            } else {
+                Log::info('Video gefunden in <video src>:', ['videoUrl' => $this->videoUrl]);
+            }
+
+            if (!$this->hasVideo) {
                 $sourceElement = $crawler->filter('video source[src]');
                 if ($sourceElement->count() > 0) {
                     $this->hasVideo = true;
                     $this->videoUrl = $sourceElement->attr('src');
                     $this->videoUrl = filter_var($this->videoUrl, FILTER_VALIDATE_URL) ? $this->videoUrl : rtrim($this->url, '/') . '/' . ltrim($this->videoUrl, '/');
-                } else {
-                    $iframeElement = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]');
-                    if ($iframeElement->count() > 0) {
-                        $this->hasVideo = true;
-                        $this->videoUrl = $iframeElement->attr('src');
-                    }
+                    Log::info('Video gefunden in <source src>:', ['videoUrl' => $this->videoUrl]);
                 }
             }
-            Log::info('Video-Details:', ['hasVideo' => $this->hasVideo, 'videoUrl' => $this->videoUrl]);
 
-            // Logo scrapen
-            $logoUrl = null;
-            $logoElement = $crawler->filter('.cf-header__logo img, .cf-header__logo--small img, img.logo, img[alt*="logo"], header img');
-
-            if ($logoElement->count() > 0) {
-                try {
-                    // Versuche, das erste passende Bild zu nehmen
-                    $logoUrl = $logoElement->first()->attr('src');
-
-                    // Prüfe, ob es ein <source>-Tag mit srcset gibt (für responsive Bilder)
-                    $sourceElement = $crawler->filter('.cf-header__logo picture source')->first();
-                    if ($sourceElement->count() > 0 && $sourceElement->attr('srcset')) {
-                        $logoUrl = $sourceElement->attr('srcset');
-                        // Wenn mehrere srcset-Werte vorhanden sind, nimm den ersten
-                        $srcsetParts = explode(',', $logoUrl);
-                        $logoUrl = trim($srcsetParts[0]);
-                    }
-
-                    // Stelle sicher, dass die URL vollständig ist
-                    $logoUrl = filter_var($logoUrl, FILTER_VALIDATE_URL) ? $logoUrl : rtrim($this->url, '/') . '/' . ltrim($logoUrl, '/');
-                    Log::info('Gescraptes Logo:', ['logoUrl' => $logoUrl]);
-
-                    // Lade das Bild herunter
-                    $response = Http::timeout(10)->get($logoUrl);
-                    if ($response->successful() && $response->header('Content-Type') && str_contains($response->header('Content-Type'), 'image')) {
-                        $logoContent = $response->body();
-                        $extension = pathinfo($logoUrl, PATHINFO_EXTENSION) ?: 'jpg';
-                        $fileName = 'logo_' . Str::slug($this->name) . '_' . time() . '.' . $extension;
-
-                        $directory = public_path('img/parklogos');
-                        File::ensureDirectoryExists($directory);
-
-                        $filePath = $directory . '/' . $fileName;
-                        file_put_contents($filePath, $logoContent);
-
-                        if (file_exists($filePath) && filesize($filePath) > 0) {
-                            $this->logoUrl = '/img/parklogos/' . $fileName;
-                            Log::info('Logo erfolgreich gespeichert:', ['path' => $this->logoUrl]);
-                        } else {
-                            throw new \Exception('Logo konnte nicht korrekt gespeichert werden.');
-                        }
-                    } else {
-                        throw new \Exception('Kein gültiges Bild von URL erhalten: ' . $logoUrl);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Fehler beim Scrapen oder Speichern des Logos:', [
-                        'url' => $logoUrl,
-                        'error' => $e->getMessage(),
-                    ]);
-                    $this->logoUrl = null;
-                    $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Logo-Scraping: ' . $e->getMessage());
+            if (!$this->hasVideo) {
+                $iframeElement = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]');
+                if ($iframeElement->count() > 0) {
+                    $this->hasVideo = true;
+                    // Ganzen Iframe-Code speichern
+                    $this->embedCode = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]')->outerHtml();
+                    $this->videoUrl = $iframeElement->attr('src'); // Fallback
+                    Log::info('Video gefunden in <iframe>:', ['embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
                 }
+            }
+
+            if (!$this->hasVideo) {
+                $links = $crawler->filter('a[href*="youtube.com/watch"], a[href*="vimeo.com/"]');
+                if ($links->count() > 0) {
+                    $this->hasVideo = true;
+                    $this->videoUrl = $links->first()->attr('href');
+                    if (str_contains($this->videoUrl, 'youtube.com/watch')) {
+                        $this->videoUrl = str_replace('watch?v=', 'embed/', $this->videoUrl);
+                        // Simulierten Embed-Code erstellen
+                        $this->embedCode = '<iframe width="560" height="315" src="' . $this->videoUrl . '" frameborder="0" allowfullscreen></iframe>';
+                    }
+                    Log::info('Video gefunden in <a href>:', ['embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
+                }
+            }
+
+            if (!$this->hasVideo) {
+                $bodyText = $crawler->filter('body')->text();
+                if (preg_match('/(https?:\/\/(?:www\.)?(youtube\.com\/watch\?v=|vimeo\.com\/)[^\s]+)/', $bodyText, $match)) {
+                    $this->hasVideo = true;
+                    $this->videoUrl = $match[0];
+                    if (str_contains($this->videoUrl, 'youtube.com/watch')) {
+                        $this->videoUrl = str_replace('watch?v=', 'embed/', $this->videoUrl);
+                        $this->embedCode = '<iframe width="560" height="315" src="' . $this->videoUrl . '" frameborder="0" allowfullscreen></iframe>';
+                    }
+                    Log::info('Video gefunden im Text:', ['embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
+                }
+            }
+
+            if (!$this->hasVideo) {
+                Log::info('Kein Video gefunden auf der Seite:', ['url' => $this->url]);
             } else {
-                Log::info('Kein Logo gefunden mit den aktuellen Selektoren.');
-                $this->dispatch('show-toast', type: 'warning', message: 'Kein Logo auf der Seite gefunden.');
+                Log::info('Video-Details:', ['hasVideo' => $this->hasVideo, 'embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
+            }
+
+            $logoElement = $crawler->filter('.cf-header__logo img, .cf-header__logo--small img, img.logo, img[alt*="logo"], header img');
+            if ($logoElement->count() > 0) {
+                $logoUrl = $logoElement->first()->attr('src');
+                $logoUrl = filter_var($logoUrl, FILTER_VALIDATE_URL) ? $logoUrl : rtrim($this->url, '/') . '/' . ltrim($logoUrl, '/');
+                $response = Http::timeout(10)->get($logoUrl);
+                if ($response->successful() && str_contains($response->header('Content-Type'), 'image')) {
+                    $extension = pathinfo($logoUrl, PATHINFO_EXTENSION) ?: 'jpg';
+                    $fileName = 'logo_' . Str::slug($this->name) . '_' . time() . '.' . $extension;
+                    $filePath = public_path('img/parklogos') . '/' . $fileName;
+                    File::ensureDirectoryExists(public_path('img/parklogos'));
+                    file_put_contents($filePath, $response->body());
+                    $this->logoUrl = '/img/parklogos/' . $fileName;
+                }
             }
 
             $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich gescraped!');

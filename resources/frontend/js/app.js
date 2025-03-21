@@ -1,18 +1,20 @@
-import 'bootstrap';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap CSS
+import * as bootstrap from 'bootstrap'; // Bootstrap JS vollständig importieren
 import { jarallax } from 'jarallax';
 import 'animate.css';
 import AOS from 'aos';
 import Swal from 'sweetalert2';
 import GLightbox from 'glightbox';
-import 'glightbox/dist/css/glightbox.min.css'; // Import the CSS
+import 'glightbox/dist/css/glightbox.min.css';
 
-console.log('Bootstrap JS geladen'); // Prüfe, ob das Skript lädt
+// Bootstrap global verfügbar machen (für Blade-Template)
+window.bootstrap = bootstrap;
 
+console.log('Bootstrap JS geladen');
 
 document.addEventListener('DOMContentLoaded', () => {
     const lightbox = GLightbox({
-        selector: '.glightbox', // Matches your <a class="glightbox"> elements
+        selector: '.glightbox',
         loop: true,
         touchNavigation: true,
         zoomable: true,
@@ -23,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
 AOS.init({
     duration: 1000,
     once: true,
@@ -31,7 +32,9 @@ AOS.init({
 
 document.addEventListener('DOMContentLoaded', () => {
     jarallax(document.querySelectorAll('[data-jarallax]'), {
-        speed: 0.5
+        speed: 0.6,
+        imgSize: 'cover',
+        imgPosition: 'center center'
     });
     console.log('Jarallax erfolgreich initialisiert');
 });
@@ -40,12 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorElement = document.querySelector('#editor');
     if (editorElement) {
         ClassicEditor.create(editorElement)
-            .then(editor => {
-                console.log('CKEditor initialized:', editor);
-            })
-            .catch(error => {
-                console.error('CKEditor error:', error);
-            });
+            .then(editor => console.log('CKEditor initialized:', editor))
+            .catch(error => console.error('CKEditor error:', error));
     }
 });
 
@@ -79,3 +78,18 @@ setInterval(() => {
     sendDwellTime();
     startTime = Date.now();
 }, 10000);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Bootstrap Tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(tooltipTriggerEl => {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Jarallax erneut initialisieren (falls nötig)
+    jarallax(document.querySelectorAll('[data-jarallax]'), {
+        speed: 0.6,
+        imgSize: 'cover',
+        imgPosition: 'center center'
+    });
+});

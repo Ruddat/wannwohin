@@ -209,7 +209,7 @@ public function render()
             'locations' => $locations,
             'sortField' => $this->sortField,
             'sortDirection' => $this->sortDirection,
-        ])->layout('backend.layouts.livewiere-main');
+        ])->layout('raadmin.layout.master');
     }
 }
 

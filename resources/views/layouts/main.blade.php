@@ -150,7 +150,6 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="session-id" content="{{ Session::getId() }}">
-    @vite(['resources/frontend/css/app.css', 'resources/frontend/js/app.js'])
 
     <!-- Demo CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/demo-resume.css') }}">
@@ -181,6 +180,9 @@
 
     <!-- Cookies Consent CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/cookie-consent.css') }}">
+
+    @vite(['resources/frontend/css/app.css'])
+
     @yield('css')
     @stack('css')
     <!-- Head Libs -->
@@ -410,7 +412,7 @@
 <!-- Cookies Consent added from hani.masoud@gmx.de -->
 <script src={{ asset('assets/js/cookie-consent.js') }}></script>
 
-
+    @vite(['resources/frontend/js/app.js'])
 
 {{--
 

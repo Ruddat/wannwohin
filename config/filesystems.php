@@ -57,6 +57,14 @@ return [
             'throw' => false,
         ],
 
+
+        'public_parklogos' => [
+            'driver' => 'local',
+            'root' => public_path('img/parklogos'),
+            'url' => env('APP_URL').'/img/parklogos',
+            'visibility' => 'public',
+        ],
+
         'backups' => [
         'driver' => 'local',
         'root' => storage_path('app/backups'), // Speicherort für Backups

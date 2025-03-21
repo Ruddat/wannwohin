@@ -35,6 +35,7 @@
                     <li><a href="{{ route('verwaltung.site-manager.header_contents.index') }}">Header Text & Pic</a></li>
                     <li><a href="{{ route('verwaltung.site-manager.park-manager.index') }}">Freizeitparks</a></li>
                     <li><a href="{{ route('verwaltung.site-manager.quick-filter') }}">QuickFilter Home</a></li>
+                    <li><a href="{{ route('verwaltung.filters-table-manager.index') }}">Location Filters</a></li>
                     <li><a href="{{ route('verwaltung.site-manager.continent-manager.index') }}">Continents</a></li>
                     <li><a href="{{ route('verwaltung.site-manager.country-manager.index') }}">Countries</a></li>
                     <li><a href="{{ route('verwaltung.site-manager.location-table-manager.index') }}">City Manager</a></li>

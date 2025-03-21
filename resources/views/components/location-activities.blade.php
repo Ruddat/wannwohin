@@ -24,7 +24,7 @@
             </div>
         </div>
     @endif
-    @if ($location->list_sports)
+    @if ($location->list_sports12)
         <div class="col-4 border-right">
             <div class="d-flex align-items-center justify-content-start">
                 <div class="col-4">
