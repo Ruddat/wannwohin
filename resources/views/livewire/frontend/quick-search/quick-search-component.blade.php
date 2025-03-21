@@ -37,7 +37,7 @@
                 <select wire:model.change="price" class="form-select">
                     <option value="">Beliebig</option>
                     @foreach ($ranges as $range)
-                        <option value="{{ $range->id }}">{{ $range->Range_to_show }}</option>
+                        <option value="{{ $range->id }}">{{ $range->range_to_show }}</option>
                     @endforeach
                 </select>
             </div>

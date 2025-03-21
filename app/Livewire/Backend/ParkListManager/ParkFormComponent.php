@@ -39,6 +39,7 @@ class ParkFormComponent extends Component
         'url' => 'nullable|url',
         'description' => 'nullable|string|max:500',
         'videoUrl' => 'nullable|url',
+        'logoUrl' => 'nullable|string', // Neue Regel für logoUrl
         'defaultOpen' => 'nullable|date_format:H:i',
         'defaultClose' => 'nullable|date_format:H:i|after:defaultOpen',
         'opening_hours.monday.open' => 'nullable|date_format:H:i',
@@ -73,6 +74,7 @@ class ParkFormComponent extends Component
                     'url' => $park->url,
                     'description' => $park->description,
                     'videoUrl' => $park->video_url,
+                    'logoUrl' => $park->logo_url, // Neue Spalte laden
                 ]);
                 $this->parkId = $park->id;
                 $this->hasVideo = !empty($park->video_url);
@@ -143,6 +145,7 @@ class ParkFormComponent extends Component
             'url' => $this->url,
             'description' => $this->description,
             'video_url' => $this->videoUrl,
+            'logo_url' => $this->logoUrl, // Neue Spalte speichern
             'opening_hours' => $hasOpeningHours ? json_encode($openingHours) : null,
             'external_id' => $externalId,
         ];
@@ -221,27 +224,41 @@ class ParkFormComponent extends Component
 
             // Logo scrapen
             $logoUrl = null;
-            $logoElement = $crawler->filter('img.logo, img[alt*="logo"], header img');
+            $logoElement = $crawler->filter('.cf-header__logo img, .cf-header__logo--small img, img.logo, img[alt*="logo"], header img');
+
             if ($logoElement->count() > 0) {
                 try {
+                    // Versuche, das erste passende Bild zu nehmen
                     $logoUrl = $logoElement->first()->attr('src');
+
+                    // Prüfe, ob es ein <source>-Tag mit srcset gibt (für responsive Bilder)
+                    $sourceElement = $crawler->filter('.cf-header__logo picture source')->first();
+                    if ($sourceElement->count() > 0 && $sourceElement->attr('srcset')) {
+                        $logoUrl = $sourceElement->attr('srcset');
+                        // Wenn mehrere srcset-Werte vorhanden sind, nimm den ersten
+                        $srcsetParts = explode(',', $logoUrl);
+                        $logoUrl = trim($srcsetParts[0]);
+                    }
+
+                    // Stelle sicher, dass die URL vollständig ist
                     $logoUrl = filter_var($logoUrl, FILTER_VALIDATE_URL) ? $logoUrl : rtrim($this->url, '/') . '/' . ltrim($logoUrl, '/');
                     Log::info('Gescraptes Logo:', ['logoUrl' => $logoUrl]);
 
+                    // Lade das Bild herunter
                     $response = Http::timeout(10)->get($logoUrl);
                     if ($response->successful() && $response->header('Content-Type') && str_contains($response->header('Content-Type'), 'image')) {
                         $logoContent = $response->body();
                         $extension = pathinfo($logoUrl, PATHINFO_EXTENSION) ?: 'jpg';
                         $fileName = 'logo_' . Str::slug($this->name) . '_' . time() . '.' . $extension;
 
-                        $directory = public_path('logos');
+                        $directory = public_path('img/parklogos');
                         File::ensureDirectoryExists($directory);
 
                         $filePath = $directory . '/' . $fileName;
                         file_put_contents($filePath, $logoContent);
 
                         if (file_exists($filePath) && filesize($filePath) > 0) {
-                            $this->logoUrl = '/logos/' . $fileName;
+                            $this->logoUrl = '/img/parklogos/' . $fileName;
                             Log::info('Logo erfolgreich gespeichert:', ['path' => $this->logoUrl]);
                         } else {
                             throw new \Exception('Logo konnte nicht korrekt gespeichert werden.');
@@ -257,6 +274,9 @@ class ParkFormComponent extends Component
                     $this->logoUrl = null;
                     $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Logo-Scraping: ' . $e->getMessage());
                 }
+            } else {
+                Log::info('Kein Logo gefunden mit den aktuellen Selektoren.');
+                $this->dispatch('show-toast', type: 'warning', message: 'Kein Logo auf der Seite gefunden.');
             }
 
             $this->dispatch('show-toast', type: 'success', message: 'Daten erfolgreich gescraped!');
@@ -266,21 +286,9 @@ class ParkFormComponent extends Component
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     public function render()
     {
         return view('livewire.backend.park-list-manager.park-form-component')
-        ->layout('raadmin.layout.master');
+            ->layout('raadmin.layout.master');
     }
 }

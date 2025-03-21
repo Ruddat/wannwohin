@@ -57,6 +57,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th>Logo</th> <!-- Neue Spalte für das Logo -->
                         <th>Name</th>
                         <th>Land</th>
                         <th>Latitude</th>
@@ -71,6 +72,13 @@
                     @forelse ($parks as $index => $park)
                         <tr>
                             <td>{{ $parks instanceof \Illuminate\Pagination\LengthAwarePaginator ? $parks->firstItem() + $index : $index + 1 }}</td>
+                            <td>
+                                @if($park->logo_url)
+                                    <img src="{{ asset($park->logo_url) }}" alt="{{ $park->name }} Logo" style="max-width: 50px; max-height: 50px;" class="img-fluid">
+                                @else
+                                    <span class="text-secondary">–</span>
+                                @endif
+                            </td> <!-- Logo-Anzeige -->
                             <td>{{ $park->name }}</td>
                             <td>{{ $park->country }}</td>
                             <td>{{ $park->latitude }}</td>
@@ -104,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center text-secondary">Keine Einträge gefunden</td>
+                            <td colspan="10" class="text-center text-secondary">Keine Einträge gefunden</td> <!-- colspan angepasst auf 10 -->
                         </tr>
                     @endforelse
                 </tbody>
@@ -156,9 +164,6 @@
                 </div>
             </div>
         </div>
-
-
-
     </div>
 </div>
 
