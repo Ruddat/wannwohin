@@ -9,6 +9,7 @@ use App\Models\WwdeContinent;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ContinentManagerComponent extends Component
 {
@@ -21,9 +22,10 @@ class ContinentManagerComponent extends Component
     public $search = '';
     public $editMode = false;
 
-    public $searchKeyword = ''; // Neues Attribut für das Keyword
-    public $pixabayImages = []; // Zum Speichern der geladenen Bilder
+    public $searchKeyword = '';
+    public $pixabayImages = [];
     protected $listeners = ['confirmDelete'];
+    public $perPage = 10;
 
     protected $rules = [
         'title' => 'required|string|max:120',
@@ -42,7 +44,6 @@ class ContinentManagerComponent extends Component
         'custom_images' => 'boolean',
         'status' => 'required|in:active,pending,inactive',
     ];
-
 
     public function mount()
     {
@@ -68,30 +69,27 @@ class ContinentManagerComponent extends Component
         $continent = WwdeContinent::findOrFail($id);
         $this->fill($continent->toArray());
         $this->continentId = $continent->id;
-        $this->countinent_text = $continent->continent_text; // Wert an den Editor übergeben
-        $this->countinent_header_text = $continent->continent_header_text; // Wert an den Editor übergeben
+        $this->continent_text = $continent->continent_text;
+        $this->continent_header_text = $continent->continent_header_text;
         $this->editMode = true;
     }
 
     public function save()
     {
-      //  $this->validate();
-
-//dd('hierarchical');
-
-        // Daten vorbereiten
         $data = $this->prepareData();
 
-       // dd($data);
-
         if ($this->editMode) {
-            // Update bestehender Kontinent
             $continent = WwdeContinent::findOrFail($this->continentId);
             $continent->update($data);
+
+            // Cache löschen bei Update
+            $this->clearContinentCache($continent);
         } else {
-            // Neuer Kontinent
             $continent = WwdeContinent::create($data);
-            $this->continentId = $continent->id; // ID für spätere Bearbeitung speichern
+            $this->continentId = $continent->id;
+
+            // Cache löschen bei Neuerstellung
+            $this->clearContinentCache($continent);
         }
 
         $this->resetInputFields();
@@ -106,13 +104,13 @@ class ContinentManagerComponent extends Component
             $this->dispatch('error', 'This continent cannot be deleted because it has associated countries.');
             return;
         }
-//dd('hierarchical');
-        // Show confirmation dialog
+
         $this->dispatch('confirmDelete', [
             'id' => $id,
             'message' => 'Are you sure you want to delete this continent?',
         ]);
     }
+
     #[On('confirmDelete')]
     public function confirmDelete($id)
     {
@@ -126,10 +124,12 @@ class ContinentManagerComponent extends Component
         }
 
         $continent->delete();
+
+        // Cache löschen bei Löschung
+        $this->clearContinentCache($continent);
+
         $this->dispatch('success', 'Continent deleted successfully.');
     }
-
-
 
     public function uploadImages()
     {
@@ -151,7 +151,6 @@ class ContinentManagerComponent extends Component
 
     public function fetchImagesFromPixabay()
     {
-        // Standard-Keyword verwenden, wenn keines eingegeben wurde
         $keyword = $this->searchKeyword ?: $this->title;
 
         $response = Http::get("https://pixabay.com/api/", [
@@ -160,7 +159,7 @@ class ContinentManagerComponent extends Component
             'image_type' => 'photo',
             'orientation' => 'horizontal',
             'category' => 'nature',
-            'per_page' => 10, // Mehr Bilder für Auswahl
+            'per_page' => 10,
         ]);
 
         if ($response->ok() && isset($response['hits'])) {
@@ -169,7 +168,7 @@ class ContinentManagerComponent extends Component
                     'previewURL' => $image['previewURL'],
                     'largeImageURL' => $image['largeImageURL'],
                 ];
-            })->take(10); // Nur 10 Bilder anzeigen
+            })->take(10);
         } else {
             $this->dispatch('error', 'No images found on Pixabay.');
         }
@@ -177,8 +176,6 @@ class ContinentManagerComponent extends Component
 
     public function selectPixabayImage($index)
     {
-
-        //dd('hierarchical');
         if (isset($this->pixabayImages[$index])) {
             $imageData = $this->pixabayImages[$index];
             $path = "uploads/images/continents/" . uniqid() . ".jpg";
@@ -205,37 +202,33 @@ class ContinentManagerComponent extends Component
             default => 'active',
         };
         $continent->update(['status' => $newStatus]);
+
+        // Cache löschen bei Statusänderung
+        $this->clearContinentCache($continent);
+
         $this->loadContinents();
         $this->dispatch('success', 'Status updated successfully.');
         session()->flash('status', 'Status updated successfully. Status: ' . $newStatus);
-
     }
-
 
     public function prepareData()
     {
-       // $data = $this->validate();
-
-    // Validierung sicherstellen
-    $data = $this->validate([
-        'title' => 'required|string|max:120',
-        'alias' => 'required|string|max:120',
-        'iso2' => 'nullable|string|size:2',
-        'iso3' => 'nullable|string|size:3',
-        'area_km' => 'nullable|integer',
-        'population' => 'nullable|integer',
-        'no_countries' => 'nullable|integer',
-        'no_climate_tables' => 'nullable|integer',
-        'continent_header_text' => 'nullable|string',
-        'continent_text' => 'nullable|string',
-        'custom_images' => 'boolean',
-        'status' => 'required|in:active,pending,inactive',
-    ]);
-
-
+        $data = $this->validate([
+            'title' => 'required|string|max:120',
+            'alias' => 'required|string|max:120',
+            'iso2' => 'nullable|string|size:2',
+            'iso3' => 'nullable|string|size:3',
+            'area_km' => 'nullable|integer',
+            'population' => 'nullable|integer',
+            'no_countries' => 'nullable|integer',
+            'no_climate_tables' => 'nullable|integer',
+            'continent_header_text' => 'nullable|string',
+            'continent_text' => 'nullable|string',
+            'custom_images' => 'boolean',
+            'status' => 'required|in:active,pending,inactive',
+        ]);
 
         if ($this->custom_images) {
-            // Verarbeite hochgeladene Bilder
             for ($i = 1; $i <= 3; $i++) {
                 $imageField = "image{$i}_path";
                 if ($this->$imageField instanceof \Livewire\TemporaryUploadedFile) {
@@ -243,7 +236,6 @@ class ContinentManagerComponent extends Component
                 }
             }
         } else {
-            // Verarbeite Pixabay-Bilder
             if (empty($this->image1_path) || empty($this->image2_path) || empty($this->image3_path)) {
                 $this->fetchImagesFromPixabay();
             }
@@ -255,7 +247,6 @@ class ContinentManagerComponent extends Component
 
         return $data;
     }
-
 
     public function deleteImage($index)
     {
@@ -270,6 +261,9 @@ class ContinentManagerComponent extends Component
         if ($this->editMode) {
             $continent = WwdeContinent::findOrFail($this->continentId);
             $continent->update([$imageField => null]);
+
+            // Cache löschen bei Bildentfernung
+            $this->clearContinentCache($continent);
         }
     }
 
@@ -285,14 +279,25 @@ class ContinentManagerComponent extends Component
         $this->editMode = false;
     }
 
+    // Neue Methode zum Löschen des Caches
+    private function clearContinentCache($continent)
+    {
+        if ($continent) {
+            Cache::forget("continent_{$continent->id}");
+            Cache::forget("continent_alias_{$continent->alias}");
+            Cache::forget("continent_images_{$continent->id}");
+            Cache::forget("continents_list"); // Falls eine allgemeine Liste zwischengespeichert wird
+        }
+    }
+
     public function render()
     {
         $continents = WwdeContinent::where('title', 'like', "%{$this->search}%")
             ->orWhere('alias', 'like', "%{$this->search}%")
             ->orderBy('title')
-            ->paginate(10);
+            ->paginate($this->perPage);
 
         return view('livewire.backend.continent-manager.continent-manager-component', compact('continents'))
-        ->layout('raadmin.layout.master');
+            ->layout('raadmin.layout.master');
     }
 }

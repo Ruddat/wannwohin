@@ -9,6 +9,7 @@ use App\Livewire\Backend\SeoMetaComponent\VisitorStats;
 use App\Livewire\Backend\ParkListManager\ParkFormComponent;
 use App\Livewire\Backend\ParkListManager\ParkListComponent;
 use App\Livewire\Backend\WeatherManager\ClimateDataManager;
+use App\Livewire\Backend\RangeManager\RangeManagerComponent;
 use App\Http\Controllers\Backend\Location\LocationController;
 use App\Livewire\Backend\LocationFilters\LocationFilterTable;
 use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
@@ -108,6 +109,11 @@ Route::prefix('location-table-manager')->name('location-table-manager.')->group(
  //   Route::get('/{locationId}/edit', LocationManagerComponent::class)->name('edit');
 });
 
+
+// Range Manager
+Route::prefix('range-manager')->name('range-manager.')->group(function () {
+    Route::get('/', RangeManagerComponent::class)->name('ranges');
+});
 
 
     });

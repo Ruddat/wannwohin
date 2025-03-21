@@ -19,6 +19,7 @@ class GalleryManagerComponent extends Component
     public $imageHash;
     public $imageType = 'gallery';
     public $isPrimary = 0;
+    public $perPage = 10;
 
     public $editingId = null;
 
@@ -37,7 +38,7 @@ class GalleryManagerComponent extends Component
     public function render()
     {
         return view('livewire.backend.gallery-manager.gallery-manager-component', [
-            'galleries' => ModLocationGalerie::paginate(10),
+            'galleries' => ModLocationGalerie::paginate($this->perPage),
         ])->layout('raadmin.layout.master');
     }
 

@@ -170,15 +170,52 @@
                     // Inline PHP für Icon-Mapping (in Blade)
                     function mapWeatherCodeToIcon($weatherCode) {
                         $iconMap = [
-                            0 => 'ph-sun',
-                            1 => 'ph-cloud-sun',
-                            2 => 'ph-cloud',
-                            3 => 'ph-cloud',
-                            61 => 'ph-cloud-rain',
-                            63 => 'ph-cloud-rain',
-                            65 => 'ph-cloud-rain',
-                            95 => 'ph-cloud-lightning',
-                        ];
+            // Klar und sonnig
+            0 => 'ph-sun',               // Klarer Himmel
+            1 => 'ph-cloud-sun',         // Meist sonnig
+
+            // Bewölkt
+            2 => 'ph-cloud',             // Teilweise bewölkt
+            3 => 'ph-cloud',             // Bewölkt
+
+            // Nebel
+            45 => 'ph-cloud-fog',        // Nebel
+            48 => 'ph-cloud-fog',        // Gefrierender Nebel
+
+            // Nieselregen
+            51 => 'ph-cloud-rain',       // Leichter Nieselregen
+            53 => 'ph-cloud-rain',       // Mäßiger Nieselregen
+            55 => 'ph-cloud-rain',       // Starker Nieselregen
+            56 => 'ph-cloud-snow',       // Leichter gefrierender Nieselregen
+            57 => 'ph-cloud-snow',       // Starker gefrierender Nieselregen
+
+            // Regen
+            61 => 'ph-cloud-rain',       // Leichter Regen
+            63 => 'ph-cloud-rain',       // Mäßiger Regen
+            65 => 'ph-cloud-rain',       // Starker Regen
+            66 => 'ph-cloud-snow',       // Gefrierender Regen (leicht)
+            67 => 'ph-cloud-snow',       // Gefrierender Regen (stark)
+
+            // Schnee
+            71 => 'ph-snowflake',        // Leichter Schneefall
+            73 => 'ph-snowflake',        // Mäßiger Schneefall
+            75 => 'ph-snowflake',        // Starker Schneefall
+            77 => 'ph-snowflake',        // Schneekörner
+
+            // Regenschauer
+            80 => 'ph-cloud-rain',       // Leichter Regenschauer
+            81 => 'ph-cloud-rain',       // Mäßiger Regenschauer
+            82 => 'ph-cloud-rain',       // Starker Regenschauer
+
+            // Schneeschauer
+            85 => 'ph-snowflake',        // Leichter Schneeschauer
+            86 => 'ph-snowflake',        // Starker Schneeschauer
+
+            // Gewitter
+            95 => 'ph-cloud-lightning',  // Gewitter
+            96 => 'ph-cloud-lightning',  // Gewitter mit leichtem Hagel
+            99 => 'ph-cloud-lightning',  // Gewitter mit starkem Hagel
+        ];
                         return $iconMap[$weatherCode] ?? 'ph-cloud';
                     }
                     @endphp

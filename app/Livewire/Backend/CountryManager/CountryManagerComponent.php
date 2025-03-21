@@ -282,6 +282,12 @@ class CountryManagerComponent extends Component
         $country = WwdeCountry::findOrFail($id);
         $statuses = ['active' => 'pending', 'pending' => 'inactive', 'inactive' => 'active'];
         $country->update(['status' => $statuses[$country->status]]);
+        if ($country) {
+            Cache::forget("country_{$country->alias}");
+            Cache::forget("countries_{$country->continent_id}");
+            Cache::forget("continent_{$country->continent_id}");
+            Cache::forget("continent_images_{$country->continent_id}");
+        }
     }
 
     // Custom Images umschalten

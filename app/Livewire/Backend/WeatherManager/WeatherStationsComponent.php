@@ -14,6 +14,7 @@ class WeatherStationsComponent extends Component
     public $editMode = false;
     public $showForm = false; // Neues Attribut zum Steuern der Sichtbarkeit des Formulars
     public $search = '';
+    public $perPage = 10;
 
     protected $rules = [
         'stationId' => 'required|string|max:10',
@@ -102,7 +103,7 @@ class WeatherStationsComponent extends Component
         $stations = WeatherStations::where('name', 'like', "%{$this->search}%")
             ->orWhere('station_id', 'like', "%{$this->search}%")
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate($this->perPage);
 
         return view('livewire.backend.weather-manager.weather-stations-component', compact('stations'))
         ->layout('raadmin.layout.master');

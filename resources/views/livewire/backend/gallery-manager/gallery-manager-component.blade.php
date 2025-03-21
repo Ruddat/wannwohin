@@ -96,6 +96,53 @@
             </tbody>
         </table>
 
-        {{ $galleries->links() }}
+        <div class="card-footer">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <select wire:model.change="perPage" class="form-select form-select-sm">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="app-pagination-link">
+                        <ul class="pagination app-pagination justify-content-center mb-0">
+                            <li class="page-item {{ $galleries->onFirstPage() ? 'disabled' : '' }}">
+                                <a class="page-link b-r-left" wire:click="previousPage" href="#" aria-label="Previous">
+                                    Previous
+                                </a>
+                            </li>
+                            @php
+                                $currentPage = $galleries->currentPage();
+                                $lastPage = $galleries->lastPage();
+                                $range = 2;
+                                $start = max(1, $currentPage - $range);
+                                $end = min($lastPage, $currentPage + $range);
+                            @endphp
+                            @for ($i = $start; $i <= $end; $i++)
+                                <li class="page-item {{ $currentPage == $i ? 'active' : '' }}" aria-current="{{ $currentPage == $i ? 'page' : '' }}">
+                                    <a class="page-link" wire:click="gotoPage({{ $i }})" href="#">{{ $i }}</a>
+                                </li>
+                            @endfor
+                            <li class="page-item {{ $galleries->hasMorePages() ? '' : 'disabled' }}">
+                                <a class="page-link b-r-right" wire:click="nextPage" href="#" aria-label="Next">
+                                    Next
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted">
+                        Zeigt {{ $galleries->firstItem() }} bis {{ $galleries->lastItem() }} von {{ $galleries->total() }} Einträgen
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+
     </div>
 </div>
