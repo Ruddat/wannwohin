@@ -6,20 +6,26 @@ use Livewire\Component;
 
 class JoditTextEditor extends Component
 {
-    public $content;
-    public $buttons = [];
-    public $height = 200;
+    public $content; // Der Inhalt des Editors, der mit wire:model gebunden wird
+    public $config;  // Konfigurationsoptionen für Jodit
+    public $buttons; // Buttons für die Jodit-Toolbar
+    public $height = 300; // Standardhöhe des Editors
 
-    public function mount($content = '', $buttons = [])
+    public function mount($config = [])
     {
-        $this->content = $content;
-        $this->buttons = $buttons;
-    }
+        // Setze die Konfigurationsoptionen
+        $this->config = $config;
 
-    public function updatedContent($value)
-    {
-        // Optional: Hier kannst du zusätzliche Logik hinzufügen, wenn der Wert aktualisiert wird
-        $this->dispatch('contentUpdated', $value);
+        // Extrahiere die Buttons aus der Konfiguration, falls vorhanden
+        $this->buttons = $config['buttons'] ?? [
+            'bold', 'italic', 'underline', 'strikeThrough', '|',
+            'left', 'center', 'right', '|', 'link'
+        ];
+
+        // Setze die Höhe, falls in der Konfiguration angegeben
+        if (isset($config['height'])) {
+            $this->height = $config['height'];
+        }
     }
 
     public function render()

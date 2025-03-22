@@ -87,7 +87,7 @@
                                 <!-- Inhalt -->
                                 <div class="card-body d-flex flex-column">
                                     <!-- Titel -->
-                                    <h5 class="card-title text-truncate text-center">{{ $location->title }}</h5>
+                                    <h5 class="card-title text-center">{{ $location->title }}</h5>
                                     <!-- Text -->
                                     <p class="card-text">
                                         @if (!empty($location->image_short_text))

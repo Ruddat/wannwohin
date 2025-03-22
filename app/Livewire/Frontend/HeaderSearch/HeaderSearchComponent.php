@@ -3,7 +3,7 @@
 namespace App\Livewire\Frontend\HeaderSearch;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Cache; // Cache hinzufügen
+use Illuminate\Support\Facades\Cache;
 use App\Models\WwdeLocation;
 
 class HeaderSearchComponent extends Component
@@ -17,25 +17,35 @@ class HeaderSearchComponent extends Component
      */
     public function updatedSearchTerm($value)
     {
-        $cacheKey = 'search_' . md5($value); // Eindeutiger Cache-Schlüssel basierend auf dem Suchbegriff
+        $cacheKey = 'search_' . md5($value);
 
         // Vorschläge aus dem Cache abrufen oder neu generieren
         $this->suggestions = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($value) {
             return WwdeLocation::query()
-                ->where('status', 'active') // Nur aktive Einträge
-                ->where('finished', 1) // Nur abgeschlossene Einträge
+                ->where('status', 'active')
+                ->where('finished', 1)
                 ->where(function ($query) use ($value) {
                     $query->where('title', 'like', '%' . $value . '%')
-                          ->orWhere('alias', 'like', '%' . $value . '%');
+                          ->orWhere('alias', 'like', '%' . $value . '%')
+                          ->orWhereHas('country', function ($countryQuery) use ($value) {
+                              $countryQuery->where('title', 'like', '%' . $value . '%')
+                                           ->orWhere('alias', 'like', '%' . $value . '%');
+                          })
+                          ->orWhereHas('country.continent', function ($continentQuery) use ($value) {
+                              $continentQuery->where('title', 'like', '%' . $value . '%')
+                                            ->orWhere('alias', 'like', '%' . $value . '%');
+                          });
                 })
-                ->with(['country.continent']) // Beziehungen laden
+                ->with(['country.continent'])
                 ->limit(10)
                 ->get()
                 ->map(function ($location) {
                     return [
                         'title' => $location->title,
                         'alias' => $location->alias,
+                        'country_title' => $location->country->title ?? null,
                         'country_alias' => $location->country->alias ?? null,
+                        'continent_title' => $location->country->continent->title ?? null,
                         'continent_alias' => $location->country->continent->alias ?? null,
                     ];
                 })
@@ -73,13 +83,13 @@ class HeaderSearchComponent extends Component
     }
 
     /**
-    * Wird ausgelöst, wenn der Benutzer auf ein Suchergebnis klickt.
-    */
+     * Wird ausgelöst, wenn der Benutzer auf ein Suchergebnis klickt.
+     */
     public function selectSuggestion($index)
     {
         if (isset($this->suggestions[$index])) {
-            $this->highlightedIndex = $index; // Markieren des ausgewählten Eintrags
-            $this->search(); // Suche starten
+            $this->highlightedIndex = $index;
+            $this->search();
         }
     }
 

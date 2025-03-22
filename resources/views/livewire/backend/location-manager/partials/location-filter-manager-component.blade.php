@@ -81,7 +81,7 @@
                     @endforeach
                 </select>
                 <button class="btn btn-outline-secondary" wire:click="resetFilters" title="Filter zurücksetzen">
-                    <i class="bi bi-x-lg"></i>
+                    <i class="fa-solid fa-times fa-fw"></i>
                 </button>
             </div>
         </div>
@@ -94,7 +94,7 @@
                     @endforeach
                 </select>
                 <button class="btn btn-outline-secondary" wire:click="resetFilters" title="Filter zurücksetzen">
-                    <i class="bi bi-x-lg"></i>
+                    <i class="fa-solid fa-times fa-fw"></i>
                 </button>
             </div>
         </div>
@@ -121,7 +121,7 @@
                             <td class="d-none d-md-table-cell">{{ $text->text_type }}</td>
                             <td class="d-none d-md-table-cell">{{ $text->category ?? 'N/A' }}</td>
                             <td>{{ $text->uschrift }}</td>
-                            <td class="d-none d-lg-table-cell">{{ Str::limit($text->text, 50) }}</td>
+                            <td class="d-none d-lg-table-cell">{{ $text->text }}</td>
                             <td class="d-none d-lg-table-cell">{{ $text->addinfo ? Str::limit($text->addinfo, 50) : 'N/A' }}</td>
                             <td>
                                 <span class="badge bg-{{ $text->is_active ? 'success' : 'secondary' }}" wire:click="toggleActive({{ $text->id }})" style="cursor: pointer;">
@@ -133,9 +133,15 @@
                                     <button class="btn btn-primary btn-sm" wire:click="editFilterText({{ $text->id }})" title="Bearbeiten">
                                         <i class="ti ti-pencil"></i>
                                     </button>
-                                    <button class="btn btn-danger btn-sm" wire:click="confirmDelete({{ $text->id }})" title="Löschen">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
+                                    @if($confirming === $text->id)
+                                        <button wire:click="kill({{ $text->id }})" class="btn btn-danger btn-sm" title="Sicher?">
+                                            <i class="ti ti-trash"></i> Sicher?
+                                        </button>
+                                    @else
+                                        <button wire:click="confirmDelete({{ $text->id }})" class="btn btn-danger btn-sm" title="Löschen">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -156,8 +162,6 @@
     @endif
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
         <script>
             document.addEventListener('livewire:init', () => {
                 console.log('Livewire initialized');
@@ -173,23 +177,6 @@
                         timerProgressBar: true,
                         background: type === 'success' ? '#d4edda' : '#f8d7da',
                         color: '#000',
-                    });
-                });
-
-                Livewire.on('confirm-delete', ({ id }) => {
-                    Swal.fire({
-                        title: 'Sind Sie sicher?',
-                        text: 'Möchten Sie diesen Text wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ja, löschen!',
-                        cancelButtonText: 'Abbrechen'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Livewire.dispatch('deleteText', { id });
-                        }
                     });
                 });
             });

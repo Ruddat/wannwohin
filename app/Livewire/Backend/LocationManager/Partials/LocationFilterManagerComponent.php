@@ -26,6 +26,9 @@ class LocationFilterManagerComponent extends Component
     public $isFormVisible = false;
     public $editingTextId = null;
 
+    // Neue Eigenschaft für die Löschbestätigung
+    public $confirming = null;
+
     public function mount($locationId)
     {
         $this->locationId = $locationId;
@@ -149,13 +152,19 @@ class LocationFilterManagerComponent extends Component
 
     public function confirmDelete($id)
     {
-        $this->dispatch('confirm-delete', id: $id);
+        $this->confirming = $id;
     }
 
-    public function deleteText($id)
+    public function kill($id)
     {
-        ModLocationFilter::find($id)?->delete();
-        $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich gelöscht.');
+        $text = ModLocationFilter::find($id);
+        if ($text) {
+            $text->delete();
+            $this->dispatch('show-toast', type: 'success', message: 'Text erfolgreich gelöscht.');
+        } else {
+            $this->dispatch('show-toast', type: 'error', message: 'Text nicht gefunden.');
+        }
+        $this->confirming = null;
     }
 
     private function resetFormFields()

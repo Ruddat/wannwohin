@@ -41,23 +41,24 @@
             </div>
         </div>
     </div>
-</section>
 
+</section>
 <div class="inner-shape"></div>
+
 
 <div class="custom-about-links bg-color-light">
     <div class="container">
-        <div class="links-row d-flex justify-content-end align-items-center gap-2">
+        <div class="links-row d-flex justify-content-end align-items-baseline gap-2">
             <div class="menu-toggle d-md-none">
                 <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="collapse d-md-flex justify-content-end align-items-center gap-2" id="mobileMenu">
+            <div class="collapse d-md-flex justify-content-end align-items-baseline gap-2" id="mobileMenu">
                 <div class="link-item col-md-6 col-12">
                     @livewire('frontend.header-search.header-search-component')
                 </div>
-                <div class="link-item link-pair d-flex flex-wrap align-items-center gap-2">
+                <div class="link-item link-pair d-flex flex-wrap align-items-baseline gap-2">
                     <div class="sub-link-item">
                         @livewire('frontend.continent-selector.continent-selector-component')
                     </div>
@@ -177,18 +178,17 @@
         max-width: 50%;
     }
 
-    .custom-about-links .form-select {
-        width: 100%;
-        padding: 0.4rem; /* Kompakter */
-        font-size: 13px; /* Kleiner */
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: #FDD55C;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        color: #333;
-    }
+    .about-links .custom-dropdown select {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #FDD55C;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
 
     /* Wishlist-Icon anpassen */
     .sub-link-item .wishlist-component img {
@@ -203,6 +203,7 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-8px); }
     }
+
 
     /* Ergebnis-Text */
     .custom-results-text {
@@ -343,6 +344,26 @@
             gap: 6px;
         }
     }
+
+/* Baseline-Ausrichtung für alle Textelemente */
+.links-row, .link-pair, .sub-link-item {
+    align-items: baseline;
+}
+
+/* Konsistente Line-Height für Textelemente */
+.sub-link-item {
+    line-height: 1.5;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 767.98px) {
+    #mobileMenu {
+        align-items: baseline;
+    }
+}
+
+
+
 </style>
 
 <script>

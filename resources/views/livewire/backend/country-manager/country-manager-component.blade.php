@@ -441,7 +441,7 @@
                                 <livewire:jodit-text-editor wire:model.live="country_header_text" :buttons="[
                                     'bold', 'italic', 'underline', 'strikeThrough',
                                     '|', 'left', 'center', 'right', '|',
-                                    'link', 'image'
+                                    'link'
                                 ]" />
                                 @error('country_header_text') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
@@ -666,8 +666,11 @@
         </div>
     @endif
 
+    @push('styles')
     <!-- Include Jodit CSS Styling -->
     <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
+    @endpush
+
 
     <!-- Include the Jodit JS Library -->
     <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
