@@ -4,13 +4,15 @@ namespace App\Livewire\Backend\ParkListManager;
 
 use Livewire\Component;
 use Illuminate\Support\Str;
+use App\Models\WwdeLocation;
+use Livewire\WithFileUploads;
 use App\Models\AmusementParks;
 use App\Services\GeocodeService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\DomCrawler\Crawler;
-use Livewire\WithFileUploads;
 
 class ParkFormComponent extends Component
 {
@@ -44,7 +46,7 @@ class ParkFormComponent extends Component
         'url' => 'nullable|url',
         'description' => 'nullable|string|max:500',
         'videoUrl' => 'nullable|url',
-        'embedCode' => 'nullable|string', // Neues Feld für Embed-Code
+        'embedCode' => 'nullable|string',
         'logoUrl' => 'nullable|string',
         'logoFile' => 'nullable|image|mimes:jpg,png,svg,webp|max:2048|dimensions:min_width=50,min_height=50',
         'defaultOpen' => 'nullable|date_format:H:i',
@@ -82,7 +84,7 @@ class ParkFormComponent extends Component
                     'url' => $park->url,
                     'description' => $park->description,
                     'videoUrl' => $park->video_url,
-                    'embedCode' => $park->embed_code, // Neues Feld laden
+                    'embedCode' => $park->embed_code,
                     'logoUrl' => $park->logo_url,
                 ]);
                 $this->hasVideo = !empty($park->video_url) || !empty($park->embed_code);
@@ -207,22 +209,56 @@ class ParkFormComponent extends Component
             'url' => $this->url,
             'description' => $this->description,
             'video_url' => $this->videoUrl,
-            'embed_code' => $this->embedCode, // Neues Feld speichern
+            'embed_code' => $this->embedCode,
             'logo_url' => $this->logoUrl,
             'opening_hours' => $hasOpeningHours ? json_encode($openingHours) : null,
             'external_id' => $externalId,
         ];
 
+        $today = date('Y-m-d');
+
         if ($this->parkId) {
             $park = AmusementParks::findOrFail($this->parkId);
             $park->update($data);
-            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich aktualisiert.');
-        } else {
-            AmusementParks::create($data);
-            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich erstellt.');
-        }
 
-        return redirect()->route('verwaltung.site-manager.park-manager.index');
+            // Cache für diesen Park und alle betroffenen Standorte löschen
+            Cache::forget("queue_times_park_{$this->parkId}_" . date('H')); // Wartezeiten-Cache
+            $this->clearAmusementParksCache($park, $today);
+
+            Log::info('Cache gelöscht', ['keys' => ["queue_times_park_{$this->parkId}_" . date('H')]]);
+            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich aktualisiert.');
+            $this->dispatch('close-modal');
+        } else {
+            $newPark = AmusementParks::create($data);
+
+            // Cache für den neuen Park und alle betroffenen Standorte löschen
+            if ($newPark->queue_times_id) {
+                Cache::forget("queue_times_park_{$newPark->id}_" . date('H'));
+            }
+            $this->clearAmusementParksCache($newPark, $today);
+
+            Log::info('Cache gelöscht', ['keys' => $newPark->queue_times_id ? ["queue_times_park_{$newPark->id}_" . date('H')] : []]);
+            $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich erstellt.');
+            return redirect()->route('verwaltung.site-manager.park-manager.index');
+        }
+    }
+
+    /**
+     * Hilfsmethode zum Löschen des amusement_parks-Caches für betroffene Standorte
+     */
+    private function clearAmusementParksCache($park, string $date)
+    {
+        // Alle Standorte abrufen, die den Park in einem Radius von 150 km enthalten könnten
+        $locations = WwdeLocation::selectRaw("id, (6371 * acos(cos(radians(?)) * cos(radians(lat)) * cos(radians(lon) - radians(?)) + sin(radians(?)) * sin(radians(lat)))) AS distance", [$park->latitude, $park->longitude, $park->latitude])
+            ->having('distance', '<=', 150) // Standardradius aus fetchAmusementParks
+            ->get();
+
+        foreach ($locations as $location) {
+            // Lösche den Cache für jeden Standort und den Standardradius (150)
+            $cacheKey = "amusement_parks_{$location->id}_radius_150_{$date}";
+            Cache::forget($cacheKey);
+            Log::info('Cache gelöscht', ['key' => $cacheKey]);
+        }
     }
 
     public function scrapeData()
@@ -274,9 +310,8 @@ class ParkFormComponent extends Component
                 $iframeElement = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]');
                 if ($iframeElement->count() > 0) {
                     $this->hasVideo = true;
-                    // Ganzen Iframe-Code speichern
                     $this->embedCode = $crawler->filter('iframe[src*="youtube.com"], iframe[src*="vimeo.com"]')->outerHtml();
-                    $this->videoUrl = $iframeElement->attr('src'); // Fallback
+                    $this->videoUrl = $iframeElement->attr('src');
                     Log::info('Video gefunden in <iframe>:', ['embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
                 }
             }
@@ -288,7 +323,6 @@ class ParkFormComponent extends Component
                     $this->videoUrl = $links->first()->attr('href');
                     if (str_contains($this->videoUrl, 'youtube.com/watch')) {
                         $this->videoUrl = str_replace('watch?v=', 'embed/', $this->videoUrl);
-                        // Simulierten Embed-Code erstellen
                         $this->embedCode = '<iframe width="560" height="315" src="' . $this->videoUrl . '" frameborder="0" allowfullscreen></iframe>';
                     }
                     Log::info('Video gefunden in <a href>:', ['embedCode' => $this->embedCode, 'videoUrl' => $this->videoUrl]);
@@ -338,7 +372,6 @@ class ParkFormComponent extends Component
 
     public function render()
     {
-        return view('livewire.backend.park-list-manager.park-form-component')
-            ->layout('raadmin.layout.master');
+        return view('livewire.backend.park-list-manager.park-form-component');
     }
 }

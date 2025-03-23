@@ -16,6 +16,7 @@ class ParkListComponent extends Component
     public $country = '';
     public $status = '';
     public $parkIdToDelete;
+    public $parkIdToEdit;
     public $countries = [];
     public $perPage = 10;
     public $sortBy = 'created_at';
@@ -56,24 +57,19 @@ class ParkListComponent extends Component
     public function updateCoordinates($id)
     {
         $park = AmusementParks::find($id);
-
         if (!$park || !$park->name) {
             $this->dispatch('show-toast', type: 'error', message: 'Standortinformationen fehlen oder der Park existiert nicht.');
             return;
         }
-
         try {
             $geocodeService = app(GeocodeService::class);
             $coordinates = $geocodeService->searchByParkName($park->name);
-
             if (!isset($coordinates[0]['lat']) || !isset($coordinates[0]['lon'])) {
                 throw new \Exception('Ungültige Koordinaten vom GeocodeService erhalten.');
             }
-
             $park->latitude = (float) $coordinates[0]['lat'];
             $park->longitude = (float) $coordinates[0]['lon'];
             $park->save();
-
             $this->dispatch('show-toast', type: 'success', message: 'Koordinaten wurden erfolgreich aktualisiert.');
         } catch (\Exception $e) {
             $this->dispatch('show-toast', type: 'error', message: 'Fehler: ' . $e->getMessage());
@@ -83,7 +79,6 @@ class ParkListComponent extends Component
     public function confirmDelete($id)
     {
         $this->parkIdToDelete = $id;
-
         $this->dispatch('delete-prompt', [
             'title' => 'Sind Sie sicher?',
             'text' => 'Dieser Park wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
@@ -100,9 +95,20 @@ class ParkListComponent extends Component
             $park = AmusementParks::findOrFail($this->parkIdToDelete);
             $park->delete();
             $this->parkIdToDelete = null;
-
             $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich gelöscht.');
         }
+    }
+
+    #[On('close-modal')]
+    public function closeModal()
+    {
+        $this->parkIdToEdit = null;
+    }
+
+    public function openEditModal($id)
+    {
+        $this->parkIdToEdit = $id;
+        $this->dispatch('open-modal'); // Neues Event zum Öffnen des Modals
     }
 
     public function render()
@@ -122,6 +128,6 @@ class ParkListComponent extends Component
             : $query->paginate($this->perPage);
 
         return view('livewire.backend.park-list-manager.park-list-component', compact('parks'))
-        ->layout('raadmin.layout.master');
+            ->layout('raadmin.layout.master');
     }
 }

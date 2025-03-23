@@ -68,11 +68,12 @@
     </div>
 </section>
 
+{{--
 <!-- GLightbox (bleibt vorerst CDN) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-{{--
+
 
 <!-- AOS (in npm) -->
 <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">

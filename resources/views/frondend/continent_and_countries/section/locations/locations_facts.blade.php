@@ -63,7 +63,7 @@
                                     <span class="fact-icon"><i class="fas fa-coins"></i></span>
                                     <div class="fact-content">
                                         <span class="fact-label">@autotranslate('Währung', app()->getLocale())</span>
-                                        <h5>@autotranslate($country->currency_code, app()->getLocale())</h5>
+                                        <h5>@autotranslate($country->currency_name, app()->getLocale())</h5>
                                     </div>
                                 </div>
                                 <div class="fact-item">
@@ -118,14 +118,12 @@
                                 </div>
                             </div>
                             <div class="fact-row full-width">
-                                <div class="fact-item travel-warning-card {{ $country->travelWarning ? str_replace(' ', '-', $country->travelWarning->severity) : 'no-warning' }}">
-                                    <span class="fact-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                <div class="fact-item travel-warning-card {{ $country->travelWarning ? 'Level-' . substr($country->travelWarning->severity, 6, 1) : 'no-warning' }}">                                    <span class="fact-icon"><i class="fas fa-exclamation-triangle"></i></span>
                                     <div class="fact-content travel-warning-content">
                                         <span class="fact-label"><strong>@autotranslate('Reisewarnung:', app()->getLocale())</strong></span>
                                         <div class="travel-alert">
                                             <div class="pipette-wrapper">
                                                 <div class="pipette">
-                                                    <div class="pipette-fill"></div>
                                                     <div class="pipette-marker level-4" data-level="Level 4"></div>
                                                     <div class="pipette-marker level-3" data-level="Level 3"></div>
                                                     <div class="pipette-marker level-2" data-level="Level 2"></div>
@@ -386,6 +384,7 @@ in Npm:
 }
 
 /* Pipette-Design */
+/* Pipette-Design */
 .continent-facts-section .pipette-wrapper {
     position: relative;
     display: flex;
@@ -396,19 +395,17 @@ in Npm:
     position: relative;
     width: 20px; /* Schlankere Pipette */
     height: 80px; /* Etwas kleinere Höhe */
-    background: linear-gradient(to bottom, #e74c3c, #e67e22, #f1c40f, #2ecc71); /* Gradient von Rot nach Grün */
+    /* Adjusted gradient to emphasize green at the bottom (Level 1) */
+    background: linear-gradient(to bottom, #e74c3c 0%, #e67e22 25%, #f1c40f 50%, #2ecc71 75%, #27ae60 100%); /* More green at the bottom */
     border-radius: 10px; /* Etwas kleinere Rundung */
     border: 2px solid #fff;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
+/* Remove the pipette-fill styling since it's no longer needed */
 .continent-facts-section .pipette-fill {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    background: #fff; /* Weißer Hintergrund, der die untere Farbe abdeckt */
-    transition: height 0.5s ease;
+    display: none; /* Not needed anymore */
 }
 
 /* Markierungen innerhalb der Pipette */
@@ -428,9 +425,10 @@ in Npm:
 .continent-facts-section .pipette-marker.level-3 { top: 25%; } /* 75% von unten */
 .continent-facts-section .pipette-marker.level-4 { top: 5%; }  /* 95% von unten */
 
+/* Update marker colors to match the new gradient */
 .continent-facts-section .travel-warning-card.no-warning .pipette-marker.level-1,
 .continent-facts-section .travel-warning-card.Level-1 .pipette-marker.level-1 {
-    background-color: #2ecc71; /* Grün für Level 1 */
+    background-color: #27ae60; /* Darker green for Level 1 */
     transform: translateX(-50%) scale(1.5);
 }
 .continent-facts-section .travel-warning-card.Level-2 .pipette-marker.level-2 {
@@ -462,38 +460,23 @@ in Npm:
     100% { transform: translateX(0); }
 }
 
-/* Dynamische Füllung und Pfeilposition basierend auf Warnstufe */
-.continent-facts-section .travel-warning-card.no-warning .pipette-fill {
-    height: 0; /* Komplett grün, keine weiße Abdeckung */
-}
+/* Pfeilposition basierend auf Warnstufe (unchanged) */
 .continent-facts-section .travel-warning-card.no-warning .pipette-arrow {
     top: 65px; /* Pfeil unten (Grün) */
 }
 
-.continent-facts-section .travel-warning-card.Level-1 .pipette-fill {
-    height: 20%; /* 20% gefüllt (Grün sichtbar) */
-}
 .continent-facts-section .travel-warning-card.Level-1 .pipette-arrow {
     top: 54px; /* Pfeil auf Level 1 */
 }
 
-.continent-facts-section .travel-warning-card.Level-2 .pipette-fill {
-    height: 40%; /* 40% gefüllt (Gelb sichtbar) */
-}
 .continent-facts-section .travel-warning-card.Level-2 .pipette-arrow {
     top: 38px; /* Pfeil auf Level 2 */
 }
 
-.continent-facts-section .travel-warning-card.Level-3 .pipette-fill {
-    height: 60%; /* 60% gefüllt (Orange sichtbar) */
-}
 .continent-facts-section .travel-warning-card.Level-3 .pipette-arrow {
     top: 22px; /* Pfeil auf Level 3 */
 }
 
-.continent-facts-section .travel-warning-card.Level-4 .pipette-fill {
-    height: 80%; /* 80% gefüllt (Rot sichtbar) */
-}
 .continent-facts-section .travel-warning-card.Level-4 .pipette-arrow {
     top: 6px; /* Pfeil auf Level 4 */
 }

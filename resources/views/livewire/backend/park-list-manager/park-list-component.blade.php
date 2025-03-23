@@ -57,7 +57,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Logo</th> <!-- Neue Spalte für das Logo -->
+                        <th>Logo</th>
                         <th>Name</th>
                         <th>Land</th>
                         <th>Latitude</th>
@@ -78,7 +78,7 @@
                                 @else
                                     <span class="text-secondary">–</span>
                                 @endif
-                            </td> <!-- Logo-Anzeige -->
+                            </td>
                             <td>{{ $park->name }}</td>
                             <td>{{ $park->country }}</td>
                             <td>{{ $park->latitude }}</td>
@@ -99,9 +99,9 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                <a href="{{ route('verwaltung.site-manager.park-manager.edit', $park->id) }}" class="btn btn-success icon-btn b-r-4">
+                                <button wire:click="openEditModal({{ $park->id }})" class="btn btn-success icon-btn b-r-4">
                                     <i class="fas fa-edit f-s-16"></i>
-                                </a>
+                                </button>
                                 <button wire:click="updateCoordinates({{ $park->id }})" class="btn btn-outline-secondary icon-btn b-r-4">
                                     <i class="fas fa-map-marker-alt f-s-16"></i>
                                 </button>
@@ -112,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center text-secondary">Keine Einträge gefunden</td> <!-- colspan angepasst auf 10 -->
+                            <td colspan="10" class="text-center text-secondary">Keine Einträge gefunden</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -165,6 +165,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal für die Bearbeitung -->
+    <div class="modal fade" id="editParkModal" tabindex="-1" aria-modal="true" role="dialog" wire:ignore.self>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary-800">
+                    <h1 class="modal-title fs-5 text-white">Park bearbeiten</h1>
+                    <button type="button" class="fs-5 border-0 bg-none text-white" wire:click="closeModal"><i class="fa-solid fa-xmark fs-3"></i></button>
+                </div>
+                <div class="modal-body">
+                    @if($parkIdToEdit)
+                        <livewire:backend.park-list-manager.park-form-component :id="$parkIdToEdit" wire:key="edit-{{ $parkIdToEdit }}" />
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -200,6 +217,18 @@
                         Livewire.dispatch('goOn-Delete');
                     }
                 });
+            });
+
+            Livewire.on('open-modal', () => {
+                const modal = new bootstrap.Modal(document.getElementById('editParkModal'));
+                modal.show();
+            });
+
+            Livewire.on('close-modal', () => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editParkModal'));
+                if (modal) {
+                    modal.hide();
+                }
             });
         });
     </script>
