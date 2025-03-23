@@ -372,6 +372,7 @@ class ParkFormComponent extends Component
 
     public function render()
     {
-        return view('livewire.backend.park-list-manager.park-form-component');
+        return view('livewire.backend.park-list-manager.park-form-component')
+        ->layout('raadmin.layout.master');
     }
 }

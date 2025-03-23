@@ -77,8 +77,8 @@ h1, h2, h3, h4, h5, h6 {
 .article-img
 {
     background-position : center;
-    background-repeat :no-repeat;
-    background-size :cover;
+    background-repeat : no-repeat;
+    background-size : cover;
 }
 
 
@@ -141,7 +141,7 @@ height: 100%;
 /*pANORAMAtEXT STYLING */
 .panorama-text{
     text-transform: uppercase;
-    min-font-size: 30px;
+    font-size: 30px;
     color: white;
 }
 .panorama-text span{
@@ -193,11 +193,56 @@ article .experience-description a h4.text-dark {
     color: black;
 }
 
-ul.breadcrumb a{
-    color: #CC8400;
+/* Grundlegendes Styling für die Breadcrumb-Liste */
+ul.breadcrumb {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa; /* Leichter grauer Hintergrund */
+    border-radius: 5px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    font-family: "Open Sans", Arial, sans-serif;
 }
 
-ul.breadcrumb .active{
+/* Styling für die Links */
+ul.breadcrumb a {
+    color: #CC8400; /* Deine ursprüngliche Farbe */
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease; /* Sanfter Übergang für alle Änderungen */
+    padding: 5px 10px;
+    border-radius: 3px;
+}
 
+/* Hover-Effekt für Links */
+ul.breadcrumb a:hover {
+    color: #fff; /* Weiß bei Hover */
+    background-color: #CC8400; /* Hintergrund wird orange */
+    transform: scale(1.05); /* Leichtes Zoomen */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtiler Schatten */
+    text-decoration: none;
+}
 
+/* Aktiver Zustand (wenn geklickt oder aktuell) */
+ul.breadcrumb .active {
+    color: #343a40; /* Dunkleres Grau für den aktiven Zustand */
+    font-weight: 700;
+    padding: 5px 10px;
+    background-color: #e9ecef; /* Leicht grauer Hintergrund */
+    border-radius: 3px;
+    cursor: default; /* Zeigt, dass es nicht klickbar ist */
+}
+
+/* Trennzeichen zwischen Breadcrumb-Elementen */
+ul.breadcrumb li + li:before {
+    content: "›"; /* Ein schönes Trennzeichen (alternativ: "/" oder ">" oder "•") */
+    color: #6c757d; /* Grau für das Trennzeichen */
+    padding: 0 8px;
+    font-size: 1.2em;
+}
+
+/* Optional: Letztes Element ohne Trennzeichen */
+ul.breadcrumb li:last-child + li:before {
+    content: none;
 }

@@ -18,10 +18,12 @@
                         style="animation-delay: 0.6s;">
                         @autotranslate('Wir wünschen Ihnen viel Freude bei der Reiseplanung – Ihr Team von wann-wohin.de', app()->getLocale())
                     </p>
-                    <a href="#explore" class="btn btn-primary mt-3 animate__animated animate__pulse"
-                        style="animation-delay: 0.8s;">
-                        @autotranslate('Jetzt losgehen', app()->getLocale())
+                    <a href="#explore" class="btn btn-explore mt-3 animate__animated animate__pulse" id="explore-btn" style="animation-delay: 0.8s;">
+                        @autotranslate('Finde jetzt dein Abenteuer!', app()->getLocale())
                     </a>
+                    <p class="text-color-grey small mt-2">
+                        @autotranslate('Keine Idee? Wir finden spontan dein Ziel!', app()->getLocale())
+                    </p>
                 </div>
 
                 <!-- Top 10 Box -->
@@ -286,4 +288,54 @@
             font-size: 1.1rem;
         }
     }
+
+
+    .btn-explore {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53); /* Auffälliger Farbverlauf */
+    border: none;
+    padding: 14px 35px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: white;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-explore:hover {
+    background: linear-gradient(135deg, #ff8e53, #ff6b6b);
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.animate__pulse {
+    animation-iteration-count: infinite;
+    animation-duration: 1.5s;
+}
+
 </style>
+<script>
+    document.getElementById('explore-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                // Weiterleitung mit Standort-Daten
+                window.location.href = `/explore?lat=${lat}&lon=${lon}`;
+            },
+            (error) => {
+                console.error('Standortfehler:', error);
+                // Fallback ohne Standort
+                window.location.href = '/explore';
+            }
+        );
+    } else {
+        alert('Geolocation wird von deinem Browser nicht unterstützt.');
+        window.location.href = '/explore';
+    }
+});
+</script>

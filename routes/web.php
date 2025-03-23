@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
@@ -81,6 +82,9 @@ Route::post('/track-dwell-time', [VisitorController::class, 'trackDwellTime'])->
 Route::middleware(['web', 'breadcrumbs', 'track-referral', 'weather'])->group(function () {
     Route::get('/', IndexController::class)->name('home');
 
+    Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
+    Route::get('/explore/results', [ExploreController::class, 'results'])->name('explore.results');
+    
     Route::post('/weather/update', [HeaderWeatherController::class, 'update'])->name('weather.update');
 
     Route::get('/urlaub/{urlaub_type}/month/{month_id}', [IndexController::class, 'searchResults'])

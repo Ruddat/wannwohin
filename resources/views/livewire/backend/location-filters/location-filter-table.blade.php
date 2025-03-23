@@ -127,102 +127,146 @@
         @endif
 
         <!-- Tabelle -->
-        <div class="table-responsive">
-            <table class="table table-hover table-striped table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th wire:click="sortBy('id')" style="cursor: pointer;">
-                            ID
-                            @if($sortField === 'id')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th wire:click="sortBy('location.title')" style="cursor: pointer;">
-                            Standort
-                            @if($sortField === 'location.title')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th wire:click="sortBy('text_type')" style="cursor: pointer;">
-                            Typ
-                            @if($sortField === 'text_type')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th wire:click="sortBy('category')" style="cursor: pointer;">
-                            Kategorie
-                            @if($sortField === 'category')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th wire:click="sortBy('uschrift')" style="cursor: pointer;">
-                            Überschrift
-                            @if($sortField === 'uschrift')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th>Text</th>
-                        <th>Zusatzinfo</th>
-                        <th wire:click="sortBy('is_active')" style="cursor: pointer;">
-                            Aktiv
-                            @if($sortField === 'is_active')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th wire:click="sortBy('created_at')" style="cursor: pointer;">
-                            Erstellt
-                            @if($sortField === 'created_at')
-                                <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                            @endif
-                        </th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($filters as $filter)
+        @if($showTable)
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead class="table-dark">
                         <tr>
-                            <td>{{ $filter->id }}</td>
-                            <td>{{ $filter->location?->title ?? 'Unbekannt' }}</td>
-                            <td>{{ $filter->text_type }}</td>
-                            <td>{{ $filter->category ?? '-' }}</td>
-                            <td>{{ $filter->uschrift }}</td>
-                            <td>{{ Str::limit($filter->text, 50) }}</td>
-                            <td>{{ $filter->addinfo ? Str::limit($filter->addinfo, 50) : '-' }}</td>
-                            <td>
-                                <span class="badge {{ $filter->is_active ? 'bg-success' : 'bg-danger' }}"
-                                      wire:click="toggleActive({{ $filter->id }})"
-                                      style="cursor: pointer;">
-                                    {{ $filter->is_active ? 'Ja' : 'Nein' }}
-                                </span>
-                            </td>
-                            <td>{{ $filter->created_at->format('d.m.Y H:i') }}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-primary" wire:click="edit({{ $filter->id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger"
-                                            wire:click="delete({{ $filter->id }})"
-                                            wire:confirm="Sicher, dass Sie diesen Eintrag löschen möchten?">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th wire:click="sortBy('id')" style="cursor: pointer;">
+                                ID
+                                @if($sortField === 'id')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th wire:click="sortBy('location.title')" style="cursor: pointer;">
+                                Standort
+                                @if($sortField === 'location.title')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th wire:click="sortBy('text_type')" style="cursor: pointer;">
+                                Typ
+                                @if($sortField === 'text_type')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th wire:click="sortBy('category')" style="cursor: pointer;">
+                                Kategorie
+                                @if($sortField === 'category')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th wire:click="sortBy('uschrift')" style="cursor: pointer;">
+                                Überschrift
+                                @if($sortField === 'uschrift')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th>Text</th>
+                            <th>Zusatzinfo</th>
+                            <th wire:click="sortBy('is_active')" style="cursor: pointer;">
+                                Aktiv
+                                @if($sortField === 'is_active')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th wire:click="sortBy('created_at')" style="cursor: pointer;">
+                                Erstellt
+                                @if($sortField === 'created_at')
+                                    <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th>Aktionen</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="text-center py-4">
-                                <i class="fas fa-search-off"></i> Keine Einträge gefunden
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @forelse ($filters as $filter)
+                            <tr>
+                                <td>{{ $filter->id }}</td>
+                                <td>{{ $filter->location?->title ?? 'Unbekannt' }}</td>
+                                <td>{{ $filter->text_type }}</td>
+                                <td>{{ $filter->category ?? '-' }}</td>
+                                <td>{{ $filter->uschrift }}</td>
+                                <td>{{ Str::limit($filter->text, 50) }}</td>
+                                <td>{{ $filter->addinfo ? Str::limit($filter->addinfo, 50) : '-' }}</td>
+                                <td>
+                                    <span class="badge {{ $filter->is_active ? 'bg-success' : 'bg-danger' }}"
+                                          wire:click="toggleActive({{ $filter->id }})"
+                                          style="cursor: pointer;">
+                                        {{ $filter->is_active ? 'Ja' : 'Nein' }}
+                                    </span>
+                                </td>
+                                <td>{{ $filter->created_at->format('d.m.Y H:i') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary" wire:click="edit({{ $filter->id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                                wire:click="delete({{ $filter->id }})"
+                                                wire:confirm="Sicher, dass Sie diesen Eintrag löschen möchten?">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <i class="fas fa-search-off"></i> Keine Einträge gefunden
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        @endif
 
-        <!-- Pagination -->
-        <div class="mt-3">
-            {{ $filters->links() }}
+        {{-- Footer außerhalb des @if-Blocks --}}
+        <div class="card-footer">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <select wire:model.change="perPage" class="form-select form-select-sm">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="app-pagination-link">
+                        <ul class="pagination app-pagination justify-content-center mb-0">
+                            <li class="page-item {{ $filters->onFirstPage() ? 'disabled' : '' }}">
+                                <a class="page-link b-r-left" wire:click="previousPage" href="#" aria-label="Previous">
+                                    Previous
+                                </a>
+                            </li>
+                            @php
+                                $currentPage = $filters->currentPage();
+                                $lastPage = $filters->lastPage();
+                                $range = 2;
+                                $start = max(1, $currentPage - $range);
+                                $end = min($lastPage, $currentPage + $range);
+                            @endphp
+                            @for ($i = $start; $i <= $end; $i++)
+                                <li class="page-item {{ $currentPage == $i ? 'active' : '' }}" aria-current="{{ $currentPage == $i ? 'page' : '' }}">
+                                    <a class="page-link" wire:click="gotoPage({{ $i }})" href="#">{{ $i }}</a>
+                                </li>
+                            @endfor
+                            <li class="page-item {{ $filters->hasMorePages() ? '' : 'disabled' }}">
+                                <a class="page-link b-r-right" wire:click="nextPage" href="#" aria-label="Next">
+                                    Next
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted">
+                        Zeigt {{ $filters->firstItem() }} bis {{ $filters->lastItem() }} von {{ $filters->total() }} Einträgen
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

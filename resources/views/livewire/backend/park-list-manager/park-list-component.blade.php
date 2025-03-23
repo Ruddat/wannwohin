@@ -172,7 +172,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary-800">
                     <h1 class="modal-title fs-5 text-white">Park bearbeiten</h1>
-                    <button type="button" class="fs-5 border-0 bg-none text-white" wire:click="closeModal"><i class="fa-solid fa-xmark fs-3"></i></button>
+                    <button type="button" class="fs-5 border-0 bg-none text-white" data-bs-dismiss="modal"><i class="fa-solid fa-xmark fs-3"></i></button>
                 </div>
                 <div class="modal-body">
                     @if($parkIdToEdit)

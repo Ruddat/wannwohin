@@ -35,19 +35,19 @@
 </section>
 <div class="inner-shape"></div>
 
-<div class="about-links bg-color-light">
+<div class="custom-about-links bg-color-light">
     <div class="container">
-        <div class="links-row d-flex justify-content-end align-items-baseline gap-3">
+        <div class="links-row d-flex justify-content-end align-items-baseline gap-2">
             <div class="menu-toggle d-md-none">
                 <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="collapse d-md-flex justify-content-end align-items-baseline gap-3" id="mobileMenu">
+            <div class="collapse d-md-flex justify-content-end align-items-baseline gap-2" id="mobileMenu">
                 <div class="link-item col-md-6 col-12">
                     @livewire('frontend.header-search.header-search-component')
                 </div>
-                <div class="link-item link-pair d-flex flex-wrap align-items-end gap-2">
+                <div class="link-item link-pair d-flex flex-wrap align-items-baseline gap-2">
                     <div class="sub-link-item">
                         @livewire('frontend.continent-selector.continent-selector-component')
                     </div>
@@ -60,7 +60,6 @@
         <x-breadcrumb />
     </div>
 </div>
-
 
 <style>
     /* Parallax-Effekt */

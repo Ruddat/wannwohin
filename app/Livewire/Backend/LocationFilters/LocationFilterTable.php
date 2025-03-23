@@ -36,6 +36,9 @@ class LocationFilterTable extends Component
     public $newIsActive = 1;
     public $newLocationId = '';
 
+    public $showTable = true;
+
+
     protected $queryString = [
         'search' => ['except' => ''],
         'perPage' => ['except' => 10],
@@ -59,6 +62,7 @@ class LocationFilterTable extends Component
     public function startCreating()
     {
         $this->creating = true;
+        $this->showTable = false;
     }
 
     public function create()
@@ -97,6 +101,8 @@ class LocationFilterTable extends Component
         $this->newAddinfo = '';
         $this->newIsActive = 1;
         $this->newLocationId = '';
+        $this->creating = false;
+        $this->showTable = true;
     }
 
     public function delete($id)
@@ -114,6 +120,7 @@ class LocationFilterTable extends Component
     {
         $filter = ModLocationFilter::findOrFail($id);
         $this->editingFilterId = $id;
+        $this->showTable = false;
         $this->editTextType = $filter->text_type;
         $this->editCategory = $filter->category;
         $this->editUschrift = $filter->uschrift;
@@ -153,6 +160,7 @@ class LocationFilterTable extends Component
     public function cancelEdit()
     {
         $this->editingFilterId = null;
+        $this->showTable = true;
         $this->editTextType = '';
         $this->editCategory = '';
         $this->editUschrift = '';
