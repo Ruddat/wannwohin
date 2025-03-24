@@ -46,9 +46,9 @@
                     <option value="100">100</option>
                     <option value="all">Alle</option>
                 </select>
-                <a href="{{ route('verwaltung.site-manager.park-manager.create') }}" class="btn btn-primary">
+                <button wire:click="openCreateModal" class="btn btn-primary">
                     <i class="fas fa-plus f-s-16"></i> Neuer Park
-                </a>
+                </button>
             </div>
         </div>
 
@@ -171,13 +171,11 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary-800">
-                    <h1 class="modal-title fs-5 text-white">Park bearbeiten</h1>
+                    <h1 class="modal-title fs-5 text-white">{{ $parkIdToEdit ? 'Park bearbeiten' : 'Neuer Park' }}</h1>
                     <button type="button" class="fs-5 border-0 bg-none text-white" data-bs-dismiss="modal"><i class="fa-solid fa-xmark fs-3"></i></button>
                 </div>
                 <div class="modal-body">
-                    @if($parkIdToEdit)
-                        <livewire:backend.park-list-manager.park-form-component :id="$parkIdToEdit" wire:key="edit-{{ $parkIdToEdit }}" />
-                    @endif
+                    <livewire:backend.park-list-manager.park-form-component :id="$parkIdToEdit" wire:key="form-{{ $parkIdToEdit ?? 'create' }}" />
                 </div>
             </div>
         </div>

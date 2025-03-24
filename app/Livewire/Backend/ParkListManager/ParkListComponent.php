@@ -54,6 +54,13 @@ class ParkListComponent extends Component
         $this->resetPage();
     }
 
+
+    public function openCreateModal()
+    {
+        $this->parkIdToEdit = null; // Kein Park zum Bearbeiten, also leer
+        $this->dispatch('open-modal');
+    }
+
     public function updateCoordinates($id)
     {
         $park = AmusementParks::find($id);

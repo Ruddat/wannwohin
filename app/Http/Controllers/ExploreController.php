@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\SeoService;
@@ -21,20 +22,13 @@ class ExploreController extends Controller
 
     public function index(Request $request)
     {
-        // Standort aus Request oder Session holen
-        $latitude = $request->query('lat');
-        $longitude = $request->query('lon');
+        $latitude = $request->query('lat') ?? Session::get('user_location.lat');
+        $longitude = $request->query('lon') ?? Session::get('user_location.lon');
 
-        // Standort nur aktualisieren, wenn neue Werte übergeben werden
-        if ($latitude && $longitude) {
+        if ($request->query('lat') && $request->query('lon')) {
             Session::put('user_location', ['lat' => $latitude, 'lon' => $longitude]);
-        } else {
-            $userLocation = Session::get('user_location');
-            $latitude = $userLocation['lat'] ?? null;
-            $longitude = $userLocation['lon'] ?? null;
         }
 
-        // Meistbesuchte Locations
         $popularLocations = DB::table('stat_location_search_histories')
             ->join('wwde_locations', 'stat_location_search_histories.location_id', '=', 'wwde_locations.id')
             ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
@@ -116,7 +110,7 @@ class ExploreController extends Controller
 
             $locations = $query->having('distance', '<=', 300)
                 ->orderBy('distance')
-                ->limit(3)
+                ->limit(6)
                 ->get()
                 ->map(function ($park) {
                     $park->type = 'amusement_park';
@@ -131,6 +125,7 @@ class ExploreController extends Controller
             $baseQuery = $this->locationRepository->getLocationsByFiltersAndMonth($filters, $monthId)
                 ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
                 ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
+                ->leftJoin('stat_location_search_histories', 'wwde_locations.id', '=', 'stat_location_search_histories.location_id')
                 ->select(
                     'wwde_locations.id',
                     'wwde_locations.title',
@@ -138,7 +133,8 @@ class ExploreController extends Controller
                     'wwde_locations.lon',
                     'wwde_locations.climate_details_lnam',
                     'wwde_continents.alias AS continent_alias',
-                    'wwde_countries.alias AS country_alias'
+                    'wwde_countries.alias AS country_alias',
+                    DB::raw('COALESCE(stat_location_search_histories.search_count, 0) AS search_count')
                 );
 
             if ($latitude && $longitude) {
@@ -152,23 +148,39 @@ class ExploreController extends Controller
                         base.climate_details_lnam,
                         base.continent_alias,
                         base.country_alias,
+                        base.search_count,
                         6371 * acos(
                             cos(radians(?)) * cos(radians(base.lat)) * cos(radians(base.lon) - radians(?)) +
                             sin(radians(?)) * sin(radians(base.lat))
                         ) AS distance
                     ", [$latitude, $longitude, $latitude]);
 
-                $locations = $query->having('distance', '<=', 1200)
-                    ->orderBy('distance')
-                    ->limit(6)
-                    ->get()
-                    ->map(function ($location) {
-                        $location->type = 'location';
-                        $location->alias = str_replace(' ', '-', strtolower($location->title));
-                        return $location;
-                    });
+                $distanceLimits = [1200, 2500]; // Mehrere Stufen
+                foreach ($distanceLimits as $limit) {
+                    $locations = $query->having('distance', '<=', $limit)
+                        ->orderBy('distance')
+                        ->limit(6)
+                        ->get();
+                    if (!$locations->isEmpty()) {
+                        break; // Ergebnisse gefunden, Schleife verlassen
+                    }
+                }
+
+                // Fallback: Nach Suchpopularität sortieren
+                if ($locations->isEmpty()) {
+                    $locations = $baseQuery->orderByDesc('search_count')
+                        ->limit(6)
+                        ->get();
+                }
+
+                $locations = $locations->map(function ($location) {
+                    $location->type = 'location';
+                    $location->alias = str_replace(' ', '-', strtolower($location->title));
+                    return $location;
+                });
             } else {
-                $locations = $baseQuery->limit(6)
+                $locations = $baseQuery->orderByDesc('search_count')
+                    ->limit(6)
                     ->get()
                     ->map(function ($location) {
                         $location->type = 'location';

@@ -18,7 +18,7 @@
                         style="animation-delay: 0.6s;">
                         @autotranslate('Wir wünschen Ihnen viel Freude bei der Reiseplanung – Ihr Team von wann-wohin.de', app()->getLocale())
                     </p>
-                    <a href="#explore" class="btn btn-explore mt-3 animate__animated animate__pulse" id="explore-btn" style="animation-delay: 0.8s;">
+                    <a href="{{ route('explore') }}" class="btn btn-explore mt-3 animate__animated animate__pulse" id="explore-btn" style="animation-delay: 0.8s;">
                         @autotranslate('Finde jetzt dein Abenteuer!', app()->getLocale())
                     </a>
                     <p class="text-color-grey small mt-2">
@@ -316,26 +316,33 @@
 
 </style>
 <script>
-    document.getElementById('explore-btn').addEventListener('click', function(e) {
-    e.preventDefault();
+    document.addEventListener('DOMContentLoaded', () => {
+        // Standort einmalig beim Laden abrufen
+        if (navigator.geolocation && !localStorage.getItem('userLocation')) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    localStorage.setItem('userLocation', JSON.stringify({ lat, lon }));
+                },
+                (error) => {
+                    console.error('Standortfehler:', error);
+                    localStorage.setItem('userLocation', 'not_available');
+                },
+                { timeout: 5000 } // Timeout nach 5 Sekunden
+            );
+        }
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                // Weiterleitung mit Standort-Daten
+        // Button-Klick: Standort aus localStorage nutzen oder ohne Standort weiterleiten
+        document.getElementById('explore-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const location = localStorage.getItem('userLocation');
+            if (location && location !== 'not_available') {
+                const { lat, lon } = JSON.parse(location);
                 window.location.href = `/explore?lat=${lat}&lon=${lon}`;
-            },
-            (error) => {
-                console.error('Standortfehler:', error);
-                // Fallback ohne Standort
+            } else {
                 window.location.href = '/explore';
             }
-        );
-    } else {
-        alert('Geolocation wird von deinem Browser nicht unterstützt.');
-        window.location.href = '/explore';
-    }
-});
-</script>
+        });
+    });
+    </script>

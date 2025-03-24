@@ -1,4 +1,3 @@
-{{-- resources\views\pages\main\explore.blade.php --}}
 @extends('layouts.main')
 
 @section('content')
@@ -91,67 +90,95 @@
                 </div>
             </form>
 
-            <!-- Karussell bleibt unverändert -->
-            <div class="mt-5 popular-locations">
-                <h2 class="text-center text-color-dark mb-4 animate__animated animate__fadeIn">
-                    @autotranslate('Meistbesuchte Reiseziele', app()->getLocale())
-                </h2>
-                <div id="popularLocationsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000" data-bs-wrap="true">
-                    <div class="carousel-inner">
-                        @php
-                            $carouselItems = $popularLocations->count() < 3 ? $popularLocations->concat($popularLocations)->take(10) : $popularLocations;
-                            $randomImages = [
-                                asset('img/locations/festive-red-santa-hat.jpg'),
-                                'https://via.placeholder.com/400x250?text=Reiseziel+2',
-                                'https://via.placeholder.com/400x250?text=Reiseziel+3',
-                            ];
-                        @endphp
-                        @foreach ($carouselItems->chunk(3) as $chunkIndex => $chunk)
-                            <div class="carousel-item {{ $chunkIndex == 0 ? 'active' : '' }}">
-                                <div class="row g-4 justify-content-center">
-                                    @foreach ($chunk as $popularLocation)
-                                        <div class="col-md-4 col-sm-6">
-                                            <div class="card h-100 shadow-lg hover-card position-relative overflow-hidden">
-                                                <img src="{{ $popularLocation->text_pic1 ?? $randomImages[array_rand($randomImages)] }}"
-                                                     class="card-img-top" alt="{{ $popularLocation->title }}">
-                                                <div class="card-overlay">
-                                                    <h5 class="card-title text-white mb-2">{{ $popularLocation->title }}</h5>
-                                                    <p class="card-text text-white">
-                                                        <i class="fas fa-search"></i> {{ $popularLocation->search_count }} Suchen
-                                                    </p>
-                                                    <a href="{{ url('/details/' . ($popularLocation->continent_alias ?? 'unknown') . '/' . ($popularLocation->country_alias ?? 'unknown') . '/' . ($popularLocation->alias ?? 'unknown')) }}"
-                                                       class="btn btn-outline-light btn-sm">
-                                                        @autotranslate('Details', app()->getLocale())
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+<!-- Splide Slider für meistbesuchte Reiseziele -->
+<div class="mt-5 popular-locations">
+    <h2 class="text-center text-color-dark mb-4 animate__animated animate__fadeIn">
+        @autotranslate('Meistbesuchte Reiseziele', app()->getLocale())
+    </h2>
+    <div class="splide" id="splide-slider">
+        <div class="splide__track">
+            <ul class="splide__list">
+                @php
+                    $carouselItems = $popularLocations->count() < 3 ? $popularLocations->concat($popularLocations)->take(10) : $popularLocations;
+                    $randomImages = [
+                        asset('img/locations/woman-meditating-beach-with-copy-space.jpg'),
+                        asset('img/locations/medium-shot-man-exploring-with-map.jpg'),
+                        asset('img/locations/beach-area-blurred-night.jpg'),
+                    ];
+                @endphp
+                @foreach ($carouselItems as $popularLocation)
+                    <li class="splide__slide">
+                        <div class="slider-card-wrapper">
+                            <div class="slider-card">
+                                <div class="slider-card-image">
+                                    <img src="{{ $popularLocation->text_pic1 ?? $randomImages[array_rand($randomImages)] }}"
+                                         alt="{{ $popularLocation->title }}">
+                                </div>
+                                <div class="slider-card-content">
+                                    <h5 class="slider-card-title">{{ $popularLocation->title }}</h5>
+                                    <p class="slider-card-text">
+                                        <i class="fas fa-search"></i> {{ $popularLocation->search_count }} Suchen
+                                    </p>
+                                    <a href="{{ url('/details/' . ($popularLocation->continent_alias ?? 'unknown') . '/' . ($popularLocation->country_alias ?? 'unknown') . '/' . ($popularLocation->alias ?? 'unknown')) }}"
+                                       class="slider-card-button">
+                                        @autotranslate('Details', app()->getLocale())
+                                    </a>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#popularLocationsCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#popularLocationsCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                    <div class="carousel-indicators">
-                        @foreach ($carouselItems->chunk(3) as $chunkIndex => $chunk)
-                            <button type="button" data-bs-target="#popularLocationsCarousel" data-bs-slide-to="{{ $chunkIndex }}"
-                                    class="{{ $chunkIndex == 0 ? 'active' : '' }}" aria-label="Slide {{ $chunkIndex + 1 }}"></button>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
         </div>
     </section>
 @endsection
 
-<style scoped>
+{{-- Splide CSS und JS einbinden --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/css/splide.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/js/splide.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new Splide('#splide-slider', {
+            type: 'loop', // Keeps the slider looping
+            perPage: 5, // Show 5 slides on larger screens
+            gap: '15px', // Smaller gap to fit more slides
+            pagination: true, // Show pagination dots
+            autoplay: true, // Enable autoplay
+            interval: 3000, // Time in milliseconds (3 seconds) between slides
+            pauseOnHover: true, // Pause autoplay when hovering over the slider
+            breakpoints: {
+                1024: {
+                    perPage: 3, // Show 3 slides on medium screens
+                },
+                768: {
+                    perPage: 2, // Show 2 slides on smaller screens
+                },
+                576: {
+                    perPage: 1, // Show 1 slide on mobile
+                }
+            },
+        }).mount();
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.activity-card, .time-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                card.querySelector('input').checked = true;
+            });
+        });
+    });
+</script>
+
+<style>
 .explore-section {
     background: linear-gradient(135deg, #e6f0fa 0%, #f9fafb 100%);
     min-height: 100vh;
@@ -170,7 +197,6 @@
     font-size: 1.1rem;
 }
 
-/* Aktivitäts- und Zeitkarten */
 .activity-options, .time-options {
     display: flex;
     justify-content: center;
@@ -236,7 +262,6 @@
     transform: scale(1.2);
 }
 
-/* Button */
 .btn-explore {
     background: linear-gradient(135deg, #ff6b6b, #ff8e53);
     border: none;
@@ -256,7 +281,6 @@
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
 }
 
-/* Karussell-Styling bleibt weitgehend gleich */
 .popular-locations {
     padding-bottom: 40px;
 }
@@ -296,26 +320,6 @@
     transform: scale(1.08);
 }
 
-.carousel-control-prev-icon, .carousel-control-next-icon {
-    filter: invert(100%);
-    width: 30px;
-    height: 30px;
-}
-
-.carousel-indicators button {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #3182ce;
-    border: none;
-    margin: 0 5px;
-}
-
-.carousel-indicators .active {
-    background-color: #ff6b6b;
-}
-
-/* Responsive Anpassungen */
 @media (max-width: 768px) {
     .activity-content, .time-content {
         width: 120px;
@@ -329,26 +333,128 @@
         height: 200px;
     }
 }
+
+/* Slider Card Styles */
+.slider-card-wrapper {
+    padding: 0 10px;
+    height: fit-content;
+}
+
+.slider-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.slider-card:hover {
+    transform: translateY(-5px);
+}
+
+.slider-card-image {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.slider-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.slider-card:hover .slider-card-image img {
+    transform: scale(1.05);
+}
+
+.slider-card-content {
+    padding: 15px;
+    background: white;
+}
+
+.slider-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2d3748;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slider-card-text {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-bottom: 12px;
+}
+
+.slider-card-button {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.slider-card-button:hover {
+    background: linear-gradient(135deg, #ff8e53, #ff6b6b);
+    box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
+}
+
+/* Splide Slider Adjustments */
+.splide {
+    position: relative;
+    visibility: hidden;
+    height: fit-content;
+}
+
+.splide__slide {
+    height: auto;
+}
+
+.splide__track {
+    padding: 10px 0;
+}
+
+.splide__arrow {
+    background: rgba(255, 107, 107, 0.7);
+}
+
+.splide__arrow:hover {
+    background: rgba(255, 107, 107, 1);
+}
+
+.splide__pagination__page {
+    background: #cbd5e0;
+}
+
+.splide__pagination {
+    bottom: -0.5em;
+    left: 0;
+    padding: 0 1em;
+    position: absolute;
+    right: 0;
+    z-index: 1;
+}
+
+.splide__pagination__page.is-active {
+    background: #ff6b6b;
+}
+
+@media (max-width: 768px) {
+    .slider-card-image {
+        height: 150px;
+    }
+
+    .slider-card-content {
+        padding: 12px;
+    }
+}
 </style>
-
-@section('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-@endsection
-
-@section('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.activity-card, .time-card');
-            cards.forEach(card => {
-                card.addEventListener('click', () => {
-                    card.querySelector('input').checked = true;
-                });
-            });
-        });
-    </script>
-@endsection
-   <!-- tabler icons-->
-   <link rel="stylesheet" type="text/css" href="{{ asset('/assets/ra-admin/vendor/tabler-icons/tabler-icons.css') }}">
-   <!-- Tabler icons -->
-   <script src="{{ asset('/assets/js/tabler-icons.js') }}"></script>
-

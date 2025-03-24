@@ -137,7 +137,7 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/animate/animate.compat.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/simple-line-icons/css/simple-line-icons.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/vendor/owl.carousel/assets/owl.carousel.min.css') }}">
+
     <link rel="stylesheet" href="{{ asset('assets/vendor/owl.carousel/assets/owl.theme.default.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/magnific-popup/magnific-popup.min.css') }}">
 
@@ -165,8 +165,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.theme.css') }}" />
 
-    <!-- Slider Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/css/custom-slider.css') }}">
+
 
 
     <!-- Flag Icons CSS -->
@@ -185,6 +184,7 @@
 
     @yield('css')
     @stack('css')
+    @stack('styles')
     <!-- Head Libs -->
     <script src="{{ asset('assets/vendor/modernizr/modernizr.min.js') }}"></script>
 </head>
@@ -384,7 +384,7 @@
 <script src="{{ asset('assets/vendor/jquery.gmap/jquery.gmap.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/lazysizes/lazysizes.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/isotope/jquery.isotope.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/owl.carousel/owl.carousel.min.js') }}"></script>
+
 <script src="{{ asset('assets/vendor/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/vide/jquery.vide.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/vivus/vivus.min.js') }}"></script>
@@ -411,6 +411,9 @@
 
 <!-- Cookies Consent added from hani.masoud@gmx.de -->
 <script src={{ asset('assets/js/cookie-consent.js') }}></script>
+
+<!-- Tabler icons-->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/ra-admin/vendor/tabler-icons/tabler-icons.css') }}">
 
     @vite(['resources/frontend/js/app.js'])
 
