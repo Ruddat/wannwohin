@@ -6,6 +6,11 @@
             @error('name') <span class="text-danger small">{{ $message }}</span> @enderror
         </div>
         <div class="mb-4">
+            <label class="form-label">Typ</label>
+            <input type="text" class="form-control" wire:model="type" placeholder="z. B. Themenpark, Wasserpark">
+            @error('type') <span class="text-danger small">{{ $message }}</span> @enderror
+        </div>
+        <div class="mb-4">
             <label class="form-label">Land</label>
             <input type="text" class="form-control" wire:model="country" placeholder="Deutschland">
             @error('country') <span class="text-danger small">{{ $message }}</span> @enderror

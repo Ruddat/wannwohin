@@ -42,6 +42,7 @@ class ParkFormComponent extends Component
         'latitude' => 'nullable|numeric',
         'longitude' => 'nullable|numeric',
         'open_from' => 'nullable|date',
+        'type' => 'nullable|string|max:100',
         'closed_from' => 'nullable|date|after:open_from',
         'url' => 'nullable|url|unique:amusement_parks,url', // Eindeutigkeit prüfen
         'description' => 'nullable|string|max:500',
@@ -75,6 +76,7 @@ class ParkFormComponent extends Component
                 $this->fill([
                     'parkId' => $park->id,
                     'name' => $park->name,
+                    'type' => $park->type,
                     'country' => $park->country,
                     'location' => $park->location,
                     'latitude' => $park->latitude,
@@ -209,6 +211,7 @@ class ParkFormComponent extends Component
         $data = [
             'name' => $this->name,
             'country' => $this->country,
+            'type' => $this->type,
             'location' => $this->location,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
