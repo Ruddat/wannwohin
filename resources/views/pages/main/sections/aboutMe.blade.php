@@ -317,30 +317,73 @@
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Standort einmalig beim Laden abrufen
-        if (navigator.geolocation && !localStorage.getItem('userLocation')) {
+        const exploreBtn = document.getElementById('explore-btn');
+
+        // Funktion zum Abrufen des Standorts
+        function getUserLocation(callback) {
+            if (!navigator.geolocation) {
+                console.warn('Geolocation wird vom Browser nicht unterstützt.');
+                localStorage.setItem('userLocation', 'not_supported');
+                callback(null);
+                return;
+            }
+
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    localStorage.setItem('userLocation', JSON.stringify({ lat, lon }));
+                    const location = { lat, lon };
+                    localStorage.setItem('userLocation', JSON.stringify(location));
+                    callback(location);
                 },
                 (error) => {
-                    console.error('Standortfehler:', error);
-                    localStorage.setItem('userLocation', 'not_available');
+                    console.error('Standortfehler:', error.message);
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            localStorage.setItem('userLocation', 'denied');
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            localStorage.setItem('userLocation', 'unavailable');
+                            break;
+                        case error.TIMEOUT:
+                            localStorage.setItem('userLocation', 'timeout');
+                            break;
+                        default:
+                            localStorage.setItem('userLocation', 'error');
+                    }
+                    callback(null);
                 },
-                { timeout: 5000 } // Timeout nach 5 Sekunden
+                {
+                    timeout: 10000, // Erhöhe Timeout auf 10 Sekunden
+                    maximumAge: 60000, // Akzeptiere Standortdaten, die bis zu 60 Sekunden alt sind
+                    enableHighAccuracy: false // Keine hohe Genauigkeit erforderlich, spart Zeit
+                }
             );
         }
 
-        // Button-Klick: Standort aus localStorage nutzen oder ohne Standort weiterleiten
-        document.getElementById('explore-btn').addEventListener('click', function(e) {
+        // Standort beim Laden abrufen, falls nicht vorhanden
+        if (!localStorage.getItem('userLocation')) {
+            getUserLocation((location) => {
+                // Optional: Hier könntest du etwas tun, wenn der Standort abgerufen wurde
+            });
+        }
+
+        // Button-Klick: Standort verwenden oder ohne Standort weiterleiten
+        exploreBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const location = localStorage.getItem('userLocation');
-            if (location && location !== 'not_available') {
-                const { lat, lon } = JSON.parse(location);
-                window.location.href = `/explore?lat=${lat}&lon=${lon}`;
+            const storedLocation = localStorage.getItem('userLocation');
+
+            if (storedLocation && storedLocation !== 'not_available' && storedLocation !== 'denied' && storedLocation !== 'unavailable' && storedLocation !== 'timeout' && storedLocation !== 'error' && storedLocation !== 'not_supported') {
+                try {
+                    const { lat, lon } = JSON.parse(storedLocation);
+                    window.location.href = `/explore?lat=${lat}&lon=${lon}`;
+                } catch (err) {
+                    console.error('Fehler beim Parsen der Standortdaten:', err);
+                    window.location.href = '/explore';
+                }
             } else {
+                // Optional: Benutzer informieren, warum kein Standort verwendet wird
+                console.log('Kein gültiger Standort verfügbar, leite ohne Standort weiter.');
                 window.location.href = '/explore';
             }
         });
