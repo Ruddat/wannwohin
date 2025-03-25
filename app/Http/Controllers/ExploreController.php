@@ -108,7 +108,7 @@ class ExploreController extends Controller
                     ) AS distance
                 ", [$latitude, $longitude, $latitude]);
 
-            $locations = $query->having('distance', '<=', 300)
+            $locations = $query->having('distance', '<=', 400)
                 ->orderBy('distance')
                 ->limit(6)
                 ->get()
@@ -117,10 +117,10 @@ class ExploreController extends Controller
                     $park->continent_alias = strtolower($park->continent);
                     $park->country_alias = strtolower($park->country);
                     $park->alias = str_replace(' ', '-', strtolower($park->title));
-                    $park->text_pic1 = 'https://via.placeholder.com/400x250?text=' . urlencode($park->title);
+                    $park->logo_url = 'https://via.placeholder.com/400x250?text=' . urlencode($park->title);
                     return $park;
                 });
-        } else {
+            } else {
             $filters = $activityMap[$activity] ?? [];
             $baseQuery = $this->locationRepository->getLocationsByFiltersAndMonth($filters, $monthId)
                 ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')

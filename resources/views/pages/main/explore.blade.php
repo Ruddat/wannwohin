@@ -1,187 +1,159 @@
 @extends('layouts.main')
 
 @section('content')
-    <section class="explore-section py-5">
-        <div class="container">
-            <h1 class="text-center text-color-dark mb-4 animate__animated animate__fadeIn">
-                @autotranslate('Finde dein Abenteuer!', app()->getLocale())
-            </h1>
-            <p class="text-center text-color-grey mb-5 animate__animated animate__fadeIn animate__delay-1s">
-                @autotranslate('Beantworte diese Fragen, und wir schlagen dir spontan ein Ziel vor!', app()->getLocale())
-            </p>
 
-            <form action="{{ route('explore.results') }}" method="GET" class="row g-4 justify-content-center">
-                <!-- Frage 1: Aktivität -->
-                <div class="col-md-10">
-                    <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
-                        @autotranslate('Was möchtest du erleben?', app()->getLocale())
-                    </label>
-                    <div class="activity-options d-flex flex-wrap justify-content-center gap-3">
-                        <label class="activity-card">
-                            <input type="radio" name="activity" value="relax" class="activity-input" required>
-                            <div class="activity-content">
-                                <i class="fas fa-umbrella-beach fa-2x"></i>
-                                <span>@autotranslate('Entspannen', app()->getLocale())</span>
-                            </div>
-                        </label>
-                        <label class="activity-card">
-                            <input type="radio" name="activity" value="adventure" class="activity-input">
-                            <div class="activity-content">
-                                <i class="fas fa-hiking fa-2x"></i>
-                                <span>@autotranslate('Abenteuer', app()->getLocale())</span>
-                            </div>
-                        </label>
-                        <label class="activity-card">
-                            <input type="radio" name="activity" value="culture" class="activity-input">
-                            <div class="activity-content">
-                                <i class="fas fa-landmark fa-2x"></i>
-                                <span>@autotranslate('Kultur', app()->getLocale())</span>
-                            </div>
-                        </label>
-                        <label class="activity-card">
-                            <input type="radio" name="activity" value="amusement" class="activity-input">
-                            <div class="activity-content">
-                                <i class="ti ti-rollercoaster" style="font-size: 2.5rem;"></i>
-                                <span>@autotranslate('Freizeitparks', app()->getLocale())</span>
-                            </div>
-                        </label>
+
+<section class="explore-section py-5">
+<div class="container">
+    <h1 class="text-center text-color-dark mb-4 animate__animated animate__fadeIn">
+        @autotranslate('Finde dein Abenteuer!', app()->getLocale())
+    </h1>
+    <p class="text-center text-color-grey mb-5 animate__animated animate__fadeIn animate__delay-1s">
+        @autotranslate('Beantworte diese Fragen, und wir schlagen dir spontan ein Ziel vor!', app()->getLocale())
+    </p>
+
+    <form action="{{ route('explore.results') }}" method="GET" class="row g-4 justify-content-center">
+        <!-- Frage 1: Aktivität -->
+        <div class="col-md-10">
+            <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
+                @autotranslate('Was möchtest du erleben?', app()->getLocale())
+            </label>
+            <div class="activity-options d-flex flex-wrap justify-content-center gap-3">
+                <label class="activity-card">
+                    <input type="radio" name="activity" value="relax" class="activity-input" required>
+                    <div class="activity-content">
+                        <i class="fas fa-umbrella-beach fa-2x"></i>
+                        <span>@autotranslate('Entspannen', app()->getLocale())</span>
                     </div>
-                </div>
-
-                <!-- Frage 2: Zeitpunkt -->
-                <div class="col-md-10 mt-5">
-                    <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
-                        @autotranslate('Wann möchtest du reisen?', app()->getLocale())
-                    </label>
-                    <div class="time-options d-flex flex-wrap justify-content-center gap-3">
-                        <label class="time-card">
-                            <input type="radio" name="time" value="now" class="time-input" required>
-                            <div class="time-content">
-                                <i class="fas fa-clock fa-2x"></i>
-                                <span>@autotranslate('Jetzt', app()->getLocale())</span>
-                            </div>
-                        </label>
-                        <label class="time-card">
-                            <input type="radio" name="time" value="month" class="time-input">
-                            <div class="time-content">
-                                <i class="fas fa-calendar-alt fa-2x"></i>
-                                <span>@autotranslate('Nächster Monat', app()->getLocale())</span>
-                            </div>
-                        </label>
-                        <label class="time-card">
-                            <input type="radio" name="time" value="later" class="time-input">
-                            <div class="time-content">
-                                <i class="fas fa-hourglass-half fa-2x"></i>
-                                <span>@autotranslate('Später', app()->getLocale())</span>
-                            </div>
-                        </label>
+                </label>
+                <label class="activity-card">
+                    <input type="radio" name="activity" value="adventure" class="activity-input">
+                    <div class="activity-content">
+                        <i class="fas fa-hiking fa-2x"></i>
+                        <span>@autotranslate('Abenteuer', app()->getLocale())</span>
                     </div>
-                </div>
-
-                @if ($latitude && $longitude)
-                    <input type="hidden" name="lat" value="{{ $latitude }}">
-                    <input type="hidden" name="lon" value="{{ $longitude }}">
-                @endif
-
-                <div class="col-md-10 text-center mt-5">
-                    <button type="submit" class="btn btn-explore animate__animated animate__pulse animate__infinite">
-                        @autotranslate('Ergebnisse anzeigen', app()->getLocale())
-                    </button>
-                </div>
-            </form>
-
-<!-- Splide Slider für meistbesuchte Reiseziele -->
-<div class="mt-5 popular-locations">
-    <h2 class="text-center text-color-dark mb-4 animate__animated animate__fadeIn">
-        @autotranslate('Meistbesuchte Reiseziele', app()->getLocale())
-    </h2>
-    <div class="splide" id="splide-slider">
-        <div class="splide__track">
-            <ul class="splide__list">
-                @php
-                    $carouselItems = $popularLocations->count() < 3 ? $popularLocations->concat($popularLocations)->take(10) : $popularLocations;
-                    $randomImages = [
-                        asset('img/locations/woman-meditating-beach-with-copy-space.jpg'),
-                        asset('img/locations/medium-shot-man-exploring-with-map.jpg'),
-                        asset('img/locations/beach-area-blurred-night.jpg'),
-                    ];
-                @endphp
-                @foreach ($carouselItems as $popularLocation)
-                    <li class="splide__slide">
-                        <div class="slider-card-wrapper">
-                            <div class="slider-card">
-                                <div class="slider-card-image">
-                                    <img src="{{ $popularLocation->text_pic1 ?? $randomImages[array_rand($randomImages)] }}"
-                                         alt="{{ $popularLocation->title }}">
-                                </div>
-                                <div class="slider-card-content">
-                                    <h5 class="slider-card-title">{{ $popularLocation->title }}</h5>
-                                    <p class="slider-card-text">
-                                        <i class="fas fa-search"></i> {{ $popularLocation->search_count }} Suchen
-                                    </p>
-                                    <a href="{{ url('/details/' . ($popularLocation->continent_alias ?? 'unknown') . '/' . ($popularLocation->country_alias ?? 'unknown') . '/' . ($popularLocation->alias ?? 'unknown')) }}"
-                                       class="slider-card-button">
-                                        @autotranslate('Details', app()->getLocale())
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
+                </label>
+                <label class="activity-card">
+                    <input type="radio" name="activity" value="culture" class="activity-input">
+                    <div class="activity-content">
+                        <i class="fas fa-landmark fa-2x"></i>
+                        <span>@autotranslate('Kultur', app()->getLocale())</span>
+                    </div>
+                </label>
+                <label class="activity-card">
+                    <input type="radio" name="activity" value="amusement" class="activity-input">
+                    <div class="activity-content">
+                        <i class="ti ti-rollercoaster" style="font-size: 2.5rem;"></i>
+                        <span>@autotranslate('Freizeitparks', app()->getLocale())</span>
+                    </div>
+                </label>
+            </div>
         </div>
-    </div>
+
+        <!-- Frage 2: Zeitpunkt -->
+        <div class="col-md-10 mt-5">
+            <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
+                @autotranslate('Wann möchtest du reisen?', app()->getLocale())
+            </label>
+            <div class="time-options d-flex flex-wrap justify-content-center gap-3">
+                <label class="time-card">
+                    <input type="radio" name="time" value="now" class="time-input" required>
+                    <div class="time-content">
+                        <i class="fas fa-clock fa-2x"></i>
+                        <span>@autotranslate('Jetzt', app()->getLocale())</span>
+                    </div>
+                </label>
+                <label class="time-card">
+                    <input type="radio" name="time" value="month" class="time-input">
+                    <div class="time-content">
+                        <i class="fas fa-calendar-alt fa-2x"></i>
+                        <span>@autotranslate('Nächster Monat', app()->getLocale())</span>
+                    </div>
+                </label>
+                <label class="time-card">
+                    <input type="radio" name="time" value="later" class="time-input">
+                    <div class="time-content">
+                        <i class="fas fa-hourglass-half fa-2x"></i>
+                        <span>@autotranslate('Später', app()->getLocale())</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        @if ($latitude && $longitude)
+            <input type="hidden" name="lat" value="{{ $latitude }}">
+            <input type="hidden" name="lon" value="{{ $longitude }}">
+        @endif
+
+        <div class="col-md-10 text-center mt-5">
+            <button type="submit" class="btn btn-explore animate__animated animate__pulse animate__infinite">
+                @autotranslate('Ergebnisse anzeigen', app()->getLocale())
+            </button>
+        </div>
+    </form>
 </div>
+</section>
 
 
+<div class="destination-slider-wrapper">
+  <section class="destination-slider-section">
+    <div class="ds-container">
+      <header class="ds-header">
+        <h1 class="ds-title">
+          @autotranslate('Meistbesuchte Reiseziele', app()->getLocale())
+        </h1>
+      </header>
 
+      <!-- Swiper Slider -->
+      <div class="ds-slider swiper" id="destinationSlider">
+        <div class="swiper-wrapper">
+          @php
+            $carouselItems = $popularLocations->count() < 3 ? $popularLocations->concat($popularLocations)->take(10) : $popularLocations;
+            $randomImages = [
+                asset('img/locations/woman-meditating-beach-with-copy-space.jpg'),
+                asset('img/locations/medium-shot-man-exploring-with-map.jpg'),
+                asset('img/locations/beach-area-blurred-night.jpg'),
+            ];
+          @endphp
+          @foreach ($carouselItems as $popularLocation)
+          <div class="swiper-slide">
+            <div class="ds-card">
+              <div class="ds-card-content">
+                <header class="ds-card-header">
+                  <h2 class="ds-card-title" data-title="{{ $popularLocation->title ?? $popularLocation['title'] }}">
+                    {{ $popularLocation->title ?? $popularLocation['title'] }}
+                  </h2>
+                </header>
+                <img class="ds-card-image"
+                     src="{{ $popularLocation->text_pic1 ?? $randomImages[array_rand($randomImages)] }}"
+                     alt="{{ $popularLocation->title ?? $popularLocation['title'] }}">
+                <footer class="ds-card-footer">
+                  <a href="#" class="ds-card-button">
+                    see more
+                  </a>
+                </footer>
+              </div>
+            </div>
+          </div>
+          @endforeach
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
+
+  <div>
+    @include('pages.main.sections.blog')
+  </div>
+</div>
 @endsection
 
-{{-- Splide CSS und JS einbinden --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/css/splide.min.css">
 
-<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/js/splide.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        new Splide('#splide-slider', {
-            type: 'loop', // Keeps the slider looping
-            perPage: 5, // Show 5 slides on larger screens
-            gap: '15px', // Smaller gap to fit more slides
-            pagination: true, // Show pagination dots
-            autoplay: true, // Enable autoplay
-            interval: 3000, // Time in milliseconds (3 seconds) between slides
-            pauseOnHover: true, // Pause autoplay when hovering over the slider
-            breakpoints: {
-                1024: {
-                    perPage: 3, // Show 3 slides on medium screens
-                },
-                768: {
-                    perPage: 2, // Show 2 slides on smaller screens
-                },
-                576: {
-                    perPage: 1, // Show 1 slide on mobile
-                }
-            },
-        }).mount();
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const cards = document.querySelectorAll('.activity-card, .time-card');
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                card.querySelector('input').checked = true;
-            });
-        });
-    });
-</script>
 
 <style>
+/* Allgemeine Styles (weitgehend unverändert) */
 .explore-section {
     background: linear-gradient(135deg, #e6f0fa 0%, #f9fafb 100%);
-    min-height: 100vh;
+    min-height: auto;
     padding-top: 80px;
     padding-bottom: 60px;
 }
@@ -197,10 +169,18 @@
     font-size: 1.1rem;
 }
 
+/* Flexbox Fallback für ältere Firefox-Versionen */
 .activity-options, .time-options {
     display: flex;
     justify-content: center;
     gap: 20px;
+}
+
+@supports not (gap: 20px) {
+    .activity-options > *,
+    .time-options > * {
+        margin: 0 10px;
+    }
 }
 
 .activity-card, .time-card {
@@ -280,181 +260,359 @@
     transform: scale(1.05);
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
 }
+</style>
 
-.popular-locations {
-    padding-bottom: 40px;
+
+
+
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<style>
+.destination-slider-wrapper {
+  --ds-primary: #ff6b6b;
+  --ds-secondary: #ff8e53;
+  --ds-light: #ffffff;
+  --ds-dark: #333333;
+  --ds-shadow: 0 10px 20px rgba(0,0,0,0.1);
+
+  contain: content;
+  position: relative;
+  z-index: 0;
+  min-height: auto;
+  padding-bottom: 2rem;
 }
 
-.card {
-    border: none;
-    border-radius: 20px;
-    overflow: hidden;
-    transition: transform 0.3s ease;
+.destination-slider-section {
+  position: relative;
+  padding: 1rem 0;
+  overflow: hidden;
+  background: url("https://images.pexels.com/photos/18394681/pexels-photo-18394681/free-photo-of-puesta-de-sol-silueta-tarde-noche.jpeg")
+              center/cover no-repeat;
+  min-height: 70vh;
+  height: fit-content;
 }
 
-.card-img-top {
-    height: 250px;
-    object-fit: cover;
-    border: 2px solid white;
-    border-radius: 18px;
-    transition: transform 0.4s ease-in-out;
+.ds-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+
 }
 
-.card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
-    padding: 20px;
-    color: white;
-    transform: translateY(100%);
-    transition: transform 0.4s ease-in-out;
+.ds-header {
+  padding: 40px 0;
+  text-align: center;
 }
 
-.card:hover .card-overlay {
-    transform: translateY(0);
+.ds-title {
+  color: var(--ds-light);
+  font-size: 2.5rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
 }
 
-.card:hover .card-img-top {
-    transform: scale(1.08);
+.ds-slider {
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.ds-card {
+  height: auto;
+  min-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(5px);
+}
+
+.ds-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--ds-shadow);
+}
+
+.ds-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-card-header {
+  padding: 3rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.ds-card-title {
+  color: var(--ds-light);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-size: 1.5rem;
+  transition: all 0.4s ease;
+  text-align: center;
+}
+
+.ds-card-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  transition: opacity 0.4s ease;
+}
+
+.ds-card-footer {
+  padding: 40px 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.ds-card-button {
+  background: linear-gradient(135deg, var(--ds-primary), var(--ds-secondary));
+  border: none;
+  padding: 15px 40px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  touch-action: manipulation;
+}
+
+.ds-card-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+  background: linear-gradient(135deg, var(--ds-secondary), var(--ds-primary));
+}
+
+.swiper-slide {
+  transform: scale(0.8);
+  transition: transform 0.5s;
+  min-height: 450px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+
+
+.swiper-slide-active {
+  transform: scale(1);
+}
+
+
+.swiper-wrapper {
+  height: fit-content;
+  display: flex;
+}
+
+.swiper-slide-active .ds-card {
+  background: var(--ds-light);
+}
+
+.swiper-slide-active .ds-card-title {
+  color: var(--ds-dark);
+}
+
+.swiper-slide:not(.swiper-slide-active) .ds-card-image,
+.swiper-slide:not(.swiper-slide-active) .ds-card-footer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 1200px) {
+  .destination-slider-section {
+    min-height: 65vh;
+  }
+  .ds-container {
+    padding: 0 15px;
+  }
+  .ds-title {
+    font-size: 2.2rem;
+  }
+  .ds-card {
+    min-height: 280px;
+  }
+  .ds-card-title {
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+  }
+  .ds-card-header {
+    padding: 2rem 1.5rem;
+  }
+  .ds-card-footer {
+    padding: 30px 20px;
+  }
+  .ds-card-button {
+    padding: 12px 35px;
+    font-size: 0.95rem;
+  }
+  .swiper-slide {
+    min-height: 420px;
+  }
 }
 
 @media (max-width: 768px) {
-    .activity-content, .time-content {
-        width: 120px;
-        padding: 15px;
-    }
-    .btn-explore {
-        padding: 12px 30px;
-        font-size: 1rem;
-    }
-    .card-img-top {
-        height: 200px;
-    }
+  .destination-slider-section {
+    min-height: 55vh;
+  }
+  .ds-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .ds-header {
+    padding: 30px 0;
+  }
+  .ds-card {
+    min-height: 260px;
+  }
+  .ds-card-title {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+  .ds-card-header {
+    padding: 1.5rem 1rem;
+  }
+  .ds-card-image {
+    aspect-ratio: 4/3; /* Bessere Proportionen für kleinere Bildschirme */
+  }
+  .ds-card-footer {
+    padding: 20px 15px;
+  }
+  .ds-card-button {
+    padding: 10px 30px;
+    font-size: 0.9rem;
+  }
+  .swiper-slide {
+    min-height: 380px;
+    padding: 5px;
+  }
+  .swiper-slide-active {
+    transform: scale(0.95); /* Etwas kleinere Skalierung für bessere Sichtbarkeit */
+  }
+  .swiper-slide {
+    transform: scale(0.75); /* Inaktive Slides etwas kleiner */
+  }
 }
 
-/* Slider Card Styles */
-.slider-card-wrapper {
-    padding: 0 10px;
-    height: fit-content;
-}
-
-.slider-card {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-}
-
-.slider-card:hover {
-    transform: translateY(-5px);
-}
-
-.slider-card-image {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
-}
-
-.slider-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.slider-card:hover .slider-card-image img {
-    transform: scale(1.05);
-}
-
-.slider-card-content {
-    padding: 15px;
-    background: white;
-}
-
-.slider-card-title {
+@media (max-width: 480px) {
+  .destination-slider-section {
+    min-height: 45vh;
+  }
+  .ds-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .ds-header {
+    padding: 20px 0;
+  }
+  .ds-card {
+    min-height: 240px;
+  }
+  .ds-card-title {
     font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: #2d3748;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.slider-card-text {
-    font-size: 0.85rem;
-    color: #718096;
-    margin-bottom: 12px;
-}
-
-.slider-card-button {
-    display: inline-block;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-    color: white;
-    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+  .ds-card-header {
+    padding: 1rem 0.5rem;
+  }
+  .ds-card-image {
+    aspect-ratio: 3/2; /* Noch kompaktere Proportionen für sehr kleine Bildschirme */
+  }
+  .ds-card-footer {
+    padding: 15px 10px;
+  }
+  .ds-card-button {
+    padding: 8px 20px;
     font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
+  }
+  .swiper-slide {
+    min-height: 340px;
+    padding: 3px;
+  }
+  .swiper-slide-active {
+    transform: scale(0.9);
+  }
+  .swiper-slide {
+    transform: scale(0.7);
+  }
 }
 
-.slider-card-button:hover {
-    background: linear-gradient(135deg, #ff8e53, #ff6b6b);
-    box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
-}
-
-/* Splide Slider Adjustments */
-.splide {
-    position: relative;
-    visibility: hidden;
-    height: fit-content;
-}
-
-.splide__slide {
-    height: auto;
-}
-
-.splide__track {
-    padding: 10px 0;
-}
-
-.splide__arrow {
-    background: rgba(255, 107, 107, 0.7);
-}
-
-.splide__arrow:hover {
-    background: rgba(255, 107, 107, 1);
-}
-
-.splide__pagination__page {
-    background: #cbd5e0;
-}
-
-.splide__pagination {
-    bottom: -0.5em;
-    left: 0;
-    padding: 0 1em;
-    position: absolute;
-    right: 0;
-    z-index: 1;
-}
-
-.splide__pagination__page.is-active {
-    background: #ff6b6b;
-}
-
-@media (max-width: 768px) {
-    .slider-card-image {
-        height: 150px;
-    }
-
-    .slider-card-content {
-        padding: 12px;
-    }
+@media (max-width: 360px) {
+  .destination-slider-section {
+    min-height: 40vh;
+  }
+  .ds-title {
+    font-size: 1.3rem;
+  }
+  .ds-card {
+    min-height: 220px;
+  }
+  .ds-card-title {
+    font-size: 0.9rem;
+  }
+  .ds-card-header {
+    padding: 0.8rem 0.3rem;
+  }
+  .ds-card-footer {
+    padding: 10px 5px;
+  }
+  .ds-card-button {
+    padding: 6px 15px;
+    font-size: 0.75rem;
+  }
+  .swiper-slide {
+    min-height: 300px;
+  }
 }
 </style>
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  new Swiper('#destinationSlider', {
+    slidesPerView: 5,
+    slidesPerGroup: 1,
+    centeredSlides: true,
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      pauseOnMouseEnter: true,
+    },
+    spaceBetween: 5,
+    breakpoints: {
+      1200: {
+        slidesPerView: 3,
+        spaceBetween: 5
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 5,
+        centeredSlides: true,
+      },
+      480: {
+        slidesPerView: 1,
+        spaceBetween: 3,
+        centeredSlides: true,
+      },
+      360: {
+        slidesPerView: 1,
+        spaceBetween: 2,
+        centeredSlides: true,
+      }
+    }
+  });
+});
+</script>

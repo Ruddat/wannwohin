@@ -30,6 +30,24 @@ class GenerateBreadcrumbs
 
         // Dynamische Breadcrumbs für verschiedene Routen
         switch ($routeName) {
+            case 'explore':
+                $breadcrumbs[] = [
+                    'title' => 'Abenteuer Finden', // Title for the /explore page
+                    'url' => route('explore'),
+                ];
+                break;
+
+            case 'explore.results':
+                $breadcrumbs[] = [
+                    'title' => 'Abenteuer Finden',
+                    'url' => route('explore'),
+                ];
+                $breadcrumbs[] = [
+                    'title' => 'Ergebnisse', // Title for the /explore/results page
+                    'url' => route('explore.results'),
+                ];
+                break;
+
             case 'search.results':
                 $breadcrumbs[] = [
                     'title' => 'Suchergebnisse',

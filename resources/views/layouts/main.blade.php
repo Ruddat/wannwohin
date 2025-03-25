@@ -151,6 +151,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="session-id" content="{{ Session::getId() }}">
 
+    {{--  --}}
+
     <!-- Demo CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/demo-resume.css') }}">
 
@@ -379,6 +381,7 @@
 {{--
 <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 --}}
+
 <script src="{{ asset('assets/vendor/jquery.validation/jquery.validate.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.easy-pie-chart/jquery.easypiechart.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/jquery.gmap/jquery.gmap.min.js') }}"></script>

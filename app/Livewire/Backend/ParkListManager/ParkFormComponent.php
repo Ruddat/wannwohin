@@ -43,7 +43,7 @@ class ParkFormComponent extends Component
         'longitude' => 'nullable|numeric',
         'open_from' => 'nullable|date',
         'closed_from' => 'nullable|date|after:open_from',
-        'url' => 'nullable|url',
+        'url' => 'nullable|url|unique:amusement_parks,url', // Eindeutigkeit prüfen
         'description' => 'nullable|string|max:500',
         'videoUrl' => 'nullable|url',
         'embedCode' => 'nullable|string',
@@ -178,7 +178,15 @@ class ParkFormComponent extends Component
 
     public function save()
     {
-        $this->validate();
+        // Dynamische Regeln basierend auf Park-ID
+        $rules = $this->rules;
+        if ($this->parkId) {
+            $rules['url'] = 'nullable|url|unique:amusement_parks,url,' . $this->parkId;
+        } else {
+            $rules['url'] = 'nullable|url|unique:amusement_parks,url';
+        }
+
+        $this->validate($rules);
 
         $externalId = Str::slug($this->name, '');
 
@@ -220,23 +228,17 @@ class ParkFormComponent extends Component
         if ($this->parkId) {
             $park = AmusementParks::findOrFail($this->parkId);
             $park->update($data);
-
-            // Cache für diesen Park und alle betroffenen Standorte löschen
-            Cache::forget("queue_times_park_{$this->parkId}_" . date('H')); // Wartezeiten-Cache
+            Cache::forget("queue_times_park_{$this->parkId}_" . date('H'));
             $this->clearAmusementParksCache($park, $today);
-
             Log::info('Cache gelöscht', ['keys' => ["queue_times_park_{$this->parkId}_" . date('H')]]);
             $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich aktualisiert.');
             $this->dispatch('close-modal');
         } else {
             $newPark = AmusementParks::create($data);
-
-            // Cache für den neuen Park und alle betroffenen Standorte löschen
             if ($newPark->queue_times_id) {
                 Cache::forget("queue_times_park_{$newPark->id}_" . date('H'));
             }
             $this->clearAmusementParksCache($newPark, $today);
-
             Log::info('Cache gelöscht', ['keys' => $newPark->queue_times_id ? ["queue_times_park_{$newPark->id}_" . date('H')] : []]);
             $this->dispatch('show-toast', type: 'success', message: 'Park erfolgreich erstellt.');
             return redirect()->route('verwaltung.site-manager.park-manager.index');
