@@ -19,7 +19,7 @@ class ParkFormComponent extends Component
     use WithFileUploads;
 
     public $parkId;
-    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl, $logoUrl, $embedCode;
+    public $name, $country, $location, $latitude, $longitude, $open_from, $closed_from, $url, $description, $videoUrl, $logoUrl, $embedCode, $type;
     public $logoFile;
     public $opening_hours = [
         'monday' => ['open' => '', 'close' => ''],
