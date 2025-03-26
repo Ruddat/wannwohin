@@ -343,6 +343,11 @@
             'continent.countries',
             'list-country-locations',
             'compare',
+            'explore',
+            'explore.results',
+            'explore.relax',
+            'explore.adventure',
+            'explore.culture',
             'ergebnisse.anzeigen'))
 
         @if ($panoramaLocationPicture || $mainLocationPicture)

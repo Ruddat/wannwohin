@@ -14,7 +14,7 @@ class HeaderContentController extends Controller
     public function index()
     {
         $headerContents = HeaderContent::all();
-        return view('backend.admin.header.index', compact('headerContents'));        ;
+        return view('backend.admin.header.index', compact('headerContents'));
     }
 
     public function create()
@@ -29,6 +29,7 @@ class HeaderContentController extends Controller
             'main_img' => 'required|image|mimes:jpeg,png,jpg,webp|max:40960',
             'main_text' => 'required|string',
             'title' => 'nullable|string',
+            'slug' => 'required|string|unique:header_contents,slug|regex:/^[a-z0-9\-]+$/|max:50', // Pflichtfeld
         ]);
 
         $bgImgPath = $this->processImage($request->file('bg_img'), 'bg', 1970, 550);
@@ -40,6 +41,7 @@ class HeaderContentController extends Controller
             'main_img' => $mainImgPath,
             'main_text' => $cleanedText,
             'title' => $request->title,
+            'slug' => $request->slug, // Muss jetzt manuell gesetzt werden
         ]);
 
         return redirect()->route('verwaltung.site-manager.header_contents.index')
@@ -58,6 +60,7 @@ class HeaderContentController extends Controller
             'main_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:40960',
             'main_text' => 'required|string',
             'title' => 'nullable|string',
+            'slug' => 'required|string|unique:header_contents,slug,' . $headerContent->id . '|regex:/^[a-z0-9\-]+$/|max:50', // Pflichtfeld
         ]);
 
         if ($request->hasFile('bg_img')) {
@@ -75,6 +78,7 @@ class HeaderContentController extends Controller
         $headerContent->update([
             'main_text' => $cleanedText,
             'title' => $request->title,
+            'slug' => $request->slug,
         ]);
 
         return redirect()->route('verwaltung.site-manager.header_contents.index')

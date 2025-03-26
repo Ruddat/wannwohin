@@ -16,12 +16,11 @@
                         @php
                             $bgImgPath = null;
                             if (Storage::exists($headerContent->bg_img)) {
-                                $bgImgPath = Storage::url($headerContent->bg_img); // Bild aus Storage
+                                $bgImgPath = Storage::url($headerContent->bg_img);
                             } elseif (file_exists(public_path($headerContent->bg_img))) {
-                                $bgImgPath = asset($headerContent->bg_img); // Bild aus Public
+                                $bgImgPath = asset($headerContent->bg_img);
                             }
                         @endphp
-
                         @if ($bgImgPath)
                             <img src="{{ $bgImgPath }}" class="img-thumbnail" style="width: 150px;">
                         @else
@@ -41,12 +40,11 @@
                         @php
                             $mainImgPath = null;
                             if (Storage::exists($headerContent->main_img)) {
-                                $mainImgPath = Storage::url($headerContent->main_img); // Bild aus Storage
+                                $mainImgPath = Storage::url($headerContent->main_img);
                             } elseif (file_exists(public_path($headerContent->main_img))) {
-                                $mainImgPath = asset($headerContent->main_img); // Bild aus Public
+                                $mainImgPath = asset($headerContent->main_img);
                             }
                         @endphp
-
                         @if ($mainImgPath)
                             <img src="{{ $mainImgPath }}" class="img-thumbnail" style="width: 150px;">
                         @else
@@ -74,6 +72,30 @@
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Slug <span class="text-danger">*</span></label>
+                    <select name="slug" class="form-select @error('slug') is-invalid @enderror" required>
+                        <option value="" disabled selected>Wähle einen Slug</option>
+                        <option value="explore">explore</option>
+                        <option value="explore-relax-now">explore-relax-now</option>
+                        <option value="explore-relax-month">explore-relax-month</option>
+                        <option value="explore-relax-later">explore-relax-later</option>
+                        <option value="explore-adventure-now">explore-adventure-now</option>
+                        <option value="explore-adventure-month">explore-adventure-month</option>
+                        <option value="explore-adventure-later">explore-adventure-later</option>
+                        <option value="explore-culture-now">explore-culture-now</option>
+                        <option value="explore-culture-month">explore-culture-month</option>
+                        <option value="explore-culture-later">explore-culture-later</option>
+                        <option value="explore-amusement-now">explore-amusement-now</option>
+                        <option value="explore-amusement-month">explore-amusement-month</option>
+                        <option value="explore-amusement-later">explore-amusement-later</option>
+                        <option value="startpage-1">startpage-1</option> <!-- Für andere Seiten -->
+                    </select>
+                    <small class="form-hint">Wähle einen Slug, der zur Seite passt (z. B. für Explore-Seite).</small>
+                    @error('slug')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" class="btn btn-secondary me-2">
                         <i class="ti ti-arrow-left"></i> Cancel
@@ -88,9 +110,7 @@
 </div>
 @endsection
 
-
 @push('scripts')
-    <!-- CKEditor CDN -->
     <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', function () {

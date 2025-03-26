@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\SeoService;
 use App\Repositories\LocationRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use App\Helpers\HeaderHelper;
 
 class ExploreController extends Controller
 {
@@ -37,7 +37,8 @@ class ExploreController extends Controller
                 'wwde_locations.*',
                 'wwde_continents.alias as continent_alias',
                 'wwde_countries.alias as country_alias',
-                'stat_location_search_histories.search_count'
+                'stat_location_search_histories.search_count',
+                'wwde_locations.text_pic1' // Angenommen, das Bildfeld heißt so
             )
             ->where('month', '2025-03')
             ->orderByDesc('search_count')
@@ -53,11 +54,16 @@ class ExploreController extends Controller
             'image' => asset('img/explore.jpg'),
         ]);
 
+        $headerData = HeaderHelper::getHeaderContent('explore');
+        Session::put('headerData', $headerData);
+
         return view('pages.main.explore', [
             'seo' => $seo,
             'latitude' => $latitude,
             'longitude' => $longitude,
             'popularLocations' => $popularLocations,
+            'panorama_location_picture' => $headerData['bgImgPath'] ?? asset('img/headers/default-header.jpg'),
+            'panorama_location_text' => $headerData['title_text'] ?? 'Finde dein Abenteuer',
         ]);
     }
 
@@ -65,6 +71,11 @@ class ExploreController extends Controller
     {
         $activity = $request->query('activity') ?? Session::get('filters.activity');
         $time = $request->query('time') ?? Session::get('filters.time');
+
+        $validActivities = ['relax', 'adventure', 'culture', 'amusement'];
+        $validTimes = ['now', 'month', 'later'];
+        $activity = in_array($activity, $validActivities) ? $activity : 'relax';
+        $time = in_array($time, $validTimes) ? $time : 'now';
 
         if ($request->query('activity') || $request->query('time')) {
             Session::put('filters', ['activity' => $activity, 'time' => $time]);
@@ -102,6 +113,7 @@ class ExploreController extends Controller
                     longitude AS lon,
                     country,
                     continent,
+                    logo_url AS text_pic1, -- Angenommen, das Bildfeld heißt logo_url
                     6371 * acos(
                         cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
                         sin(radians(?)) * sin(radians(latitude))
@@ -117,10 +129,10 @@ class ExploreController extends Controller
                     $park->continent_alias = strtolower($park->continent);
                     $park->country_alias = strtolower($park->country);
                     $park->alias = str_replace(' ', '-', strtolower($park->title));
-                    $park->logo_url = 'https://via.placeholder.com/400x250?text=' . urlencode($park->title);
+                    $park->text_pic1 = $park->text_pic1 ?? 'https://via.placeholder.com/400x250?text=' . urlencode($park->title);
                     return $park;
                 });
-            } else {
+        } else {
             $filters = $activityMap[$activity] ?? [];
             $baseQuery = $this->locationRepository->getLocationsByFiltersAndMonth($filters, $monthId)
                 ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
@@ -134,6 +146,7 @@ class ExploreController extends Controller
                     'wwde_locations.climate_details_lnam',
                     'wwde_continents.alias AS continent_alias',
                     'wwde_countries.alias AS country_alias',
+                    'wwde_locations.text_pic1', // Bildfeld hinzufügen
                     DB::raw('COALESCE(stat_location_search_histories.search_count, 0) AS search_count')
                 );
 
@@ -148,6 +161,7 @@ class ExploreController extends Controller
                         base.climate_details_lnam,
                         base.continent_alias,
                         base.country_alias,
+                        base.text_pic1,
                         base.search_count,
                         6371 * acos(
                             cos(radians(?)) * cos(radians(base.lat)) * cos(radians(base.lon) - radians(?)) +
@@ -155,18 +169,17 @@ class ExploreController extends Controller
                         ) AS distance
                     ", [$latitude, $longitude, $latitude]);
 
-                $distanceLimits = [1200, 2500]; // Mehrere Stufen
+                $distanceLimits = [1200, 2500];
                 foreach ($distanceLimits as $limit) {
                     $locations = $query->having('distance', '<=', $limit)
                         ->orderBy('distance')
                         ->limit(6)
                         ->get();
                     if (!$locations->isEmpty()) {
-                        break; // Ergebnisse gefunden, Schleife verlassen
+                        break;
                     }
                 }
 
-                // Fallback: Nach Suchpopularität sortieren
                 if ($locations->isEmpty()) {
                     $locations = $baseQuery->orderByDesc('search_count')
                         ->limit(6)
@@ -176,6 +189,7 @@ class ExploreController extends Controller
                 $locations = $locations->map(function ($location) {
                     $location->type = 'location';
                     $location->alias = str_replace(' ', '-', strtolower($location->title));
+                    $location->text_pic1 = $location->text_pic1 ?? 'https://via.placeholder.com/400x250?text=' . urlencode($location->title);
                     return $location;
                 });
             } else {
@@ -185,6 +199,7 @@ class ExploreController extends Controller
                     ->map(function ($location) {
                         $location->type = 'location';
                         $location->alias = str_replace(' ', '-', strtolower($location->title));
+                        $location->text_pic1 = $location->text_pic1 ?? 'https://via.placeholder.com/400x250?text=' . urlencode($location->title);
                         return $location;
                     });
             }
@@ -207,6 +222,19 @@ class ExploreController extends Controller
             'image' => asset('img/explore-results.jpg'),
         ]);
 
+        $headerSlug = "explore-{$activity}-{$time}";
+        $headerData = HeaderHelper::getHeaderContent($headerSlug);
+        if (!$headerData['bgImgPath']) {
+            $headerData = HeaderHelper::getHeaderContent('explore') ?? [
+                'bgImgPath' => asset('img/headers/default-header.jpg'),
+                'mainImgPath' => null,
+                'title' => "Dein {$activity}-Abenteuer",
+                'title_text' => "Entdecke jetzt passende Reiseziele",
+                'main_text' => '',
+            ];
+        }
+        Session::put('headerData', $headerData);
+
         return view('pages.main.explore-results', [
             'seo' => $seo,
             'locations' => $locations,
@@ -214,6 +242,8 @@ class ExploreController extends Controller
             'time' => $time,
             'latitude' => $latitude,
             'longitude' => $longitude,
+            'panorama_location_picture' => $headerData['bgImgPath'],
+            'panorama_location_text' => $headerData['title_text'],
         ]);
     }
 

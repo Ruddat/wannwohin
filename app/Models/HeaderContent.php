@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class HeaderContent extends Model
@@ -14,5 +15,6 @@ class HeaderContent extends Model
         'main_img',
         'main_text',
         'title',
+        'slug', // Slug bleibt fillable
     ];
 }

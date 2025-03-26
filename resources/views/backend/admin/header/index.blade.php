@@ -26,6 +26,7 @@
                             <th>Background Image</th>
                             <th>Main Image</th>
                             <th>Title</th>
+                            <th>Slug</th> <!-- Neue Spalte -->
                             <th>Main Text</th>
                             <th class="text-end">Actions</th>
                         </tr>
@@ -65,6 +66,7 @@
                                     @endif
                                 </td>
                                 <td>{{ $content->title ?? '–' }}</td>
+                                <td>{{ $content->slug ?? '–' }}</td> <!-- Slug anzeigen -->
                                 <td style="max-width: 300px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                                     {!! $content->main_text !!}
                                 </td>
@@ -95,7 +97,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">No header content found.</td>
+                                <td colspan="7" class="text-center text-muted">No header content found.</td> <!-- Colspan angepasst -->
                             </tr>
                         @endforelse
                     </tbody>
@@ -107,7 +109,6 @@
 
 @push('scripts')
     <script>
-        // Toast für Flash-Nachrichten
         @if(session('toast'))
             Swal.fire({
                 toast: true,
@@ -123,15 +124,14 @@
             });
         @endif
 
-        // Bestätigungsdialog für Löschen
         function confirmDelete(url) {
             Swal.fire({
                 title: 'Sind Sie sicher?',
                 text: 'Dieser Header-Inhalt wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#206bc4', // Tabler Primary
-                cancelButtonColor: '#d63939', // Tabler Danger
+                confirmButtonColor: '#206bc4',
+                cancelButtonColor: '#d63939',
                 confirmButtonText: 'Ja, löschen!',
                 cancelButtonText: 'Abbrechen'
             }).then((result) => {
