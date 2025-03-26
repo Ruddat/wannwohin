@@ -1,84 +1,106 @@
-(function () {
-    "use strict";
+// Cookie-Helferfunktionen
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
 
-    var cookieAlert = document.querySelector(".cookiealert");
-    var acceptCookies = document.querySelector(".acceptcookies");
+function getCookie(name) {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+}
 
-    if (!cookieAlert) {
+// Skripte laden basierend auf Zustimmung
+function loadExternalScripts(consent) {
+    if (consent.analytics) {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = "https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y"; // Deine Analytics-ID
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "UA-XXXXX-Y");
+    }
+    if (consent.maps) {
+        // Beispiel: Google Maps laden (füge hier deinen Maps-Code ein)
+        console.log("Google Maps würde hier geladen werden.");
+    }
+}
+
+// Modal-Logik
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM geladen, prüfe Cookie-Consent...");
+    const modalElement = document.getElementById("cookie-modal");
+    if (!modalElement) {
+        console.error("Modal nicht gefunden!");
         return;
     }
 
-    cookieAlert.offsetHeight; // Force browser to trigger reflow (https://stackoverflow.com/a/39451131)
-
-    // Show the alert if we cant find the "acceptCookies" cookie
-    if (!getCookie("acceptCookies")) {
-        cookieAlert.classList.add("show");
-    }
-
-    // When clicking on the agree button, create a 1 year
-    // cookie to remember user's choice and close the banner
-    acceptCookies.addEventListener("click", function () {
-        setCookie("acceptCookies", true, 365);
-        cookieAlert.classList.remove("show");
-
-        // dispatch the accept event
-        window.dispatchEvent(new Event("cookieAlertAccept"))
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: "static",
+        keyboard: false
     });
 
-    // Cookie functions from w3schools
-    function setCookie(cname, cvalue, exdays) {
-        var d = new Date();
-        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        var expires = "expires=" + d.toUTCString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    const acceptBtn = document.getElementById("accept-cookies");
+    const declineBtn = document.getElementById("decline-cookies");
+    const saveBtn = document.getElementById("save-cookies");
+    const analyticsCheckbox = document.getElementById("analytics-cookies");
+    const mapsCheckbox = document.getElementById("maps-cookies");
+    const consent = getCookie("cookie_consent");
+
+    if (!acceptBtn || !declineBtn || !saveBtn) {
+        console.error("Ein oder mehrere Buttons nicht gefunden!");
+        return;
     }
 
-    function getCookie(cname) {
-        var name = cname + "=";
-        var decodedCookie = decodeURIComponent(document.cookie);
-        var ca = decodedCookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) === ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) === 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-})();
+    console.log("Aktueller Consent-Wert:", consent);
 
-/*
-// Event-Listener für die Buttons
-document.getElementById("accept-all").addEventListener("click", function() {
-    setCookie("cookieConsent", "all", 365);
-    document.getElementById("cookie-banner").style.display = "none";
-});
-document.getElementById("accept-essential").addEventListener("click", function() {
-    setCookie("cookieConsent", "essential", 365);
-    document.getElementById("cookie-banner").style.display = "none";
-});
-document.getElementById("cookie-settings").addEventListener("click", function() {
-    // Hier können die Cookie-Einstellungen aufgerufen werden.
-    alert("Cookie-Einstellungen öffnen.");
-});
-// Funktion zum Setzen eines Cookies
-function setCookie(name, value, days) {
-    var expires = "";
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
+    // Vorhandene Zustimmung parsen
+    let consentObj = consent ? JSON.parse(consent) : null;
+
+    // Modal anzeigen, wenn keine Zustimmung
+    if (!consent) {
+        console.log("Kein Consent, zeige Modal...");
+        modal.show();
     }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-}
-// Überprüfen, ob der Benutzer bereits eine Entscheidung getroffen hat
-function checkCookieConsent() {
-    if (document.cookie.split(';').some((item) => item.trim().startsWith('cookieConsent='))) {
-        document.getElementById("cookie-banner").style.display = "none";
+
+    // Akzeptieren (alles)
+    acceptBtn.addEventListener("click", function () {
+        console.log("Alle Cookies akzeptiert");
+        const fullConsent = { essential: true, analytics: true, maps: true };
+        setCookie("cookie_consent", JSON.stringify(fullConsent), 365);
+        modal.hide();
+        loadExternalScripts(fullConsent);
+    });
+
+    // Ablehnen
+    declineBtn.addEventListener("click", function () {
+        console.log("Cookies abgelehnt");
+        const minimalConsent = { essential: true, analytics: false, maps: false };
+        setCookie("cookie_consent", JSON.stringify(minimalConsent), 365);
+        modal.hide();
+    });
+
+    // Speichern (benutzerdefinierte Einstellungen)
+    saveBtn.addEventListener("click", function () {
+        console.log("Einstellungen gespeichert");
+        const customConsent = {
+            essential: true,
+            analytics: analyticsCheckbox.checked,
+            maps: mapsCheckbox.checked
+        };
+        setCookie("cookie_consent", JSON.stringify(customConsent), 365);
+        modal.hide();
+        loadExternalScripts(customConsent);
+    });
+
+    // Skripte laden, wenn bereits akzeptiert
+    if (consentObj) {
+        console.log("Consent vorhanden, lade Skripte...");
+        loadExternalScripts(consentObj);
     }
-}
-checkCookieConsent(); // Überprüfen, ob bereits eine Zustimmung erteilt wurde
-*/
+});

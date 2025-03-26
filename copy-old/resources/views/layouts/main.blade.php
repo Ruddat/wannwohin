@@ -78,6 +78,8 @@
 @include('partials.cookie_consent')
 <!-- END cookie consent-->
 
+
+
 @include('layouts.footer')
 
     <!-- Vendor -->
@@ -124,6 +126,11 @@
     let mainUrl = '{{ url('/') }}';
     window.mainUrl = '{{ url('/') }}';
 </script>
+
+
+
+
+
 
     @yield('js')
 </body>

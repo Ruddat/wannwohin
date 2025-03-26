@@ -373,7 +373,7 @@
     </div>
 </div>
 <!-- cookie consent-->
-{{-- @include('partials.cookie_consent') --}}
+@include('partials.cookie_consent')
 <!-- END cookie consent-->
 
 @include('layouts.footer')
