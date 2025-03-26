@@ -80,7 +80,7 @@ class LocationTableComponent extends Component
 
         // Header setzen
         $headers = [
-            'ID', 'Continent ID', 'Country ID', 'ISO2', 'ISO3', 'Title', 'Alias', 'IATA Code', 'Flight Hours', 'Stop Over',
+            'ID', 'Old Id', 'Continent ID', 'Country ID', 'ISO2', 'ISO3', 'Title', 'Alias', 'IATA Code', 'Flight Hours', 'Stop Over',
             'Distance from FRA', 'Distance Type', 'Latitude', 'Longitude', 'Station ID', 'Bundesstaat Long', 'Bundesstaat Short',
             'No City But', 'Population', 'List Beach', 'List Citytravel', 'List Sports', 'List Island', 'List Culture',
             'List Nature', 'List Watersport', 'List Wintersport', 'List Mountainsport', 'List Biking', 'List Fishing',
@@ -100,6 +100,7 @@ class LocationTableComponent extends Component
         foreach ($locations as $location) {
             $sheet->fromArray([
                 $location->id,
+                $location->old_id,
                 $location->continent_id,
                 $location->country_id,
                 $location->iso2,
