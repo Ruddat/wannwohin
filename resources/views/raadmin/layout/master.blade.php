@@ -10,11 +10,12 @@
 
     <!-- css start -->
     @include('raadmin.layout.css')
-    @vite(['resources/backend/css/app.css']) <!-- Vite für CSS -->
+
     @stack('styles') <!-- Seiten-spezifische Styles -->
     <!-- css end -->
     <!-- Livewire Styles -->
     @livewireStyles
+    @vite(['resources/backend/css/app.css']) <!-- Vite für CSS -->
 </head>
 
 <body>
@@ -65,10 +66,10 @@
     <div id="customizer"></div>
 
     <!-- scripts start -->
-    @vite(['resources/backend/js/app.js']) <!-- Vite für JS -->
     @include('raadmin.layout.script')
     <!-- Livewire Scripts -->
     @livewireScripts
+    @vite(['resources/backend/js/app.js']) <!-- Vite für JS -->
     @stack('scripts') <!-- Seiten-spezifische Skripte -->
     <!-- scripts end -->
 </body>

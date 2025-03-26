@@ -1,4 +1,4 @@
-<div class="container mt-4">
+<div>
     <h3>Country Image Updater</h3>
     <p>Automatisch fehlende Bilder für Länder mit der Pixabay API abrufen.</p>
 

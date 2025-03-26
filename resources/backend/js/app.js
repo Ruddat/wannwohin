@@ -7,10 +7,15 @@ import 'leaflet/dist/leaflet.css';
 import 'animate.css'; // Animate.css importieren
 import AOS from 'aos';
 
+// Jodit-Editor Imports
+import { Jodit } from 'jodit';
+import 'jodit/es2021/jodit.min.css';
+
 // Globale Zuweisungen
 window.Swal = Swal;
 window.ApexCharts = ApexCharts;
 window.L = L;
+window.Jodit = Jodit; // Jodit global verfügbar machen
 
 // Leaflet Icon-Pfade (statische Lösung)
 delete L.Icon.Default.prototype._getIconUrl;

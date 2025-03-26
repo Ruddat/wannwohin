@@ -30,7 +30,7 @@
                     <label for="panoramaShortText" class="form-label fw-bold">Panorama-Kurztext</label>
                     <livewire:jodit-text-editor
                         wire:model.debounce.500ms="panoramaShortText"
-                        :buttons="['bold', 'italic', 'underline', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
+                        :buttons="['bold', 'italic', 'underline', 'ul', '|', 'font', 'fontsize', '|', 'link', 'image', 'unorderedList', 'orderedList']"
                         key="editor-panoramaShortText-{{ $locationId }}"
                         tabindex="3"
                     />

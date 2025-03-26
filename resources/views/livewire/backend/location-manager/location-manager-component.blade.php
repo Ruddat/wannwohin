@@ -154,9 +154,9 @@
 </div>
 
 @assets
-    <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
-    <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
+
 @endassets
+
 
 @push('scripts')
     <script>

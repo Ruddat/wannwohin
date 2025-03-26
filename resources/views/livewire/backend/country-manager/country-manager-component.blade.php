@@ -1,11 +1,22 @@
+
+
+
+
 <div class="page-body">
     @if (session('status'))
         <div class="alert alert-success">
             {{ session('status') }}
         </div>
     @endif
-    <div class="container-xl">
-        <div class="row row-cards">
+    <div class="container-fluid">
+            <!-- Breadcrumb start -->
+            <div class="row m-1">
+                <div class="col-12 ">
+                </div>
+              </div>
+              <!-- Breadcrumb end -->
+
+             <div class="row row-cards">
             <!-- Card -->
             <div class="col-12">
                 <div class="card">
@@ -667,11 +678,8 @@
     @endif
 
     @push('styles')
-    <!-- Include Jodit CSS Styling -->
-    <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
+
     @endpush
 
 
-    <!-- Include the Jodit JS Library -->
-    <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
 </div>

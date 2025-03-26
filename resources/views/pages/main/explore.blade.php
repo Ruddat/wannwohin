@@ -13,64 +13,151 @@
         </p>
 
         <form action="{{ route('explore.results') }}" method="GET" class="row g-4 justify-content-center">
-            <!-- Aktivität -->
-            <div class="col-md-10">
-                <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
-                    @autotranslate('Was möchtest du erleben?', app()->getLocale())
-                </label>
-                <div class="activity-options d-flex flex-wrap justify-content-center gap-3">
-                    @foreach([
-                        ['value' => 'relax', 'icon' => 'fas fa-umbrella-beach', 'text' => 'Entspannen'],
-                        ['value' => 'adventure', 'icon' => 'fas fa-hiking', 'text' => 'Abenteuer'],
-                        ['value' => 'culture', 'icon' => 'fas fa-landmark', 'text' => 'Kultur'],
-                        ['value' => 'amusement', 'icon' => 'ti ti-rollercoaster', 'text' => 'Freizeitparks', 'style' => 'font-size: 2.5rem;'],
-                    ] as $option)
-                        <label class="activity-card">
-                            <input type="radio" name="activity" value="{{ $option['value'] }}" class="activity-input" {{ $loop->first ? 'required' : '' }}>
-                            <div class="activity-content">
-                                <i class="{{ $option['icon'] }} fa-2x" @if(isset($option['style'])) style="{{ $option['style'] }}" @endif></i>
-                                <span>@autotranslate($option['text'], app()->getLocale())</span>
-                            </div>
-                        </label>
-                    @endforeach
+<!-- Aktivität -->
+<div class="col-md-10">
+    <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
+        @autotranslate('Was möchtest du erleben?', app()->getLocale())
+    </label>
+    <div class="activity-options d-flex flex-wrap justify-content-center gap-3">
+        @foreach([
+            ['value' => 'relax', 'icon' => 'fas fa-umbrella-beach', 'text' => 'Entspannen'],
+            ['value' => 'adventure', 'icon' => 'fas fa-hiking', 'text' => 'Abenteuer'],
+            ['value' => 'culture', 'icon' => 'fas fa-landmark', 'text' => 'Kultur'],
+            ['value' => 'amusement', 'icon' => 'ti ti-rollercoaster', 'text' => 'Freizeitparks', 'style' => 'font-size: 2.5rem;'],
+        ] as $option)
+            <label class="activity-card">
+                <input type="radio" name="activity" value="{{ $option['value'] }}" class="activity-input">
+                <div class="activity-content">
+                    <i class="{{ $option['icon'] }} fa-2x" @if(isset($option['style'])) style="{{ $option['style'] }}" @endif></i>
+                    <span>@autotranslate($option['text'], app()->getLocale())</span>
                 </div>
-            </div>
+            </label>
+        @endforeach
+    </div>
+</div>
 
-            <!-- Zeitpunkt -->
-            <div class="col-md-10 mt-5">
-                <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
-                    @autotranslate('Wann möchtest du reisen?', app()->getLocale())
-                </label>
-                <div class="time-options d-flex flex-wrap justify-content-center gap-3">
-                    @foreach([
-                        ['value' => 'now', 'icon' => 'fas fa-clock', 'text' => 'Jetzt'],
-                        ['value' => 'month', 'icon' => 'fas fa-calendar-alt', 'text' => 'Nächster Monat'],
-                        ['value' => 'later', 'icon' => 'fas fa-hourglass-half', 'text' => 'Später'],
-                    ] as $option)
-                        <label class="time-card">
-                            <input type="radio" name="time" value="{{ $option['value'] }}" class="time-input" {{ $loop->first ? 'required' : '' }}>
-                            <div class="time-content">
-                                <i class="{{ $option['icon'] }} fa-2x"></i>
-                                <span>@autotranslate($option['text'], app()->getLocale())</span>
-                            </div>
-                        </label>
-                    @endforeach
+<!-- Zeitpunkt -->
+<div class="col-md-10 mt-5">
+    <label class="form-label fw-bold text-center d-block mb-3 animate__animated animate__fadeInUp">
+        @autotranslate('Wann möchtest du reisen?', app()->getLocale())
+    </label>
+    <div class="time-options d-flex flex-wrap justify-content-center gap-3">
+        @foreach([
+            ['value' => 'now', 'icon' => 'fas fa-clock', 'text' => 'Jetzt'],
+            ['value' => 'month', 'icon' => 'fas fa-calendar-alt', 'text' => 'Nächster Monat'],
+            ['value' => 'later', 'icon' => 'fas fa-hourglass-half', 'text' => 'Später'],
+        ] as $option)
+            <label class="time-card">
+                <input type="radio" name="time" value="{{ $option['value'] }}" class="time-input">
+                <div class="time-content">
+                    <i class="{{ $option['icon'] }} fa-2x"></i>
+                    <span>@autotranslate($option['text'], app()->getLocale())</span>
                 </div>
-            </div>
+            </label>
+        @endforeach
+    </div>
+</div>
 
             @if ($latitude && $longitude)
                 <input type="hidden" name="lat" value="{{ $latitude }}">
                 <input type="hidden" name="lon" value="{{ $longitude }}">
             @endif
 
+
+            <div class="col-md-10 text-center mt-3">
+                <div id="error-message" class="error-message-cool" style="display: none;"></div>
+            </div>
+
             <div class="col-md-10 text-center mt-5">
-                <button type="submit" class="btn btn-explore animate__animated animate__pulse animate__infinite">
+                <button type="submit" id="explore-submit" class="btn btn-explore animate__animated animate__pulse animate__infinite">
                     @autotranslate('Ergebnisse anzeigen', app()->getLocale())
                 </button>
             </div>
+
+
         </form>
     </div>
 </section>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Skript geladen!');
+    const form = document.querySelector('form');
+    const submitButton = document.getElementById('explore-submit');
+    const errorMessage = document.getElementById('error-message');
+
+    if (!form || !submitButton || !errorMessage) {
+        console.error('Formular, Button oder Fehlermeldungs-Element nicht gefunden!');
+        return;
+    }
+
+    submitButton.addEventListener('click', function(event) {
+        console.log('Button geklickt!');
+        event.preventDefault();
+
+        const activitySelected = document.querySelector('input[name="activity"]:checked');
+        const timeSelected = document.querySelector('input[name="time"]:checked');
+
+        if (!activitySelected || !timeSelected) {
+            console.log('Validierung fehlgeschlagen – mindestens eine Option fehlt');
+            errorMessage.style.display = 'block';
+            errorMessage.classList.remove('fade-out');
+            errorMessage.classList.add('fade-in');
+
+            const messages = [
+                "Whoops! Ohne beide Antworten beamen wir dich ins Chaos-Universum! 🚀",
+                "Hey, wir brauchen zwei Puzzleteile – nicht nur eins, du Schlaumeier! 🧩",
+                "Äh, halb ausgefüllt? Das ist, als würdest du nur mit einem Schuh reisen! 👟",
+                "Zwei Antworten, bitte! Sonst landet dein Abenteuer im Bermuda-Dreieck! 🌊",
+                "Klick, klick! Beides auswählen, oder wir schicken dich zur Spaßstrafe! 😜",
+                "Keine halben Sachen! Sonst wird dein Urlaub ein Rätsel ohne Lösung! ❓",
+                "Hallo? Zwei Felder, zwei Klicks – oder willst du im Nichts urlauben? 🌌"
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            errorMessage.innerHTML = randomMessage;
+            console.log('Fehlermeldung gesetzt:', randomMessage);
+
+            setTimeout(() => {
+                errorMessage.classList.remove('fade-in');
+                errorMessage.classList.add('fade-out');
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                    errorMessage.classList.remove('fade-out');
+                }, 500);
+            }, 5000);
+        } else {
+            console.log('Validierung erfolgreich – Weiterleitung wird vorbereitet');
+            errorMessage.style.display = 'none';
+
+            // Hole die ausgewählten Werte
+            const activity = activitySelected.value;
+            const time = timeSelected.value;
+
+            // Basis-URL direkt aus der Route
+            const baseUrl = "{{ route('explore.results') }}"; // Wird zu /explore/results gerendert
+            let queryParams = `activity=${encodeURIComponent(activity)}&time=${encodeURIComponent(time)}`;
+
+            // Prüfe, ob Koordinaten im Formular vorhanden sind
+            const latInput = form.querySelector('input[name="lat"]');
+            const lonInput = form.querySelector('input[name="lon"]');
+            if (latInput && lonInput) {
+                const lat = latInput.value;
+                const lon = lonInput.value;
+                queryParams += `&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+            }
+
+            // Baue die vollständige URL
+            const redirectUrl = `${baseUrl}?${queryParams}`;
+            console.log('Weiterleitung zu:', redirectUrl);
+
+            // Leite zur neuen URL weiter
+            window.location.href = redirectUrl;
+        }
+    });
+});
+</script>
+
 
 <!-- Explore Section CSS -->
 <style>
@@ -96,6 +183,80 @@
     justify-content: center;
     gap: 20px;
 }
+
+.error-message-cool {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 15px 20px;
+    border-radius: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.5);
+    border: 2px solid #fff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Kleiner Glitzereffekt */
+.error-message-cool::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(30deg);
+    animation: shine 2s infinite;
+}
+
+/* Fade-In Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Fade-Out Animation */
+.fade-out {
+    animation: fadeOut 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) rotate(30deg);
+    }
+    50% {
+        transform: translateX(100%) rotate(30deg);
+    }
+    100% {
+        transform: translateX(-100%) rotate(30deg);
+    }
+}
+
 
 @supports not (gap: 20px) {
     .activity-options > *, .time-options > * {
@@ -254,7 +415,6 @@
 
 <!-- Slider Dependencies -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <!-- Slider CSS -->
 <style>

@@ -1,1 +1,25 @@
+/* Jodit-Editor CSS importieren */
+@import 'jodit/es2021/jodit.min.css';
 
+/* Optional: Zusätzliche Anpassungen für Jodit */
+.jodit-container {
+    @apply border rounded-lg shadow-sm;
+}
+
+.jodit-toolbar__box {
+    @apply bg-gray-100 border-b;
+}
+
+.jodit-wysiwyg {
+    @apply p-4;
+}
+
+/* Weitere globale Stile */
+body {
+    @apply bg-gray-100 text-gray-900;
+}
+
+/* Beispiel für Leaflet-Anpassungen (falls nötig) */
+.leaflet-container {
+    @apply w-full h-96 rounded-lg;
+}

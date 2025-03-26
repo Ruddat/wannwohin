@@ -87,18 +87,18 @@
     </section>
 @endsection
 
-@section('styles')
-    <style scoped>
+
+    <style>
         .explore-results-section { background: #f9fafb; min-height: 100vh; padding-top: 6rem; }
 
         /* Überschrift */
         .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2d3748;
-            position: relative;
-            display: inline-block;
-        }
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    position: relative;
+    /* display: inline-block; entfernen oder zu block ändern */
+}
         .section-title::after {
             content: '';
             position: absolute;
@@ -147,7 +147,7 @@
         .filter-label { font-weight: 500; color: #4a5568; }
         .badge { font-size: 0.9rem; padding: 0.5rem 1rem; }
     </style>
-@endsection
+
 
 
     <!-- LazyLoad für Bilder -->
