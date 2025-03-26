@@ -6,14 +6,17 @@ use Livewire\Component;
 use App\Models\WwdeCountry;
 use App\Models\WwdeLocation;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class LocationTableComponent extends Component
 {
-    use WithPagination, WithoutUrlPagination;
+    use WithPagination, WithoutUrlPagination, WithFileUploads;
 
     public $search = '';
     public $perPage = 10;
@@ -22,6 +25,10 @@ class LocationTableComponent extends Component
     public $sortField = 'id';
     public $sortDirection = 'asc';
     public $filterDeleted = '';
+    public $excelFile; // Für den Datei-Upload
+    public $skipImages = false;
+    public $exportFailed = false;
+
 
     protected $listeners = [
         'refreshLocations' => '$refresh',
@@ -170,6 +177,150 @@ class LocationTableComponent extends Component
             $writer->save('php://output');
         }, 'locations_export.xlsx');
     }
+
+
+    public function importLocations()
+    {
+        try {
+            $this->validate([
+                'excelFile' => 'required|file|mimes:xlsx,xls|max:20480', // max 20MB
+            ]);
+
+            $file = $this->excelFile->getRealPath();
+            $spreadsheet = IOFactory::load($file);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            $headers = array_shift($rows);
+            $failedRows = [];
+            $importedCount = 0;
+
+            $columnMap = [
+                'id' => 0, 'continent_id' => 1, 'country_id' => 2, 'iso2' => 3, 'iso3' => 4,
+                'title' => 5, 'alias' => 6, 'iata_code' => 7, 'flight_hours' => 8, 'stop_over' => 9,
+                'dist_from_FRA' => 10, 'dist_type' => 11, 'lat' => 12, 'lon' => 13, 'station_id' => 14,
+                'bundesstaat_long' => 15, 'bundesstaat_short' => 16, 'no_city_but' => 17, 'population' => 18,
+                'list_beach' => 19, 'list_citytravel' => 20, 'list_sports' => 21, 'list_island' => 22,
+                'list_culture' => 23, 'list_nature' => 24, 'list_watersport' => 25, 'list_wintersport' => 26,
+                'list_mountainsport' => 27, 'list_biking' => 28, 'list_fishing' => 29,
+                'list_amusement_park' => 30, 'list_water_park' => 31, 'list_animal_park' => 32,
+                'best_traveltime' => 33, 'pic1_text' => 34, 'pic2_text' => 35, 'pic3_text' => 36,
+                'text_headline' => 37, 'text_short' => 38, 'text_location_climate' => 39,
+                'text_what_to_do' => 40, 'text_best_traveltime' => 41, 'text_sports' => 42,
+                'text_amusement_parks' => 43, 'climate_details_id' => 44, 'climate_lnam' => 45,
+                'climate_details_lnam' => 46, 'price_flight' => 47, 'range_flight' => 48,
+                'price_hotel' => 49, 'range_hotel' => 50, 'price_rental' => 51, 'range_rental' => 52,
+                'price_travel' => 53, 'range_travel' => 54, 'finished' => 55,
+                'best_traveltime_json' => 56, 'panorama_text_and_style' => 57, 'time_zone' => 58,
+                'lat_new' => 59, 'lon_new' => 60, 'text_pic1' => 61, 'text_pic2' => 62,
+                'text_pic3' => 63, 'status' => 64, 'created_at' => 65, 'updated_at' => 66
+            ];
+
+            foreach ($rows as $index => $row) {
+                try {
+                    $locationData = [];
+                    foreach ($columnMap as $field => $columnIndex) {
+                        $value = $row[$columnIndex] ?? null;
+
+                        switch ($field) {
+                            case 'id':
+                            case 'continent_id':
+                            case 'country_id':
+                            case 'climate_details_id':
+                            case 'stop_over':
+                            case 'dist_from_FRA':
+                            case 'population':
+                            case 'price_flight':
+                            case 'range_flight':
+                            case 'price_hotel':
+                            case 'range_hotel':
+                            case 'price_rental':
+                            case 'range_rental':
+                            case 'price_travel':
+                            case 'range_travel':
+                                $locationData[$field] = $value ? (int)$value : null;
+                                break;
+                            case 'flight_hours':
+                                $locationData[$field] = $value ? (float)$value : null;
+                                break;
+                            case 'list_beach':
+                            case 'list_citytravel':
+                            case 'list_sports':
+                            case 'list_island':
+                            case 'list_culture':
+                            case 'list_nature':
+                            case 'list_watersport':
+                            case 'list_wintersport':
+                            case 'list_mountainsport':
+                            case 'list_biking':
+                            case 'list_fishing':
+                            case 'list_amusement_park':
+                            case 'list_water_park':
+                            case 'list_animal_park':
+                            case 'finished':
+                                $locationData[$field] = $value ? (bool)$value : false;
+                                break;
+                            case 'status':
+                                $locationData[$field] = in_array($value, ['active', 'pending', 'inactive']) ? $value : 'active';
+                                break;
+                            case 'created_at':
+                            case 'updated_at':
+                                $locationData[$field] = $value ? date('Y-m-d H:i:s', strtotime($value)) : null;
+                                break;
+                            default:
+                                $locationData[$field] = $value;
+                        }
+                    }
+
+                    $validator = Validator::make($locationData, [
+                        'title' => 'required|string|max:50',
+                        'status' => 'required|in:active,pending,inactive',
+                    ]);
+
+                    if ($validator->fails()) {
+                        throw new \Exception($validator->errors()->first());
+                    }
+
+                    WwdeLocation::updateOrCreate(
+                        ['id' => $locationData['id']],
+                        $locationData
+                    );
+
+                    $importedCount++;
+
+                } catch (\Exception $e) {
+                    $failedRows[] = array_merge($row, ['error' => $e->getMessage()]);
+                }
+            }
+
+            if ($this->exportFailed && !empty($failedRows)) {
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $headers[] = 'Error';
+                $sheet->fromArray($headers, NULL, 'A1');
+                $sheet->fromArray($failedRows, NULL, 'A2');
+
+                return Response::streamDownload(function () use ($spreadsheet) {
+                    $writer = new Xlsx($spreadsheet);
+                    $writer->save('php://output');
+                }, 'failed_locations_import.xlsx');
+            }
+
+            $this->dispatch('showSuccessMessage', "Erfolgreich $importedCount Standorte importiert. " .
+                (count($failedRows) > 0 ? count($failedRows) . " Zeilen fehlerhaft." : ""));
+
+            $this->reset(['excelFile', 'skipImages', 'exportFailed']);
+            $this->dispatch('refreshLocations');
+
+        } catch (\Exception $e) {
+            $this->dispatch('showErrorMessage', 'Import fehlgeschlagen: ' . $e->getMessage());
+        }
+    }
+
+
+
+
+
 
     public function confirmDelete($locationId)
     {

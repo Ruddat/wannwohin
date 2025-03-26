@@ -88,6 +88,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="table-responsive">
                 <table class="table table-striped table-vcenter">
                     <thead>
@@ -230,6 +231,44 @@
     </div>
 
     <!-- Import Locations Form -->
+
+    <!-- Import Locations Form -->
+<div class="col-12 mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Import Locations</h3>
+        </div>
+        <div class="card-body">
+            <!-- Erfolgs- und Fehlermeldungen werden über Livewire-Events gehandhabt, keine Session-Variablen nötig -->
+            <form wire:submit.prevent="importLocations" enctype="multipart/form-data" class="bg-white p-4 rounded shadow">
+                <div class="mb-3">
+                    <label for="excel_file" class="form-label">Upload Excel File</label>
+                    <input type="file" wire:model="excelFile" id="excel_file" class="form-control" accept=".xlsx, .xls" required>
+                    @error('excelFile')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+               {{--
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" wire:model="skipImages" id="skip_images">
+                    <label class="form-check-label" for="skip_images">Skip importing images</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" wire:model="exportFailed" id="export_failed">
+                    <label class="form-check-label" for="export_failed">Export failed rows to Excel</label>
+                </div>
+                --}}
+                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                    <span wire:loading wire:target="importLocations">Importing...</span>
+                    <span wire:loading.remove wire:target="importLocations">Import</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{{--
     <div class="col-12 mt-4">
         <div class="card">
             <div class="card-header">
@@ -261,6 +300,7 @@
             </div>
         </div>
     </div>
+    --}}
 
     <!-- Einbettung der LocationManagerComponent -->
     <div class="col-12">
@@ -273,6 +313,27 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            Livewire.on('showSuccessMessage', (message) => {
+                Swal.fire({
+                    title: 'Erfolgreich!',
+                    text: message,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+
+            Livewire.on('showErrorMessage', (message) => {
+                Swal.fire({
+                    title: 'Fehler!',
+                    text: message,
+                    icon: 'error',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            });
+
+            // Bestehender Code für Delete-Bestätigungen etc. bleibt erhalten
             Livewire.on('triggerDeleteConfirmation', (locationId) => {
                 Swal.fire({
                     title: 'Bist du sicher?',
@@ -287,16 +348,6 @@
                     if (result.isConfirmed) {
                         Livewire.dispatch('deleteConfirmed', locationId);
                     }
-                });
-            });
-
-            Livewire.on('showSuccessMessage', (message) => {
-                Swal.fire({
-                    title: 'Erfolgreich!',
-                    text: message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
                 });
             });
 
