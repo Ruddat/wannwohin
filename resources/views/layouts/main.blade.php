@@ -184,6 +184,7 @@
 
     @vite(['resources/frontend/css/app.css'])
 
+
     @yield('css')
     @stack('css')
     @stack('styles')
@@ -377,6 +378,8 @@
 <!-- END cookie consent-->
 
 @include('layouts.footer')
+
+
 
 <!-- Vendor -->
 <script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
