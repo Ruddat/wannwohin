@@ -15,16 +15,16 @@
 
             <!-- Filter-Anzeige -->
             <div class="filter-bar d-flex justify-content-center align-items-center mb-5">
-                <span class="filter-label me-2">@autotranslate('Deine Auswahl:', app()->getLocale())</span>
-                <span class="badge bg-primary me-2">{{ ucfirst($activity) }}</span>
-                <span class="badge bg-secondary">{{ ucfirst($time) }}</span>
+                <span class="filter-label me-2"><i class="fas fa-filter me-1"></i>@autotranslate('Deine Auswahl:', app()->getLocale())</span>
+                <span class="badge bg-primary me-2"><i class="fas fa-hiking"></i> {{ ucfirst($activity) }}</span>
+                <span class="badge bg-secondary"><i class="fas fa-calendar-alt"></i> {{ ucfirst($time) }}</span>
                 <a href="{{ route('explore') }}" class="btn btn-sm btn-outline-primary ms-3">
-                    @autotranslate('Filter ändern', app()->getLocale())
+                    <i class="fas fa-sliders-h"></i> @autotranslate('Filter ändern', app()->getLocale())
                 </a>
             </div>
 
             <!-- Locations Grid -->
-            <div class="row g-4" data-aos="fade-up">
+            <div class="row g-4" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
                 @forelse ($locations as $location)
                     <div class="col-md-4 col-lg-3">
                         <div class="card h-100 shadow-sm hover-card">
@@ -61,19 +61,28 @@
                                         @autotranslate('Mehr erfahren', app()->getLocale())
                                     </a>
                                     <small class="text-muted">
-                                        <i class="fas fa-star text-warning"></i> {{ $location->rating ?? '4.5' }}
-                                    </small>
+                                    <div class="rating-stars" data-location-id="{{ $location->id }}">
+                                        <i class="fas fa-star" data-value="1"></i>
+                                        <i class="fas fa-star" data-value="2"></i>
+                                        <i class="fas fa-star" data-value="3"></i>
+                                        <i class="fas fa-star" data-value="4"></i>
+                                        <i class="fas fa-star" data-value="5"></i>
+                                    </div>
+                                </small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-12 text-center py-5">
-                        <p class="text-color-grey">@autotranslate('Keine passenden Ziele gefunden. Versuche es erneut!', app()->getLocale())</p>
-                        <a href="{{ route('explore') }}" class="btn btn-outline-primary">
-                            @autotranslate('Neue Suche', app()->getLocale())
-                        </a>
-                    </div>
+                <div class="col-12 text-center py-5">
+                    <img src="{{ asset('img/no-results.svg') }}" alt="Keine Ergebnisse" width="200" class="mb-4">
+                    <p class="text-color-grey">
+                        @autotranslate('Keine passenden Ziele gefunden. Versuche es erneut!', app()->getLocale())
+                    </p>
+                    <a href="{{ route('explore') }}" class="btn btn-outline-primary">
+                        @autotranslate('Neue Suche', app()->getLocale())
+                    </a>
+                </div>
                 @endforelse
             </div>
 
@@ -126,6 +135,11 @@
             object-position: center; /* Bild mittig ausrichten */
             transition: opacity 0.3s ease;
         }
+        .hover-card:hover {
+    transform: scale(1.03) translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
         .lazyload { opacity: 0; }
         .lazyloaded { opacity: 1; }
         .card-img-overlay { position: absolute; top: 10px; right: 10px; }
@@ -153,3 +167,37 @@
     <!-- LazyLoad für Bilder -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
 
+<script>
+    document.querySelectorAll('.rating-stars').forEach(stars => {
+    stars.addEventListener('click', (e) => {
+        if(e.target.classList.contains('fa-star')){
+            let rating = e.target.dataset.value;
+            let locationId = stars.dataset.locationId;
+
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: `Bewertung (${rating} Sterne) gespeichert!`,
+                showConfirmButton: false,
+                timer: 1000
+            });
+
+            // Hier AJAX-Request senden, um Bewertung zu speichern.
+        }
+    });
+});
+
+document.querySelectorAll('.btn-favorite').forEach(button => {
+    button.addEventListener('click', function() {
+        this.querySelector('i').classList.toggle('text-danger');
+        Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Zu Favoriten hinzugefügt!',
+            showConfirmButton: false,
+            timer: 1000
+        });
+    });
+});
+
+</script>

@@ -47,6 +47,26 @@
 
 
 <div class="custom-about-links bg-color-light">
+
+<!-- Sticky Navigation Bar -->
+<div class="sticky-nav-wrapper sticky-menu">
+    <div class="sticky-nav">
+        <div class="logo-container">
+            <a href="/">
+                <img src="{{ asset('assets/ra-admin/images/logo/1-neu.png') }}" alt="Logo" class="nav-logo">
+            </a>
+        </div>
+        <ul class="sticky-nav-list">
+            <li><a href="#section-overview">Überblick</a></li>
+            <li><a href="#section-highlights">Highlights</a></li>
+            <li><a href="#section-climate">Klima</a></li>
+            <li><a href="#section-activities">Aktivitäten</a></li>
+            <li><a href="#section-recommendations">Empfehlungen</a></li>
+            <li>@livewire('frontend.wishlist-select.wishlist-component')</li>
+        </ul>
+    </div>
+</div>
+
     <div class="container">
         <div class="links-row d-flex justify-content-end align-items-baseline gap-2">
             <div class="menu-toggle d-md-none">
@@ -379,3 +399,189 @@
         }
     });
 </script>
+<style>
+.sticky-nav-wrapper {
+    position: static;
+    width: 100%;
+    background: #e2e8f0; /* Helles Grau, anpassbar */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 22;
+}
+
+.sticky-nav-wrapper.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.sticky-nav {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-container {
+    flex-shrink: 0;
+}
+
+.nav-logo {
+    height: 40px;
+    width: auto;
+    transition: height 0.3s ease;
+}
+
+.sticky-nav-list {
+    display: flex;
+    justify-content: flex-end;
+    gap: 25px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: nowrap;
+}
+
+.sticky-nav-list li a {
+    text-decoration: none;
+    color: #333; /* Dunkler Text für Kontrast auf Grau */
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.sticky-nav-list li a:hover,
+.sticky-nav-list li a.active {
+    color: #fff; /* Weiß beim Hover für besseren Kontrast */
+    background: #4a5568; /* Dunkleres Grau für Hover-Effekt */
+    transform: translateY(-2px);
+}
+
+.sticky-nav-list li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #4a5568; /* Dunkleres Grau für Unterstrich */
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+}
+
+.sticky-nav-list li a:hover::after,
+.sticky-nav-list li a.active::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 992px) {
+    .sticky-nav-list {
+        gap: 15px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .sticky-nav-list li a {
+        font-size: 0.95rem;
+        padding: 6px 10px;
+    }
+
+    .nav-logo {
+        height: 35px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sticky-nav {
+        padding: 8px 10px;
+        flex-wrap: wrap;
+    }
+
+    .sticky-nav-list {
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .sticky-nav-list li a {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+    }
+
+    .nav-logo {
+        height: 30px;
+    }
+}
+
+@media (max-width: 576px) {
+    .sticky-nav {
+        padding: 6px 8px;
+    }
+
+    .sticky-nav-list {
+        gap: 8px;
+    }
+
+    .sticky-nav-list li a {
+        font-size: 0.85rem;
+        padding: 5px 7px;
+    }
+
+    .nav-logo {
+        height: 25px;
+    }
+}
+
+/* Platzhalter für darunterliegenden Inhalt, wenn fixiert */
+body.fixed-nav {
+    padding-top: 60px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stickyNav = document.querySelector('.sticky-nav-wrapper');
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.sticky-nav-list a');
+    let navHeight = stickyNav.offsetHeight; // Höhe der Menüleiste dynamisch ermitteln
+    let navOffsetTop = stickyNav.offsetTop; // Ursprüngliche Position im Dokument
+
+    window.addEventListener('scroll', () => {
+        // Fixieren, wenn die ursprüngliche Position überschritten wird
+        if (window.scrollY > navOffsetTop) {
+            stickyNav.classList.add('fixed');
+            document.body.classList.add('fixed-nav'); // Platzhalter für Inhalt
+        } else {
+            stickyNav.classList.remove('fixed');
+            document.body.classList.remove('fixed-nav');
+        }
+
+        // Aktiver Link
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - (navHeight + 60); // Offset für bessere Sichtbarkeit
+            if (pageYOffset >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(a => {
+            a.classList.remove('active');
+            if (a.getAttribute('href').includes(current)) {
+                a.classList.add('active');
+            }
+        });
+    });
+});
+    </script>
