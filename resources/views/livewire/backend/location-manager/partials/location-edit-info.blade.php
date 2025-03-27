@@ -14,7 +14,7 @@
     @endif
 
     <form wire:submit.prevent="save">
-
+        <h5>{{ $locationId ? 'Standort bearbeiten' : 'Neue Location erstellen' }}</h5>
         <div class="row row-cards">
             <div class="col-sm-6 col-md-6">
 

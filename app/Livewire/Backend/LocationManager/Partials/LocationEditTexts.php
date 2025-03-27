@@ -69,39 +69,31 @@ class LocationEditTexts extends Component
             'panorama_text_and_style' => $this->cleanEditorContent($this->panoramaTextAndStyle),
             'panorama_title' => $this->cleanEditorContent($this->panoramaTitle),
             'panorama_short_text' => $this->cleanEditorContent($this->panoramaShortText),
-            'image_short_text' => $this->cleanEditorContent($this->imageShortText), // Save the new field
+            'image_short_text' => $this->cleanEditorContent($this->imageShortText),
         ]);
 
-        // Cache für die aktuellen Location-Textdaten löschen
         Cache::forget("location_texts_{$this->locationId}");
 
-        // Cache für Länder und Locations basierend auf country_id löschen
         if ($location->country_id) {
-            // Lösche den Cache für alle Locations des Landes
             Cache::forget("locations_{$location->country_id}");
-
-            // Hole das zugehörige Land, um den alias zu erhalten
             $country = WwdeCountry::find($location->country_id);
             if ($country) {
                 Cache::forget("country_{$country->alias}");
-            }
-
-            // Lösche den Cache für Länder, die den gleichen continent_id haben (falls nötig)
-            // Dies erfordert, dass wir den continent_id des Landes kennen
-            if ($country && $country->continent_id) {
-                Cache::forget("countries_{$country->continent_id}");
+                if ($country->continent_id) {
+                    Cache::forget("countries_{$country->continent_id}");
+                }
             }
         }
 
-        // Toast-Nachricht dispatchen
         $this->dispatch('show-toast', type: 'success', message: 'Texte erfolgreich gespeichert.');
     }
 
     private function cleanEditorContent($content)
     {
-        $cleaned = trim(strip_tags($content, '<img><a>'));
+        $allowedTags = '<a><img><b><strong><i><em><u><ul><ol><li><br><p><h1><h2><h3><h4><h5><h6><span>';
+        $cleaned = trim(strip_tags($content, $allowedTags));
 
-        return empty($cleaned) ? null : $content;
+        return empty($cleaned) ? null : $cleaned;
     }
 
     public function render()

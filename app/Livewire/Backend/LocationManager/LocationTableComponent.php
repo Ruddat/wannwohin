@@ -353,12 +353,16 @@ class LocationTableComponent extends Component
     public function forceDeleteLocation($locationId)
     {
         $location = WwdeLocation::withTrashed()->find($locationId);
+
         if ($location) {
             $location->forceDelete();
             $this->dispatch('refreshLocations');
             $this->dispatch('showSuccessMessage', 'Die Location wurde dauerhaft gelöscht.');
+        } else {
+            $this->dispatch('showErrorMessage', 'Standort nicht gefunden.');
         }
     }
+
 
     public function sortBy($field)
     {

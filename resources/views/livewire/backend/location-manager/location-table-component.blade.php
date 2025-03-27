@@ -1,4 +1,4 @@
-    <div class="container-fluid">
+<div class="container-fluid">
     <!-- Breadcrumb start -->
     <div class="row m-1">
         <div class="col-12 ">
@@ -36,6 +36,9 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Locations</h3>
+                <button wire:click="$dispatch('openCreateModal')" class="btn btn-sm btn-primary">
+                    Standort erstellen
+                  </button>
             </div>
             <div class="card-body border-bottom py-3">
                 <div class="row align-items-center g-3">
@@ -267,6 +270,7 @@
     </div>
 </div>
 
+@livewire('backend.location-manager.location-create-component')
 
 {{--
     <div class="col-12 mt-4">
@@ -352,21 +356,21 @@
             });
 
             window.confirmForceDelete = function (locationId) {
-                Swal.fire({
-                    title: 'Endgültig löschen?',
-                    text: 'Diese Location wird dauerhaft entfernt!',
-                    icon: 'error',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ja, endgültig löschen!',
-                    cancelButtonText: 'Abbrechen'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.dispatch('forceDeleteConfirmed', locationId);
-                    }
-                });
-            };
+    Swal.fire({
+        title: 'Endgültig löschen?',
+        text: 'Diese Location wird dauerhaft entfernt!',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ja, endgültig löschen!',
+        cancelButtonText: 'Abbrechen'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Livewire.dispatch('forceDeleteConfirmed', { locationId }); // ✅ hier korrekt
+        }
+    });
+};
         });
     </script>
 @endpush

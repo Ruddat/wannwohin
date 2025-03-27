@@ -313,11 +313,13 @@ a:hover {
   text-decoration: none;
 }
 
+/* HTML: jodit"></div>
 ul {
   padding-left: 0;
   list-style-type: none;
   margin-bottom: 0;
 }
+ */
 
 .list-disc {
   list-style-type: disc;

@@ -16,22 +16,26 @@
                 </div>
             </div>
         </div>
+        <!-- Tooltip für Hover -->
+        <div id="tooltip" style="position: absolute; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px; border-radius: 5px; display: none; pointer-events: auto; cursor: pointer; z-index: 1000;">
+            <h4 id="tooltip-title" style="margin: 0 0 5px 0;"></h4>
+            <img id="tooltip-image" src="" style="max-width: 100px; max-height: 100px; display: none;" alt="Tooltip Image">
+            <p id="tooltip-description" style="margin: 5px 0 0 0;"></p>
+        </div>
     </div>
-@endsection
 
-@section('css')
     <style>
         #globeViz {
             width: 100%;
             height: 600px;
-            background: #000;
+            background: #1e3a8a;
             cursor: grab;
         }
         #globeViz:active {
             cursor: grabbing;
         }
         #info {
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 5px;
             display: inline-block;
@@ -50,19 +54,23 @@
     <script src="https://unpkg.com/three@0.132.2/build/three.min.js"></script>
     <script src="https://unpkg.com/three-globe@2.24.7/dist/three-globe.min.js"></script>
     <script src="https://unpkg.com/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        let globe, camera, scene, renderer, controls;
+        let globe, camera, scene, renderer, controls, raycaster, mouse;
         let activePoint = null;
+        let autoRotateTimeout;
+        let hoveredPoint = null;
 
         const colorScale = ['#ff0000', '#ff4000', '#ff8000', '#ffbf00', '#ffff00', '#bfff00', '#80ff00', '#40ff00', '#00ff00'];
+        const tooltip = document.getElementById('tooltip');
 
         init();
         loadData();
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000000);
+            scene.background = new THREE.Color(0x1e3a8a);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(document.getElementById('globeViz').clientWidth, document.getElementById('globeViz').clientHeight);
@@ -72,15 +80,15 @@
             camera.position.z = 300;
 
             globe = new ThreeGlobe()
-                .globeImageUrl('https://unpkg.com/three-globe@2.24.7/example/img/earth-dark.jpg')
+                .globeImageUrl('https://unpkg.com/three-globe@2.24.7/example/img/earth-blue-marble.jpg')
                 .bumpImageUrl('https://unpkg.com/three-globe@2.24.7/example/img/earth-topology.png')
                 .showAtmosphere(true)
-                .atmosphereColor('#00a8ff')
+                .atmosphereColor('#60a5fa')
                 .atmosphereAltitude(0.25);
 
             scene.add(globe);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambientLight = new THREE.AmbientLight(0x60a5fa, 0.6);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -90,13 +98,21 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.minDistance = 150;
+            controls.minDistance = 50;
             controls.maxDistance = 500;
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.5;
+            controls.enablePan = false;
+
+            raycaster = new THREE.Raycaster();
+raycaster.params.Points = { threshold: 0.6 };
+mouse = new THREE.Vector2();
 
             function animate() {
                 requestAnimationFrame(animate);
+                if (typeof TWEEN !== 'undefined') {
+                    TWEEN.update();
+                }
                 controls.update();
                 renderer.render(scene, camera);
             }
@@ -107,6 +123,116 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(document.getElementById('globeViz').clientWidth, document.getElementById('globeViz').clientHeight);
             });
+
+            // Rotation bei Interaktion pausieren
+            document.getElementById('globeViz').addEventListener('mousedown', () => {
+                controls.autoRotate = false;
+                clearTimeout(autoRotateTimeout);
+            });
+
+            document.getElementById('globeViz').addEventListener('mouseup', () => {
+                autoRotateTimeout = setTimeout(() => {
+                    controls.autoRotate = true;
+                }, 2000);
+            });
+
+            // Hover-Interaktion
+            document.getElementById('globeViz').addEventListener('mousemove', onMouseMove);
+            document.getElementById('globeViz').addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+                hoveredPoint = null;
+                document.getElementById('info').textContent = '';
+            });
+
+            // Klick auf Tooltip
+            tooltip.addEventListener('click', onTooltipClick);
+        }
+
+        function onMouseMove(event) {
+            event.preventDefault();
+
+            mouse.x = ((event.clientX - renderer.domElement.getBoundingClientRect().left) / renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - renderer.domElement.getBoundingClientRect().top) / renderer.domElement.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(globe.points().children.concat(globe.labels().children));
+
+            if (intersects.length > 0) {
+                const point = intersects[0].object.userData;
+                hoveredPoint = point;
+
+                // Tooltip anzeigen
+                document.getElementById('tooltip-title').textContent = point.name || 'Unbekannt';
+                document.getElementById('tooltip-description').textContent = point.description || 'Keine Beschreibung verfügbar';
+
+                const imgElement = document.getElementById('tooltip-image');
+                if (point.image_url) {
+                    imgElement.src = point.image_url;
+                    imgElement.style.display = 'block';
+                } else {
+                    imgElement.style.display = 'none';
+                }
+
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${event.clientX + 10}px`;
+                tooltip.style.top = `${event.clientY + 10}px`;
+
+                document.getElementById('info').textContent = `${point.name} (${point.latitude.toFixed(2)}°, ${point.longitude.toFixed(2)}°}`;
+            } else {
+                tooltip.style.display = 'none';
+                hoveredPoint = null;
+                document.getElementById('info').textContent = '';
+            }
+        }
+
+        function onTooltipClick() {
+            if (!hoveredPoint) return;
+
+            const point = hoveredPoint;
+            console.log('Tooltip geklickt für:', point);
+
+            document.getElementById('location-title').textContent = point.name || 'Unbekannt';
+            document.getElementById('location-description').textContent = point.description || 'Keine Beschreibung verfügbar';
+
+            const imgElement = document.getElementById('location-image');
+            if (point.image_url) {
+                console.log('Bild-URL:', point.image_url);
+                imgElement.src = point.image_url;
+                imgElement.style.display = 'block';
+            } else {
+                imgElement.style.display = 'none';
+            }
+
+            document.getElementById('location-details').style.display = 'block';
+
+            const latRad = point.latitude * (Math.PI / 180);
+            const lngRad = -point.longitude * (Math.PI / 180);
+            const radius = 50;
+
+            const targetPosition = new THREE.Vector3(
+                radius * Math.cos(latRad) * Math.cos(lngRad),
+                radius * Math.sin(latRad),
+                radius * Math.cos(latRad) * Math.sin(lngRad)
+            );
+
+            if (typeof TWEEN !== 'undefined') {
+                new TWEEN.Tween(camera.position)
+                    .to(targetPosition, 1000)
+                    .easing(TWEEN.Easing.Quadratic.Out)
+                    .onUpdate(() => camera.lookAt(0, 0, 0))
+                    .start();
+            } else {
+                camera.position.copy(targetPosition);
+                camera.lookAt(0, 0, 0);
+            }
+
+            if (activePoint) {
+                globe.pointColor('color');
+            }
+            activePoint = point;
+            globe.pointColor(d => d === point ? '#ff0000' : d.color);
+
+            tooltip.style.display = 'none'; // Tooltip ausblenden nach Klick
         }
 
         function loadData() {
@@ -125,69 +251,26 @@
 
                     const pointsData = locations.map(loc => ({
                         ...loc,
-                        size: Math.random() * 0.5 + 0.5,
+                        size: Math.random() * 0.2 + 0.1,
                         color: colorScale[Math.floor(Math.random() * colorScale.length)]
                     }));
 
-                    globe.pointsData(pointsData)
-                        .pointLat('latitude')
-                        .pointLng('longitude')
-                        .pointColor('color')
-                        .pointRadius('size')
-                        .pointAltitude(0.05)
-                        .labelsData(pointsData) // Explizit Labels setzen
-                        .labelLat('latitude')
-                        .labelLng('longitude')
-                        .labelText('name')
-                        .labelSize(0.8) // Größer für Sichtbarkeit
-                        .labelColor(() => '#ffffff')
-                        .labelAltitude(0.1)
-                        .labelResolution(2)
-                        .labelDotRadius(0.3)
-                        .onPointHover(point => {
-                            document.getElementById('info').textContent = point
-                                ? `${point.name} (${point.latitude.toFixed(2)}°, ${point.longitude.toFixed(2)}°)`
-                                : '';
-                        })
-                        .onPointClick(point => {
-                            console.log('Geklickter Punkt:', point); // Debugging
-                            if (point) {
-                                document.getElementById('location-title').textContent = point.name || 'Unbekannt';
-                                document.getElementById('location-description').textContent = point.description || 'Keine Beschreibung verfügbar';
+                    globe.pointsData(pointsData);
+                    globe.pointLat('latitude');
+                    globe.pointLng('longitude');
+                    globe.pointColor('color');
+                    globe.pointRadius('size');
+                    globe.pointAltitude(0.01);
 
-                                const imgElement = document.getElementById('location-image');
-                                if (point.image_url) {
-                                    console.log('Bild-URL:', point.image_url);
-                                    imgElement.src = point.image_url;
-                                    imgElement.style.display = 'block';
-                                } else {
-                                    imgElement.style.display = 'none';
-                                }
-
-                                document.getElementById('location-details').style.display = 'block';
-
-                                const latRad = point.latitude * (Math.PI / 180);
-                                const lngRad = -point.longitude * (Math.PI / 180);
-                                const radius = 1.5;
-
-                                camera.position.set(
-                                    radius * Math.cos(latRad) * Math.cos(lngRad),
-                                    radius * Math.sin(latRad),
-                                    radius * Math.cos(latRad) * Math.sin(lngRad)
-                                );
-                                camera.lookAt(0, 0, 0);
-
-                                if (activePoint) {
-                                    globe.pointColor('color');
-                                }
-                                activePoint = point;
-                                globe.pointColor(d => d === point ? '#ff0000' : d.color);
-                            } else {
-                                document.getElementById('location-details').style.display = 'none';
-                                activePoint = null;
-                                globe.pointColor('color');
-                            }
-                        });
+                    globe.labelsData(pointsData);
+                    globe.labelLat('latitude');
+                    globe.labelLng('longitude');
+                    globe.labelText('name');
+                    globe.labelSize(0.8);
+                    globe.labelColor(() => '#ffffff');
+                    globe.labelAltitude(0.02);
+                    globe.labelResolution(2);
+                    globe.labelDotRadius(0.3);
 
                     controls.autoRotate = true;
                 })

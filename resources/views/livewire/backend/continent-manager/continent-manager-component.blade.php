@@ -1,4 +1,4 @@
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     @if (session('status'))
         <div class="alert alert-success">
             {{ session('status') }}
@@ -9,7 +9,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
                 <h3 class="card-title mb-0">Continents</h3>
-                <p class="card-subtitle text-muted mt-1">
+                <p class="text-muted mb-0">
                     Hier können Kontinente verwaltet, bearbeitet und erstellt werden. Zusätzlich können individuelle Bilder hochgeladen oder Pixabay-Bilder verwendet werden.
                 </p>
             </div>
@@ -19,7 +19,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table card-table table-vcenter">
+            <table class="table table-vcenter card-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -37,15 +37,11 @@
                             <td>{{ $continent->id }}</td>
                             <td>{{ $continent->title }}</td>
                             <td>
-                                <div class="images-overlap">
+                                <div class="d-flex">
                                     @for ($i = 1; $i <= 3; $i++)
-                                        @php
-                                            $imagePath = $continent["image{$i}_path"];
-                                        @endphp
+                                        @php $imagePath = $continent["image{$i}_path"]; @endphp
                                         @if ($imagePath)
-                                            <div class="image-wrapper">
-                                                <img src="{{ Storage::url($imagePath) }}" alt="Image {{ $i }}" class="img-thumbnail" width="50">
-                                            </div>
+                                            <img src="{{ Storage::url($imagePath) }}" alt="Image {{ $i }}" class="avatar me-n2" style="width:50px;height:50px;">
                                         @endif
                                     @endfor
                                 </div>
@@ -54,15 +50,15 @@
                             <td>{!! $continent->continent_text !!}</td>
                             <td>
                                 <button wire:click="toggleStatus({{ $continent->id }})"
-                                    class="btn btn-sm @if ($continent->status === 'active') btn-success @elseif ($continent->status === 'pending') btn-warning @else btn-secondary @endif">
+                                        class="btn btn-sm {{ $continent->status === 'active' ? 'btn-success' : ($continent->status === 'pending' ? 'btn-warning' : 'btn-secondary') }}">
                                     {{ ucfirst($continent->status) }}
                                 </button>
                             </td>
                             <td>
-                                <button wire:click="edit({{ $continent->id }})" class="btn btn-sm btn-outline-primary">
+                                <button wire:click="edit({{ $continent->id }})" class="btn btn-sm btn-primary">
                                     <i class="ti ti-pencil"></i> Edit
                                 </button>
-                                <button wire:click="delete({{ $continent->id }})" class="btn btn-sm btn-outline-danger">
+                                <button wire:click="delete({{ $continent->id }})" class="btn btn-sm btn-danger">
                                     <i class="ti ti-trash"></i> Delete
                                 </button>
                             </td>
@@ -87,32 +83,7 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <div class="app-pagination-link">
-                        <ul class="pagination app-pagination justify-content-center mb-0">
-                            <li class="page-item {{ $continents->onFirstPage() ? 'disabled' : '' }}">
-                                <a class="page-link b-r-left" wire:click="previousPage" href="#" aria-label="Previous">
-                                    Previous
-                                </a>
-                            </li>
-                            @php
-                                $currentPage = $continents->currentPage();
-                                $lastPage = $continents->lastPage();
-                                $range = 2;
-                                $start = max(1, $currentPage - $range);
-                                $end = min($lastPage, $currentPage + $range);
-                            @endphp
-                            @for ($i = $start; $i <= $end; $i++)
-                                <li class="page-item {{ $currentPage == $i ? 'active' : '' }}" aria-current="{{ $currentPage == $i ? 'page' : '' }}">
-                                    <a class="page-link" wire:click="gotoPage({{ $i }})" href="#">{{ $i }}</a>
-                                </li>
-                            @endfor
-                            <li class="page-item {{ $continents->hasMorePages() ? '' : 'disabled' }}">
-                                <a class="page-link b-r-right" wire:click="nextPage" href="#" aria-label="Next">
-                                    Next
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    {{ $continents->links('pagination::bootstrap-5') }}
                 </div>
                 <div class="col-md-3 text-end">
                     <span class="text-muted">
@@ -121,15 +92,11 @@
                 </div>
             </div>
         </div>
-
-
-
-
     </div>
 
+    <!-- Modal for Editing -->
     @if ($editMode)
-        <!-- Modal for Editing -->
-        <div class="modal" tabindex="-1" style="display: block;">
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -174,13 +141,33 @@
 
                         <div class="mb-3">
                             <label for="continent_text" class="form-label">Continent Header Text</label>
-                            <livewire:jodit-text-editor wire:model.live="continent_header_text" :buttons="['bold', 'italic', 'underline', 'strikeThrough', '|', 'left', 'center', 'right', '|', 'link', 'image']" />
+                            <livewire:jodit-text-editor wire:model.live="continent_header_text"
+                            :buttons="[
+                                'bold', 'italic', 'underline', '|',
+                                'font', 'fontsize', '|',
+                                'paragraph', '|',
+                                'left', 'center', 'right', 'justify', '|',
+                                'ul', 'ol', '|',
+                                'link', '|',
+                                'undo', 'redo', 'eraser'
+                              ]"
+                             />
                             @error('continent_header_text') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mb-3">
                             <label for="continent_text" class="form-label">Continent Text</label>
-                            <livewire:jodit-text-editor wire:model.live="continent_text" :buttons="['bold', 'italic', 'underline', 'strikeThrough', '|', 'left', 'center', 'right', '|', 'link', 'image']" />
+                            <livewire:jodit-text-editor wire:model.live="continent_text"
+                            :buttons="[
+                                'bold', 'italic', 'underline', '|',
+                                'font', 'fontsize', '|',
+                                'paragraph', '|',
+                                'left', 'center', 'right', 'justify', '|',
+                                'ul', 'ol', '|',
+                                'link', '|',
+                                'undo', 'redo', 'eraser'
+                              ]"
+                              />
                             @error('continent_text') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
@@ -256,13 +243,9 @@
                                 </div>
                             @endif
                         @endif
-
                     </div>
                     <div class="modal-footer">
-                        <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary">
-                            <span wire:loading wire:target="save" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Save Changes
-                        </button>
+                        <button wire:click="save" class="btn btn-primary">Save Changes</button>
                         <button wire:click="resetInputFields" class="btn btn-secondary">Cancel</button>
                     </div>
                 </div>

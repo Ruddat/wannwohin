@@ -450,9 +450,13 @@
                             <div class="mb-3">
                                 <label for="country_header_text" class="form-label">Header Beschreibung</label>
                                 <livewire:jodit-text-editor wire:model.live="country_header_text" :buttons="[
-                                    'bold', 'italic', 'underline', 'strikeThrough',
-                                    '|', 'left', 'center', 'right', '|',
-                                    'link'
+                                    'bold', 'italic', 'underline', '|',
+                                    'font', 'fontsize', '|',
+                                    'paragraph', '|',
+                                    'left', 'center', 'right', 'justify', '|',
+                                    'ul', 'ol', '|',
+                                    'link', '|',
+                                    'undo', 'redo', 'eraser'
                                 ]" />
                                 @error('country_header_text') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>

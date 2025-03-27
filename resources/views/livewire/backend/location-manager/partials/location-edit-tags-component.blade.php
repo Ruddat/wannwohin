@@ -64,7 +64,15 @@
         <label class="form-label fw-bold">Beste Reisezeit Beschreibung</label>
         <livewire:jodit-text-editor
             wire:model.debounce.500ms="best_traveltime_text"
-            :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', '|', 'unorderedList', 'orderedList', '|', 'link', 'image']"
+            :buttons="[
+                'bold', 'italic', 'underline', '|',
+                'font', 'fontsize', '|',
+                'paragraph', '|',
+                'left', 'center', 'right', 'justify', '|',
+                'ul', 'ol', '|',
+                'link', '|',
+                'undo', 'redo', 'eraser'
+              ]"
             key="editor-best_traveltime_text-{{ $locationId }}"
         />
     </div>
@@ -74,7 +82,15 @@
         <label class="form-label fw-bold">Sport Beschreibung</label>
         <livewire:jodit-text-editor
             wire:model.debounce.500ms="text_sports"
-            :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', '|', 'unorderedList', 'orderedList', '|', 'link', 'image']"
+            :buttons="[
+                'bold', 'italic', 'underline', '|',
+                'font', 'fontsize', '|',
+                'paragraph', '|',
+                'left', 'center', 'right', 'justify', '|',
+                'ul', 'ol', '|',
+                'link', '|',
+                'undo', 'redo', 'eraser'
+              ]"
             key="editor-text_sports-{{ $locationId }}"
         />
     </div>
@@ -84,7 +100,15 @@
         <label class="form-label fw-bold">Freizeitpark Beschreibung</label>
         <livewire:jodit-text-editor
             wire:model.debounce.500ms="text_amusement_parks"
-            :buttons="['bold', 'italic', 'underline', '|', 'left', 'center', 'right', '|', 'unorderedList', 'orderedList', '|', 'link', 'image']"
+            :buttons="[
+                'bold', 'italic', 'underline', '|',
+                'font', 'fontsize', '|',
+                'paragraph', '|',
+                'left', 'center', 'right', 'justify', '|',
+                'ul', 'ol', '|',
+                'link', '|',
+                'undo', 'redo', 'eraser'
+              ]"
             key="editor-text_amusement_parks-{{ $locationId }}"
         />
     </div>
