@@ -4,12 +4,15 @@ namespace App\Livewire\Backend\ContinentManager;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use App\Helpers\ImageHelper;
 use Livewire\WithPagination;
 use App\Models\WwdeContinent;
 use Livewire\WithFileUploads;
+use Livewire\TemporaryUploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ContinentManagerComponent extends Component
 {
@@ -27,6 +30,8 @@ class ContinentManagerComponent extends Component
     protected $listeners = ['confirmDelete'];
     public $perPage = 10;
 
+    public $fact_card_image;
+
     protected $rules = [
         'title' => 'required|string|max:120',
         'alias' => 'required|string|max:120',
@@ -42,6 +47,7 @@ class ContinentManagerComponent extends Component
         'image2_path' => 'nullable|image|max:2048',
         'image3_path' => 'nullable|image|max:2048',
         'custom_images' => 'boolean',
+        'fact_card_image' => 'nullable|image|max:2048',
         'status' => 'required|in:active,pending,inactive',
     ];
 
@@ -225,6 +231,7 @@ class ContinentManagerComponent extends Component
             'continent_header_text' => 'nullable|string',
             'continent_text' => 'nullable|string',
             'custom_images' => 'boolean',
+            'fact_card_image' => 'nullable|image|max:2048',
             'status' => 'required|in:active,pending,inactive',
         ]);
 
@@ -244,6 +251,29 @@ class ContinentManagerComponent extends Component
             $data['image2_path'] = $this->image2_path;
             $data['image3_path'] = $this->image3_path;
         }
+
+
+        if (!empty($this->fact_card_image)){
+            // 1. Temporäre Datei speichern im public-Speicher
+            $originalPath = $this->fact_card_image->store('uploads/images/continents', 'public'); // gibt relativen Pfad zurück
+
+           // dd($originalPath);
+            // 2. WebP erzeugen
+            $webpPath = ImageHelper::convertToWebp($originalPath);
+
+            // 3. Wenn WebP erfolgreich erzeugt wurde, speichern wir den Pfad
+            if ($webpPath) {
+                $data['fact_card_image'] = $webpPath;
+
+                // 4. Optional: Original löschen
+                \Storage::disk('public')->delete($originalPath);
+            } else {
+                // Falls WebP fehlschlug: Fallback auf Original
+                $data['fact_card_image'] = $originalPath;
+            }
+        }
+        //dd($data);
+
 
         return $data;
     }
@@ -275,6 +305,7 @@ class ContinentManagerComponent extends Component
         $this->continent_text = null;
         $this->image1_path = $this->image2_path = $this->image3_path = null;
         $this->custom_images = false;
+        $this->fact_card_image = null;
         $this->status = 'active';
         $this->editMode = false;
     }

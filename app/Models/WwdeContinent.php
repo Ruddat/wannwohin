@@ -35,6 +35,7 @@ class WwdeContinent extends Model
         'image2_path',
         'image3_path',
         'custom_images',
+        'fact_card_image',
         'status',
     ];
 

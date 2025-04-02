@@ -1,14 +1,11 @@
 <?php
 // Text vorbereiten
-$rawText = strip_tags($location->text_best_traveltime); // HTML-Tags aus neuem Text entfernen
+$rawText = strip_tags($location->text_what_to_do); // HTML-Tags entfernen
 $textLength = strlen($rawText); // Zeichenlänge des Textes
 
 // Bildanzahl basierend auf der Zeichenlänge (1 bis 5 Bilder)
 $imageCount = max(1, min(ceil($textLength / 500), 5));
 $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
-
-// Beste Reisezeit-Monate (angenommen, diese Variable existiert)
-//$best_travel_months = $location->best_travel_months ?? ['January', 'February', 'March']; // Beispiel-Daten
 ?>
 
 <section id="erleben" class="section section-no-border bg-color-primary m-0 py-4 position-relative">
@@ -18,7 +15,7 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
         <div class="row mb-3">
             <div class="col-12 text-end">
                 <h2 class="text-color-dark font-weight-extra-bold">
-                    @autotranslate("Beste Reisezeit für {$location->title}", app()->getLocale())
+                    @autotranslate("Was ist die beste Reisezeit {$location->title} zu besuchen?", app()->getLocale())
                 </h2>
             </div>
         </div>
@@ -29,10 +26,12 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
             <div class="col-md-4 text-center gallery-images">
                 @foreach ($randomImages as $key => $image)
                     @php
+                        // Zufällige Rotation zwischen -5 und 5 Grad für Polaroid-Effekt
                         $rotationValue = rand(-5, 5);
                         $imagePath = Storage::exists($image->image_path) ? Storage::url($image->image_path) : asset($image->image_path);
                     @endphp
                     <div class="gallery-image" style="transform: rotate({{ $rotationValue }}deg);">
+                        <!-- Bild in einen Container einbetten, der den Schimmer-Effekt erhält -->
                         <div class="polaroid">
                             <button class="border-0 p-0" data-bs-toggle="modal" data-bs-target="#erleben_picture{{ $key + 1 }}_modal">
                                 <img src="{{ $imagePath }}" class="figure-img img-fluid" alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
@@ -44,30 +43,10 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
 
             <!-- Text Content -->
             <div class="col-md-8 bg-white p-3 rounded shadow text-content">
-                @if (!empty($location->text_best_traveltime))
-                    <div class="formatted-text text-muted mb-3">
-                        {!! app('autotranslate')->trans($location->text_best_traveltime, app()->getLocale()) !!}
+                @if (!empty($location->text_what_to_do))
+                    <div class="formatted-text">
+                        {!! app('autotranslate')->trans($location->text_what_to_do, app()->getLocale()) !!}
                     </div>
-                    <p class="text-black fw-bold mb-2">
-                        Die beste Reisezeit {{ $location->title }} kennenzulernen…
-                    </p>
-
-                    <!-- Monats-Kalender Karten -->
-                    <div class="d-flex flex-wrap gap-2 justify-content-start">
-                        @foreach($best_travel_months as $index => $month)
-                            <div class="text-center month-card position-relative"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="top"
-                                 title="Perfekt für Sightseeing und mildes Wetter">
-                                <img src="{{ asset('img/best_travel_time/' . $index . '.png') }}"
-                                     alt="Reisezeit Monat {{ $month }}"
-                                     class="img-fluid rounded shadow-sm transition-effect"
-                                     style="max-width: 60px; cursor: pointer;">
-                                <p class="mt-1 text-dark small">@autotranslate($month, app()->getLocale())</p>
-                            </div>
-                        @endforeach
-                    </div>
-
                 @else
                     <p class="text-muted">@autotranslate('Kein Text verfügbar.', app()->getLocale())</p>
                 @endif
@@ -103,7 +82,6 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
 @endforeach
 
 <style>
-    /* Bestehendes CSS bleibt erhalten */
     .background-overlay {
         position: absolute;
         top: 0;
@@ -126,18 +104,19 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
     .gallery-images {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 10px; /* Abstand zwischen den Bildern */
         align-items: center;
         justify-content: center;
         min-height: 360px;
         padding: 20px 0;
     }
 
+    /* Container für das Bild mit Polaroid- und Schimmer-Effekt */
     .polaroid {
         width: 250px;
         max-width: 100%;
-        position: relative;
-        overflow: hidden;
+        position: relative; /* wichtig für das ::after Pseudo-Element */
+        overflow: hidden;   /* verhindert, dass der Schimmer aus dem Container herausragt */
         background: #fff;
         padding: 10px 10px 30px 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -145,6 +124,7 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
         transition: transform 0.3s ease-in-out;
     }
 
+    /* Schimmer-Effekt */
     .polaroid::after {
         content: '';
         position: absolute;
@@ -163,6 +143,7 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
         transition: opacity 0.3s ease;
     }
 
+    /* Hover-Effekt: Container skalieren und Schimmer anzeigen */
     .gallery-image:hover .polaroid {
         transform: scale(1.05) rotate(2deg);
     }
@@ -173,48 +154,34 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
     }
 
     @keyframes shimmer {
-        0% { transform: translateX(-100%); opacity: 0; }
-        50% { opacity: 1; }
-        100% { transform: translateX(100%); opacity: 0; }
+        0% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
 
+    /* Textbereich */
     .formatted-text {
         font-size: 1rem;
         line-height: 1.5;
-        color: #666; /* Angepasst an neuen Stil */
-    }
-
-    /* Neuer Stil für Monatskarten */
-    .month-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .month-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .transition-effect {
-        transition: all 0.3s ease;
-    }
-
-    .small {
-        font-size: 0.9rem;
-    }
-
-    .text-black {
-        color: #333 !important;
-        font-size: 1rem;
+        color: #333;
     }
 
     /* Responsive Anpassungen */
     @media (max-width: 768px) {
         .gallery-images {
-            display: none;
+            display: none; /* Bilder auf Mobilgeräten ausblenden */
         }
 
         .col-md-8 {
-            width: 100%;
+            width: 100%; /* Text nimmt volle Breite ein */
         }
 
         #erleben .container {
@@ -233,28 +200,5 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
         .p-3 {
             padding: 1.5rem !important;
         }
-
-        .month-card img {
-            max-width: 50px;
-        }
-
-        .small {
-            font-size: 0.8rem;
-        }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        document.querySelectorAll('.month-card').forEach(card => {
-            card.addEventListener('click', () => {
-                alert('Hier könnten Details zu ' + card.querySelector('p').textContent + ' erscheinen!');
-            });
-        });
-    });
-</script>

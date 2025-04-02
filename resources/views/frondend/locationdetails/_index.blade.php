@@ -29,28 +29,6 @@
         @include('frondend.locationdetails.sections.maps')
     </div>
 </div>
-
-                    <!-- Flug -->
-                    <div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="100">
-                        <div class="card h-100 shadow-lg border-0">
-                            <div class="card-body p-4">
-                                <h4 class="card-title text-primary fw-bold mb-3">
-                                    <i class="fas fa-plane me-2"></i>
-                                    @autotranslate("Flug", app()->getLocale())
-                                </h4>
-                                <script async src="https://tp.media/content?currency=eur&trs=394771&shmarker=611711&lat=&lng=&powered_by=true&search_host=www.aviasales.at%2Fsearch&locale=de&origin=LON&value_min=0&value_max=1000000&round_trip=true&only_direct=false&radius=1&draggable=true&disable_zoom=false&show_logo=false&scrollwheel=true&primary=%233FABDB&secondary=%233FABDB&light=%23ffffff&width=1500&height=500&zoom=2&promo_id=4054&campaign_id=100" charset="utf-8"></script>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Beste Reisezeit -->
-<!-- Beste Reisezeit -->
-<div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="200">
-    <div class="card h-100 shadow-lg border-0">
-        @include('frondend.locationdetails.sections.best-travel')
-    </div>
-</div>
-
 <!-- Lage und Klima -->
 @if ($location->text_what_to_do)
 <div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="300">
@@ -59,6 +37,18 @@
     </div>
 </div>
 @endif
+
+
+
+{{--
+<!-- Beste Reisezeit -->
+<div class="col-lg-6 col-md-12" data-aos="fade-up" data-aos-delay="200">
+    <div class="card h-100 shadow-lg border-0">
+        @include('frondend.locationdetails.sections.best-travel')
+    </div>
+</div>
+--}}
+
 
                     <!-- Sport & Aktivitäten -->
                     @if ($location->text_sports)
@@ -107,11 +97,13 @@
             </div>
         </section>
 
-        @include('frondend.locationdetails.sections.climate_table')
 
         @if ($location->text_what_to_do)
             @include('frondend.locationdetails.sections.erleben')
         @endif
+
+
+        @include('frondend.locationdetails.sections.climate_table')
 
         <!-- Inspirationsbereich -->
         @livewire('frontend.location-inspiration.location-inspiration-component', [

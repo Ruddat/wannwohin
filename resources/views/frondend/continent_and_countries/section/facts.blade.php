@@ -30,7 +30,12 @@
                         </h4>
                     </div>
                     <div class="card-body p-4">
+                        @if ($continent->fact_card_image)
+                        <div class="continent-flag mx-auto mb-4" style="background-image: url('{{ Storage::url($continent->fact_card_image) }}');"></div>
+                    @else
                         <div class="continent-flag mx-auto mb-4" style="background-image: url('{{ asset("assets/img/location_main_img/{$continent->alias}.png") }}');"></div>
+                    @endif
+
                         <div class="fact-list">
                             <div class="fact-row">
                                 <div class="fact-item">

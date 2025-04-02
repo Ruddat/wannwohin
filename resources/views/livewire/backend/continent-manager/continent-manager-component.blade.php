@@ -25,6 +25,7 @@
                         <th>#</th>
                         <th>Title</th>
                         <th>Images</th>
+                        <th>Fact Card</th>
                         <th>Header</th>
                         <th>Text</th>
                         <th>Status</th>
@@ -45,6 +46,13 @@
                                         @endif
                                     @endfor
                                 </div>
+                            </td>
+                            <td>
+                                @if ($continent->fact_card_image && Storage::exists($continent->fact_card_image))
+                                    <img src="{{ Storage::url($continent->fact_card_image) }}" alt="Fact Card" style="width: 50px; height: 50px;" class="rounded">
+                                @else
+                                    <span class="text-muted">n/a</span>
+                                @endif
                             </td>
                             <td>{!! $continent->continent_header_text !!}</td>
                             <td>{!! $continent->continent_text !!}</td>
@@ -243,6 +251,15 @@
                                 </div>
                             @endif
                         @endif
+
+                        <div class="mb-3">
+                            <label for="fact_card_image" class="form-label">Faktenkarten-Bild</label>
+                            <input wire:model="fact_card_image" type="file" id="fact_card_image" class="form-control">
+                            @if ($fact_card_image instanceof \Livewire\TemporaryUploadedFile)
+                                <img src="{{ $fact_card_image->temporaryUrl() }}" class="img-thumbnail mt-2" style="max-width: 150px;">
+                            @endif
+                            @error('fact_card_image') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button wire:click="save" class="btn btn-primary">Save Changes</button>
