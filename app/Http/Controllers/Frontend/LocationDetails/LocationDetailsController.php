@@ -53,24 +53,11 @@ class LocationDetailsController extends Controller
         $priceTrend = $this->calculatePriceTrend($location->iso2 ?? 'DE');
         $bestTravelMonths = $this->parseBestTravelMonths($location->best_traveltime_json);
 
-        // Klimadaten für das laufende Jahr (2025)
-        //  $climates = $this->fetchClimateYearData($location, $currentYear);
-        //  $climates = $this->fetchSeasonalClimateYearData($location, $currentYear);
-        //  Hole und speichere Klimadaten für das Vorjahr (2024)
-        //  $climates = $this->fetchHistoricalClimateYearData($location, $currentYear);
-        // Klimadaten für das Vorjahr (2024)
-        $currentYear = date('Y'); // 2025
-        $climates = $this->fetchAndStoreClimateData($location, $currentYear); // Nutzt jetzt die Rückgabe
+        $currentYear = date('Y');
+        $climates = $this->fetchAndStoreClimateData($location, $currentYear);
 
-
-        // SEO-Daten mit dem Service generieren oder speichern
         $seo = $seoService->getSeoData($location);
-
-        // Neue Inspirationsdaten hinzufügen
         $inspirationData = $this->fetchInspirationData($location);
-
-        //dd($weather['current']);
-//dd($climates);
 
         return view('frondend.locationdetails._index', [
             'seo' => $seo,
@@ -96,7 +83,7 @@ class LocationDetailsController extends Controller
             'price_trend' => $priceTrend,
             'hourly_weather' => $weather['hourly'],
             'weather_data_widget' => $weather['current'],
-            'inspiration_data' => $inspirationData, // Neue Variable
+            'inspiration_data' => $inspirationData,
         ]);
     }
 
@@ -129,8 +116,8 @@ private function fetchInspirationData(WwdeLocation $location): array
     private function fetchLocation(string $continentAlias, string $countryAlias, string $locationAlias): WwdeLocation
     {
         return WwdeLocation::where('alias', $locationAlias)
-            ->whereHas('country', fn($query) => $query->where('alias', $countryAlias))
-            ->whereHas('country.continent', fn($query) => $query->where('alias', $continentAlias))
+            ->whereHas('country', fn($q) => $q->where('alias', $countryAlias))
+            ->whereHas('country.continent', fn($q) => $q->where('alias', $continentAlias))
             ->with(['electric', 'country', 'country.continent'])
             ->firstOrFail();
     }

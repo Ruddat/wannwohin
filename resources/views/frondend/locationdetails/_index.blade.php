@@ -111,6 +111,20 @@
             'locationTitle' => $location->title
         ])
 
+
+
+
+
+
+@livewire('frontend.location-inspiration-component.trip-activities', [
+    'locationId'    => $location->id,
+    'locationTitle' => $location->title
+])
+
+
+
+
+
         <!-- Zusätzliche Sektionen -->
         @include('frondend.locationdetails.sections.amusement_parks')
 
