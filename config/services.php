@@ -59,6 +59,8 @@ return [
 'deepinfra' => [
     'api_token' => env('DEEPINFRA_API_TOKEN'),
 ],
-
+'opentripmap' => [
+    'key' => env('OPENTRIPMAP_KEY'),
+],
 
 ];

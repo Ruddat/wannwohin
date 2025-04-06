@@ -28,8 +28,9 @@
 
                 <!-- Top 10 Box -->
                 <div class="col-lg-6">
-                    <div class="top-ten-box bg-white p-4 rounded shadow-lg animate__animated animate__zoomIn"
-                        style="animation-delay: 0.2s;">
+                    <div class="top-ten-box bg-white p-4 rounded shadow-lg aanimate__backInRight"
+
+                        style="animation-delay: 0.4s;">
                         <h4 class="text-center text-color-dark font-weight-bold mb-4">
                             🌟 @autotranslate('Top 10 Reiseziele', app()->getLocale())
                         </h4>
@@ -178,7 +179,6 @@
     }
 
     .top-ten-box:hover {
-        transform: translateY(-5px);
     }
 
     .top-ten-box h4 {

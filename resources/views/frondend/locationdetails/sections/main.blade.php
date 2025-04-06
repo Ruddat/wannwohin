@@ -3,7 +3,7 @@
 <section class="section section-no-border bg-color-light m-0 pb-4" style="background-color: #eaeff5 !important;">
     <div class="container" style="background-color: #eaeff5">
         <!-- Überschrift -->
-        <div class="row mb-4" data-aos="fade-down" data-aos-delay="1000">
+        <div class="row mb-4" data-aos="fade-down" data-aos-delay="800">
             <div class="col-12 text-center">
                 <h2 class="fw-bold text-uppercase">
                     @autotranslate("{$location->title}: Alles Wichtige auf einen Blick", app()->getLocale())
@@ -24,7 +24,7 @@
                     style="background-repeat: no-repeat; background-size: cover; background-position: center;
                             background-image: url('{{ $location->text_pic2 ? asset($location->text_pic2) : asset('img/placeholders/location-placeholder.jpg') }}');
                             height: 100%; min-height: 400px;"
-                    data-aos="fade-up" data-aos-delay="1200">
+                    data-aos="fade-up" data-aos-delay="800">
                     <!-- Schicker Bildtext im unteren Bereich -->
 
                     <div class="image-caption">
@@ -55,7 +55,7 @@
             </div>
 
             <!-- Faktenkarte -->
-            <div class="col-lg-5 col-md-12" data-aos="fade-left" data-aos-delay="1300">
+            <div class="col-lg-5 col-md-12" data-aos="fade-left" data-aos-delay="900">
                 <div class="card">
                     <!-- Card-Header mit Flagge, Name, Standort und Land -->
                     <div class="card-header-fact text-center"

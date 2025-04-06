@@ -3,6 +3,7 @@
     'description',
     'category' => 'Erlebnis',
     'icon' => 'fa-map-location-dot',
+    'image' => 'https://via.placeholder.com/150',
     'duration' => '1–2 Stunden',
     'location' => 'Zentrumsnah',
     'rating' => '90 %',
@@ -24,6 +25,9 @@
             <li class="list-inline-item"><i class="fa-regular fa-clock"></i> Dauer: {{ $duration }}</li>
             <li class="list-inline-item"><i class="fa-solid fa-sun"></i> Beste Zeit: {{ $season ?? 'Ganzjährig' }}</li>
             <li class="list-inline-item"><i class="fa-solid fa-thumbs-up"></i> {{ $rating }}</li>
+            @if(!empty($latitude) && !empty($longitude))
+                <li class="list-inline-item"><i class="fa-solid fa-location-dot"></i> Koordinaten: {{ $latitude }}, {{ $longitude }}</li>
+            @endif
         </ul>
 
         <div class="d-flex gap-2">
