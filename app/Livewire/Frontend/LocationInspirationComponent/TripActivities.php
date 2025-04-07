@@ -4,8 +4,12 @@ namespace App\Livewire\Frontend\LocationInspirationComponent;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use App\Models\WwdeLocation;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 use App\Models\ModLocationFilter;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
 
 class TripActivities extends Component
 {
@@ -16,12 +20,18 @@ class TripActivities extends Component
     public float $mapCenterLon = 8.682127;
     public array $tripDays = [];
     public string $tripDescription = '';
-    public string $tripName = ''; // Neues Feld für den Trip-Namen
-    public bool $isLoading = false; // Für Lade-Indikator
+    public string $tripName = '';
+    public bool $isLoading = false;
     public string $savedDataPreview = '';
-
-    public function mount()
+    public array $lastRemoved = [];
+    public $location;
+    
+    public function mount($locationId)
     {
+        $this->locationId = $locationId;
+        $this->location = WwdeLocation::find($locationId); // Location-Daten laden
+        $this->locationTitle = $this->location->title ?? 'Unbekannter Ort';
+
         if (empty($this->tripDays)) {
             $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
         }
@@ -48,7 +58,6 @@ class TripActivities extends Component
     {
         if (isset($this->tripDays[$index])) {
             $this->tripDays[$index]['notes'] = $notes;
-            $this->tripDays = $this->tripDays;
         }
     }
 
@@ -84,17 +93,11 @@ class TripActivities extends Component
         $activities = $this->tripDays[$dayIndex]['activities'];
         $index = array_search($activityId, array_column($activities, 'id'));
 
-        if ($index === false) {
-            Log::debug("Activity ID $activityId not found in day $dayIndex", $activities);
-            return;
-        }
-
-        if ($index > 0) {
+        if ($index !== false && $index > 0) {
             $temp = $activities[$index - 1];
             $activities[$index - 1] = $activities[$index];
             $activities[$index] = $temp;
             $this->tripDays[$dayIndex]['activities'] = $activities;
-            // Keine Reindizierung von $tripDays nötig
         }
     }
 
@@ -107,17 +110,11 @@ class TripActivities extends Component
         $activities = $this->tripDays[$dayIndex]['activities'];
         $index = array_search($activityId, array_column($activities, 'id'));
 
-        if ($index === false) {
-            Log::debug("Activity ID $activityId not found in day $dayIndex", $activities);
-            return;
-        }
-
-        if ($index < count($activities) - 1) {
+        if ($index !== false && $index < count($activities) - 1) {
             $temp = $activities[$index + 1];
             $activities[$index + 1] = $activities[$index];
             $activities[$index] = $temp;
             $this->tripDays[$dayIndex]['activities'] = $activities;
-            // Keine Reindizierung von $tripDays nötig
         }
     }
 
@@ -148,6 +145,7 @@ class TripActivities extends Component
             'longitude' => $activity['longitude'],
             'distance' => $activity['distance'],
             'duration' => $activity['duration'],
+            'category' => $activity['category'],
         ];
 
         if (empty($this->tripDays)) {
@@ -164,13 +162,30 @@ class TripActivities extends Component
     public function removeFromTrip(string $id)
     {
         foreach ($this->tripDays as $index => &$day) {
-            $day['activities'] = array_values(array_filter(
-                $day['activities'],
-                fn($a) => $a['id'] !== $id
-            ));
+            $activity = collect($day['activities'])->firstWhere('id', $id);
+            if ($activity) {
+                $this->lastRemoved = ['dayIndex' => $index, 'activity' => $activity];
+                $day['activities'] = array_values(array_filter(
+                    $day['activities'],
+                    fn($a) => $a['id'] !== $id
+                ));
+            }
         }
-        unset($day); // Referenz aufheben
+        unset($day);
         $this->tripDays = $this->tripDays;
+    }
+
+    public function undoRemove()
+    {
+        if (!empty($this->lastRemoved)) {
+            $dayIndex = $this->lastRemoved['dayIndex'];
+            $activity = $this->lastRemoved['activity'];
+            if (isset($this->tripDays[$dayIndex])) {
+                $this->tripDays[$dayIndex]['activities'][] = $activity;
+                $this->lastRemoved = [];
+                session()->flash('success', 'Aktivität wiederhergestellt!');
+            }
+        }
     }
 
     public function resetTrip()
@@ -178,7 +193,112 @@ class TripActivities extends Component
         $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
         $this->tripDescription = '';
         $this->tripName = '';
+        $this->lastRemoved = [];
         session()->flash('success', 'Trip zurückgesetzt!');
+    }
+
+    public function exportToPDF()
+    {
+        $this->isLoading = true;
+
+        $data = [
+            'tripName' => $this->tripName,
+            'tripDays' => $this->tripDays,
+            'tripDescription' => $this->tripDescription,
+            'locationTitle' => $this->locationTitle, // Hinzugefügt
+        ];
+
+        $pdf = Pdf::loadView('livewire.frontend.location-inspiration-component.trip-pdf', $data)
+                  ->setPaper('A4', 'portrait');
+
+        $fileName = $this->tripName ? "Trip_{$this->tripName}.pdf" : "Trip.pdf";
+
+        $this->isLoading = false;
+
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            $fileName
+        );
+    }
+
+    public function sharePDF()
+    {
+        $this->isLoading = true;
+
+        $data = [
+            'tripName' => $this->tripName,
+            'tripDays' => $this->tripDays,
+            'tripDescription' => $this->tripDescription,
+            'locationTitle' => $this->locationTitle,
+        ];
+
+        $pdf = Pdf::loadView('livewire.frontend.location-inspiration-component.trip-pdf', $data)
+                  ->setPaper('A4', 'portrait');
+
+        $fileName = $this->tripName ? "Trip_{$this->tripName}.pdf" : "Trip.pdf";
+        $filePath = public_path('temp/' . $fileName);
+
+        // Verzeichnis erstellen, falls nicht vorhanden
+        if (!file_exists(public_path('temp'))) {
+            mkdir(public_path('temp'), 0755, true);
+        }
+
+        $pdf->save($filePath);
+
+        $this->isLoading = false;
+
+        // Dispatch an Event, um das Teilen im Frontend auszulösen
+        $this->dispatch('share-pdf', ['fileUrl' => asset('temp/' . $fileName)]);
+    }
+
+    public function shareViaWhatsApp()
+    {
+        $this->isLoading = true;
+
+        $message = "Mein Trip: *{$this->tripName}*\n";
+        $message .= "Ort: {$this->locationTitle}\n";
+        $message .= "Beschreibung: {$this->tripDescription}\n\n";
+
+        foreach ($this->tripDays as $index => $day) {
+            $message .= "*{$day['name']}*\n";
+            foreach ($day['activities'] as $activity) {
+                $message .= "- {$activity['title']} (Dauer: {$activity['duration']})\n";
+            }
+            if (!empty($day['notes'])) {
+                $message .= "Notizen: {$day['notes']}\n";
+            }
+            $message .= "\n";
+        }
+
+        $encodedMessage = urlencode($message);
+        $whatsappUrl = "https://wa.me/?text={$encodedMessage}";
+
+        $this->isLoading = false;
+
+        $this->dispatch('open-url', ['url' => $whatsappUrl]);
+    }
+
+    public function getTotalDurationProperty()
+    {
+        $totalHours = 0;
+
+        foreach ($this->tripDays as $day) {
+            foreach ($day['activities'] as $activity) {
+                $duration = $activity['duration'];
+                if ($duration === '1 Stunde') {
+                    $totalHours += 1;
+                } elseif ($duration === '2–3 Stunden') {
+                    $totalHours += 2.5;
+                } elseif ($duration === 'Halbtags') {
+                    $totalHours += 4;
+                }
+            }
+        }
+
+        return [
+            'hours' => round($totalHours, 1),
+            'percentage' => min(100, ($totalHours / 24) * 100),
+        ];
     }
 
     public function getTripActivitiesProperty()
@@ -284,11 +404,10 @@ class TripActivities extends Component
     public function saveTripToLocal()
     {
         $this->isLoading = true;
-        // Bereinige activities in jedem Tag vor dem Speichern
         foreach ($this->tripDays as &$day) {
-            $day['activities'] = array_values($day['activities']); // Durchgehende Indizes sicherstellen
+            $day['activities'] = array_values($day['activities']);
         }
-        unset($day); // Referenz aufheben
+        unset($day);
 
         $tripData = [
             'locationId' => $this->locationId,
@@ -312,11 +431,10 @@ class TripActivities extends Component
             $loadedDays = is_array($data['tripDays']) && !empty($data['tripDays'])
                 ? $data['tripDays']
                 : [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
-            // Bereinige activities in jedem Tag nach dem Laden
             foreach ($loadedDays as &$day) {
-                $day['activities'] = array_values($day['activities']); // Durchgehende Indizes sicherstellen
+                $day['activities'] = array_values($day['activities']);
             }
-            unset($day); // Referenz aufheben
+            unset($day);
             $this->tripDays = $loadedDays;
             $this->tripDescription = $data['tripDescription'] ?? '';
             $this->tripName = $data['tripName'] ?? '';
@@ -330,6 +448,12 @@ class TripActivities extends Component
         }
         $this->dispatch('trip-loaded');
         $this->isLoading = false;
+    }
+
+    #[On('dragDropActivity')]
+    public function handleDragDrop($activityId, $fromDay, $toDay)
+    {
+        $this->moveActivityToDay($activityId, $fromDay, $toDay);
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)

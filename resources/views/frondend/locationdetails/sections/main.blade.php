@@ -553,7 +553,7 @@
     background-color: rgba(255, 255, 255, 0.7);
     color: #333;
     padding: 10px;
-    text-align: center;
+    text-align: right;
     font-weight: bold;
     border-radius: 10px 0 0 10px;
     font-size: 16px;
