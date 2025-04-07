@@ -24,7 +24,7 @@
     {{-- Dynamische Keywords-Schlüssel als zusätzliche Meta-Tags --}}
     @if (isset($seo['keywords']) && is_array($seo['keywords']))
         @foreach ($seo['keywords'] as $key => $value)
-            @if ($key !== 'tags') {{-- 'tags' wird bereits separat behandelt --}}
+            @if ($key !== 'tags')
                 <meta name="keyword-{{ $key }}" content="{{ is_array($value) ? implode(', ', $value) : $value }}">
             @endif
         @endforeach
@@ -38,82 +38,87 @@
 
 {{-- Strukturierte Daten dynamisch basierend auf dem Modell --}}
 <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": @php
-            if (isset($location) && $location instanceof \App\Models\WwdeLocation) {
-                echo '"TouristDestination"';
-            } elseif (isset($continent) && $continent instanceof \App\Models\WwdeContinent) {
-                echo '"TouristDestination"';
-            } elseif (isset($country) && $country instanceof \App\Models\WwdeCountry) {
-                echo '"TouristDestination"';
-            } else {
-                echo '"WebSite"';
-            }
-        @endphp,
-        "name": @php
-            if (isset($location)) {
-                echo '"' . ($location->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
-            } elseif (isset($continent)) {
-                echo '"' . ($continent->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
-            } elseif (isset($country)) {
-                echo '"' . ($country->title ?? $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform') . '"';
-            } else {
-                echo '"WannWohin.de – Reiseportal"';
-            }
-        @endphp,
-        "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",
-        "description": "{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Erkunde die besten Reiseziele und Wetterdaten weltweit.') }}",
-        @if(isset($location) && $location instanceof \App\Models\WwdeLocation)
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "{{ $location->title ?? 'Unbekannter Ort' }}",
-                "addressCountry": "{{ $location->iso2 ?? 'DE' }}"
-            },
-            "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": "{{ $location->lat ?? 0 }}",
-                "longitude": "{{ $location->lon ?? 0 }}"
-            },
-        @elseif(isset($country) && $country instanceof \App\Models\WwdeCountry)
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "{{ $country->title ?? 'Unbekannter Ort' }}",
-                "addressCountry": "{{ $country->iso2 ?? 'DE' }}"
-            },
-            "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": "{{ $country->lat ?? 0 }}",
-                "longitude": "{{ $country->lon ?? 0 }}"
-            },
-        @elseif(isset($continent) && $continent instanceof \App\Models\WwdeContinent)
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "{{ $continent->title }}",
-                "addressCountry": "Global"
-            },
-        @endif
-        "url": "{{ $seo['canonical'] ?? url()->current() }}",
-        "touristType": "Leisure",
-        "keywords": "{{ implode(', ', $seo['keywords']['tags'] ?? ['Urlaub 2025', 'Reiseziele', 'Wetter', 'Direktflüge', 'Klima']) }}",
-        @if(isset($seo['keywords']['nextYear']))
-            "temporalCoverage": "{{ $seo['keywords']['nextYear'] }}-01-01/{{ $seo['keywords']['nextYear'] }}-12-31"
-        @endif,
-        @if(isset($seo['keywords']) && is_array($seo['keywords']))
-            "additionalProperty": [
-                @foreach ($seo['keywords'] as $key => $value)
-                    @if ($key !== 'tags' && $key !== 'nextYear' && $key !== 'main' && $key !== 'description') {{-- Bekannte Schlüssel überspringen --}}
-                        {
-                            "@type": "PropertyValue",
-                            "name": "{{ $key }}",
-                            "value": "{{ is_array($value) ? implode(', ', $value) : $value }}"
-                        },
-                    @endif
-                @endforeach
-            ]
-        @endif
-    }
+{
+    "@context": "https://schema.org",
+    "@type": @php
+        if (isset($location) && $location instanceof \App\Models\WwdeLocation) {
+            echo '"TouristDestination"';
+        } elseif (isset($continent) && $continent instanceof \App\Models\WwdeContinent) {
+            echo '"TouristDestination"';
+        } elseif (isset($country) && $country instanceof \App\Models\WwdeCountry) {
+            echo '"TouristDestination"';
+        } else {
+            echo '"WebSite"';
+        }
+    @endphp,
+    "name": @php
+        $fallbackTitle = $seo['title'] ?? $seo['keywords']['main'] ?? 'Reiseplattform';
+        if (isset($location)) {
+            echo '"' . ($location->title ?? $fallbackTitle) . '"';
+        } elseif (isset($continent)) {
+            echo '"' . ($continent->title ?? $fallbackTitle) . '"';
+        } elseif (isset($country)) {
+            echo '"' . ($country->title ?? $fallbackTitle) . '"';
+        } else {
+            echo '"WannWohin.de – Reiseportal"';
+        }
+    @endphp,
+    "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",
+    "description": "{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Erkunde die besten Reiseziele und Wetterdaten weltweit.') }}",
+    @if(isset($location) && $location instanceof \App\Models\WwdeLocation)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $location->title ?? 'Unbekannter Ort' }}",
+            "addressCountry": "{{ $location->iso2 ?? 'DE' }}"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ $location->lat ?? 0 }}",
+            "longitude": "{{ $location->lon ?? 0 }}"
+        },
+    @elseif(isset($country) && $country instanceof \App\Models\WwdeCountry)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $country->title ?? 'Unbekannter Ort' }}",
+            "addressCountry": "{{ $country->iso2 ?? 'DE' }}"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ $country->lat ?? 0 }}",
+            "longitude": "{{ $country->lon ?? 0 }}"
+        },
+    @elseif(isset($continent) && $continent instanceof \App\Models\WwdeContinent)
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ $continent->title }}",
+            "addressCountry": "Global"
+        },
+    @endif
+    "url": "{{ $seo['canonical'] ?? url()->current() }}",
+    "touristType": "Leisure",
+    "keywords": "{{ implode(', ', $seo['keywords']['tags'] ?? ['Urlaub 2025', 'Reiseziele', 'Wetter', 'Direktflüge', 'Klima']) }}"
+    @if(isset($seo['keywords']['nextYear']))
+        , "temporalCoverage": "{{ $seo['keywords']['nextYear'] }}-01-01/{{ $seo['keywords']['nextYear'] }}-12-31"
+    @endif
+    @php
+        $filteredKeywords = collect($seo['keywords'] ?? [])->filter(function($v, $k) {
+            return !in_array($k, ['tags', 'nextYear', 'main', 'description']);
+        });
+    @endphp
+    @if($filteredKeywords->count())
+        , "additionalProperty": [
+            @foreach ($filteredKeywords as $key => $value)
+                {
+                    "@type": "PropertyValue",
+                    "name": "{{ $key }}",
+                    "value": "{{ is_array($value) ? implode(', ', $value) : $value }}"
+                }@if (!$loop->last),@endif
+            @endforeach
+        ]
+    @endif
+}
 </script>
+
 
 
     <!-- Mobile Metas -->

@@ -1,10 +1,10 @@
-<div class="py-4 px-3 bg-light rounded">
+<div class="trip-activities-wrapper py-4 px-3 bg-light rounded">
     <div class="hero">
         <h1>Entdecke dein nächstes Abenteuer in {{ $locationTitle }}!</h1>
         <p>Tauche ein in die atemberaubenden Seiten dieser Stadt – entdecke verborgene Schätze und plane dein persönliches Abenteuer!</p>
     </div>
 
-    <!-- Filter-Buttons basierend auf uschrift -->
+    <!-- Filter-Buttons -->
     <div class="d-flex flex-wrap gap-3 justify-content-center mb-4">
         @foreach($this->activityFilters as $filter)
             <button
@@ -22,10 +22,10 @@
             <p>Wähle eine oder mehrere Aktivitäten, um Details zu sehen!</p>
         </div>
     @else
-        <!-- Aktivitäten -->
+        <!-- Aktivitäten-Liste -->
         <div class="row justify-content-center">
             @foreach($this->activities as $activity)
-                <div class="col-md-6 col-lg-5">
+                <div class="col-md-6 col-lg-5 mb-4">
                     <x-activity-card
                         :title="$activity['title']"
                         :description="$activity['description']"
@@ -37,7 +37,7 @@
                         :rating="$activity['rating']"
                     >
                         <x-slot name="buttons">
-                            @if(in_array($activity, $tripActivities))
+                            @if($tripActivities->pluck('id')->contains($activity['id']))
                                 <button class="btn btn-success btn-sm">
                                     <i class="fa-solid fa-check"></i> Im Trip!
                                 </button>
@@ -58,23 +58,81 @@
             @endforeach
         </div>
     @endif
-    <div class="trip-map-container mb-4">
-        <svg id="tripMapGraphic" width="100%" height="500" viewBox="0 0 800 500" style="background-color: #f9f9f9; border-radius: 12px;"></svg>
-    </div>
+
     <!-- Trip-Vorschau -->
-    @if(!empty($tripActivities))
-        <div class="trip-preview mt-4 p-3 bg-white rounded shadow-sm">
-            <h3>Dein Trip</h3>
-            <ul class="list-group">
-                @foreach($tripActivities as $tripActivity)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ $tripActivity['title'] }} ({{ $tripActivity['duration'] }})
-                        <button wire:click="removeFromTrip('{{ $tripActivity['id'] }}')" class="btn btn-danger btn-sm">
+    @if(!empty($tripDays))
+        <div class="trip-preview-grid mt-5">
+            @foreach($tripDays as $index => $day)
+                <div class="trip-day-box day-{{ $index + 1 }}">
+                    <div class="trip-day-header">
+                        {{ $day['name'] ?? 'Tag ' . ($index + 1) }}
+                        <button wire:click="removeTripDay('{{ $index }}')" class="btn btn-sm btn-outline-danger float-end">
                             <i class="fa-solid fa-trash"></i>
                         </button>
-                    </li>
-                @endforeach
-            </ul>
+                    </div>
+                    <div class="trip-day-content p-3">
+                        @forelse($day['activities'] as $activity)
+                            <div class="trip-activity-item mb-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ $activity['title'] }}</strong><br>
+                                    <small>Dauer: {{ $activity['duration'] }}</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button wire:click="moveActivityUp('{{ $activity['id'] }}', '{{ $index }}')" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="fa-solid fa-arrow-up"></i>
+                                    </button>
+                                    <button wire:click="moveActivityDown('{{ $activity['id'] }}', '{{ $index }}')" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="fa-solid fa-arrow-down"></i>
+                                    </button>
+                                    <select wire:change="moveActivityToDay('{{ $activity['id'] }}', '{{ $index }}', $event.target.value)" class="form-select form-select-sm me-2" style="width: auto;">
+                                        <option value="{{ $index }}" selected>Tag {{ $index + 1 }}</option>
+                                        @foreach($tripDays as $targetIndex => $targetDay)
+                                            @if($targetIndex != $index)
+                                                <option value="{{ $targetIndex }}">Tag {{ $targetIndex + 1 }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    <button wire:click="removeFromTrip('{{ $activity['id'] }}')" class="btn btn-sm btn-outline-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted">Noch keine Aktivitäten für diesen Tag.</p>
+                        @endforelse
+
+                        <div class="trip-notes mt-3">
+                            <strong>Notizen:</strong>
+                            <textarea
+                                wire:model.debounce.500ms="tripDays.{{ $index }}.notes"
+                                class="form-control"
+                                rows="2"
+                                placeholder="Eigene Notizen für Tag {{ $index + 1 }} eingeben..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="text-center mt-4">
+            <button wire:click="addTripDay" class="btn btn-outline-primary">
+                <i class="fa-solid fa-plus"></i> Tag hinzufügen
+            </button>
+        </div>
+
+        <!-- Kurzbeschreibung unter dem Trip -->
+        <div class="trip-description mt-4">
+            <h3>Kurzbeschreibung des Trips</h3>
+            <textarea
+                wire:model.debounce.500ms="tripDescription"
+                class="form-control"
+                rows="3"
+                placeholder="Beschreibe deinen Trip kurz und prägnant..."
+            ></textarea>
+            @if($tripDescription)
+                <p class="mt-2 text-muted">{{ $tripDescription }}</p>
+            @endif
         </div>
     @endif
 
@@ -85,6 +143,70 @@
     @endif
 
     <style>
+        .trip-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .trip-day-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .trip-day-header {
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            background: #007bff;
+            text-align: center;
+        }
+
+        .trip-day-box.day-2 .trip-day-header { background: #17a2b8; }
+        .trip-day-box.day-3 .trip-day-header { background: #ffc107; color: #212529; }
+        .trip-day-box.day-4 .trip-day-header { background: #dc3545; }
+
+        .trip-activity-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .trip-activity-item button, .trip-activity-item select {
+            margin-left: 10px;
+        }
+
+        .trip-notes {
+            margin-top: 20px;
+        }
+
+        .trip-notes textarea {
+            resize: vertical;
+        }
+
+        .trip-description {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .trip-description h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .trip-description textarea {
+            resize: vertical;
+        }
+
+        .trip-activities-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .inspiration-button {
             display: inline-flex;
             align-items: center;
@@ -102,16 +224,39 @@
             margin-right: 8px;
         }
 
-        .inspiration-button:hover,
         .inspiration-button.active {
-            border-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transform: scale(1.06);
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-sport.active {
+            border: 2px solid #28a745;
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.3), 0 0 12px rgba(40, 167, 69, 0.7);
+            background-color: #218838;
+        }
+
+        .btn-freizeitpark.active {
+            border: 2px solid #fd7e14;
+            box-shadow: 0 0 0 4px rgba(253, 126, 20, 0.3), 0 0 12px rgba(253, 126, 20, 0.7);
+            background-color: #e8590c;
+        }
+
+        .btn-erlebnis.active {
+            border: 2px solid #6b4e9c;
+            box-shadow: 0 0 0 4px rgba(107, 78, 156, 0.3), 0 0 12px rgba(107, 78, 156, 0.7);
+            background-color: #563d7c;
+        }
+
+        .inspiration-button.active:not(.btn-sport):not(.btn-freizeitpark):not(.btn-erlebnis) {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 0 12px rgba(255, 255, 255, 0.5);
+            background-color: #495057;
         }
 
         .btn-erlebnis { background-color: #6b4e9c; }
         .btn-sport { background-color: #28a745; }
-        .btn-freizeitpark { background-color: #6b4e9c; }
-        .btn-secondary { background-color: #6c757d; }
+        .btn-freizeitpark { background-color: #fd7e14; }
 
         .hero {
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
@@ -142,113 +287,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .trip-preview {
-            border: 1px solid #ddd;
+        .btn-warning:hover {
+            background-color: #ffc107;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
         }
     </style>
-
-
-<script>
-    window.addEventListener('trip-map-update', event => {
-    console.log('Trip map update received:', event.detail);
-    const { items, center } = event.detail || {};
-    if (Array.isArray(items) && items.length > 0 && center) {
-        window.renderTripMap(items, center);
-    } else {
-        console.log('Event data invalid:', items, center);
-    }
-});
-
-
-
-    document.addEventListener("livewire:load", () => {
-        window.renderTripMap = (mapItems, center) => {
-    console.log('Rendering map with items:', mapItems, 'Center:', center);
-    const svg = document.getElementById('tripMapGraphic');
-    svg.innerHTML = '';
-
-    const centerX = 400;
-    const centerY = 250;
-    const radius = 200;
-
-    // Mittelpunkt
-    const origin = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    origin.setAttribute("cx", centerX);
-    origin.setAttribute("cy", centerY);
-    origin.setAttribute("r", 12);
-    origin.setAttribute("fill", "#0d6efd");
-    svg.appendChild(origin);
-
-    const youText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    youText.setAttribute("x", centerX);
-    youText.setAttribute("y", centerY + 4);
-    youText.setAttribute("text-anchor", "middle");
-    youText.setAttribute("fill", "white");
-    youText.textContent = "Du";
-    svg.appendChild(youText);
-
-    if (!mapItems || mapItems.length === 0) {
-        console.log('No items to render');
-        return;
-    }
-
-    mapItems.forEach((item, index) => {
-        console.log('Rendering item:', item);
-        const angle = (360 / mapItems.length) * index * (Math.PI / 180);
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", centerX);
-        line.setAttribute("y1", centerY);
-        line.setAttribute("x2", x);
-        line.setAttribute("y2", y);
-        line.setAttribute("stroke", "#ccc");
-        svg.appendChild(line);
-
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", x);
-        circle.setAttribute("cy", y);
-        circle.setAttribute("r", 10);
-        circle.setAttribute("fill", "#6b4e9c");
-        svg.appendChild(circle);
-
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x);
-        label.setAttribute("y", y - 15);
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("font-size", "12");
-        label.setAttribute("fill", "#000");
-        label.textContent = item.title;
-        svg.appendChild(label);
-
-        const dist = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        dist.setAttribute("x", x);
-        dist.setAttribute("y", y + 20);
-        dist.setAttribute("text-anchor", "middle");
-        dist.setAttribute("font-size", "10");
-        dist.setAttribute("fill", "#555");
-        dist.textContent = `${item.distance} km`;
-        svg.appendChild(dist);
-    });
-};
-    });
-</script>
-<script>
-    window.addEventListener('trip-map-update', event => {
-        const { items, center } = event.detail || {};
-if (Array.isArray(items) && items.length > 0 && center) {
-    window.renderTripMap(items, center);
-}
-    });
-</script>
-
-
-
-
-
-
-
-
-
 </div>
