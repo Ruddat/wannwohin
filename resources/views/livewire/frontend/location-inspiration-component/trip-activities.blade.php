@@ -22,10 +22,9 @@
             <p>Wähle eine oder mehrere Aktivitäten, um Details zu sehen!</p>
         </div>
     @else
-        <!-- Aktivitäten-Liste -->
         <div class="row justify-content-center">
             @foreach($this->activities as $activity)
-                <div class="col-md-6 col-lg-5 mb-4">
+                <div class="col-md-6 col-lg-5 mb-4 animate__animated animate__fadeIn">
                     <x-activity-card
                         :title="$activity['title']"
                         :description="$activity['description']"
@@ -59,11 +58,25 @@
         </div>
     @endif
 
-    <!-- Trip-Vorschau -->
     @if(!empty($tripDays))
+        <!-- Trip-Name -->
+        <div class="trip-name mt-4 text-center">
+            <input
+                type="text"
+                wire:model.debounce.500ms="tripName"
+                class="form-control w-50 mx-auto"
+                placeholder="Gib deinem Trip einen Namen..."
+                style="font-size: 1.2rem; text-align: center;"
+            >
+            @if($tripName)
+                <h2 class="mt-2">{{ $tripName }}</h2>
+            @endif
+        </div>
+
+        <!-- Trip-Vorschau -->
         <div class="trip-preview-grid mt-5">
             @foreach($tripDays as $index => $day)
-                <div class="trip-day-box day-{{ $index + 1 }}">
+                <div class="trip-day-box day-{{ $index + 1 }} animate__animated animate__fadeIn">
                     <div class="trip-day-header">
                         {{ $day['name'] ?? 'Tag ' . ($index + 1) }}
                         <button wire:click="removeTripDay('{{ $index }}')" class="btn btn-sm btn-outline-danger float-end">
@@ -72,7 +85,7 @@
                     </div>
                     <div class="trip-day-content p-3">
                         @forelse($day['activities'] as $activity)
-                            <div class="trip-activity-item mb-2 d-flex justify-content-between align-items-center">
+                            <div class="trip-activity-item mb-2 d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
                                 <div>
                                     <strong>{{ $activity['title'] }}</strong><br>
                                     <small>Dauer: {{ $activity['duration'] }}</small>
@@ -121,7 +134,7 @@
             </button>
         </div>
 
-        <!-- Kurzbeschreibung unter dem Trip -->
+        <!-- Kurzbeschreibung -->
         <div class="trip-description mt-4">
             <h3>Kurzbeschreibung des Trips</h3>
             <textarea
@@ -134,11 +147,43 @@
                 <p class="mt-2 text-muted">{{ $tripDescription }}</p>
             @endif
         </div>
+
+        <!-- Buttons -->
+        <div class="text-center mt-3">
+            <button wire:click="saveTripToLocal" class="btn btn-success" wire:loading.attr="disabled">
+                <i class="fa-solid fa-floppy-disk fa-lg"></i>
+                <span wire:loading.remove> Trip speichern</span>
+                <span wire:loading>Speichert...</span>
+            </button>
+            <button wire:click="$dispatch('loadTripFromLocalStorage')" class="btn btn-info ms-2" wire:loading.attr="disabled">
+                <i class="fa-solid fa-upload fa-lg"></i>
+                <span wire:loading.remove> Trip laden</span>
+                <span wire:loading>Lädt...</span>
+            </button>
+            <button wire:click="resetTrip" class="btn btn-danger ms-2">
+                <i class="fa-solid fa-rotate-left fa-lg"></i> Trip zurücksetzen
+            </button>
+        </div>
+
+        <!-- Gespeicherte Daten anzeigen -->
+        @if($savedDataPreview)
+            <div class="mt-4 text-center">
+                <h4>Gespeicherte/Geladene Daten (Debug):</h4>
+                <pre class="bg-dark text-white p-3 rounded" style="max-width: 800px; margin: 0 auto; overflow-x: auto;">
+                    {{ $savedDataPreview }}
+                </pre>
+            </div>
+        @endif
     @endif
 
     @if(session()->has('success'))
-        <div class="alert alert-success text-center mt-4">
+        <div class="alert alert-success text-center mt-4 animate__animated animate__fadeIn">
             {{ session('success') }}
+        </div>
+    @endif
+    @if(session()->has('error'))
+        <div class="alert alert-danger text-center mt-4 animate__animated animate__fadeIn">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -152,8 +197,13 @@
         .trip-day-box {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .trip-day-box:hover {
+            transform: translateY(-5px);
         }
 
         .trip-day-header {
@@ -161,30 +211,29 @@
             font-weight: bold;
             font-size: 1.2rem;
             color: white;
-            background: #007bff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             text-align: center;
         }
 
-        .trip-day-box.day-2 .trip-day-header { background: #17a2b8; }
-        .trip-day-box.day-3 .trip-day-header { background: #ffc107; color: #212529; }
-        .trip-day-box.day-4 .trip-day-header { background: #dc3545; }
+        .trip-day-box.day-2 .trip-day-header { background: linear-gradient(135deg, #17a2b8, #117a8b); }
+        .trip-day-box.day-3 .trip-day-header { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
+        .trip-day-box.day-4 .trip-day-header { background: linear-gradient(135deg, #dc3545, #b02a37); }
 
         .trip-activity-item {
             background: #f8f9fa;
             padding: 10px;
             border-radius: 8px;
+            transition: background 0.3s ease;
         }
 
-        .trip-activity-item button, .trip-activity-item select {
-            margin-left: 10px;
+        .trip-activity-item:hover {
+            background: #e9ecef;
         }
 
-        .trip-notes {
-            margin-top: 20px;
-        }
-
-        .trip-notes textarea {
+        .trip-notes textarea, .trip-description textarea {
             resize: vertical;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .trip-description {
@@ -193,13 +242,9 @@
             text-align: center;
         }
 
-        .trip-description h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .trip-description textarea {
-            resize: vertical;
+        .trip-name input {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .trip-activities-wrapper {
@@ -208,8 +253,6 @@
         }
 
         .inspiration-button {
-            display: inline-flex;
-            align-items: center;
             padding: 10px 20px;
             border-radius: 50px;
             font-weight: 500;
@@ -226,37 +269,12 @@
 
         .inspiration-button.active {
             transform: scale(1.06);
-            position: relative;
-            z-index: 2;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        .btn-sport.active {
-            border: 2px solid #28a745;
-            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.3), 0 0 12px rgba(40, 167, 69, 0.7);
-            background-color: #218838;
-        }
-
-        .btn-freizeitpark.active {
-            border: 2px solid #fd7e14;
-            box-shadow: 0 0 0 4px rgba(253, 126, 20, 0.3), 0 0 12px rgba(253, 126, 20, 0.7);
-            background-color: #e8590c;
-        }
-
-        .btn-erlebnis.active {
-            border: 2px solid #6b4e9c;
-            box-shadow: 0 0 0 4px rgba(107, 78, 156, 0.3), 0 0 12px rgba(107, 78, 156, 0.7);
-            background-color: #563d7c;
-        }
-
-        .inspiration-button.active:not(.btn-sport):not(.btn-freizeitpark):not(.btn-erlebnis) {
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 0 12px rgba(255, 255, 255, 0.5);
-            background-color: #495057;
-        }
-
-        .btn-erlebnis { background-color: #6b4e9c; }
-        .btn-sport { background-color: #28a745; }
-        .btn-freizeitpark { background-color: #fd7e14; }
+        .btn-sport.active { background-color: #28a745; border-color: #218838; }
+        .btn-freizeitpark.active { background-color: #fd7e14; border-color: #e8590c; }
+        .btn-erlebnis.active { background-color: #6b4e9c; border-color: #563d7c; }
 
         .hero {
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
@@ -268,28 +286,45 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-
-        .hero p {
+        .btn-success, .btn-info, .btn-danger {
+            padding: 10px 20px;
             font-size: 1.1rem;
-            opacity: 0.9;
+            transition: all 0.3s ease;
         }
 
-        .card {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .btn-warning:hover {
-            background-color: #ffc107;
-            box-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+        .btn-success:hover, .btn-info:hover, .btn-danger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
     </style>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('save-trip-local', (event) => {
+            const data = event[0];
+            localStorage.setItem('tripPlannerData', JSON.stringify(data));
+            console.log('Trip gespeichert:', data);
+        });
+
+        Livewire.on('loadTripFromLocalStorage', () => {
+            if (confirm('Möchtest du den aktuellen Trip überschreiben?')) {
+                const saved = localStorage.getItem('tripPlannerData');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    Livewire.dispatch('loadTripFromLocal', [data]);
+                    console.log('Trip geladen:', data);
+                } else {
+                    alert('Kein gespeicherter Trip gefunden.');
+                }
+            }
+        });
+
+        Livewire.on('trip-loaded', () => {
+            console.log('Trip wurde erfolgreich geladen und UI aktualisiert.');
+        });
+    });
+</script>
+
 </div>

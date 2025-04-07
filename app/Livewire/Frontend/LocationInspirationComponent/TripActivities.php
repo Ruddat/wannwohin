@@ -3,7 +3,9 @@
 namespace App\Livewire\Frontend\LocationInspirationComponent;
 
 use Livewire\Component;
+use Livewire\Attributes\On;
 use App\Models\ModLocationFilter;
+use Illuminate\Support\Facades\Log;
 
 class TripActivities extends Component
 {
@@ -13,11 +15,16 @@ class TripActivities extends Component
     public float $mapCenterLat = 50.110924;
     public float $mapCenterLon = 8.682127;
     public array $tripDays = [];
-    public string $tripDescription = ''; // Neue Eigenschaft für die Kurzbeschreibung
+    public string $tripDescription = '';
+    public string $tripName = ''; // Neues Feld für den Trip-Namen
+    public bool $isLoading = false; // Für Lade-Indikator
+    public string $savedDataPreview = '';
 
     public function mount()
     {
-        $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+        if (empty($this->tripDays)) {
+            $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+        }
     }
 
     public function addTripDay()
@@ -31,7 +38,7 @@ class TripActivities extends Component
 
     public function removeTripDay($index)
     {
-        if (isset($this->tripDays[$index])) {
+        if (isset($this->tripDays[$index]) && count($this->tripDays) > 1) {
             unset($this->tripDays[$index]);
             $this->tripDays = array_values($this->tripDays);
         }
@@ -41,54 +48,76 @@ class TripActivities extends Component
     {
         if (isset($this->tripDays[$index])) {
             $this->tripDays[$index]['notes'] = $notes;
-            $this->tripDays = $this->tripDays; // Erzwingt Reaktivität
+            $this->tripDays = $this->tripDays;
         }
     }
 
     public function moveActivityToDay(string $activityId, int $fromDay, int $toDay)
     {
         if (!isset($this->tripDays[$fromDay]) || !isset($this->tripDays[$toDay])) {
+            Log::debug("Ungültige Indizes: fromDay=$fromDay, toDay=$toDay", $this->tripDays);
             return;
         }
 
         $activity = collect($this->tripDays[$fromDay]['activities'])->firstWhere('id', $activityId);
         if ($activity) {
-            $this->tripDays[$fromDay]['activities'] = array_filter(
+            $this->tripDays[$fromDay]['activities'] = array_values(array_filter(
                 $this->tripDays[$fromDay]['activities'],
                 fn($a) => $a['id'] !== $activityId
-            );
+            ));
             $this->tripDays[$toDay]['activities'][] = $activity;
-            $this->tripDays = array_values($this->tripDays);
+
+            if (empty($this->tripDays[$fromDay]['activities']) && count($this->tripDays) > 1) {
+                unset($this->tripDays[$fromDay]);
+                $this->tripDays = array_values($this->tripDays);
+            }
+            Log::debug('TripDays after move:', $this->tripDays);
         }
     }
 
     public function moveActivityUp(string $activityId, int $dayIndex)
     {
-        if (!isset($this->tripDays[$dayIndex])) return;
+        if (!isset($this->tripDays[$dayIndex]) || empty($this->tripDays[$dayIndex]['activities'])) {
+            return;
+        }
 
         $activities = $this->tripDays[$dayIndex]['activities'];
         $index = array_search($activityId, array_column($activities, 'id'));
-        if ($index !== false && $index > 0) {
+
+        if ($index === false) {
+            Log::debug("Activity ID $activityId not found in day $dayIndex", $activities);
+            return;
+        }
+
+        if ($index > 0) {
             $temp = $activities[$index - 1];
             $activities[$index - 1] = $activities[$index];
             $activities[$index] = $temp;
             $this->tripDays[$dayIndex]['activities'] = $activities;
-            $this->tripDays = $this->tripDays;
+            // Keine Reindizierung von $tripDays nötig
         }
     }
 
     public function moveActivityDown(string $activityId, int $dayIndex)
     {
-        if (!isset($this->tripDays[$dayIndex])) return;
+        if (!isset($this->tripDays[$dayIndex]) || empty($this->tripDays[$dayIndex]['activities'])) {
+            return;
+        }
 
         $activities = $this->tripDays[$dayIndex]['activities'];
         $index = array_search($activityId, array_column($activities, 'id'));
-        if ($index !== false && $index < count($activities) - 1) {
+
+        if ($index === false) {
+            Log::debug("Activity ID $activityId not found in day $dayIndex", $activities);
+            return;
+        }
+
+        if ($index < count($activities) - 1) {
             $temp = $activities[$index + 1];
             $activities[$index + 1] = $activities[$index];
             $activities[$index] = $temp;
             $this->tripDays[$dayIndex]['activities'] = $activities;
-            $this->tripDays = $this->tripDays;
+            // Keine Reindizierung von $tripDays nötig
         }
     }
 
@@ -121,22 +150,35 @@ class TripActivities extends Component
             'duration' => $activity['duration'],
         ];
 
-        $lastIndex = array_key_last($this->tripDays) ?? 0;
-        $this->tripDays[$lastIndex]['activities'][] = $newActivity;
-        $this->tripDays = $this->tripDays;
+        if (empty($this->tripDays)) {
+            $this->tripDays[] = ['name' => 'Tag 1', 'notes' => '', 'activities' => [$newActivity]];
+        } else {
+            $lastIndex = array_key_last($this->tripDays) ?? 0;
+            $this->tripDays[$lastIndex]['activities'][] = $newActivity;
+        }
 
+        $this->tripDays = array_values($this->tripDays);
         session()->flash('success', 'Zur Reise hinzugefügt!');
     }
 
     public function removeFromTrip(string $id)
     {
-        foreach ($this->tripDays as $index => $day) {
-            $this->tripDays[$index]['activities'] = array_filter(
+        foreach ($this->tripDays as $index => &$day) {
+            $day['activities'] = array_values(array_filter(
                 $day['activities'],
                 fn($a) => $a['id'] !== $id
-            );
+            ));
         }
+        unset($day); // Referenz aufheben
         $this->tripDays = $this->tripDays;
+    }
+
+    public function resetTrip()
+    {
+        $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+        $this->tripDescription = '';
+        $this->tripName = '';
+        session()->flash('success', 'Trip zurückgesetzt!');
     }
 
     public function getTripActivitiesProperty()
@@ -238,6 +280,58 @@ class TripActivities extends Component
             ->unique('title');
     }
 
+    #[On('saveTripToLocal')]
+    public function saveTripToLocal()
+    {
+        $this->isLoading = true;
+        // Bereinige activities in jedem Tag vor dem Speichern
+        foreach ($this->tripDays as &$day) {
+            $day['activities'] = array_values($day['activities']); // Durchgehende Indizes sicherstellen
+        }
+        unset($day); // Referenz aufheben
+
+        $tripData = [
+            'locationId' => $this->locationId,
+            'tripDays' => $this->tripDays,
+            'tripDescription' => $this->tripDescription,
+            'tripName' => $this->tripName,
+        ];
+        Log::debug('Trip wird gespeichert:', $tripData);
+        $this->savedDataPreview = json_encode($tripData, JSON_PRETTY_PRINT);
+        $this->dispatch('save-trip-local', $tripData);
+        session()->flash('success', "Trip '{$this->tripName}' lokal gespeichert!");
+        $this->isLoading = false;
+    }
+
+    #[On('loadTripFromLocal')]
+    public function loadTripFromLocal($data = null)
+    {
+        $this->isLoading = true;
+        if ($data) {
+            $this->locationId = $data['locationId'] ?? $this->locationId;
+            $loadedDays = is_array($data['tripDays']) && !empty($data['tripDays'])
+                ? $data['tripDays']
+                : [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+            // Bereinige activities in jedem Tag nach dem Laden
+            foreach ($loadedDays as &$day) {
+                $day['activities'] = array_values($day['activities']); // Durchgehende Indizes sicherstellen
+            }
+            unset($day); // Referenz aufheben
+            $this->tripDays = $loadedDays;
+            $this->tripDescription = $data['tripDescription'] ?? '';
+            $this->tripName = $data['tripName'] ?? '';
+            Log::debug('Trip geladen:', $this->tripDays);
+            $this->savedDataPreview = json_encode($data, JSON_PRETTY_PRINT);
+            session()->flash('success', "Trip '{$this->tripName}' geladen!");
+        } else {
+            $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+            $this->savedDataPreview = 'Keine Daten geladen';
+            session()->flash('error', 'Keine Trip-Daten zum Laden gefunden.');
+        }
+        $this->dispatch('trip-loaded');
+        $this->isLoading = false;
+    }
+
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         if (!$lat1 || !$lon1 || !$lat2 || !$lon2) return null;
@@ -253,6 +347,10 @@ class TripActivities extends Component
 
     public function render()
     {
+        if (empty($this->tripDays)) {
+            $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
+        }
+
         $tripActivities = $this->tripActivities;
 
         $this->dispatch('trip-map-update', [
