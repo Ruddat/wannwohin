@@ -21,16 +21,21 @@
                 @endif
 
                 @if(count($favorites) > 0)
-                    <ul class="favorites-list">
-                        @foreach($favorites as $activity)
-                            <li>
-                                <span class="activity-name">{{ $activity['title'] }}</span>
-                                <button wire:click="removeFromFavorites('{{ $activity['id'] }}')" class="remove-btn">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
+                @foreach($this->groupedFavorites as $location => $activities)
+                <h5 class="mt-3 mb-2">
+                    <i class="fa fa-map-marker-alt text-primary me-1"></i> {{ $location }}
+                </h5>
+                <ul class="favorites-list">
+                    @foreach($activities as $activity)
+                        <li>
+                            <span class="activity-name">{{ $activity['title'] }}</span>
+                            <button wire:click="removeFromFavorites('{{ $activity['id'] }}')" class="remove-btn">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            @endforeach
                     <button wire:click="clearFavorites" class="clear-btn">
                         <i class="fa fa-trash"></i> Trip-Plan leeren
                     </button>
@@ -38,7 +43,16 @@
                     <p class="text-muted">Noch keine Aktivitäten im Trip-Plan.</p>
                 @endif
             </div>
+
+            <pre>{{ print_r(session('favorite_activities'), true) }}</pre>
+
+
         </div>
+
+
+
+
+
     @endif
 
 
@@ -175,5 +189,14 @@
     .clear-btn:hover {
         background-color: #c82333;
     }
+
+    .favorites-box h5 {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+
 </style>
 </div>

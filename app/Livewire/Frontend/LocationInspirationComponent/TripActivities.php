@@ -349,6 +349,12 @@ class TripActivities extends Component
                         $item->latitude,
                         $item->longitude
                     ),
+
+                        // 👇 Neue Location-Zusatzinfos:
+                        'location_name' => $this->locationTitle,
+                        'location_lat' => $this->location->lat,
+                        'location_lon' => $this->location->lon,
+
                 ];
             })->all();
 
@@ -381,6 +387,12 @@ class TripActivities extends Component
                         'latitude' => $park->latitude,
                         'longitude' => $park->longitude,
                         'distance' => $distance,
+
+    // 👇 Neue Location-Zusatzinfos
+    'location_name' => $this->locationTitle,
+    'location_lat' => $park->latitude,
+    'location_lon' => $park->longitude,
+
                     ];
                 }
                 return null;

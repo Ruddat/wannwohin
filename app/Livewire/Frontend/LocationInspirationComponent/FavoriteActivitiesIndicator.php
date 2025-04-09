@@ -55,6 +55,12 @@ class FavoriteActivitiesIndicator extends Component
         $this->favorites = session('favorite_activities', []);
     }
 
+    public function getGroupedFavoritesProperty()
+    {
+        return collect($this->favorites)->groupBy(fn($item) => $item['location_name'] ?? 'Unbekannter Ort');
+    }
+
+
     public function render()
     {
         return view('livewire.frontend.location-inspiration-component.favorite-activities-indicator');

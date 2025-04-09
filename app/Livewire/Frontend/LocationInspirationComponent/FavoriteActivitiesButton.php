@@ -39,11 +39,19 @@ class FavoriteActivitiesButton extends Component
             Log::debug('Favorit entfernt:', ['id' => $this->activityId]);
         } else {
             if (!collect($favorites)->pluck('id')->contains($this->activityId)) {
-                $favorites[] = $this->activityData;
+                // erweitere activityData um Ort, falls vorhanden
+                $newFavorite = array_merge(
+                    $this->activityData,
+                    [
+                        'location_name' => $this->activityData['location_name'] ?? 'Unbekannter Ort',
+                    ]
+                );
+
+                $favorites[] = $newFavorite;
                 session(['favorite_activities' => $favorites]);
                 $this->isFavorite = true;
                 session()->flash('success', "{$this->activityTitle} zu Favoriten hinzugefügt!");
-                Log::debug('Favorit hinzugefügt:', $this->activityData);
+                Log::debug('Favorit hinzugefügt:', $newFavorite);
             }
         }
 
