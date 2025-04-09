@@ -316,4 +316,39 @@
         height: auto;
     }
 }
+
+@media (max-width: 768px) {
+    .climate-table {
+        font-size: 13px;
+    }
+
+    .climate-table td,
+    .climate-table th {
+        padding: 6px 4px !important;
+    }
+
+    .climate-table th i,
+    .climate-table td i {
+        font-size: 14px;
+    }
+
+    .climate-table td {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .climate-table tbody tr {
+        display: table-row;
+    }
+
+    .climate-table thead {
+        display: table-header-group;
+    }
+
+    .climate-table td,
+    .climate-table th {
+        vertical-align: middle;
+    }
+}
+
 </style>

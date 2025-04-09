@@ -11,8 +11,12 @@ use App\Services\GeocodeService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
 use Symfony\Component\DomCrawler\Crawler;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ParkFormComponent extends Component
 {
@@ -131,8 +135,15 @@ class ParkFormComponent extends Component
             $fileName = 'logo_' . Str::slug($parkName) . '_' . time() . '.' . $this->logoFile->extension();
             $directory = public_path('img/parklogos');
             File::ensureDirectoryExists($directory);
-            $this->logoFile->storeAs('', $fileName, 'public_parklogos');
-            $this->logoUrl = '/img/parklogos/' . $fileName;
+            //$this->logoFile->storeAs('', $fileName, 'public_parklogos');
+            //$this->logoUrl = '/img/parklogos/' . $fileName;
+
+            $convertedPath = $this->saveAndConvertParkLogo($this->logoFile);
+            if ($convertedPath) {
+                $this->logoUrl = $convertedPath;
+            }
+
+
             $this->dispatch('show-toast', type: 'success', message: 'Logo erfolgreich hochgeladen.');
         } catch (\Exception $e) {
             Log::error('Fehler beim Hochladen des Logos:', ['error' => $e->getMessage()]);
@@ -374,6 +385,47 @@ class ParkFormComponent extends Component
             $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Scrapen: ' . $e->getMessage());
         }
     }
+
+    public function saveAndConvertParkLogo($file): ?string
+    {
+        try {
+            $extension = 'webp';
+            $targetWidth = 280;
+            $targetHeight = 180;
+
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
+
+            $originalWidth = $image->width();
+            $originalHeight = $image->height();
+
+            // Nur skalieren, wenn Bild größer ist – sonst Originalgröße beibehalten
+            if ($originalWidth > $targetWidth || $originalHeight > $targetHeight) {
+                $image->resize($targetWidth, $targetHeight, function ($c) {
+                    $c->aspectRatio();
+                    $c->upsize(); // kein Hochskalieren von kleineren Bildern
+                });
+            }
+
+            // Transparentes Canvas erstellen (alternativ: ->fill('#ffffff') für weißen Hintergrund)
+            $canvas = $manager->create($targetWidth, $targetHeight)->fill('rgba(255,255,255,0)');
+
+            // Bild mittig auf dem Canvas platzieren
+            $canvas->place($image, 'center');
+
+            // Speichern
+            $filename = 'img/parklogos/parklogo_' . uniqid() . '.' . $extension;
+            Storage::disk('public')->put($filename, (string) $canvas->toWebp(quality: 85));
+
+            return '/storage/' . $filename;
+        } catch (\Exception $e) {
+            logger()->error('Parklogo-Konvertierung fehlgeschlagen: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+
+
 
     public function render()
     {

@@ -39,45 +39,64 @@
     <!-- Aktivitäten-Karten -->
 
     @if(empty($selectedActivities))
-        <div class="text-center text-gray-600 mb-6">
-            <p>Wähle Aktivitäten aus, um loszulegen!</p>
-        </div>
-    @else
-        <div class="row justify-content-center mt-3">
-            @foreach($this->activities as $activity)
-                <div class="col-md-6 col-lg-5 mb-4 animate__animated animate__fadeIn">
-                    <x-activity-card
-                        :title="$activity['title']"
-                        :description="$activity['description']"
-                        :category="$activity['category']"
-                        :icon="$activity['icon']"
-                        :image="$activity['image']"
-                        :duration="$activity['duration']"
-                        :location="'In der Nähe'"
-                        :rating="$activity['rating']"
-                    >
-                        <x-slot name="buttons">
-                            @if($tripActivities->pluck('id')->contains($activity['id']))
-                                <button class="btn btn-success btn-sm">
-                                    <i class="fa-solid fa-check"></i> Im Trip!
-                                </button>
-                                <button wire:click="removeFromTrip('{{ $activity['id'] }}')" class="btn btn-danger btn-sm ms-2 trash-btn" title="Aktivität entfernen">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            @else
-                                <button wire:click="addToTrip('{{ $activity['id'] }}')" class="btn btn-warning btn-sm">
-                                    <i class="fa-solid fa-plus"></i> Zum Trip
-                                </button>
-                            @endif
-                            @if($activity['isRecommended'])
-                                <span class="badge bg-success align-self-center ms-2">Empfohlen 🤖</span>
-                            @endif
-                        </x-slot>
-                    </x-activity-card>
-                </div>
-            @endforeach
-        </div>
-    @endif
+
+
+@php
+   // dd($selectedActivities);
+@endphp
+
+
+    <div class="text-center text-gray-600 mb-6">
+        <p>Wähle Aktivitäten aus, um loszulegen!</p>
+    </div>
+@else
+
+@php
+ //   dd($selectedActivities, $this->activities);
+@endphp
+
+    <div class="row justify-content-center mt-3">
+        @foreach($this->activities as $activity)
+            <div class="col-md-6 col-lg-5 mb-4 animate__animated animate__fadeIn" wire:key="{{ $activity['id'] }}">
+                <x-activity-card
+                    :title="$activity['title']"
+                    :description="$activity['description']"
+                    :category="$activity['category']"
+                    :icon="$activity['icon']"
+                    :duration="$activity['duration']"
+                    :location="'In der Nähe'"
+                    :rating="$activity['rating']"
+                    :season="$activity['season'] ?? 'Ganzjährig'"
+                    :latitude="$activity['latitude'] ?? null"
+                    :longitude="$activity['longitude'] ?? null"
+                >
+                    <x-slot name="buttons">
+                        <livewire:frontend.location-inspiration-component.favorite-activities-button :activity="$activity" :key="$activity['id']" />
+
+                        @if($tripActivities->pluck('id')->contains($activity['id']))
+                            <button class="btn btn-success btn-sm">
+                                <i class="fa-solid fa-check"></i> Im Trip!
+                            </button>
+                            <button wire:click="removeFromTrip('{{ $activity['id'] }}')" class="btn btn-danger btn-sm ms-2 trash-btn" title="Aktivität entfernen">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        @else
+                            <button wire:click="addToTrip('{{ $activity['id'] }}')" class="btn btn-warning btn-sm">
+                                <i class="fa fa-plus"></i> Zum Trip
+                            </button>
+                        @endif
+
+                        @if($activity['isRecommended'])
+                            <span class="badge bg-success align-self-center ms-2">Empfohlen 🤖</span>
+                        @endif
+                    </x-slot>
+                </x-activity-card>
+            </div>
+        @endforeach
+    </div>
+@endif
+
+
 
     @if(!empty($tripDays))
         <!-- Trip-Name -->
@@ -241,6 +260,7 @@
             {{ session('error') }}
         </div>
     @endif
+
 
     <style>
     /* Basis-Styles */

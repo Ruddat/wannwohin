@@ -105,21 +105,18 @@
 
         @include('frondend.locationdetails.sections.climate_table')
 
+        {{--
         <!-- Inspirationsbereich -->
         @livewire('frontend.location-inspiration.location-inspiration-component', [
             'locationId'    => $location->id,
             'locationTitle' => $location->title
         ])
-
-
-
-
-
-
-@livewire('frontend.location-inspiration-component.trip-activities', [
-    'locationId'    => $location->id,
-    'locationTitle' => $location->title
-])
+        --}}
+        <!-- Aktivitäten -->
+        @livewire('frontend.location-inspiration-component.trip-activities', [
+            'locationId'    => $location->id,
+            'locationTitle' => $location->title
+        ])
 
 
 

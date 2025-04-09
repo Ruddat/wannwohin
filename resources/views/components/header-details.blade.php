@@ -72,6 +72,9 @@
                 <div class="wishlist-icon">
                     @livewire('frontend.wishlist-select.wishlist-component')
                 </div>
+                <div class="wishlist-icon">
+                    <livewire:frontend.location-inspiration-component.favorite-activities-indicator />
+                </div>
             </div>
         </div>
     </div>

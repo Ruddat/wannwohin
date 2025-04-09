@@ -28,9 +28,29 @@
                 @include('frondend.locationdetails.components.park-card', ['item' => $item])
             @endforeach
         </div>
+
+{{--
+        <div class="row g-4 justify-content-center" id="parks-container">
+            @foreach ($parks_with_opening_times as $parkData)
+                @include('frondend.locationdetails.components.park-card-neu', [
+                    'park' => $parkData['park'],  // Das park-Objekt aus dem Array extrahieren
+                    'opening_times' => $parkData['opening_times'],
+                    'waiting_times' => $parkData['waiting_times'],
+                    'cardId' => 'park-card-' . $parkData['park']->id  // ID aus dem park-Objekt
+                ])
+            @endforeach
+            </div>
+ --}}
+
+
     </div>
 </section>
 @endif
+
+
+
+
+
 
 <!-- Das einzelne, dynamisch befüllte Modal -->
 <div class="modal fade" id="waitingTimesModal" tabindex="-1" aria-labelledby="waitingTimesModalLabel" aria-hidden="true">

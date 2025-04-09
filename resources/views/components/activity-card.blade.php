@@ -29,7 +29,6 @@
                 <li class="list-inline-item"><i class="fa-solid fa-location-dot"></i> Koordinaten: {{ $latitude }}, {{ $longitude }}</li>
             @endif
         </ul>
-
         <div class="d-flex gap-2">
             {{ $buttons ?? '' }}
             <button class="btn btn-outline-secondary btn-sm" title="Favorisieren">

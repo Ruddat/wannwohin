@@ -5,8 +5,9 @@ namespace App\Livewire\Frontend\LocationInspirationComponent;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use App\Models\WwdeLocation;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\AmusementParks;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ModLocationFilter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
@@ -25,12 +26,14 @@ class TripActivities extends Component
     public string $savedDataPreview = '';
     public array $lastRemoved = [];
     public $location;
-    
+
     public function mount($locationId)
     {
         $this->locationId = $locationId;
         $this->location = WwdeLocation::find($locationId); // Location-Daten laden
         $this->locationTitle = $this->location->title ?? 'Unbekannter Ort';
+        $this->mapCenterLat = $this->location->lat ?? 50.110924; // Standardwert als Fallback
+        $this->mapCenterLon = $this->location->lon ?? 8.682127; // Standardwert als Fallback
 
         if (empty($this->tripDays)) {
             $this->tripDays = [['name' => 'Tag 1', 'notes' => '', 'activities' => []]];
@@ -120,10 +123,12 @@ class TripActivities extends Component
 
     public function toggleActivity(string $activity)
     {
+        // Wenn die Aktivität bereits ausgewählt ist, wird sie entfernt (optionales Toggle-Verhalten)
         if (in_array($activity, $this->selectedActivities)) {
-            $this->selectedActivities = array_diff($this->selectedActivities, [$activity]);
+            $this->selectedActivities = [];
         } else {
-            $this->selectedActivities[] = $activity;
+            // Nur die neue Aktivität auswählen und alle anderen entfernen
+            $this->selectedActivities = [$activity];
         }
     }
 
@@ -308,62 +313,90 @@ class TripActivities extends Component
 
     public function getActivitiesProperty()
     {
-        $query = ModLocationFilter::where('location_id', $this->locationId)
-            ->where('is_active', 1);
-
-        if (!empty($this->selectedActivities)) {
-            $query->whereIn('uschrift', $this->selectedActivities);
-        } else {
+        if (empty($this->selectedActivities)) {
+            Log::debug('Keine Aktivitäten ausgewählt');
             return collect();
         }
 
-        return $query->get()->map(function ($item) {
-            return [
-                'id' => 'activity-' . $item->id,
-                'title' => $item->uschrift,
-                'description' => $item->text,
-                'category' => $item->category,
-                'text_type' => $item->text_type,
-                'image' => $item->image_url ?? 'https://via.placeholder.com/150',
-                'icon' => match (strtolower($item->category)) {
-                    'architektur' => 'fa-landmark',
-                    'vergnügungspark' => 'fa-roller-coaster',
-                    'veranstaltungen' => 'fa-ticket',
-                    'wissen' => 'fa-book',
-                    'laufen' => 'fa-running',
-                    'essen und trinken' => 'fa-utensils',
-                    'aussicht' => 'fa-eye',
-                    'nachtleben' => 'fa-cocktail',
-                    'zoo' => 'fa-paw',
-                    'natur' => 'fa-tree',
-                    'radfahren' => 'fa-bicycle',
-                    'entspannung' => 'fa-spa',
-                    'shopping' => 'fa-shopping-bag',
-                    'wandern' => 'fa-hiking',
-                    'wassersport' => 'fa-water',
-                    'familienpark' => 'fa-child',
-                    'klettern' => 'fa-mountain',
-                    default => 'fa-location-dot',
-                },
-                'duration' => ['1 Stunde', '2–3 Stunden', 'Halbtags'][rand(0, 2)],
-                'season' => ['Frühling', 'Sommer', 'Ganzjährig'][rand(0, 2)],
-                'rating' => rand(85, 99) . '% positiv',
-                'isRecommended' => rand(0, 1) === 1,
-                'latitude' => $item->latitude,
-                'longitude' => $item->longitude,
-                'distance' => $this->calculateDistance(
+        Log::debug('Selected Activities:', $this->selectedActivities);
+
+        $activities = ModLocationFilter::where('location_id', $this->locationId)
+            ->where('is_active', 1)
+            ->whereIn('uschrift', $this->selectedActivities)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => 'activity-' . $item->id,
+                    'title' => $item->uschrift,
+                    'description' => $item->text,
+                    'category' => $item->category,
+                    'text_type' => $item->text_type,
+                    'image' => $item->image_url ?? 'https://via.placeholder.com/150',
+                    'icon' => match (strtolower($item->category)) {
+                        'architektur' => 'fa-landmark',
+                        'vergnügungspark' => 'ti ti-rollercoaster',
+                        default => 'fa-location-dot',
+                    },
+                    'duration' => ['1 Stunde', '2–3 Stunden', 'Halbtags'][rand(0, 2)],
+                    'season' => ['Frühling', 'Sommer', 'Ganzjährig'][rand(0, 2)],
+                    'rating' => rand(85, 99) . '% positiv',
+                    'isRecommended' => rand(0, 1) === 1,
+                    'latitude' => $item->latitude,
+                    'longitude' => $item->longitude,
+                    'distance' => $this->calculateDistance(
+                        $this->mapCenterLat,
+                        $this->mapCenterLon,
+                        $item->latitude,
+                        $item->longitude
+                    ),
+                ];
+            })->all();
+
+        Log::debug('ModLocationFilter Activities:', $activities);
+
+        $amusementParks = AmusementParks::whereIn('name', $this->selectedActivities)
+            ->get()
+            ->map(function ($park) {
+                $distance = $this->calculateDistance(
                     $this->mapCenterLat,
                     $this->mapCenterLon,
-                    $item->latitude,
-                    $item->longitude
-                ),
-            ];
-        })->sortBy('distance');
+                    $park->latitude,
+                    $park->longitude
+                );
+
+                if ($distance !== null && $distance <= 150) {
+                    Log::debug('Freizeitpark gefunden:', [$park->name, $distance]);
+                    return [
+                        'id' => 'park-' . $park->id,
+                        'title' => $park->name,
+                        'description' => $park->description ?? 'Ein toller Freizeitpark!',
+                        'category' => 'vergnügungspark',
+                        'text_type' => null,
+                        'image' => $park->logo_url ?? 'https://via.placeholder.com/150',
+                        'icon' => 'ti ti-rollercoaster',
+                        'duration' => 'Halbtags',
+                        'season' => $park->opening_hours ? 'Ganzjährig' : 'Sommer',
+                        'rating' => rand(85, 99) . '% positiv',
+                        'isRecommended' => rand(0, 1) === 1,
+                        'latitude' => $park->latitude,
+                        'longitude' => $park->longitude,
+                        'distance' => $distance,
+                    ];
+                }
+                return null;
+            })->filter()->all();
+
+        Log::debug('Amusement Parks nach Filter:', $amusementParks);
+
+        // Änderung: Sortiere nach 'title' statt 'distance'
+        $result = collect(array_merge($activities, $amusementParks))->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE);
+        Log::debug('Kombinierte Aktivitäten (nach Titel sortiert):', $result->toArray());
+        return $result;
     }
 
     public function getActivityFiltersProperty()
     {
-        return ModLocationFilter::where('location_id', $this->locationId)
+        $filters = ModLocationFilter::where('location_id', $this->locationId)
             ->where('is_active', 1)
             ->get()
             ->map(function ($item) {
@@ -377,6 +410,7 @@ class TripActivities extends Component
                     },
                     'icon' => match (strtolower($item->category)) {
                         'architektur' => 'fa-landmark',
+                        'vergnügungspark' => 'ti ti-rollercoaster',
                         'vergnügungspark' => 'fa-roller-coaster',
                         'veranstaltungen' => 'fa-ticket',
                         'wissen' => 'fa-book',
@@ -393,11 +427,39 @@ class TripActivities extends Component
                         'wassersport' => 'fa-water',
                         'familienpark' => 'fa-child',
                         'klettern' => 'fa-mountain',
+                        'veranstaltungen' => 'fa-calendar',
+                        'essen und trinken' => 'fa-utensils',
+                        'aussicht' => 'fa-eye',
                         default => 'fa-location-dot',
                     },
                 ];
-            })
-            ->unique('title');
+            })->unique('title');
+
+        $parks = AmusementParks::all()->map(function ($park) {
+            $distance = $this->calculateDistance(
+                $this->mapCenterLat,
+                $this->mapCenterLon,
+                $park->latitude,
+                $park->longitude
+            );
+
+            if ($distance !== null && $distance <= 150) {
+                Log::debug("Freizeitpark als Filter hinzugefügt: {$park->name}, Distance: $distance");
+                return [
+                    'title' => $park->name,
+                    'category' => 'vergnügungspark',
+                    'btnClass' => 'btn-freizeitpark',
+                    'icon' => 'ti ti-rollercoaster',
+                ];
+            }
+            return null;
+        })->filter();
+
+        // Sortiere nach 'title'
+        $combinedFilters = $filters->merge($parks)->unique('title')->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE);
+        Log::debug('Kombinierte Filter:', $combinedFilters->toArray());
+
+        return $combinedFilters;
     }
 
     #[On('saveTripToLocal')]

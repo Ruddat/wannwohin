@@ -90,17 +90,10 @@
                         </table>
                     </div>
                 </div>
-                <div class="card-footer d-flex align-items-center justify-content-between">
-                    <div>{{ $seoMetas->links() }}</div>
-                    <div class="d-flex align-items-center">
-                        <label for="perPageSelect" class="me-2 mb-0">Einträge pro Seite:</label>
-                        <select wire:model.change="perPage" id="perPageSelect" class="form-select form-select-sm">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                        </select>
-                    </div>
-                </div>
+
+
+                {{ $seoMetas->links('vendor.livewire.custom-pagination') }}
+
             </div>
         </div>
     </div>

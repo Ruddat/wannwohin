@@ -4,7 +4,7 @@
         <div class="card-header bg-gradient-to-r from-gray-50 to-gray-100 p-2">
             <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center flex-wrap">
                 @if ($item['park']->logo_url)
-                    <img src="{{ asset($item['park']->logo_url) }}" alt="{{ $item['park']->name }} Logo" class="rounded-full shadow-sm transition-transform duration-300 hover:scale-105" style="height:128px;">
+                    <img src="{{ asset($item['park']->logo_url) }}" alt="{{ $item['park']->name }} Logo" class="transition-transform duration-300 hover:scale-105">
                 @else
                     <div class="w-8 h-8 bg-gray-200 rounded-full d-flex align-items-center justify-content-center"></div>
                 @endif
@@ -106,3 +106,5 @@
 }
     </style>
 </div>
+
+

@@ -157,7 +157,7 @@
     {{-- Pagination --}}
     @if($texts->hasPages())
         <div class="mt-3">
-            {{ $texts->links() }}
+            {{ $texts->links('vendor.livewire.custom-pagination') }}
         </div>
     @endif
 

@@ -7,12 +7,13 @@ namespace App\Livewire\Backend\QuickFilterManager;
 
 use Livewire\Component;
 use Illuminate\Support\Str;
+use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use App\Models\ModQuickFilterItem;
 
 class QuickFilterComponent extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public $title;
     public $title_text;
@@ -29,6 +30,7 @@ class QuickFilterComponent extends Component
     public $existingImage = null;
     public $showForm = false; // Neue Eigenschaft, um das Formular zu steuern
     public $orderedItems = [];
+    public $perPage = 10;
 
     protected $listeners = ['updateOrder'];
 
@@ -193,6 +195,8 @@ class QuickFilterComponent extends Component
         session()->flash('message', 'QuickFilter-Item wurde gelöscht!');
     }
 
+
+
     public function resetFields()
     {
         $this->editId = null;
@@ -266,13 +270,14 @@ class QuickFilterComponent extends Component
 
     public function render()
     {
-        $this->orderedItems = ModQuickFilterItem::orderBy('sort_order')->get();
+     //   $this->orderedItems = ModQuickFilterItem::orderBy('sort_order')->paginate($this->perPage);
 
         $this->updateSlugOptions();
 
         return view('livewire.backend.quick-filter-manager.quick-filter-component', [
-            'galleryItems' => $this->orderedItems
+            'galleryItems' => ModQuickFilterItem::orderBy('sort_order')->paginate($this->perPage)
         ])->layout('raadmin.layout.master');
+
     }
 
 

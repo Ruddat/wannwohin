@@ -26,7 +26,7 @@ Schedule::command('rentalcars:fetch-prices')->dailyAt('04:30');
 
 // Monatliche Aufgaben
 Schedule::command('scrape:travel-warnings')->monthly();
-Schedule::command('parks:import')->monthly();
+//Schedule::command('parks:import')->monthly();
 Schedule::command('currency:update-exchange-rates')->monthly();
 
 // Stündliche Aufgaben
