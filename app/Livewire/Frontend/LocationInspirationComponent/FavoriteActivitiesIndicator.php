@@ -19,9 +19,13 @@ class FavoriteActivitiesIndicator extends Component
     public function toggleFavorites()
     {
         $this->showFavorites = !$this->showFavorites;
-        $this->loadFavorites(); // Aktualisiere die Liste bei jedem Öffnen
-    }
 
+        if ($this->showFavorites) {
+            $this->loadFavorites(); // Nur laden, wenn geöffnet
+        }
+
+    }
+    
     #[On('favorites-updated')]
     public function refreshFavorites()
     {
@@ -60,6 +64,10 @@ class FavoriteActivitiesIndicator extends Component
         return collect($this->favorites)->groupBy(fn($item) => $item['location_name'] ?? 'Unbekannter Ort');
     }
 
+    public function openTripPlanner()
+    {
+        $this->dispatch('open-trip-planner'); // Event zum Öffnen
+    }
 
     public function render()
     {

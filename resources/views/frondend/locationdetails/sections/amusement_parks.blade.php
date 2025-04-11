@@ -23,13 +23,16 @@
             </div>
         </div>
         <!-- Container für die Park-Karten -->
+
         <div class="row g-4 justify-content-center" id="parks-container">
             @foreach ($parks_with_opening_times as $item)
                 @include('frondend.locationdetails.components.park-card', ['item' => $item])
             @endforeach
         </div>
 
-{{--
+
+         {{--
+
         <div class="row g-4 justify-content-center" id="parks-container">
             @foreach ($parks_with_opening_times as $parkData)
                 @include('frondend.locationdetails.components.park-card-neu', [
@@ -40,7 +43,10 @@
                 ])
             @endforeach
             </div>
- --}}
+
+        --}}
+
+
 
 
     </div>

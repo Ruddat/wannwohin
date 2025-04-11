@@ -72,7 +72,7 @@
                 >
                     <x-slot name="buttons">
                         <livewire:frontend.location-inspiration-component.favorite-activities-button :activity="$activity" :key="$activity['id']" />
-{{--
+
                         @if($tripActivities->pluck('id')->contains($activity['id']))
                             <button class="btn btn-success btn-sm">
                                 <i class="fa-solid fa-check"></i> Im Trip!
@@ -85,7 +85,6 @@
                                 <i class="fa fa-plus"></i> Zum Trip
                             </button>
                         @endif
- --}}
 
                         @if($activity['isRecommended'])
                             <span class="badge bg-success align-self-center ms-2">Empfohlen 🤖</span>
@@ -99,11 +98,8 @@
 
 
 
-  {{--
     @if(!empty($tripDays))
-
-
-    <!-- Trip-Name -->
+        <!-- Trip-Name -->
         <div class="trip-name mt-8 text-center">
             <input
                 type="text"
@@ -123,7 +119,6 @@
                 <div class="progress-fill bg-gradient-to-r from-pink-400 to-purple-500 h-full rounded-full" style="width: {{ $this->totalDuration['percentage'] }}%;"></div>
             </div>
         </div>
-
 
         <!-- Trip-Vorschau -->
         <div class="trip-preview-grid mt-8 mb-3">
@@ -254,7 +249,7 @@
             </div>
         @endif
     @endif
- --}}
+
     @if(session()->has('success'))
         <div class="alert alert-success text-center mt-4 animate__animated animate__fadeIn shadow-md">
             {{ session('success') }}

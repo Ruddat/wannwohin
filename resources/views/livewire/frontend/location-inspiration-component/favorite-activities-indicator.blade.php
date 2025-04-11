@@ -39,21 +39,23 @@
                     <button wire:click="clearFavorites" class="clear-btn">
                         <i class="fa fa-trash"></i> Trip-Plan leeren
                     </button>
-                @else
+                    <button
+    wire:click="openTripPlanner"
+    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2 w-full"
+>
+    <i class="fa fa-edit"></i> Trip bearbeiten
+</button>
+                    @else
                     <p class="text-muted">Noch keine Aktivitäten im Trip-Plan.</p>
                 @endif
             </div>
-
+{{--
             <pre>{{ print_r(session('favorite_activities'), true) }}</pre>
-
-
+--}}
         </div>
 
-
-
-
-
     @endif
+
 
 
 

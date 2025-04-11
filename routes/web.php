@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\WwdeCountry;
+use App\Models\WwdeLocation;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GlobeController;
 use App\Http\Controllers\IndexController;
@@ -8,6 +11,7 @@ use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
 use App\Http\Controllers\WetterTestController;
+use App\Http\Controllers\Frontend\TripController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Tools\ScreenshotController;
 use App\Http\Controllers\Backend\Admin\AuthController;
@@ -100,6 +104,10 @@ Route::middleware(['web', 'breadcrumbs', 'track-referral', 'weather'])->group(fu
 
     Route::get('/detailsuche', [DetailSearchController::class, 'index'])
         ->name('detail_search');
+
+
+        Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
+
 
     Route::get('/detailsuche/ergebnisse', [DetailSearchController::class, 'search'])
         ->name('detail_search_result');

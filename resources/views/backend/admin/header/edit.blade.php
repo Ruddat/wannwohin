@@ -89,7 +89,9 @@
                         <option value="explore-amusement-now">explore-amusement-now</option>
                         <option value="explore-amusement-month">explore-amusement-month</option>
                         <option value="explore-amusement-later">explore-amusement-later</option>
-                        <option value="startpage-1">startpage-1</option> <!-- Für andere Seiten -->
+                        <option value="startpage-1">startpage-1</option>
+                        <option value="explore-trips">explore-trips</option>
+                        <!-- Für andere Seiten -->
                     </select>
                     <small class="form-hint">Wähle einen Slug, der zur Seite passt (z. B. für Explore-Seite).</small>
                     @error('slug')

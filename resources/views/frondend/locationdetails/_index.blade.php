@@ -117,13 +117,12 @@
             'locationId'    => $location->id,
             'locationTitle' => $location->title
         ])
-
-
-
-
-
+        {{--
         <!-- Zusätzliche Sektionen -->
         @include('frondend.locationdetails.sections.amusement_parks')
+        --}}
+
+        @include('frondend.locationdetails.sections.amusement_parks_neu')
 
         @if ($gallery_images)
             @include('frondend.locationdetails.sections.erleben_picture_modal')
@@ -166,6 +165,9 @@
             </div>
         </div>
     </div>
+
+
+
 
 
 

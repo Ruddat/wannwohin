@@ -60,11 +60,10 @@
 
 
                     <li><a href="#section-climate">Klima</a></li>
-                    <li><a href="#section-activities">Aktivitäten</a></li>
-                    <li><a href="#section-recommendations">Empfehlungen</a></li>
+                    <li><a href="{{ route('explore') }}">Aktivitäten</a></li>
+                    <li><a href="{{ route('trips.index') }}">Empfehlungen</a></li>
                 </ul>
                 <div class="nav-components">
-
 
                     <div class="header-search">
                         @livewire('frontend.header-search.header-search-component')

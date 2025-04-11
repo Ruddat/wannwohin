@@ -558,6 +558,7 @@
     border-radius: 10px 0 0 10px;
     font-size: 16px;
     opacity: 0.6;
+    line-height: initial;
 }
 
 
@@ -575,6 +576,7 @@
     border-radius: 10px 0 0 10px;
     font-size: 16px;
     opacity: 0.6;
+    line-height: initial;
 }
     }
 

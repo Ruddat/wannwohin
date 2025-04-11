@@ -195,6 +195,7 @@
     @stack('styles')
     <!-- Head Libs -->
     <script src="{{ asset('assets/vendor/modernizr/modernizr.min.js') }}"></script>
+    @livewireStyles
 </head>
 
 <body>
@@ -350,6 +351,7 @@
             'list-country-locations',
             'compare',
             'explore',
+            'trips.index',
             'explore.results',
             'explore.relax',
             'explore.adventure',
@@ -375,9 +377,20 @@
         <div class="container-fluid main-content-section">
 
         @show
-        @yield('content')
+
+                        {{-- main body content --}}
+                        @if(request()->header('X-Livewire') || isset($slot))
+                        {{ $slot }}
+                    @else
+                        @yield('content')
+                    @endif
+
+
     </div>
 </div>
+
+@livewire('frontend.location-inspiration-component.trip-planner')
+
 <!-- cookie consent-->
 @include('partials.cookie_consent')
 <!-- END cookie consent-->
@@ -482,7 +495,7 @@ via npm installiert
 
 @yield('js')
 @stack('js')
-
+@livewireScripts
 </body>
 
 </html>
