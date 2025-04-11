@@ -618,18 +618,41 @@ private function fetchAllWeatherData(WwdeLocation $location): array
     }
 
 /**
-     * Holt Freizeitparks für eine AJAX-Anfrage.
-     */
-    public function getAmusementParks(Request $request)
-    {
+ * Holt Freizeitparks für eine AJAX-Anfrage.
+ *
+ * @param Request $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getAmusementParks(Request $request)
+{
+    try {
         $locationId = $request->query('location_id');
         $radius = $request->query('radius', 150);
 
+        // Validierung der Eingaben
+        if (!is_numeric($locationId) || !is_numeric($radius)) {
+            return response()->json(['error' => 'Ungültige Parameter'], 400);
+        }
+
+        // Location holen
         $location = WwdeLocation::findOrFail($locationId);
+
+        // Freizeitparks abrufen
         $parksWithOpeningTimes = $this->fetchAmusementParks($location, $radius);
 
-        return response()->json($parksWithOpeningTimes);
+        // HTML für die Park-Karten rendern
+        $html = view('components.parks-list', compact('parksWithOpeningTimes'))->render();
+
+        // JSON-Antwort mit HTML und Parks zurückgeben
+        return response()->json([
+            'html' => $html,
+            'parks' => $parksWithOpeningTimes
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Fehler beim Abrufen der Freizeitparks: ' . $e->getMessage());
+        return response()->json(['error' => 'Fehler beim Laden der Parks'], 500);
     }
+}
 
     private function fetchAmusementParks(WwdeLocation $location, int $radius = 150): \Illuminate\Support\Collection
     {
