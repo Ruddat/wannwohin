@@ -22,6 +22,9 @@
             </div>
         </div>
         <div class="row g-4 justify-content-center" id="parks-container">
+            @php
+               // dd($parks_with_opening_times);
+            @endphp
             @foreach ($parks_with_opening_times as $item)
             @php
               $park = $item['park'];
@@ -137,19 +140,21 @@
       </button>
     </div>
 
-                    <div class="description">{{ $park->description ?? 'Keine Beschreibung verfügbar.' }}</div>
+    <div class="description @if (empty($item['waiting_times']) || count($item['waiting_times']) == 0) expanded @endif">
+        {{ $park->description ?? 'Keine Beschreibung verfügbar.' }}
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
+        @if (!empty($item['waiting_times']) && count($item['waiting_times']) > 0)
+            <a href="#" class="btn btn-warning fw-bold show-waittimes">
+                Wartezeiten anzeigen ({{ count($item['waiting_times']) }})
+            </a>
+        @endif
+        @if ($park->url)
+            <a href="{{ $park->url }}" target="_blank" class="btn btn-outline-light">Zur Website</a>
+        @endif
+    </div>
 
-                    <div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
-                      @if (!empty($item['waiting_times']) && count($item['waiting_times']) > 0)
-                      <a href="#" class="btn btn-warning fw-bold show-waittimes">
-                          Wartezeiten anzeigen ({{ count($item['waiting_times']) }})
-                        </a>
-                    @endif
 
-                      @if ($park->website)
-                        <a href="{{ $park->website }}" target="_blank" class="btn btn-outline-light">Zur Website</a>
-                      @endif
-                    </div>
                   </div>
                 </div>
               </div>
@@ -230,28 +235,30 @@
 
         // Wartezeiten anzeigen
         document.querySelectorAll('.btn-warning.show-waittimes').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                const card = btn.closest('.flip-card');
-                const parkId = parseInt(card.dataset.parkId);
-                const park = parksWithTimes.find(p => p.park.id === parkId);
-                const list = park?.waiting_times ?? [];
-                const tbody = document.getElementById('waitTimeTableBody');
-                tbody.innerHTML = '';
-                list.forEach(attraktion => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${attraktion.name}</td>
-                        <td>${attraktion.waitingtime} min</td>
-                        <td><span class="badge bg-${attraktion.status === 'open' ? 'success' : 'danger'}">${attraktion.status === 'open' ? 'Offen' : 'Geschlossen'}</span></td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                const modal = new bootstrap.Modal(document.getElementById('waitTimeModal'));
-                modal.show();
-            });
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        const card = btn.closest('.flip-card');
+        const parkId = parseInt(card.dataset.parkId);
+        const park = parksWithTimes.find(p => p.park.id === parkId);
+        const list = park?.waiting_times ?? [];
+        const tbody = document.getElementById('waitTimeTableBody');
+        tbody.innerHTML = '';
+        list.forEach(attraktion => {
+            const row = document.createElement('tr');
+            // Akzeptiere sowohl "open" als auch "opened" als offenen Status
+            const isOpen = attraktion.status === 'open' || attraktion.status === 'opened';
+            row.innerHTML = `
+                <td>${attraktion.name}</td>
+                <td>${attraktion.waitingtime} min</td>
+                <td><span class="badge bg-${isOpen ? 'success' : 'danger'}">${isOpen ? 'Offen' : 'Geschlossen'}</span></td>
+            `;
+            tbody.appendChild(row);
         });
+        const modal = new bootstrap.Modal(document.getElementById('waitTimeModal'));
+        modal.show();
+    });
+});
 
         // Flip-Karten Logik
         document.querySelectorAll('.flip-card').forEach(card => {
@@ -407,11 +414,16 @@
     }
 
     .flip-card-back .description {
-      font-size: 0.875rem;
-      overflow-y: auto;
-      max-height: 100px;
-      margin-bottom: 1rem;
-    }
+    font-size: 0.875rem;
+    overflow-y: auto;
+    max-height: 100px; /* Standardhöhe, wenn Wartezeiten vorhanden sind */
+    margin-bottom: 1rem;
+    transition: max-height 0.3s ease; /* Sanfte Übergangsanimation */
+}
+
+.flip-card-back .description.expanded {
+    max-height: 200px; /* Größere Höhe, wenn keine Wartezeiten vorhanden sind */
+}
 
     .video-frame {
       position: relative;
@@ -531,6 +543,8 @@
     .radius-selector-wrapper {
         flex-direction: column;
         padding: 12px;
+        width: 100%;
+        border-radius: 32px;
     }
 
     .radius-label {
@@ -539,7 +553,7 @@
     }
 
     .radius-select {
-        width: 100%;
+        width: 80%;
         text-align: center;
     }
 }

@@ -45,10 +45,55 @@ $embedHtml = $park->embed_code;
         <p>{{ $park->slogan ?? 'Erlebe Abenteuer pur!' }}</p>
 
         <div class="coolness w-100 mt-2">
-          <div class="progress" style="height: 10px;">
-            <div class="progress-bar bg-success" style="width: {{ $item['coolness_score'] ?? 90 }}%;"></div>
-          </div>
-          <small class="text-muted mt-1 d-block">Coolness-Faktor: {{ ($item['coolness_score'] ?? 90) / 10 }} / 10</small>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" style="width: {{ $item['coolness_score'] ?? 0 }}%;"></div>
+            </div>
+            <small class="text-muted mt-1 d-block">
+                Coolness-Faktor:
+                @if ($item['coolness_score'])
+                    @php
+                        $coolness = $item['coolness_score'] / 10; // Skala 0-10
+                        $smiley = $coolness >= 8 ? '🔥' : ($coolness >= 6 ? '😎' : ($coolness >= 4 ? '😊' : '😐'));
+                    @endphp
+                    <span class="coolness-smilies">{{ $smiley }}</span> {{ $coolness }} / 10
+                    ({{ $item['vote_count'] ?? count(DB::table('park_coolness_votes')->where('park_id', $park->id)->get()) }} Stimmen)
+                @else
+                    <span class="coolness-smilies">🤔</span> N/A
+                @endif
+            </small>
+        </div>
+
+        <div class="rating mt-2">
+            <small class="text-muted">
+                Bewertung:
+                @if ($item['avg_rating'])
+                    @php
+                        $rating = $item['avg_rating']; // Skala 0-5
+                        $fullStars = floor($rating); // Volle Sterne
+                        $halfStar = ($rating - $fullStars) >= 0.5 ? 1 : 0; // Halber Stern
+                        $emptyStars = 5 - $fullStars - $halfStar; // Leere Sterne
+                    @endphp
+                    <span class="rating-stars">
+                        @for ($i = 0; $i < $fullStars; $i++)
+                            <span class="star filled">★</span>
+                        @endfor
+                        @if ($halfStar)
+                            <span class="star half-filled">★</span>
+                        @endif
+                        @for ($i = 0; $i < $emptyStars; $i++)
+                            <span class="star">★</span>
+                        @endfor
+                    </span>
+                    {{ $rating }} / 5 ({{ $item['comment_count'] }} Kommentare)
+                @else
+                    <span class="rating-stars">
+                        @for ($i = 0; $i < 5; $i++)
+                            <span class="star">★</span>
+                        @endfor
+                    </span>
+                    Noch keine Bewertungen
+                @endif
+            </small>
         </div>
 
         <a href="#" class="btn btn-sm btn-outline-primary mt-3 open-feedback-modal" data-park-id="{{ $park->id }}">
@@ -68,19 +113,19 @@ $embedHtml = $park->embed_code;
 </button>
 </div>
 
-        <div class="description">{{ $park->description ?? 'Keine Beschreibung verfügbar.' }}</div>
-
-        <div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
-          @if (!empty($item['waiting_times']) && count($item['waiting_times']) > 0)
-          <a href="#" class="btn btn-warning fw-bold show-waittimes">
-              Wartezeiten anzeigen ({{ count($item['waiting_times']) }})
-            </a>
-        @endif
-
-          @if ($park->website)
-            <a href="{{ $park->website }}" target="_blank" class="btn btn-outline-light">Zur Website</a>
-          @endif
-        </div>
+<div class="description @if (empty($item['waiting_times']) || count($item['waiting_times']) == 0) expanded @endif">
+    {{ $park->description ?? 'Keine Beschreibung verfügbar.' }}
+</div>
+<div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
+    @if (!empty($item['waiting_times']) && count($item['waiting_times']) > 0)
+        <a href="#" class="btn btn-warning fw-bold show-waittimes">
+            Wartezeiten anzeigen ({{ count($item['waiting_times']) }})
+        </a>
+    @endif
+    @if ($park->url)
+        <a href="{{ $park->url }}" target="_blank" class="btn btn-outline-light">Zur Website</a>
+    @endif
+</div>
       </div>
     </div>
   </div>

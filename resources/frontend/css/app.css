@@ -1,4 +1,8 @@
+/* Bootstrap (falls bereits installiert) */
 @import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Bootstrap Icons */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 @import './wishlist-compare.css';
 @import './wishlist-box.css';
 @import './index-details-timeline.css';
