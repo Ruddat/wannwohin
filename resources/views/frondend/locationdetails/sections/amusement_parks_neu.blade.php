@@ -121,48 +121,113 @@
       text-align: center;
     }
 
-    .flip-card { width: 100%; height: 500px; perspective: 1000px; cursor: pointer; position: relative; transition: transform 0.3s; }
-    .flip-card:hover { transform: scale(1.02); }
-    .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
-    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+    .flip-card {
+      width: 100%;
+      height: 500px;
+      perspective: 1000px;
+      perspective-origin: center center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s;
+      overflow: hidden;
+      isolation: isolate; /* 🛠 Fix für Firefox */
+      z-index: 0;
+    }
 
-    .flip-card-front, .flip-card-back {
-      position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-      border-radius: 1rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.3);
-      display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem;
+    .flip-card:hover {
+      transform: scale(1.02);
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden; /* 🛠 Safari Fix */
+      transform-style: preserve-3d;
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
     }
 
     .flip-card-front {
-      background: rgba(255, 255, 255, 0.85); color: #333; z-index: 2;
-      backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.85);
+      color: #333;
+      z-index: 2;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      transform: rotateY(0deg);
     }
 
     .flip-card-back {
-      background: #222; color: white; transform: rotateY(180deg); z-index: 1;
-      align-items: stretch; justify-content: start;
+      background: #222;
+      color: white;
+      transform: rotateY(180deg);
+      z-index: 1;
+      align-items: stretch;
+      justify-content: start;
     }
 
     .flip-card img {
-      width: 100%; max-width: 280px; max-height: 180px; object-fit: contain; margin-bottom: 1rem;
+      width: 100%;
+      max-width: 280px;
+      max-height: 180px;
+      object-fit: contain;
+      margin-bottom: 1rem;
     }
 
     .flip-card-back .description {
-      font-size: 0.875rem; overflow-y: auto; max-height: 100px; margin-bottom: 1rem;
+      font-size: 0.875rem;
+      overflow-y: auto;
+      max-height: 100px;
+      margin-bottom: 1rem;
     }
 
     .video-frame {
-      position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-      border-radius: 0.5rem; background: #000;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+      border-radius: 0.5rem;
+      background: #000;
     }
 
-    .video-frame iframe, .video-frame video {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    .video-frame iframe,
+    .video-frame video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     @media (max-width: 576px) {
-      .flip-card { height: 520px; }
+      .flip-card {
+        height: 520px;
+      }
     }
   </style>
+
 
 <style>
     /* 🧊 Feedback Modal */
