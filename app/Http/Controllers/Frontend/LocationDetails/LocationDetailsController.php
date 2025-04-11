@@ -654,33 +654,50 @@ public function getAmusementParks(Request $request)
     }
 }
 
-    private function fetchAmusementParks(WwdeLocation $location, int $radius = 150): \Illuminate\Support\Collection
-    {
-        $cacheKey = "amusement_parks_{$location->id}_radius_{$radius}_" . date('Y-m-d');
-        return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location, $radius) {
-            $amusementParks = DB::table('amusement_parks')
-                ->selectRaw("*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
-                ->having('distance', '<=', $radius)
-                ->orderBy('distance', 'asc')
-                ->get();
+private function fetchAmusementParks(WwdeLocation $location, int $radius = 150): \Illuminate\Support\Collection
+{
+    $cacheKey = "amusement_parks_{$location->id}_radius_{$radius}_" . date('Y-m-d');
+    return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location, $radius) {
+        $amusementParks = DB::table('amusement_parks')
+            ->selectRaw("amusement_parks.*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
+            ->having('distance', '<=', $radius)
+            ->orderBy('distance', 'asc')
+            ->get();
 
-            return $amusementParks->map(function ($park) {
-                $openingTimes = is_string($park->opening_hours) && json_decode($park->opening_hours, true) ? json_decode($park->opening_hours, true) : $park->opening_hours;
-                $waitingTimes = $park->queue_times_id ? $this->fetchQueueTimes($park->queue_times_id) : [];
-                $lastUpdatedFormatted = $waitingTimes && isset($waitingTimes[0]['last_updated'])
-                    ? Carbon::parse($waitingTimes[0]['last_updated'])->locale('de')->isoFormat('D. MMMM YYYY, HH:mm')
-                    : null;
+        return $amusementParks->map(function ($park) {
+            $openingTimes = is_string($park->opening_hours) && json_decode($park->opening_hours, true) ? json_decode($park->opening_hours, true) : $park->opening_hours;
+            $waitingTimes = $park->queue_times_id ? $this->fetchQueueTimes($park->queue_times_id) : [];
+            $lastUpdatedFormatted = $waitingTimes && isset($waitingTimes[0]['last_updated'])
+                ? Carbon::parse($waitingTimes[0]['last_updated'])->locale('de')->isoFormat('D. MMMM YYYY, HH:mm')
+                : null;
 
-                return [
-                    'park' => $park,
-                    'opening_times' => $this->formatOpeningTimes($openingTimes),
-                    'waiting_times' => $waitingTimes,
-                    'coolness_score' => $park->coolness_score ?? 0,
-                    'last_updated' => $lastUpdatedFormatted,
-                ];
-            });
+            // Coolness-Score aus park_coolness_votes
+            $coolnessVotes = DB::table('park_coolness_votes')
+                ->where('park_id', $park->id)
+                ->pluck('value')
+                ->toArray();
+            $coolnessScore = !empty($coolnessVotes) ? round(array_sum($coolnessVotes) / count($coolnessVotes) * 10) : null; // Skalierung auf 0-100
+
+            // Feedback-Daten aus park_feedback
+            $feedbackData = DB::table('park_feedback')
+                ->where('park_id', $park->id)
+                ->selectRaw('AVG(rating) as avg_rating, COUNT(comment) as comment_count')
+                ->first();
+            $avgRating = $feedbackData && $feedbackData->avg_rating !== null ? round($feedbackData->avg_rating, 1) : null;
+            $commentCount = $feedbackData ? $feedbackData->comment_count : 0;
+
+            return [
+                'park' => $park,
+                'opening_times' => $this->formatOpeningTimes($openingTimes),
+                'waiting_times' => $waitingTimes,
+                'coolness_score' => $coolnessScore, // Durchschnittlicher Coolness-Score (0-100)
+                'avg_rating' => $avgRating,         // Durchschnittliche Bewertung (z. B. 0-5)
+                'comment_count' => $commentCount,   // Anzahl der Kommentare
+                'last_updated' => $lastUpdatedFormatted,
+            ];
         });
-    }
+    });
+}
 
     private function fetchQueueTimes(int $parkId): array
     {

@@ -1,16 +1,20 @@
 <section class="parallax-section">
     <div class="container">
         <h2 class="display-5 fw-bold mb-5 text-black">Wilde Fahrten rund um {{ $location->title }}</h2>
-        <div class="col-12 text-center mt-4">
-            <label for="radius" class="text-muted font-weight-semibold mr-3">Umkreis wählen:</label>
-            <select id="radius" class="form-select d-inline-block w-auto rounded-full shadow-sm border-0 bg-white text-gray-700 transition-all duration-300 hover:shadow-md focus:ring-2 focus:ring-primary">
-                <option value="10" {{ request('radius', 150) == 10 ? 'selected' : '' }}>10 km</option>
-                <option value="20" {{ request('radius', 150) == 20 ? 'selected' : '' }}>20 km</option>
-                <option value="30" {{ request('radius', 150) == 30 ? 'selected' : '' }}>30 km</option>
-                <option value="50" {{ request('radius', 150) == 50 ? 'selected' : '' }}>50 km</option>
-                <option value="100" {{ request('radius', 150) == 100 ? 'selected' : '' }}>100 km</option>
-                <option value="150" {{ request('radius', 150) == 150 ? 'selected' : '' }}>150 km</option>
-            </select>
+        <div class="col-12 text-center mb-4">
+            <div class="radius-selector-wrapper">
+                <label for="radius" class="radius-label">
+                    <i class="bi bi-geo-alt-fill me-2"></i> Umkreis wählen
+                </label>
+                <select id="radius" class="radius-select">
+                    <option value="10" {{ request('radius', 150) == 10 ? 'selected' : '' }}>10 km</option>
+                    <option value="20" {{ request('radius', 150) == 20 ? 'selected' : '' }}>20 km</option>
+                    <option value="30" {{ request('radius', 150) == 30 ? 'selected' : '' }}>30 km</option>
+                    <option value="50" {{ request('radius', 150) == 50 ? 'selected' : '' }}>50 km</option>
+                    <option value="100" {{ request('radius', 150) == 100 ? 'selected' : '' }}>100 km</option>
+                    <option value="150" {{ request('radius', 150) == 150 ? 'selected' : '' }}>150 km</option>
+                </select>
+            </div>
         </div>
         <div id="loading" class="text-center" style="display: none;">
             <div class="spinner-border text-primary" role="status">
@@ -65,10 +69,55 @@
                     <p>{{ $park->slogan ?? 'Erlebe Abenteuer pur!' }}</p>
 
                     <div class="coolness w-100 mt-2">
-                      <div class="progress" style="height: 10px;">
-                        <div class="progress-bar bg-success" style="width: {{ $item['coolness_score'] ?? 90 }}%;"></div>
-                      </div>
-                      <small class="text-muted mt-1 d-block">Coolness-Faktor: {{ ($item['coolness_score'] ?? 90) / 10 }} / 10</small>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: {{ $item['coolness_score'] ?? 0 }}%;"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            Coolness-Faktor:
+                            @if ($item['coolness_score'])
+                                @php
+                                    $coolness = $item['coolness_score'] / 10; // Skala 0-10
+                                    $smiley = $coolness >= 8 ? '🔥' : ($coolness >= 6 ? '😎' : ($coolness >= 4 ? '😊' : '😐'));
+                                @endphp
+                                <span class="coolness-smilies">{{ $smiley }}</span> {{ $coolness }} / 10
+                                ({{ $item['vote_count'] ?? count(DB::table('park_coolness_votes')->where('park_id', $park->id)->get()) }} Stimmen)
+                            @else
+                                <span class="coolness-smilies">🤔</span> N/A
+                            @endif
+                        </small>
+                    </div>
+
+                    <div class="rating mt-2">
+                        <small class="text-muted">
+                            Bewertung:
+                            @if ($item['avg_rating'])
+                                @php
+                                    $rating = $item['avg_rating']; // Skala 0-5
+                                    $fullStars = floor($rating); // Volle Sterne
+                                    $halfStar = ($rating - $fullStars) >= 0.5 ? 1 : 0; // Halber Stern
+                                    $emptyStars = 5 - $fullStars - $halfStar; // Leere Sterne
+                                @endphp
+                                <span class="rating-stars">
+                                    @for ($i = 0; $i < $fullStars; $i++)
+                                        <span class="star filled">★</span>
+                                    @endfor
+                                    @if ($halfStar)
+                                        <span class="star half-filled">★</span>
+                                    @endif
+                                    @for ($i = 0; $i < $emptyStars; $i++)
+                                        <span class="star">★</span>
+                                    @endfor
+                                </span>
+                                {{ $rating }} / 5 ({{ $item['comment_count'] }} Kommentare)
+                            @else
+                                <span class="rating-stars">
+                                    @for ($i = 0; $i < 5; $i++)
+                                        <span class="star">★</span>
+                                    @endfor
+                                </span>
+                                Noch keine Bewertungen
+                            @endif
+                        </small>
                     </div>
 
                     <a href="#" class="btn btn-sm btn-outline-primary mt-3 open-feedback-modal" data-park-id="{{ $park->id }}">
@@ -398,3 +447,143 @@
       opacity: 1;
     }
   </style>
+<style>
+    .radius-selector-wrapper {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50px;
+    padding: 8px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.radius-selector-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.radius-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.radius-label i {
+    color: #ff6200; /* Orangeton für Abenteuer-Stimmung */
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+}
+
+.radius-selector-wrapper:hover .radius-label i {
+    transform: rotate(360deg); /* Kleiner spielerischer Effekt */
+}
+
+.radius-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: linear-gradient(135deg, #ff6200, #ff8c00);
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 24px 10px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    position: relative;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.radius-select:hover {
+    background: linear-gradient(135deg, #e55a00, #e67e22);
+    transform: scale(1.05);
+}
+
+.radius-select:focus {
+    box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.3);
+}
+
+/* Pfeil für das Select-Element */
+.radius-selector-wrapper::after {
+    content: '\25BC'; /* Unicode für Abwärtspfeil */
+    color: white;
+    font-size: 0.8rem;
+    position: absolute;
+    right: 24px;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.radius-select:focus + .radius-selector-wrapper::after {
+    transform: rotate(180deg);
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 576px) {
+    .radius-selector-wrapper {
+        flex-direction: column;
+        padding: 12px;
+    }
+
+    .radius-label {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+
+    .radius-select {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+<style>
+    /* Coolness Smilies */
+.coolness-smilies {
+    font-size: 1.25rem;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+/* Rating Sterne */
+.rating-stars {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #ccc; /* Grau für leere Sterne */
+}
+
+.rating-stars .star {
+    margin-right: 2px;
+}
+
+.rating-stars .filled {
+    color: #ffca08; /* Gold für gefüllte Sterne */
+}
+
+.rating-stars .half-filled {
+    position: relative;
+    display: inline-block;
+}
+
+.rating-stars .half-filled::before {
+    content: "\2605"; /* Voller Stern */
+    position: absolute;
+    left: 0;
+    width: 50%;
+    overflow: hidden;
+    color: #ffca08; /* Gold für halb gefüllte Sterne */
+}
+
+.rating-stars .half-filled::after {
+    content: "\2605"; /* Voller Stern */
+    color: #ccc; /* Grau für den Rest */
+}
+</style>
