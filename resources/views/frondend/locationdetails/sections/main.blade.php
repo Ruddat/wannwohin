@@ -98,6 +98,9 @@
                     </div>
 
 
+
+
+
                     <!-- Card-Body -->
                     <div class="card-body bg-white pt-5 box-shadow-2">
                         <table class="table table-sm text-center">
@@ -406,11 +409,21 @@
     height: 30px;
 }
 
-    .card-header-fact.text-center {
-        background-color: #d1d1d1;
-        position: relative;
-        height: 130px;
-    }
+.card-header-fact.text-center {
+    background-color: #d1d1d1;
+    position: relative;
+    min-height: 130px;   /* nicht fix, darf wachsen */
+    height: auto;        /* dynamisch anpassen */
+    padding: 20px;
+}
+
+/* Flexbox bleibt, Flagge bleibt mittig */
+.card-header-fact .d-flex {
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
 
     .price-trend-container {
         width: 100%;

@@ -136,6 +136,7 @@
                                     <span>↕</span>
                                 @endif
                             </th>
+                            <th>Last Updated</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -164,6 +165,9 @@
                                         {{ ucfirst($location->status) }}
                                     </span>
                                 </td>
+                                            <td>
+                {{ $location->updated_at ? $location->updated_at->format('d.m.Y H:i') : '-' }}
+            </td>
                                 <td class="text-end">
                                     @if ($location->deleted_at)
                                         <button wire:click="restoreLocation({{ $location->id }})" class="btn btn-sm btn-warning">Restore</button>

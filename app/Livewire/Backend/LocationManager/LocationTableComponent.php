@@ -8,6 +8,7 @@ use App\Models\WwdeLocation;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Livewire\WithoutUrlPagination;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
@@ -28,6 +29,7 @@ class LocationTableComponent extends Component
     public $excelFile; // Für den Datei-Upload
     public $skipImages = false;
     public $exportFailed = false;
+    public $isLoading = false;
 
 
     protected $listeners = [
@@ -325,13 +327,13 @@ class LocationTableComponent extends Component
 
     public function confirmDelete($locationId)
     {
-        \Log::info('confirmDelete called with ID:', ['locationId' => $locationId]);
+        Log::info('confirmDelete called with ID:', ['locationId' => $locationId]);
         $this->dispatch('triggerDeleteConfirmation', $locationId);
     }
 
     public function deleteLocation($locationId)
     {
-        \Log::info('deleteLocation called with ID:', ['locationId' => $locationId]);
+        Log::info('deleteLocation called with ID:', ['locationId' => $locationId]);
         $location = WwdeLocation::find($locationId);
         if ($location instanceof WwdeLocation) {
             $location->delete();
