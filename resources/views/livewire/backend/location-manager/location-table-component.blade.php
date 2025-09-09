@@ -136,7 +136,14 @@
                                     <span>↕</span>
                                 @endif
                             </th>
-                            <th>Last Updated</th>
+<th wire:click="sortBy('updated_at')" style="cursor: pointer;">
+    Last Updated
+    @if($sortField === 'updated_at')
+        <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+    @else
+        <span>↕</span>
+    @endif
+</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>

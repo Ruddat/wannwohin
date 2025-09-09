@@ -1,8 +1,4 @@
 /* Tailwind Direktiven */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Jodit-Editor CSS importieren */
 @import 'jodit/es2021/jodit.min.css';
 

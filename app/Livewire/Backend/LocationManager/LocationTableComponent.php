@@ -369,7 +369,7 @@ class LocationTableComponent extends Component
     public function sortBy($field)
     {
         // Liste der erlaubten Felder zur Sicherheit
-        $sortableFields = ['id', 'title', 'iata_code', 'country', 'status'];
+        $sortableFields = ['id', 'title', 'iata_code', 'country', 'status', 'created_at', 'updated_at'];
         if (!in_array($field, $sortableFields)) {
             return; // Ungültiges Feld ignorieren
         }
