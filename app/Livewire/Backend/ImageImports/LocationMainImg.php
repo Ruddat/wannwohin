@@ -100,6 +100,11 @@ class LocationMainImg extends Component
      */
     public function importLocationGalleryImages()
     {
+
+
+        ini_set('max_execution_time', 360); // 6 Minuten
+        set_time_limit(360);
+
         $directory = public_path('img/location_main_img');
         $this->cleanFilenames($directory);
         $this->cleanDatabase();
@@ -181,6 +186,9 @@ class LocationMainImg extends Component
      */
     public function importMainLocationImages()
     {
+        ini_set('max_execution_time', 360); // 6 Minuten
+        set_time_limit(360);
+        
         $directory = public_path('img/location_main_img');
         $this->cleanFilenames($directory);
         $this->cleanDatabase();
