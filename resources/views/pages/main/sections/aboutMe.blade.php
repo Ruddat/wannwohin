@@ -24,7 +24,22 @@
                     <p class="text-color-grey small mt-2">
                         @autotranslate('Keine Idee? Wir finden spontan dein Ziel!', app()->getLocale())
                     </p>
+<p class="text-color-grey small mt-3">
+    @autotranslate('Tipp für USA-Reisende:', app()->getLocale())
+</p>
+
+<p class="text-color-grey small" style="line-height: 1.7;">
+    @autotranslate('Das offizielle ESTA-Formular findest du hier:', app()->getLocale())
+    <a href="https://www.estaregistrierung.org/formular-deutsch.html"
+       target="_blank"
+       class="font-weight-bold"
+       style="color:#3182ce; text-decoration:underline;">
+        👉 US-ESTA Formular auf Deutsch
+    </a>
+</p>
+
                 </div>
+
 
                 <!-- Top 10 Box -->
                 <div class="col-lg-6">

@@ -39,7 +39,6 @@
                         </div>
 
 
-
                         @if (!empty($panorama_text_and_style))
                             <div
                                 style="background: {{ $panorama_text_and_style['style']['background'] }};

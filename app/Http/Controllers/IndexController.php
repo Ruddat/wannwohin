@@ -16,6 +16,7 @@ use App\Library\WeatherDataManagerLibrary;
 class IndexController extends Controller
 {
     protected $locationRepository;
+    protected $seoService;
 
     public function __construct(LocationRepository $locationRepository, SeoService $seoService)
     {
@@ -216,6 +217,7 @@ class IndexController extends Controller
             abort(400, "Ungültiger Urlaubstyp: $urlaubType");
         }
 
+        $urlaubTypeText = ucfirst(str_replace(['-reise', '-'], [' ', ' '], $urlaubType));
 
     // SEO für Suchergebnisse abrufen oder generieren
     $seo = $this->seoService->getSeoData([
