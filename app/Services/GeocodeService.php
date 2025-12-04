@@ -125,22 +125,51 @@ class GeocodeService
         return $result;
     }
 
-    public function searchByParkName($query)
-    {
-        $url = "https://nominatim.openstreetmap.org/search";
-        $params = [
-            'query' => [
-                'q' => $query, // Nur der Parkname
-                'format' => 'json',
-                'addressdetails' => 1,
-                'limit' => 1, // Nur das erste Ergebnis
-            ],
-            'headers' => $this->getDefaultHeaders(),
-        ];
+public function searchByParkName($query)
+{
+    $apiKey = env('GEOAPIFY_API_KEY');
 
-        // Replace sendRequest with sendRequestWithRetries
-        return $this->sendRequestWithRetries($url, $params);
+    if (!$apiKey) {
+        Log::error("Geoapify API Key fehlt!");
+        return [];
     }
+
+    $url = "https://api.geoapify.com/v1/geocode/search";
+
+    // Anfrage an Geoapify
+    $response = Http::get($url, [
+        'text' => $query,
+        'limit' => 1,
+        'apiKey' => $apiKey
+    ]);
+
+    if (!$response->successful()) {
+        Log::error("Geoapify Fehler: " . $response->body());
+        return [];
+    }
+
+    $json = $response->json();
+
+    if (empty($json['features'])) {
+        return [];
+    }
+
+    $p = $json['features'][0]['properties'];
+
+    // 1️⃣ Jetzt bauen wir den Rückgabe-ARRAY EXACT wie Nominatim
+    return [[
+        'lat' => $p['lat'] ?? null,
+        'lon' => $p['lon'] ?? null,
+        'address' => [
+            'country' => $p['country'] ?? null,
+            'city' => $p['city']
+                ?? $p['town']
+                ?? $p['village']
+                ?? null,
+        ]
+    ]];
+}
+
 
 
     /**

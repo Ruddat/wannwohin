@@ -658,11 +658,22 @@ private function fetchAmusementParks(WwdeLocation $location, int $radius = 150):
 {
     $cacheKey = "amusement_parks_{$location->id}_radius_{$radius}_" . date('Y-m-d');
     return Cache::remember($cacheKey, config('weather.amusement_parks_cache_duration', 12 * 60 * 60), function () use ($location, $radius) {
-        $amusementParks = DB::table('amusement_parks')
-            ->selectRaw("amusement_parks.*, (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance", [$location->lat, $location->lon, $location->lat])
-            ->having('distance', '<=', $radius)
-            ->orderBy('distance', 'asc')
-            ->get();
+$amusementParks = DB::table('amusement_parks')
+    ->whereNotNull('latitude')
+    ->whereNotNull('longitude')
+    ->selectRaw("
+        amusement_parks.*,
+        (6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        )) AS distance
+    ", [$location->lat, $location->lon, $location->lat])
+    ->having('distance', '<=', $radius)
+    ->orderBy('distance')
+    ->get();
 
         return $amusementParks->map(function ($park) {
             $openingTimes = is_string($park->opening_hours) && json_decode($park->opening_hours, true) ? json_decode($park->opening_hours, true) : $park->opening_hours;

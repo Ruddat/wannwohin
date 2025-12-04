@@ -106,6 +106,12 @@ class WwdeLocation extends Model
     ];
 
 
+protected $casts = [
+    'lat' => 'float',
+    'lon' => 'float',
+];
+
+
     /**
      * Automatische Slug-Erstellung für die title-Spalte
      */
