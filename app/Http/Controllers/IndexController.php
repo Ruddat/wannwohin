@@ -88,11 +88,13 @@ class IndexController extends Controller
 
     private function getTopTenLocations(): array
     {
-        $topTenIds = Cache::remember('top_ten_location_ids', 5 * 60, fn() => DB::table('stat_top_ten_locations')
-            ->orderByDesc('search_count')
-            ->limit(10)
-            ->pluck('location_id')
-            ->toArray());
+Cache::forget('top_ten_location_ids');
+
+$topTenIds = DB::table('stat_top_ten_locations')
+    ->orderByDesc('search_count')
+    ->limit(10)
+    ->pluck('location_id')
+    ->toArray();
 
         if (empty($topTenIds)) {
             return [];
