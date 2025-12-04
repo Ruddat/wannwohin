@@ -21,9 +21,15 @@
                 @endphp
 
                 <div class="figure-img img-fluid custom-border position-relative"
-                    style="background-repeat: no-repeat; background-size: cover; background-position: center;
-                            background-image: url('{{ $location->text_pic2 ? asset($location->text_pic2) : asset('img/placeholders/location-placeholder.jpg') }}');
-                            height: 100%; min-height: 400px;"
+style="
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-image: url('{{ $location->text_pic2 ? asset($location->text_pic2) : asset('img/placeholders/location-placeholder.jpg') }}');
+    aspect-ratio: 3 / 4;
+    min-height: 400px;
+    height: 100%;
+"
                     data-aos="fade-up" data-aos-delay="800">
                     <!-- Schicker Bildtext im unteren Bereich -->
 

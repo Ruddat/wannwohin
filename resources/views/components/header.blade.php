@@ -59,7 +59,11 @@
                 <ul class="sticky-nav-list">
 
 
-                    <li><a href="#section-climate">Klima</a></li>
+<li>
+    <a href="https://klimatabelle.de" target="_blank" rel="noopener">
+        Klima
+    </a>
+</li>
                     <li><a href="{{ route('explore') }}">Aktivitäten</a></li>
                     <li><a href="{{ route('trips.index') }}">Empfehlungen</a></li>
                 </ul>

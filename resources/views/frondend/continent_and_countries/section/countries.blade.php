@@ -305,6 +305,26 @@ document.addEventListener("DOMContentLoaded", () => {
     max-width: 100%;
 }
 
+/* Einheitliche Rundungen für alle Karten */
+.experience-section .experience-card,
+.experience-section .experience-card .card-img-wrapper,
+.experience-section .experience-card .card-overlay,
+.experience-section .card-title-wrapper,
+.ad-card,
+.kiwi-widget,
+.experience-section .ad-card .card-body,
+.experience-section .ad-card .ad-content,
+.experience-section .ad-card .ad-footer {
+    border-radius: 18px !important;
+    overflow: hidden;
+}
+
+/* Falls Bilder manchmal "eckig" bleiben */
+.experience-section .card-img-wrapper {
+    border-radius: 18px !important;
+}
+
+
 @media (max-width: 992px) {
     .experience-section .experience-card {
         height: 300px;

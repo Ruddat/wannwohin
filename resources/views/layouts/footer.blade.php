@@ -61,16 +61,24 @@
             </div>
 
 
-            <!-- Newsletter Section -->
+            {{-- Newsletter Section
             <div class="col-12 col-md-3 text-center text-md-start">
                 <h5 class="mb-3">Newsletter</h5>
                 @livewire('frontend.newsletter-form.newsletter-form-component')
             </div>
+            --}}
         </div>
 
         <!-- Footer Bottom -->
         <div class="footer-bottom text-center mt-5 pt-4 border-top border-secondary">
-            <p class="small mb-0">© 2025 Dein Unternehmen. Alle Rechte vorbehalten.</p>
+@php
+    $start = 2025; // Gründungsjahr eintragen
+    $current = date('Y');
+@endphp
+
+<p class="small mb-0">
+    © {{ $start == $current ? $current : $start . ' - ' . $current }} www.wann-wohin.de Alle Rechte vorbehalten.
+</p>
         </div>
     </div>
 </footer>

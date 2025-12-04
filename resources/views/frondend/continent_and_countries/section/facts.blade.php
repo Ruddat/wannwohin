@@ -14,6 +14,7 @@
                             @if (!empty($continent->continent_text))
                                 <div class="card-text text-white">
                                     @autotranslate($continent->continent_text, app()->getLocale())
+                                    
                                 </div>
                             @endif
                         </div>

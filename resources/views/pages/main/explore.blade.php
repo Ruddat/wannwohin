@@ -407,10 +407,13 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </section>
-
+        {{--
     <div>
+
         @include('pages.main.sections.blog')
+
     </div>
+--}}
 </div>
 
 <!-- Slider Dependencies -->

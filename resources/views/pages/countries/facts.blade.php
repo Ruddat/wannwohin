@@ -21,6 +21,7 @@
                     <div class="p-2 m-2">
 {{--                        <div class="bg-opacity-75 bg-white rounded text-dark p-2 m-2"> {{ $country->country_text}}--}}{{--</div>--}}
                        {{ $continent->continent_text}}
+                    
                     </div>
                 </div>
             </div>

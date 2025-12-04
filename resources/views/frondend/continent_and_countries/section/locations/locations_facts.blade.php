@@ -216,9 +216,9 @@ in Npm:
     font-size: 1.1rem;
     line-height: 1.6;
     color: #fff;
-    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.8); /* Stärkerer Schatten für Lesbarkeit */
+    text-shadow: 0 3px 6px rgba(54, 52, 52, 0.8); /* Stärkerer Schatten für Lesbarkeit */
     margin-top: 1rem;
-    background-color: rgba(128, 128, 128, 0.5); /* Transparenter grauer Hintergrund */
+    background-color: rgba(80, 80, 80, 0.8); /* Transparenter grauer Hintergrund */
     padding: 0.5rem 1rem; /* Leichter Padding für den Hintergrund */
     border-radius: 6px; /* Abgerundete Ecken */
     display: inline-block; /* Passt sich an den Text an */
@@ -247,7 +247,7 @@ in Npm:
 }
 
 .continent-facts-section .title-wrapper h4 {
-    color: #1a1a1a; /* Dunklerer Text für Kontrast */
+    color: #0a0a0a; /* Dunklerer Text für Kontrast */
     font-size: 2.5rem;
     font-weight: 700;
     margin: 0;
@@ -539,4 +539,6 @@ in Npm:
         left: 22px;
     }
 }
+
+
 </style>

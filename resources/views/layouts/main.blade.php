@@ -8,7 +8,7 @@
 
 {{-- Dynamische SEO-Daten --}}
 @if (isset($seo))
-    <title>{{ $seo['title'] ?? ($seo['keywords']['main'] ?? 'WannWohin.de – Dein Reiseportal für Urlaub 2025') }}</title>
+    <title>{{ $seo['title'] ?? ($seo['keywords']['main'] ?? 'Wann-Wohin.de – Dein Reiseportal für Urlaub 2025') }}</title>
     <meta name="description" content="{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.') }}">
     <link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
 
@@ -123,10 +123,6 @@
 
     <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
-
-    <!-- Web Fonts  -->
-    <link id="googleFonts" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800&display=swap"
-        rel="stylesheet" type="text/css">
 
     <!-- Vendor CSS -->
 
