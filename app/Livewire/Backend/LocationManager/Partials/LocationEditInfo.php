@@ -29,8 +29,9 @@ class LocationEditInfo extends Component
     public $bundesstaatShort;
     public $noCityBut;
     public $population;
+    public $region;
     public $continents = [];
-    public $countries = [];
+    public $countries;
     public $finished;
     public $status;
 
@@ -73,11 +74,11 @@ public function updatedContinentId($continentId)
 {
     $this->countries = WwdeCountry::where('continent_id', $continentId)->get();
 
-    // Debugging, um zu sehen, ob `countryId` verloren geht
-   // dd("updatedContinentId:", "Erhaltener Continent ID:", $continentId, "Aktuelle Country ID:", $this->countryId, "Neue Länder:", $this->countries->pluck('id', 'title'));
-
-    // Country-ID nur zurücksetzen, wenn sie nicht in der neuen Liste vorkommt
-    if ($this->countryId && !$this->countries->pluck('id')->contains($this->countryId)) {
+    if (
+        $this->countryId &&
+        $this->countries instanceof \Illuminate\Support\Collection &&
+        !$this->countries->pluck('id')->contains($this->countryId)
+    ) {
         $this->countryId = null;
     }
 }
@@ -135,7 +136,8 @@ public function updatedContinentId($continentId)
             'finished' => $this->finished ?? 0,
         ];
 
-      //  dump('Before update', $location->toArray(), $data);
+       // dump('Before update', $location->toArray(), $data);
+//dd('Debug Save Location', $data);
 
         // Manueller Fehler-Handler
         set_error_handler(function ($severity, $message, $file, $line) {
@@ -151,6 +153,9 @@ public function updatedContinentId($continentId)
         } finally {
             restore_error_handler();
         }
+
+        $this->dispatch('show-toast', type: 'success', message: 'Texte erfolgreich gespeichert.');
+
     }
 
     public function fetchGeocodeData()

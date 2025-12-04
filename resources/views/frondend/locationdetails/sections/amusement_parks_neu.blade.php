@@ -1,6 +1,9 @@
 <section class="parallax-section">
     <div class="container">
-        <h2 class="display-5 fw-bold mb-5 text-black">Wilde Fahrten rund um {{ $location->title }}</h2>
+<h2 class="display-5 fw-bold mb-5 text-white parallax-heading parallax-title">
+    Freizeitparks und Zoos rund um  {{ $location->title }}
+</h2>
+
         <div class="col-12 text-center mb-4">
             <div class="radius-selector-wrapper">
                 <label for="radius" class="radius-label">
@@ -63,13 +66,13 @@
             <div class="col-12 col-sm-6 col-lg-4">
               <div class="flip-card" data-park-id="{{ $park->id }}">
                 <div class="flip-card-inner">
-                  {{-- FRONT --}}
-                  <div class="flip-card-front">
-                    @if ($park->logo_url)
-                      <img src="{{ asset($park->logo_url) }}" alt="{{ $park->name }}">
-                    @endif
-                    <h5>{{ $park->name }}</h5>
-                    <p>{{ $park->slogan ?? 'Erlebe Abenteuer pur!' }}</p>
+{{-- FRONT --}}
+<div class="flip-card-front">
+    @if ($park->logo_url)
+      <img src="{{ asset($park->logo_url) }}" alt="{{ $park->name }}">
+    @endif
+    <h5>{{ $park->name }}</h5>
+    <p>{{ $park->slogan ?? 'Erlebe Abenteuer pur!' }}</p>
 
                     <div class="coolness w-100 mt-2">
                         <div class="progress" style="height: 10px;">
@@ -458,6 +461,49 @@
     .unmute-btn:hover {
       opacity: 1;
     }
+
+/* LOGO CONTAINER – saubere Aspect Ratio */
+.logo-wrapper {
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 4 / 3;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 12px;
+    padding: 10px;
+    overflow: hidden;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.6);
+}
+
+.logo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+}
+
+/* Titel */
+.park-title {
+    font-weight: 700;
+    margin-top: 15px;
+    font-size: 1.25rem;
+    text-align: center;
+    color: #222;
+}
+
+/* Slogan */
+.park-slogan {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+
   </style>
 <style>
     .radius-selector-wrapper {
@@ -599,5 +645,18 @@
 .rating-stars .half-filled::after {
     content: "\2605"; /* Voller Stern */
     color: #ccc; /* Grau für den Rest */
+}
+
+
+.parallax-heading {
+    display: inline-block;
+    background: rgba(0,0,0,0.55);
+    padding: 12px 28px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.parallax-title {
+    text-shadow: 0 3px 12px rgba(0,0,0,0.8);
 }
 </style>

@@ -122,7 +122,10 @@
         @include('frondend.locationdetails.sections.amusement_parks')
         --}}
 
-        @include('frondend.locationdetails.sections.amusement_parks_neu')
+@if (!empty($parks_with_opening_times) && count($parks_with_opening_times ?? []) > 0)
+    @include('frondend.locationdetails.sections.amusement_parks_neu')
+@endif
+
 
         @if ($gallery_images)
             @include('frondend.locationdetails.sections.erleben_picture_modal')

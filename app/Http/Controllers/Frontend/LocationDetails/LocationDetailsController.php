@@ -649,7 +649,7 @@ public function getAmusementParks(Request $request)
             'parks' => $parksWithOpeningTimes
         ]);
     } catch (\Exception $e) {
-        \Log::error('Fehler beim Abrufen der Freizeitparks: ' . $e->getMessage());
+        Log::error('Fehler beim Abrufen der Freizeitparks: ' . $e->getMessage());
         return response()->json(['error' => 'Fehler beim Laden der Parks'], 500);
     }
 }

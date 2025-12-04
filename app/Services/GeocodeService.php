@@ -229,49 +229,50 @@ public function searchByCoordinates(float $lat, float $lon): array
  */
 public function searchByNominatimOnly(string $cityName): array
 {
-    $url = "https://nominatim.openstreetmap.org/search";
-    $params = [
-        'query' => [
-            'q' => $cityName,
-            'format' => 'json',
-            'addressdetails' => 1,
-            'limit' => 1, // Nur das erste Ergebnis
-        ],
-        'headers' => $this->getDefaultHeaders(),
-    ];
+    $apiKey = env('GEOAPIFY_API_KEY');
 
-    $result = $this->sendRequestWithRetries($url, $params);
-
-    if ($result && !empty($result[0])) {
-        $data = $result[0];
-
-        return [
-            'address' => [
-                'country' => $data['address']['country'] ?? 'Unknown',
-                'country_code' => strtolower($data['address']['country_code'] ?? 'unknown'),
-                'ISO3166-2-lvl4' => strtoupper($data['address']['ISO3166-2-lvl4'] ?? 'unknown'),
-                'state' => $data['address']['state'] ?? null, // Bundesstaat
-                'county' => $data['address']['county'] ?? null, // Landkreis oder Region
-                'region' => $data['address']['region'] ?? null, // Region falls vorhanden
-                'city' => $data['address']['city'] ?? $data['address']['town'] ?? $data['address']['village'] ?? null, // Stadt erkennen
-            ],
-            'lat' => $data['lat'] ?? null,
-            'lon' => $data['lon'] ?? null,
-        ];
+    if (!$apiKey) {
+        Log::error("Geoapify API Key fehlt!");
+        return $this->emptyResult();
     }
+
+    $url = "https://api.geoapify.com/v1/geocode/search";
+
+    $response = Http::get($url, [
+        'text' => $cityName,
+        'limit' => 1,
+        'apiKey' => $apiKey
+    ]);
+
+    if (!$response->successful()) {
+        Log::error("Geoapify Fehler: " . $response->body());
+        return $this->emptyResult();
+    }
+
+    $data = $response->json();
+
+    if (empty($data['features'][0])) {
+        return $this->emptyResult();
+    }
+
+    $feature = $data['features'][0];
+    $props = $feature['properties'];
 
     return [
         'address' => [
-            'country' => 'Unknown',
-            'country_code' => 'unknown',
-            'ISO3166-2-lvl4' => 'unknown',
-            'state' => null,
-            'county' => null,
-            'region' => null,
-            'city' => null,
+            'country'        => $props['country'] ?? 'Unknown',
+            'country_code'   => strtolower($props['country_code'] ?? 'unknown'),
+            'ISO3166-2-lvl4' => strtoupper($props['state_code'] ?? 'unknown'),
+            'state'          => $props['state'] ?? null,
+            'county'         => $props['county'] ?? null,
+            'region'         => $props['region'] ?? null,
+            'city'           => $props['city']
+                                ?? $props['suburb']
+                                ?? $props['municipality']
+                                ?? $cityName, // Fallback
         ],
-        'lat' => null,
-        'lon' => null,
+        'lat' => $props['lat'] ?? null,
+        'lon' => $props['lon'] ?? null,
     ];
 }
 

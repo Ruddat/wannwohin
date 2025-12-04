@@ -4,6 +4,7 @@ namespace App\Livewire\Backend\LocationManager;
 
 use Livewire\Component;
 use App\Models\WwdeLocation;
+use Illuminate\Support\Facades\Log;
 
 class LocationManagerComponent extends Component
 {
@@ -41,7 +42,7 @@ class LocationManagerComponent extends Component
 
     public function closeModal()
     {
-        \Log::info('Modal closed', ['locationId' => $this->locationId]);
+        Log::info('Modal closed', ['locationId' => $this->locationId]);
         $this->isModalOpen = false;
         $this->reset(['locationId', 'location', 'activeTab']);
         $this->dispatch('modalClosed')->to(LocationTableComponent::class);
