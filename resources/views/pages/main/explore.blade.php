@@ -72,6 +72,15 @@
                 <button type="submit" id="explore-submit" class="btn btn-explore animate__animated animate__pulse animate__infinite">
                     @autotranslate('Ergebnisse anzeigen', app()->getLocale())
                 </button>
+
+<button type="button" id="locate-me" class="btn btn-secondary mt-3">
+    📍 Standort automatisch erkennen
+</button>
+
+<input type="hidden" name="lat" id="lat">
+<input type="hidden" name="lon" id="lon">
+
+
             </div>
 
 
@@ -718,5 +727,111 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const locateBtn = document.getElementById('locate-me');
+    const latInput = document.getElementById('lat');
+    const lonInput = document.getElementById('lon');
+
+    // Mini-Hinweis wenn Standort schon existiert (Session vom Controller)
+    if (latInput.value && lonInput.value) {
+        locateBtn.innerText = "✔️ Standort bereits gespeichert";
+        locateBtn.style.backgroundColor = "#38a169";
+    }
+
+    if (!locateBtn) return;
+
+    locateBtn.addEventListener('click', function () {
+
+        locateBtn.disabled = true;
+        locateBtn.innerHTML = "📡 Standort wird ermittelt...";
+        locateBtn.style.backgroundColor = "#3182ce"; // cooles Blau
+
+        // Browser unterstützt keine Geolocation
+        if (!navigator.geolocation) {
+            showGeoError("Dein Browser unterstützt keine Standortabfrage.");
+            resetButton();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            // Erfolg
+            (position) => {
+                const lat = position.coords.latitude.toFixed(6);
+                const lon = position.coords.longitude.toFixed(6);
+
+                console.log("Standort erfolgreich erfasst:", lat, lon);
+
+                latInput.value = lat;
+                lonInput.value = lon;
+
+                locateBtn.innerHTML = "✔️ Standort gespeichert!";
+                locateBtn.style.backgroundColor = "#38a169"; // Grün = Erfolg
+
+                // Button nach 2s wieder normal setzen
+                setTimeout(() => {
+                    locateBtn.disabled = false;
+                    locateBtn.innerHTML = "📍 Standort erneut erkennen";
+                }, 2500);
+            },
+
+            // Fehler
+            (error) => {
+                console.warn("Geolocation Fehler:", error);
+
+                let message = "Standort konnte nicht ermittelt werden.";
+
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = "Bitte erlaube die Standortabfrage für eine präzise Empfehlung.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = "Der Standort ist aktuell nicht verfügbar.";
+                        break;
+                    case error.TIMEOUT:
+                        message = "Die Standortabfrage hat zu lange gedauert.";
+                        break;
+                }
+
+                showGeoError(message);
+                resetButton();
+            },
+
+            // Optionen (für schnellere Abfrage)
+            {
+                enableHighAccuracy: true,
+                timeout: 7000,
+                maximumAge: 0
+            }
+        );
+    });
+
+    /** BUTTON ZURÜCKSETZEN **/
+    function resetButton() {
+        locateBtn.disabled = false;
+        locateBtn.innerHTML = "📍 Standort automatisch erkennen";
+        locateBtn.style.backgroundColor = "#ff6b6b"; // wieder rot-oranges Theme
+    }
+
+    /** SCHÖNE FEHLERMELDUNG STATT BLÖDER ALERT BOX **/
+    function showGeoError(msg) {
+        let box = document.createElement("div");
+        box.className = "geo-error-box";
+        box.innerHTML = "❗ " + msg;
+
+        document.body.appendChild(box);
+
+        setTimeout(() => {
+            box.classList.add("fade-out");
+            setTimeout(() => box.remove(), 500);
+        }, 3500);
+    }
+
+});
+</script>
+
+
 
 @endsection

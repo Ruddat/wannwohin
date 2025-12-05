@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\WwdeClimate;
 use App\Models\WwdeCountry;
+use Illuminate\Support\Str;
 use App\Models\WwdeContinent;
 use App\Models\ModLocationFilter;
 use App\Models\ModLocationGalerie;
@@ -128,6 +129,61 @@ protected $casts = [
     {
         return !empty($this->title) ? $this->title : 'location-' . uniqid();
     }
+
+
+protected static function booted()
+{
+    static::saving(function ($location) {
+
+        // MERK DIR DAS ORIGINALE alias
+        $originalAlias = $location->getOriginal('alias');
+        $originalTitle = $location->getOriginal('title');
+
+        // -----------------------------------------------------
+        // 1) Alias generieren, falls leer
+        // -----------------------------------------------------
+        if (empty($location->alias)) {
+            $location->alias = Str::slug($location->title);
+        }
+
+        // -----------------------------------------------------
+        // 2) Alias IMMER slugifizieren (Absicherung)
+        // -----------------------------------------------------
+        $location->alias = Str::slug($location->alias);
+
+        // -----------------------------------------------------
+        // 3) Alias neu generieren, wenn der Title geändert wurde,
+        //    ABER NUR, wenn alias vorher aus dem Titel entstand.
+        //    (alias wird NICHT überschrieben, wenn Nutzer es manuell setzte)
+        // -----------------------------------------------------
+        $previousSlug = Str::slug($originalTitle);
+
+        if (
+            $location->isDirty('title') &&         // Titel wurde geändert
+            $originalAlias === $previousSlug       // alias basierte direkt auf Titel
+        ) {
+            // Alias neu generieren
+            $location->alias = Str::slug($location->title);
+        }
+
+        // -----------------------------------------------------
+        // 4) Alias eindeutig machen (auto increment)
+        // -----------------------------------------------------
+        $base = $location->alias;
+        $counter = 2;
+
+        while (
+            self::where('alias', $location->alias)
+                ->where('id', '!=', $location->id)
+                ->exists()
+        ) {
+            $location->alias = $base . '-' . $counter;
+            $counter++;
+        }
+    });
+}
+
+
 
 
     /**

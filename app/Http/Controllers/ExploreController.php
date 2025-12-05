@@ -25,6 +25,8 @@ class ExploreController extends Controller
         $latitude = $request->query('lat') ?? Session::get('user_location.lat');
         $longitude = $request->query('lon') ?? Session::get('user_location.lon');
 
+//dd($latitude, $longitude);
+
         if ($request->query('lat') && $request->query('lon')) {
             Session::put('user_location', ['lat' => $latitude, 'lon' => $longitude]);
         }
@@ -70,7 +72,13 @@ class ExploreController extends Controller
 public function results(Request $request)
 {
     /* ----------------------------------------------
-     * 1) FILTER + SESSION HANDLING
+     * DYNAMISCHE 4-GRID EINSTELLUNGEN
+     * ---------------------------------------------- */
+    $minResults  = 12;   // mindestens 12 anzeigen
+    $maxResults  = 40;   // maximaler Pool für Ranking/Shuffle
+
+    /* ----------------------------------------------
+     * 1) FILTER + SESSION
      * ---------------------------------------------- */
     $validActivities = ['relax', 'adventure', 'culture', 'amusement'];
     $validTimes = ['now', 'month', 'later'];
@@ -79,14 +87,14 @@ public function results(Request $request)
     $time = $request->query('time') ?? Session::get('filters.time', 'now');
 
     $activity = in_array($activity, $validActivities) ? $activity : 'relax';
-    $time = in_array($time, $validTimes) ? $time : 'now';
+    $time     = in_array($time, $validTimes) ? $time : 'now';
 
     Session::put('filters', compact('activity', 'time'));
 
     /* ----------------------------------------------
-     * 2) GEO KOORDINATEN
+     * 2) USER GEO LOCATION
      * ---------------------------------------------- */
-    $latitude = $request->query('lat') ?? Session::get('user_location.lat');
+    $latitude  = $request->query('lat') ?? Session::get('user_location.lat');
     $longitude = $request->query('lon') ?? Session::get('user_location.lon');
 
     if ($request->query('lat') && $request->query('lon')) {
@@ -94,7 +102,7 @@ public function results(Request $request)
     }
 
     /* ----------------------------------------------
-     * 3) MONATS-LOGIK
+     * 3) MONTH LOGIC
      * ---------------------------------------------- */
     $monthId = match ($time) {
         'now'   => now()->month,
@@ -104,7 +112,7 @@ public function results(Request $request)
     };
 
     /* ----------------------------------------------
-     * 4) AKTIVITÄTS-FILTERBUILDING
+     * 4) ACTIVITY FILTER MAPPING
      * ---------------------------------------------- */
     $activityMap = [
         'relax'     => ['list_beach' => 1, 'list_nature' => 1],
@@ -112,10 +120,11 @@ public function results(Request $request)
         'culture'   => ['list_culture' => 1],
     ];
 
-    /* --------------------------------------------------------
-     * 5) SPEZIALFALL AMUSEMENT – SEPARATE LOGIK
-     * -------------------------------------------------------- */
+    /* ----------------------------------------------
+     * 5) SPECIAL CASE: AMUSEMENT PARKS
+     * ---------------------------------------------- */
     if ($activity === 'amusement') {
+
         $parks = DB::table('amusement_parks')
             ->select(
                 'id',
@@ -127,23 +136,32 @@ public function results(Request $request)
                 'logo_url AS text_pic1'
             )
             ->get()
-            ->map(function ($park) use ($latitude, $longitude) {
-                $park->distance = $this->calculateDistance($latitude, $longitude, $park->lat, $park->lon);
-                $park->type = 'amusement_park';
-                $park->continent_alias = strtolower($park->continent);
-                $park->country_alias = strtolower($park->country);
-                $park->alias = str_replace(' ', '-', strtolower($park->title));
-                return $park;
+            ->map(function ($p) use ($latitude, $longitude) {
+                $p->distance = $this->calculateDistance($latitude, $longitude, $p->lat, $p->lon);
+                $p->type = 'amusement_park';
+                $p->continent_alias = \Illuminate\Support\Str::slug($p->continent);
+                $p->country_alias   = \Illuminate\Support\Str::slug($p->country);
+                $p->alias           = \Illuminate\Support\Str::slug($p->title);
+                return $p;
             });
 
-        $top = $parks->sortBy('distance')->take(20)->shuffle()->take(6)->values();
+        // GROSSEN POOL → Runde auf perfektes 4-Grid
+        $poolCount = min($parks->count(), $maxResults);
+        $gridCount = max($minResults, floor($poolCount / 4) * 4);
 
-        return $this->returnExploreView($top, $activity, $time, $latitude, $longitude);
+        $final = $parks
+            ->sortBy('distance')
+            ->take($maxResults)
+            ->shuffle()
+            ->take($gridCount)
+            ->values();
+
+        return $this->returnExploreView($final, $activity, $time, $latitude, $longitude);
     }
 
-    /* --------------------------------------------------------
-     * 6) NORMALE LOCATIONS HOLEN – OHNE LIMITIERUNG
-     * -------------------------------------------------------- */
+    /* ----------------------------------------------
+     * 6) NORMAL LOCATIONS EINLESEN
+     * ---------------------------------------------- */
     $filters = $activityMap[$activity] ?? [];
 
     $results = $this->locationRepository
@@ -164,18 +182,28 @@ public function results(Request $request)
         )
         ->get();
 
-    /* --------------------------------------------------------
-     * 7) DISTANZ + SCORE BERECHNEN
-     * -------------------------------------------------------- */
-    $ranked = $results->map(function ($loc) use ($latitude, $longitude, $monthId) {
+    /* ----------------------------------------------
+     * 7) SCORING + ALIAS GENERIEREN
+     * ---------------------------------------------- */
+    $ranked = $results->map(function ($loc) use ($latitude, $longitude) {
 
+        // Aliase für URLs
+        $loc->alias           = \Illuminate\Support\Str::slug($loc->title);
+        $loc->continent_alias = \Illuminate\Support\Str::slug($loc->continent_alias ?? 'unknown');
+        $loc->country_alias   = \Illuminate\Support\Str::slug($loc->country_alias ?? 'unknown');
+
+        if (!$loc->text_pic1) {
+            $loc->text_pic1 = 'https://via.placeholder.com/400x250?text=' . urlencode($loc->title);
+        }
+
+        // Distanz
         $loc->distance = $this->calculateDistance($latitude, $longitude, $loc->lat, $loc->lon);
 
         // Scores
-        $distanceScore = $loc->distance ? max(0, 1 - ($loc->distance / 2500)) : 0.25;
-        $climateScore  = $loc->climate_details_lnam ? 1 : 0.4;
+        $distanceScore   = $loc->distance ? max(0, 1 - ($loc->distance / 2500)) : 0.25;
+        $climateScore    = $loc->climate_details_lnam ? 1 : 0.4;
         $popularityScore = min(1, $loc->search_count / 500);
-        $randomBoost = rand(5, 20) / 100; // 0.05 – 0.20
+        $randomBoost     = rand(5, 20) / 100;
 
         $loc->score =
             ($distanceScore * 0.45) +
@@ -186,17 +214,30 @@ public function results(Request $request)
         return $loc;
     });
 
-    /* --------------------------------------------------------
-     * 8) RANKING: TOP 20 → zufällige 6
-     * -------------------------------------------------------- */
-    $topPool = $ranked->sortByDesc('score')->take(20);
-    $final = $topPool->shuffle()->take(6)->values();
+    /* ----------------------------------------------
+     * 8) GRID-PASSENDE ANZAHL BERECHNEN
+     * ---------------------------------------------- */
+    $pool = $ranked->sortByDesc('score')->take($maxResults)->values();
 
-    /* --------------------------------------------------------
-     * 9) ZURÜCKGEBEN – EIGENE FUNKTION
-     * -------------------------------------------------------- */
+    $poolCount = $pool->count();
+    $gridCount = max($minResults, floor($poolCount / 4) * 4);
+
+    if ($gridCount > $poolCount) {
+        $gridCount = $poolCount - ($poolCount % 4);
+    }
+
+    if ($gridCount < $minResults) {
+        $gridCount = $minResults;
+    }
+
+    $final = $pool->shuffle()->take($gridCount)->values();
+
+    /* ----------------------------------------------
+     * 9) RETURN VIEW
+     * ---------------------------------------------- */
     return $this->returnExploreView($final, $activity, $time, $latitude, $longitude);
 }
+
 
 
 
@@ -225,6 +266,8 @@ private function returnExploreView($locations, $activity, $time, $latitude, $lon
     $headerSlug = "explore-{$activity}-{$time}";
     $headerData = HeaderHelper::getHeaderContent($headerSlug);
     Session::put('headerData', $headerData);
+
+//dd($locations);
 
     return view('pages.main.explore-results', [
         'seo' => $seo,
