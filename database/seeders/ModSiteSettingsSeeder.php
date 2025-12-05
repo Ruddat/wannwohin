@@ -16,7 +16,7 @@ class ModSiteSettingsSeeder extends Seeder
             // Allgemeine Einstellungen
             [
                 'key' => 'site_name',
-                'value' => 'WannWohin.de',
+                'value' => 'Wann-Wohin.de',
                 'type' => 'string',
                 'description' => 'Name der Website',
                 'group' => 'general',
@@ -40,7 +40,7 @@ class ModSiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'contact_email',
-                'value' => 'info@wannwohin.de',
+                'value' => 'info@wann-wohin.de',
                 'type' => 'string',
                 'description' => 'Kontakt-E-Mail-Adresse',
                 'group' => 'general',
@@ -58,7 +58,7 @@ class ModSiteSettingsSeeder extends Seeder
             // Social Media
             [
                 'key' => 'facebook_url',
-                'value' => 'https://facebook.com/wannwohin',
+                'value' => 'https://facebook.com/wann-wohin',
                 'type' => 'string',
                 'description' => 'URL zum Facebook-Profil',
                 'group' => 'social',
@@ -74,7 +74,7 @@ class ModSiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'instagram_url',
-                'value' => 'https://instagram.com/wannwohin',
+                'value' => 'https://instagram.com/wann-wohin',
                 'type' => 'string',
                 'description' => 'URL zum Instagram-Profil',
                 'group' => 'social',

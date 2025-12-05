@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wartungsmodus | WannWohin.de</title>
+    <title>Wartungsmodus | Wann-Wohin.de</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -114,7 +114,7 @@
 </head>
 <body>
     <div class="content">
-        <img src="{{ asset('assets/img/wannwohin-small.jpg') }}" alt="WannWohin.de" style="max-width: 150px; margin-bottom: 20px;">
+        <img src="{{ asset('assets/img/wannwohin-small.jpg') }}" alt="Wann-Wohin.de" style="max-width: 150px; margin-bottom: 20px;">
         <div class="loader" style="margin-top: 20px;"></div>
 
         <h1>Wir machen uns reisefertig!</h1>

@@ -67,7 +67,7 @@ class IndexController extends Controller
     $seo = $this->seoService->getSeoData([
         'model_type'  => 'homepage',
         'model_id'    => 1,
-        'title'       => 'WannWohin - Deine Reiseplattform',
+        'title'       => 'Wann-Wohin - Deine Reiseplattform',
         'description' => 'Finde die besten Reiseziele, Wetterdaten und Top-Locations für deinen nächsten Urlaub.',
         'image'       => asset('img/homepage.jpg'),
         'canonical'   => url('/'),

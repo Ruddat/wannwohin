@@ -9,7 +9,7 @@
 {{-- Dynamische SEO-Daten --}}
 @if (isset($seo))
     <title>{{ $seo['title'] ?? ($seo['keywords']['main'] ?? 'Wann-Wohin.de – Dein Reiseportal für Urlaub 2025') }}</title>
-    <meta name="description" content="{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.') }}">
+    <meta name="description" content="{{ $seo['description'] ?? ($seo['keywords']['description'] ?? 'Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei Wann-Wohin.de.') }}">
     <link rel="canonical" href="{{ $seo['canonical'] ?? url()->current() }}">
 
     @if (isset($seo['extra_meta']) && is_array($seo['extra_meta']))
@@ -30,8 +30,8 @@
         @endforeach
     @endif
 @else
-    <title>WannWohin.de – Dein Reiseportal für Urlaub 2025</title>
-    <meta name="description" content="Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei WannWohin.de.">
+    <title>Wann-Wohin.de – Dein Reiseportal für Urlaub 2025</title>
+    <meta name="description" content="Entdecke die besten Urlaubsziele, Wetter, Klima und Direktflüge weltweit bei Wann-Wohin.de.">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta name="keywords" content="Urlaub 2025, Reiseziele, Wetter, Direktflüge, Klima">
 @endif
@@ -60,7 +60,7 @@
         } elseif (isset($country)) {
             echo '"' . ($country->title ?? $fallbackTitle) . '"';
         } else {
-            echo '"WannWohin.de – Reiseportal"';
+            echo '"Wann-Wohin.de – Reiseportal"';
         }
     @endphp,
     "image": "{{ $seo['image'] ?? asset('default-bg.jpg') }}",

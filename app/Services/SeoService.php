@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use App\Models\ModSeoMeta;
 use App\Models\WwdeCountry;
+use Illuminate\Support\Str;
 use App\Models\WwdeLocation;
 use App\Models\WwdeContinent;
 use Illuminate\Support\Facades\DB;
@@ -80,13 +81,13 @@ class SeoService
     private function createSeoEntry($modelType, $modelId, $titleBase, $keywords, $imageUrl, $canonicalUrl)
     {
 
-        $siteName = $this->getSiteSetting('site_name', 'WannWohin.de'); // Dynamischer Site-Name
+        $siteName = $this->getSiteSetting('site_name', 'Wann-Wohin.de'); // Dynamischer Site-Name
         $defaultExtraMeta = $this->generateDefaultExtraMeta($titleBase, $keywords, $imageUrl, $canonicalUrl);
 
         return ModSeoMeta::create([
             'model_type'      => $modelType,
             'model_id'        => $modelId,
-            'title'           => "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – {$siteName}",            'description'     => "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei WannWohin.de!",
+            'title'           => "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – {$siteName}",            'description'     => "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei Wann-Wohin.de!",
             'description'     => "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei {$siteName}!",
             'canonical'       => $canonicalUrl,
             'image'           => $imageUrl,
@@ -101,15 +102,15 @@ class SeoService
         $defaultExtraMeta = $this->generateDefaultExtraMeta($titleBase, $keywords, $imageUrl, $canonicalUrl);
 
         // Prüfe, ob sich relevante Daten geändert haben
-        $needsUpdate = $seo->title !== "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – WannWohin.de" ||
-                       $seo->description !== "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei WannWohin.de!" ||
+        $needsUpdate = $seo->title !== "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – Wann-Wohin.de" ||
+                       $seo->description !== "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei Wann-Wohin.de!" ||
                        $seo->image !== $imageUrl ||
                        $seo->canonical !== $canonicalUrl;
 
         if ($needsUpdate) {
             $seo->update([
-                'title'       => "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – WannWohin.de",
-                'description' => "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei WannWohin.de!",
+                'title'       => "Urlaub in {$titleBase} {$keywords['nextYear']} | {$keywords['main']} – Wann-Wohin.de",
+                'description' => "Entdecke die besten Reiseziele in {$titleBase}: {$keywords['description']}, Wetter, Klima und Reiseziele. Buchen Sie jetzt bei Wann-Wohin.de!",
                 'canonical'   => $canonicalUrl,
                 'image'       => $imageUrl,
                 'extra_meta'  => json_encode($defaultExtraMeta),
@@ -123,9 +124,9 @@ class SeoService
     {
 
 
-        $siteName = $this->getSiteSetting('site_name', 'WannWohin.de');
-        $twitterHandle = $this->getSiteSetting('twitter_handle', '@WannWohin');
-        $facebookUrl = $this->getSiteSetting('facebook_url', 'https://facebook.com/wannwohin');
+        $siteName = $this->getSiteSetting('site_name', 'Wann-Wohin.de');
+        $twitterHandle = $this->getSiteSetting('twitter_handle', '@Wann-Wohin');
+        $facebookUrl = $this->getSiteSetting('facebook_url', 'https://facebook.com/wann-wohin');
 
         return [
 

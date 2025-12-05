@@ -20,8 +20,8 @@ return new class extends Migration
 
         // Beispiel-Daten einfügen
         \App\Models\ModStaticPage::insert([
-            ['slug' => 'impressum', 'title' => 'Impressum', 'body' => '<p>WannWohin GmbH<br> Musterstraße 1<br> 12345 Musterstadt</p>'],
-            ['slug' => 'kontakt', 'title' => 'Kontakt', 'body' => '<p>E-Mail: support@wannwohin.de<br> Telefon: +49 123 456789</p>'],
+            ['slug' => 'impressum', 'title' => 'Impressum', 'body' => '<p>Wann-Wohin GmbH<br> Musterstraße 1<br> 12345 Musterstadt</p>'],
+            ['slug' => 'kontakt', 'title' => 'Kontakt', 'body' => '<p>E-Mail: support@wann-wohin.de<br> Telefon: +49 123 456789</p>'],
             ['slug' => 'agb', 'title' => 'AGB', 'body' => '<p>Unsere AGB...</p>'],
             ['slug' => 'datenschutz', 'title' => 'Datenschutz', 'body' => '<p>Datenschutzrichtlinien...</p>'],
         ]);

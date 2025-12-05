@@ -27,7 +27,7 @@ return new class extends Migration
         DB::table('mod_site_settings')->insert([
             [
                 'key' => 'site_name',
-                'value' => 'WannWohin.de',
+                'value' => 'Wann-Wohin.de',
                 'type' => 'string',
                 'description' => 'Name der Website',
                 'group' => 'general',
@@ -51,7 +51,7 @@ return new class extends Migration
             ],
             [
                 'key' => 'contact_email',
-                'value' => 'info@wannwohin.de',
+                'value' => 'info@wann-wohin.de',
                 'type' => 'string',
                 'description' => 'Kontakt-E-Mail-Adresse',
                 'group' => 'general',
@@ -67,7 +67,7 @@ return new class extends Migration
             ],
             [
                 'key' => 'facebook_url',
-                'value' => 'https://facebook.com/wannwohin',
+                'value' => 'https://facebook.com/wann-wohin',
                 'type' => 'string',
                 'description' => 'URL zum Facebook-Profil',
                 'group' => 'social',
@@ -75,7 +75,7 @@ return new class extends Migration
             ],
             [
                 'key' => 'twitter_handle',
-                'value' => '@WannWohin',
+                'value' => '@Wann-Wohin',
                 'type' => 'string',
                 'description' => 'Twitter-Handle',
                 'group' => 'social',
@@ -83,7 +83,7 @@ return new class extends Migration
             ],
             [
                 'key' => 'instagram_url',
-                'value' => 'https://instagram.com/wannwohin',
+                'value' => 'https://instagram.com/wann-wohin',
                 'type' => 'string',
                 'description' => 'URL zum Instagram-Profil',
                 'group' => 'social',

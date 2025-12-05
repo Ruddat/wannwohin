@@ -4,7 +4,7 @@
         "title": "WannWohin API",
         "description": "API zur Verwaltung von Kontinenten, Ländern und Locations.",
         "contact": {
-            "email": "support@wannwohin.de"
+            "email": "support@wann-wohin.de"
         },
         "version": "1.0.0"
     },

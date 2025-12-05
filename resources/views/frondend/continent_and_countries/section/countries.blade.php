@@ -309,13 +309,13 @@ document.addEventListener("DOMContentLoaded", () => {
 .experience-section .experience-card,
 .experience-section .experience-card .card-img-wrapper,
 .experience-section .experience-card .card-overlay,
-.experience-section .card-title-wrapper,
+
 .ad-card,
 .kiwi-widget,
 .experience-section .ad-card .card-body,
 .experience-section .ad-card .ad-content,
 .experience-section .ad-card .ad-footer {
-    border-radius: 18px !important;
+    border-radius: 10px !important;
     overflow: hidden;
 }
 

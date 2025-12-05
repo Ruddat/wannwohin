@@ -14,6 +14,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Library\WeatherApiClientLibrary;
 use App\Repositories\LocationRepository;
 use App\Library\WeatherDataManagerLibrary;
+use App\Repositories\EloquentLocationRepository;
+use App\Repositories\LocationRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Standard-SEO-Daten bereitstellen, falls keine explizit übergeben wurden
         View::share('seo', [
-        'title' => 'WannWohin - Deine Reiseplattform',
+        'title' => 'Wann-Wohin - Deine Reiseplattform',
         'description' => 'Finde die besten Reiseziele, Wetterdaten und Top-Locations für deinen nächsten Urlaub.',
         'canonical' => url('/'),
         'extra_meta' => [],

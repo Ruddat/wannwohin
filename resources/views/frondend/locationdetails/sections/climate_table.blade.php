@@ -41,6 +41,10 @@
                     </div>
                 </div>
             </div>
+@php
+  //  dd(Carbon\Carbon::now()->locale('de')->monthName);
+@endphp
+
 
             <!-- Klimatabelle -->
             <div class="col-lg-8 col-sm-7 bg-color-light px-3 py-3 climate-table-col d-flex h-100">
@@ -63,7 +67,10 @@
                         <tbody>
                             @foreach ($climates as $climate)
                                 <tr>
-                                    <td class="center">{{ \Carbon\Carbon::createFromFormat('m', $climate->month_id)->locale('de')->format('F') }}</td>
+                                   <td class="center">
+                                    {{ \Carbon\Carbon::create(null, $climate->month_id, 1)->locale('de')->translatedFormat('F') }}
+                                </td>
+
                                     <td class="center">{{ $climate->daily_temperature ? number_format($climate->daily_temperature, 1, ',', '.') : '-' }} °C</td>
                                     <td class="center">{{ $climate->night_temperature ? number_format($climate->night_temperature, 1, ',', '.') : '-' }} °C</td>
                                     @if ($climates->first()?->water_temperature_avg < 1)

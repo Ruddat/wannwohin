@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Backend\SiteSettingsComponent;
 
+
 use Imagick;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -63,7 +64,7 @@ class SiteSettingsManager extends Component
         $this->maintenance_allowed_ips = ModSiteSettings::get('maintenance_allowed_ips', ['127.0.0.1']);
 
         $this->settings = array_merge([
-            'site_name' => 'WannWohin.de',
+            'site_name' => 'Wann-Wohin.de',
             'site_url' => 'https://wannwohin.de',
             'logo' => '/storage/uploads/logo.png',
             'favicon' => '/storage/uploads/icons/favicon.ico',

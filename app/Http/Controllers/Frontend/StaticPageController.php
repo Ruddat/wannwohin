@@ -31,10 +31,10 @@ class StaticPageController extends Controller
         });
 
         $defaultSeo = [
-            'title' => $staticPage->title . ' - WannWohin.de',
-            'description' => "Hier finden Sie Informationen zum {$page} von WannWohin.de.",
+            'title' => $staticPage->title . ' - Wann-Wohin.de',
+            'description' => "Hier finden Sie Informationen zum {$page} von Wann-Wohin.de.",
             'canonical' => url()->current(),
-            'keywords' => ['tags' => [$page, 'WannWohin', 'Reiseportal']],
+            'keywords' => ['tags' => [$page, 'Wann-Wohin', 'Reiseportal']],
             'image' => asset('default-bg.jpg'),
         ];
 
