@@ -266,7 +266,7 @@ class ContinentManagerComponent extends Component
                 $data['fact_card_image'] = $webpPath;
 
                 // 4. Optional: Original löschen
-                \Storage::disk('public')->delete($originalPath);
+                Storage::disk('public')->delete($originalPath);
             } else {
                 // Falls WebP fehlschlug: Fallback auf Original
                 $data['fact_card_image'] = $originalPath;

@@ -2,74 +2,91 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Support\Str;
-use App\Models\WwdeLocation;
 use Illuminate\Console\Command;
+use App\Models\WwdeLocation;
+use Illuminate\Support\Str;
 
 class FixLocationAliases extends Command
 {
-    protected $signature = 'locations:fix-aliases
-                            {--dry-run : Zeigt nur an, was geändert werden würde}';
-
-    protected $description = 'Bereinigt doppelte oder fehlende Aliases in wwde_locations und macht sie eindeutig.';
+    protected $signature = 'locations:fix-aliases {--dry-run : Nur anzeigen, keine Änderungen speichern}';
+    protected $description = 'Bereinigt ALLE Aliases und macht sie eindeutig – auch bei NULL, leeren Werten oder kaputten Slugs.';
 
     public function handle()
     {
-        $this->info('🚀 Starte Alias-Bereinigung...');
+        $this->info("🚀 Starte Alias-Bereinigung...");
 
-        $locations = WwdeLocation::orderBy('id')->get();
+        // 🔥 Ohne Einschränkungen ALLE Datensätze holen – inklusive SoftDeletes
+        $locations = WwdeLocation::withoutGlobalScopes()->get();
+
         $seen = [];
         $changes = [];
 
         foreach ($locations as $loc) {
 
-            // 1) Normalize alias (slug)
-            $base = $loc->alias ? Str::slug($loc->alias) : Str::slug($loc->title);
+            // ----------------------------
+            // 1) BASIS ALIAS BESTIMMEN
+            // ----------------------------
+            $alias = $loc->alias;
 
-            // 2) If slug becomes empty (rare case), fallback:
-            if ($base === '') {
-                $base = 'location-' . $loc->id;
+            // Unicode-Trash entfernen & normalisieren
+            $alias = trim((string)$alias);
+
+            // slugifizieren
+            $alias = Str::slug($alias);
+
+            // Wenn alias leer → Titel als Basis
+            if ($alias === '') {
+                $alias = Str::slug((string)$loc->title);
             }
 
-            // 3) Build unique alias
-            if (!isset($seen[$base])) {
-                $seen[$base] = 1;
-                $newAlias = $base;
-            } else {
-                $seen[$base]++;
-                $newAlias = $base . '-' . $seen[$base];
+            // Wenn immer noch leer → fallback
+            if ($alias === '') {
+                $alias = 'loc-' . $loc->id;
             }
 
-            // If no change → skip
-            if ($newAlias === $loc->alias) {
-                continue;
+            $base = $alias;
+
+            // ----------------------------
+            // 2) EINDEUTIGKEIT GARANTIEREN
+            // ----------------------------
+            $counter = 2;
+            while (isset($seen[$alias])) {
+                $alias = $base . '-' . $counter;
+                $counter++;
             }
 
-            $changes[] = [
-                'id'       => $loc->id,
-                'title'    => $loc->title,
-                'old'      => $loc->alias,
-                'new'      => $newAlias,
-            ];
+            $seen[$alias] = true;
 
-            if (! $this->option('dry-run')) {
-                $loc->alias = $newAlias;
-                $loc->save();
+            // ----------------------------
+            // 3) Nur speichern, wenn sich etwas ändert
+            // ----------------------------
+            if ($alias !== $loc->alias) {
+
+                $changes[] = [
+                    'id' => $loc->id,
+                    'old' => $loc->alias,
+                    'new' => $alias
+                ];
+
+                if (!$this->option('dry-run')) {
+                    $loc->alias = $alias;
+                    $loc->save();
+                }
             }
         }
 
+        // ----------------------------
+        // 4) Output
+        // ----------------------------
         if (empty($changes)) {
-            $this->info("💚 Keine Änderungen notwendig. Alle Aliases sind bereits eindeutig.");
+            $this->info("💚 Keine Änderungen notwendig. Alle Aliases sind eindeutig.");
             return Command::SUCCESS;
         }
 
-        $this->table(
-            ['ID', 'Title', 'Alter Alias', 'Neuer Alias'],
-            $changes
-        );
+        $this->table(['ID', 'Alter Alias', 'Neuer Alias'], $changes);
 
         if ($this->option('dry-run')) {
-            $this->warn("⚠️ DRY-RUN aktiviert – es wurde nichts gespeichert.");
+            $this->warn("⚠️ DRY-RUN – es wurde nichts gespeichert.");
         } else {
             $this->info("✅ Aliases erfolgreich bereinigt und gespeichert.");
         }

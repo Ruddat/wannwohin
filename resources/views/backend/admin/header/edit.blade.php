@@ -1,4 +1,4 @@
-@extends('backend.layouts.main')
+@extends('raadmin.layout.master')
 
 @section('main-content')
 <div class="container-xl">
@@ -72,32 +72,59 @@
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Slug <span class="text-danger">*</span></label>
-                    <select name="slug" class="form-select @error('slug') is-invalid @enderror" required>
-                        <option value="" disabled selected>Wähle einen Slug</option>
-                        <option value="explore">explore</option>
-                        <option value="explore-relax-now">explore-relax-now</option>
-                        <option value="explore-relax-month">explore-relax-month</option>
-                        <option value="explore-relax-later">explore-relax-later</option>
-                        <option value="explore-adventure-now">explore-adventure-now</option>
-                        <option value="explore-adventure-month">explore-adventure-month</option>
-                        <option value="explore-adventure-later">explore-adventure-later</option>
-                        <option value="explore-culture-now">explore-culture-now</option>
-                        <option value="explore-culture-month">explore-culture-month</option>
-                        <option value="explore-culture-later">explore-culture-later</option>
-                        <option value="explore-amusement-now">explore-amusement-now</option>
-                        <option value="explore-amusement-month">explore-amusement-month</option>
-                        <option value="explore-amusement-later">explore-amusement-later</option>
-                        <option value="startpage-1">startpage-1</option>
-                        <option value="explore-trips">explore-trips</option>
-                        <!-- Für andere Seiten -->
-                    </select>
-                    <small class="form-hint">Wähle einen Slug, der zur Seite passt (z. B. für Explore-Seite).</small>
-                    @error('slug')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+<div class="mb-3">
+    <label class="form-label">
+        Slug <span class="text-danger">*</span>
+        <span
+            class="text-muted ms-1"
+            style="cursor: help;"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Ein Slug ist der URL-Name wie 'explore-relax-now'. Er bestimmt, unter welcher Adresse dieser Header angezeigt wird."
+        >
+            (?)
+        </span>
+    </label>
+
+    <select name="slug" class="form-select @error('slug') is-invalid @enderror" required>
+        <option value="" disabled>Wähle einen Slug</option>
+
+        @php
+            $slugs = [
+                'explore',
+                'explore-relax-now',
+                'explore-relax-month',
+                'explore-relax-later',
+                'explore-adventure-now',
+                'explore-adventure-month',
+                'explore-adventure-later',
+                'explore-culture-now',
+                'explore-culture-month',
+                'explore-culture-later',
+                'explore-amusement-now',
+                'explore-amusement-month',
+                'explore-amusement-later',
+                'startpage-1',
+                'explore-trips'
+            ];
+        @endphp
+
+        @foreach ($slugs as $slug)
+            <option value="{{ $slug }}" {{ $headerContent->slug === $slug ? 'selected' : '' }}>
+                {{ $slug }}
+            </option>
+        @endforeach
+    </select>
+
+    <small class="form-hint text-muted mt-1 d-block">
+        <strong>Hinweis:</strong> Der Slug ist der technische Name der Seite (z. B. <code>explore-relax-now</code>).
+        Er erscheint in der URL und steuert, auf welcher Seite der Header angezeigt wird.
+    </small>
+
+    @error('slug')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" class="btn btn-secondary me-2">
                         <i class="ti ti-arrow-left"></i> Cancel
@@ -138,4 +165,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 });
     </script>
+
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+
 @endpush
