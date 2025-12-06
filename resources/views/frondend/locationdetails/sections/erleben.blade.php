@@ -30,7 +30,7 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
                 @foreach ($randomImages as $key => $image)
                     @php
                         $rotationValue = rand(-5, 5);
-                        $imagePath = Storage::exists($image->image_path) ? Storage::url($image->image_path) : asset($image->image_path);
+$imagePath = asset('storage/' . $image->image_path);
                     @endphp
                     <div class="gallery-image" style="transform: rotate({{ $rotationValue }}deg);">
                         <div class="polaroid">
