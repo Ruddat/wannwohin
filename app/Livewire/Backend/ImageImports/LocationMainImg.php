@@ -111,20 +111,17 @@ public function importLocationGalleryImages()
     DB::transaction(function () use ($continents) {
 
         foreach ($continents as $continentDir) {
-            $continent = basename($continentDir);
 
             foreach (File::directories($continentDir) as $countryDir) {
-                $country = basename($countryDir);
 
                 foreach (File::directories($countryDir) as $locationDir) {
 
                     $locationOriginal = basename($locationDir);
                     $locationSlug = PathSanitizer::locationSlug($locationOriginal);
 
-                    // Zielordner: ASCII slug
+                    // Zielordnername korrigieren
                     $targetLocationDir = dirname($locationDir) . '/' . $locationSlug;
 
-                    // Umbenennen falls nötig
                     if ($locationDir !== $targetLocationDir) {
                         File::move($locationDir, $targetLocationDir);
                         $this->message .= "Ordner umbenannt: {$locationOriginal} → {$locationSlug}<br>";
@@ -149,16 +146,15 @@ public function importLocationGalleryImages()
                         continue;
                     }
 
-                    // Dateien holen
                     $files = collect(File::files($galleryDir));
 
-                    // Gruppieren nach Basename (ohne (1), (2), ...)
+                    // Gruppierung nach Basename (ohne (1), (2)...)
                     $grouped = $files->groupBy(function ($file) {
                         $basename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
                         return preg_replace('/\(\d+\)$/', '', $basename);
                     });
 
-                    // Zielordner im Storage anlegen
+                    // Speicherziel
                     $storagePath = "uploads/images/locations/{$locationSlug}";
                     Storage::disk('public')->makeDirectory($storagePath);
 
@@ -168,19 +164,44 @@ public function importLocationGalleryImages()
                         $preferred = $files->firstWhere('extension', 'webp') ?? $files->first();
                         if (!$preferred) continue;
 
-                        $cleanName = PathSanitizer::filename($preferred->getFilename());
+                        $fullPath = $preferred->getPathname();
 
-                        // Zielpfad ASCII-gültig
+                        /**
+                         * 1. MIME-Type auslesen → richtige Endung bestimmen
+                         */
+                        $mime = mime_content_type($fullPath);
+
+                        $ext = match ($mime) {
+                            'image/jpeg', 'image/jpg' => 'jpg',
+                            'image/png' => 'png',
+                            'image/webp' => 'webp',
+                            default => 'jpg',
+                        };
+
+                        /**
+                         * 2. Datei sicher benennen
+                         */
+                        $cleanBase = PathSanitizer::filename($basename);
+                        $cleanName = "{$cleanBase}.{$ext}";
+
                         $cleanPath = "{$storagePath}/{$cleanName}";
 
-                        // Datei in Storage kopieren
+                        /**
+                         * 3. Datei speichern
+                         */
                         Storage::disk('public')->put(
                             $cleanPath,
-                            File::get($preferred->getPathname())
+                            File::get($fullPath)
                         );
 
-                        $imageHash = md5_file($preferred->getPathname());
+                        /**
+                         * 4. Bildhash bestimmen
+                         */
+                        $imageHash = md5_file($fullPath);
 
+                        /**
+                         * 5. Datenbank speichern
+                         */
                         DB::table('mod_location_galeries')->updateOrInsert(
                             ['image_hash' => $imageHash],
                             [
@@ -203,6 +224,7 @@ public function importLocationGalleryImages()
 
     $this->dispatch('importCompleted');
 }
+
 
     /**
      * Importiert die Hauptbilder (text_pic1, text_pic2, text_pic3)
