@@ -116,20 +116,38 @@ public function selectImage($imageUrl, $description = null, $imageType = 'galler
         $location = WwdeLocation::findOrFail($this->locationId);
         $citySlug = PathSanitizer::locationSlug($location->title);
 
+        // Remote-Header auslesen (für Content-Type)
+        $headers = @get_headers($imageUrl, 1);
+        $mime = $headers['Content-Type'] ?? 'image/jpeg';
+
+        // Dateiendung bestimmen
+        $ext = match ($mime) {
+            'image/jpeg', 'image/jpg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => 'jpg'
+        };
+
+        // Bildinhalt laden
         $imageContent = file_get_contents($imageUrl);
         $imageHash = md5($imageContent);
 
-        $fileName = "{$citySlug}_{$imageHash}.jpg";
+        // Dateiname sauber erzeugen
+        $fileName = "{$citySlug}_{$imageHash}.{$ext}";
         $path = "uploads/images/locations/{$citySlug}/{$fileName}";
 
+        // Ordner sicherstellen
         Storage::disk('public')->makeDirectory("uploads/images/locations/{$citySlug}");
+
+        // Bild speichern
         Storage::disk('public')->put($path, $imageContent);
 
+        // In DB speichern
         ModLocationGalerie::create([
             'location_id' => $this->locationId,
             'location_name' => $location->title,
             'image_path' => $path,
-            'image_caption' => $description,
+            'image_caption' => $description ?: null,
             'image_hash' => $imageHash,
             'image_type' => $imageType,
             'is_primary' => 0,
@@ -139,9 +157,10 @@ public function selectImage($imageUrl, $description = null, $imageType = 'galler
         $this->dispatch('show-toast', type: 'success', message: 'Bild erfolgreich hinzugefügt.');
 
     } catch (\Exception $e) {
-        $this->dispatch('show-toast', type: 'error', message: 'Fehler: ' . $e->getMessage());
+        $this->dispatch('show-toast', type: 'error', message: 'Fehler beim Import: ' . $e->getMessage());
     }
 }
+
 
 
 public function uploadSingleImage($index)
