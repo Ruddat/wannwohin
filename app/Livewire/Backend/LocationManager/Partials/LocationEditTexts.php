@@ -58,6 +58,8 @@ class LocationEditTexts extends Component
     {
         $location = WwdeLocation::findOrFail($this->locationId);
 
+
+
         $location->update([
             'pic1_text' => $this->cleanEditorContent($this->pic1Text),
             'pic2_text' => $this->cleanEditorContent($this->pic2Text),

@@ -20,6 +20,12 @@ $randomImages = $location->gallery()->inRandomOrder()->take($imageCount)->get();
                 <h2 class="text-color-dark font-weight-extra-bold">
                     @autotranslate("Beste Reisezeit für {$location->title}", app()->getLocale())
                 </h2>
+
+                 @if (!empty($location->text_what_to_do))
+                <p class="text-color-dark">
+                    @autotranslate("{$location->text_what_to_do}", app()->getLocale())
+                </p>
+                @endif
             </div>
         </div>
 

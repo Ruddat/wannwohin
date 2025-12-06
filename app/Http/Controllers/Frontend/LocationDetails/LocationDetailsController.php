@@ -59,6 +59,9 @@ class LocationDetailsController extends Controller
         $seo = $seoService->getSeoData($location);
         $inspirationData = $this->fetchInspirationData($location);
 
+//dd($location);
+
+
         return view('frondend.locationdetails._index', [
             'seo' => $seo,
             'location' => $location,
