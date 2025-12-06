@@ -3,10 +3,11 @@
 namespace App\Livewire\Backend\ImageImports;
 
 use Livewire\Component;
+use Illuminate\Support\Str;
+use App\Helpers\PathSanitizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class LocationMainImg extends Component
 {
@@ -98,184 +99,217 @@ class LocationMainImg extends Component
     /**
      * Importiert Urlaubsfotos in die Galerie-Tabelle
      */
-    public function importLocationGalleryImages()
-    {
 
+public function importLocationGalleryImages()
+{
+    ini_set('max_execution_time', 360);
+    set_time_limit(360);
 
-        ini_set('max_execution_time', 360); // 6 Minuten
-        set_time_limit(360);
+    $baseDir = public_path('img/location_main_img');
+    $continents = File::directories($baseDir);
 
-        $directory = public_path('img/location_main_img');
-        $this->cleanFilenames($directory);
-        $this->cleanDatabase();
-        $continentDirs = File::directories($directory);
+    DB::transaction(function () use ($continents) {
 
-        DB::transaction(function () use ($continentDirs) {
-            foreach ($continentDirs as $continentDir) {
-                $continent = basename($continentDir);
-                $countryDirs = File::directories($continentDir);
+        foreach ($continents as $continentDir) {
+            $continent = basename($continentDir);
 
-                foreach ($countryDirs as $countryDir) {
-                    $country = basename($countryDir);
-                    $locationDirs = File::directories($countryDir);
+            foreach (File::directories($continentDir) as $countryDir) {
+                $country = basename($countryDir);
 
-                    foreach ($locationDirs as $locationDir) {
-                        $location = basename($locationDir);
-                        $imagePath = $locationDir . '/urlaubsfotos';
+                foreach (File::directories($countryDir) as $locationDir) {
 
-                        if (!File::exists($imagePath)) {
-                            $this->message .= "Übersprungen: Keine Urlaubsfotos für {$location}<br>";
-                            continue;
-                        }
+                    $locationOriginal = basename($locationDir);
+                    $locationSlug = PathSanitizer::locationSlug($locationOriginal);
 
-                        $locationRecord = DB::table('wwde_locations')
-                            ->where('title', $location)
-                            ->orWhere('alias', Str::slug($location))
-                            ->first();
+                    // Zielordner: ASCII slug
+                    $targetLocationDir = dirname($locationDir) . '/' . $locationSlug;
 
-                        if (!$locationRecord) {
-                            $this->message .= "Übersprungen: Location {$location} existiert nicht in der Datenbank<br>";
-                            continue;
-                        }
+                    // Umbenennen falls nötig
+                    if ($locationDir !== $targetLocationDir) {
+                        File::move($locationDir, $targetLocationDir);
+                        $this->message .= "Ordner umbenannt: {$locationOriginal} → {$locationSlug}<br>";
+                    }
 
-                        $images = collect(File::files($imagePath));
-                        $groupedImages = $images->groupBy(function ($file) {
-                            $basename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-                            return preg_replace('/\(\d+\)/', '', $basename);
-                        });
+                    $locationDir = $targetLocationDir;
 
-                        foreach ($groupedImages as $basename => $files) {
-                            $preferredFile = $files->first(function ($file) {
-                                return $file->getExtension() === 'webp';
-                            }) ?? $files->first();
+                    $galleryDir = $locationDir . '/urlaubsfotos';
+                    if (!File::exists($galleryDir)) {
+                        $this->message .= "Übersprungen: Keine Urlaubsfotos für {$locationOriginal}<br>";
+                        continue;
+                    }
 
-                            if (!$preferredFile) {
-                                continue;
-                            }
+                    // DB-Location finden
+                    $locationRecord = DB::table('wwde_locations')
+                        ->where('title', $locationOriginal)
+                        ->orWhere('alias', $locationSlug)
+                        ->first();
 
-                            $fileName = $preferredFile->getFilename();
-                            $relativePath = "img/location_main_img/{$continent}/{$country}/{$location}/urlaubsfotos/{$fileName}";
-                            $imageHash = md5_file($preferredFile->getPathname());
+                    if (!$locationRecord) {
+                        $this->message .= "Übersprungen: Keine DB-Location für {$locationOriginal}<br>";
+                        continue;
+                    }
 
-                            DB::table('mod_location_galeries')->updateOrInsert(
-                                ['image_hash' => $imageHash],
-                                [
-                                    'location_id' => $locationRecord->id,
-                                    'location_name' => $location,
-                                    'image_path' => $relativePath,
-                                    'image_caption' => null,
-                                    'image_hash' => $imageHash,
-                                    'image_type' => 'gallery',
-                                    'is_primary' => 0,
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
-                                ]
-                            );
-                            $this->message .= "Importiert/Aktualisiert: {$fileName} für Location {$location}<br>";
-                        }
+                    // Dateien holen
+                    $files = collect(File::files($galleryDir));
+
+                    // Gruppieren nach Basename (ohne (1), (2), ...)
+                    $grouped = $files->groupBy(function ($file) {
+                        $basename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
+                        return preg_replace('/\(\d+\)$/', '', $basename);
+                    });
+
+                    // Zielordner im Storage anlegen
+                    $storagePath = "uploads/images/locations/{$locationSlug}";
+                    Storage::disk('public')->makeDirectory($storagePath);
+
+                    foreach ($grouped as $basename => $files) {
+
+                        // WebP bevorzugen
+                        $preferred = $files->firstWhere('extension', 'webp') ?? $files->first();
+                        if (!$preferred) continue;
+
+                        $cleanName = PathSanitizer::filename($preferred->getFilename());
+
+                        // Zielpfad ASCII-gültig
+                        $cleanPath = "{$storagePath}/{$cleanName}";
+
+                        // Datei in Storage kopieren
+                        Storage::disk('public')->put(
+                            $cleanPath,
+                            File::get($preferred->getPathname())
+                        );
+
+                        $imageHash = md5_file($preferred->getPathname());
+
+                        DB::table('mod_location_galeries')->updateOrInsert(
+                            ['image_hash' => $imageHash],
+                            [
+                                'location_id' => $locationRecord->id,
+                                'location_name' => $locationOriginal,
+                                'image_path' => $cleanPath,
+                                'image_type' => 'gallery',
+                                'is_primary' => 0,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]
+                        );
+
+                        $this->message .= "Galeriebild importiert: {$cleanName} ({$locationSlug})<br>";
                     }
                 }
             }
-        });
+        }
+    });
 
-        $this->dispatch('importCompleted');
-    }
+    $this->dispatch('importCompleted');
+}
 
     /**
      * Importiert die Hauptbilder (text_pic1, text_pic2, text_pic3)
      */
-    public function importMainLocationImages()
-    {
-        ini_set('max_execution_time', 360); // 6 Minuten
-        set_time_limit(360);
-        
-        $directory = public_path('img/location_main_img');
-        $this->cleanFilenames($directory);
-        $this->cleanDatabase();
-        $continentDirs = File::directories($directory);
+public function importMainLocationImages()
+{
+    ini_set('max_execution_time', 360);
+    set_time_limit(360);
 
-        DB::transaction(function () use ($continentDirs) {
-            foreach ($continentDirs as $continentDir) {
-                $continent = basename($continentDir);
-                $countryDirs = File::directories($continentDir);
+    $baseDir = public_path('img/location_main_img');
+    $continents = File::directories($baseDir);
 
-                foreach ($countryDirs as $countryDir) {
-                    $country = basename($countryDir);
-                    $locationDirs = File::directories($countryDir);
+    DB::transaction(function () use ($continents) {
 
-                    foreach ($locationDirs as $locationDir) {
-                        $location = basename($locationDir);
-                        $imagePath = $locationDir;
+        foreach ($continents as $continentDir) {
+            $continent = basename($continentDir);
 
-                        if (!File::exists($imagePath)) {
-                            $this->message .= "Übersprungen: Keine Bilder für {$location}<br>";
-                            continue;
-                        }
+            foreach (File::directories($continentDir) as $countryDir) {
+                $country = basename($countryDir);
 
-                        $locationRecord = DB::table('wwde_locations')
-                            ->where('title', $location)
-                            ->orWhere('alias', Str::slug($location))
-                            ->first();
+                foreach (File::directories($countryDir) as $locationDir) {
 
-                        if (!$locationRecord) {
-                            $this->message .= "Übersprungen: Location {$location} existiert nicht in der Datenbank<br>";
-                            continue;
-                        }
+                    $locationOriginal = basename($locationDir);
+                    $locationSlug = PathSanitizer::locationSlug($locationOriginal);
 
-                        $images = collect(File::files($imagePath))->filter(function ($file) {
-                            $fileName = basename($file->getFilename());
-                            $extension = strtolower($file->getExtension());
-                            return Str::startsWith($fileName, ['urlaub-', 'beste-reisezeit-', 'reise-']) && in_array($extension, ['webp', 'jpg']);
-                        });
+                    $targetLocationDir = dirname($locationDir) . '/' . $locationSlug;
 
-                        $uniqueImages = $images->groupBy(function ($file) {
-                            $basename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-                            return preg_replace('/\(\d+\)/', '', $basename);
-                        })->map(function ($files) {
-                            return $files->firstWhere('extension', 'webp') ?? $files->first();
-                        });
-
-                        $sortedImages = $uniqueImages->sortBy(function ($file) {
-                            $fileName = basename($file->getFilename());
-                            if (Str::startsWith($fileName, 'reise-')) return 1;
-                            elseif (Str::startsWith($fileName, 'beste-reisezeit-')) return 2;
-                            elseif (Str::startsWith($fileName, 'urlaub-')) return 3;
-                            return 99;
-                        })->take(3);
-
-                        $textPics = [];
-                        $storagePath = "uploads/images/locations/{$location}";
-
-                        if (!Storage::disk('public')->exists($storagePath)) {
-                            Storage::disk('public')->makeDirectory($storagePath);
-                        }
-
-                        $index = 1;
-                        foreach ($sortedImages as $image) {
-                            $newFileName = "city_image_{$index}." . $image->getExtension();
-                            $destinationPath = "{$storagePath}/{$newFileName}";
-                            Storage::disk('public')->put($destinationPath, File::get($image));
-                            $textPics[] = url("storage/{$destinationPath}");
-                            $index++;
-                        }
-
-                        DB::table('wwde_locations')
-                            ->where('id', $locationRecord->id)
-                            ->update([
-                                'text_pic1' => $textPics[0] ?? null,
-                                'text_pic2' => $textPics[1] ?? null,
-                                'text_pic3' => $textPics[2] ?? null,
-                                'updated_at' => now(),
-                            ]);
-
-                        $this->message .= "Hauptbilder für Location {$location} erfolgreich aktualisiert<br>";
+                    if ($locationDir !== $targetLocationDir) {
+                        File::move($locationDir, $targetLocationDir);
+                        $this->message .= "Ordner umbenannt: {$locationOriginal} → {$locationSlug}<br>";
                     }
+
+                    $locationDir = $targetLocationDir;
+
+                    // DB-Location holen
+                    $locationRecord = DB::table('wwde_locations')
+                        ->where('title', $locationOriginal)
+                        ->orWhere('alias', $locationSlug)
+                        ->first();
+
+                    if (!$locationRecord) {
+                        $this->message .= "Übersprungen: Keine DB-Location für {$locationOriginal}<br>";
+                        continue;
+                    }
+
+                    // Alle Hauptbilder (urlaub-, beste-reisezeit-, reise-)
+                    $files = collect(File::files($locationDir))->filter(function ($f) {
+                        $name = strtolower($f->getFilename());
+                        return (
+                            str_starts_with($name, 'urlaub-') ||
+                            str_starts_with($name, 'beste-reisezeit-') ||
+                            str_starts_with($name, 'reise-')
+                        ) && in_array($f->getExtension(), ['webp', 'jpg']);
+                    });
+
+                    if ($files->isEmpty()) continue;
+
+                    // Unique-basename+WebP bevorzugen
+                    $grouped = $files->groupBy(function ($f) {
+                        $base = pathinfo($f->getFilename(), PATHINFO_FILENAME);
+                        return preg_replace('/\(\d+\)$/', '', $base);
+                    })->map(function ($files) {
+                        return $files->firstWhere('extension', 'webp') ?? $files->first();
+                    });
+
+                    // Sortieren in deine Reihenfolge
+                    $sorted = $grouped->sortBy(function ($f) {
+                        $n = strtolower($f->getFilename());
+                        if (str_starts_with($n, 'reise-')) return 1;
+                        if (str_starts_with($n, 'beste-reisezeit-')) return 2;
+                        if (str_starts_with($n, 'urlaub-')) return 3;
+                        return 99;
+                    })->take(3);
+
+                    // Zielordner
+                    $storagePath = "uploads/images/locations/{$locationSlug}";
+                    Storage::disk('public')->makeDirectory($storagePath);
+
+                    $textPics = [];
+                    $i = 1;
+
+                    foreach ($sorted as $file) {
+                        $cleanName = "city_image_{$i}." . strtolower($file->getExtension());
+                        $cleanPath = "{$storagePath}/{$cleanName}";
+
+                        Storage::disk('public')->put($cleanPath, File::get($file));
+                        $textPics[] = url("storage/{$cleanPath}");
+                        $i++;
+                    }
+
+                    DB::table('wwde_locations')
+                        ->where('id', $locationRecord->id)
+                        ->update([
+                            'text_pic1' => $textPics[0] ?? null,
+                            'text_pic2' => $textPics[1] ?? null,
+                            'text_pic3' => $textPics[2] ?? null,
+                            'updated_at' => now(),
+                        ]);
+
+                    $this->message .= "Hauptbilder aktualisiert: {$locationOriginal}<br>";
                 }
             }
-        });
+        }
+    });
 
-        $this->dispatch('importCompleted');
-    }
+    $this->dispatch('importCompleted');
+}
 
     public function render()
     {
