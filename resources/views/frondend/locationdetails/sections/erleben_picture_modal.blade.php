@@ -22,42 +22,56 @@
         @if ($gallery_images && count($gallery_images) > 0)
         <div class="row g-3">
             @foreach ($gallery_images as $index => $image)
-                @php
-                    $imageUrl = trim($image['url'] ?? '');
-                    $imageCaption = $image['image_caption'] ?? null;
-                    $imageDescription = $image['description'] ?? null;
+@php
+    // RAW path from DB or API
+    $rawPath = $image['url'] ?? $image['image_path'] ?? null;
 
-                    $captionText = (!empty($imageCaption) && $imageCaption !== 'Kein Titel verfügbar') ? $imageCaption : null;
-                    $descriptionText = (!empty($imageDescription) && $imageDescription !== 'Keine Beschreibung verfügbar') ? $imageDescription : null;
+    // convert to correct URL
+    if ($rawPath) {
+        // if absolute URL -> keep it
+        if (str_starts_with($rawPath, 'http')) {
+            $imageUrl = $rawPath;
+        } else {
+            // convert storage path
+            $imageUrl = asset('storage/' . ltrim($rawPath, '/'));
+        }
+    } else {
+        $imageUrl = null;
+    }
 
-                    $displayText = $captionText ?? $descriptionText;
-                @endphp
-                @if (filter_var($imageUrl, FILTER_VALIDATE_URL))
-                    <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
-                        <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery"
-                            @if ($displayText)
-                            data-title="{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}"
-                            @endif>
-                            <div class="polaroid-frame position-relative">
-                                <div class="figure-img img-fluid custom-border"
-                                     style="background-image: url('{{ $imageUrl }}');
-                                            background-size: cover;
-                                            background-position: center;
-                                            height: 200px;">
-                                </div>
-                                @if ($displayText)
-                                <div class="polaroid-caption text-center p-2 bg-white small">
-                                    <span>{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </a>
-                    </div>
-                @else
-                    <div class="col-lg-4 col-md-6 col-sm-12 text-center text-danger">
-                        Ungültige Bild-URL: {{ $imageUrl }}
+    // captions
+    $imageCaption = $image['image_caption'] ?? null;
+    $imageDescription = $image['description'] ?? null;
+
+    $displayText = $imageCaption ?: $imageDescription ?: null;
+@endphp
+
+@if ($imageUrl)
+    <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+        <a href="{{ $imageUrl }}" class="glightbox" data-gallery="gallery"
+            @if ($displayText)
+                data-title="{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}"
+            @endif
+        >
+            <div class="polaroid-frame position-relative">
+                <div class="figure-img img-fluid custom-border"
+                    style="background-image: url('{{ $imageUrl }}'); background-size: cover; background-position: center; height: 200px;">
+                </div>
+
+                @if ($displayText)
+                    <div class="polaroid-caption text-center p-2 bg-white small">
+                        <span>{{ app('autotranslate')->trans($displayText, app()->getLocale()) }}</span>
                     </div>
                 @endif
+            </div>
+        </a>
+    </div>
+@else
+    <div class="col-lg-4 col-md-6 col-sm-12 text-center text-danger">
+        Ungültige Bild-URL
+    </div>
+@endif
+
             @endforeach
         </div>
         @else
