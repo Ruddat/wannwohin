@@ -85,8 +85,10 @@ $imagePath = asset('storage/' . $image->image_path);
 <!-- Modals for Images -->
 @foreach ($randomImages as $key => $image)
     @php
-        $modalImagePath = Storage::exists($image->image_path) ? Storage::url($image->image_path) : asset($image->image_path);
+        // Korrekte URL – egal ob Datei existiert oder nicht
+        $modalImagePath = asset('storage/' . $image->image_path);
     @endphp
+
     <div class="modal fade" id="erleben_picture{{ $key + 1 }}_modal" tabindex="-1" aria-labelledby="erleben_picture{{ $key + 1 }}_label" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -96,9 +98,11 @@ $imagePath = asset('storage/' . $image->image_path);
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+
                 <div class="modal-body text-center">
                     <img src="{{ $modalImagePath }}" class="img-fluid rounded shadow"
-                         alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
+                        alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
+
                     @if (!empty($image->description))
                         <p class="mt-3 text-muted">@autotranslate($image->description, app()->getLocale())</p>
                     @endif
@@ -107,6 +111,7 @@ $imagePath = asset('storage/' . $image->image_path);
         </div>
     </div>
 @endforeach
+
 
 <style>
     /* Bestehendes CSS bleibt erhalten */
