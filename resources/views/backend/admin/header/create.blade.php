@@ -81,6 +81,14 @@
     @enderror
 </div>
 
+<div class="mb-3">
+    <label class="form-label">Sortierung</label>
+    <input type="number" name="sort_order" class="form-control" min="1" value="1">
+    <small class="form-hint text-muted">
+        Bestimmt die Reihenfolge dieses Headers, wenn mehrere für den gleichen Slug existieren.
+    </small>
+</div>
+
 
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" class="btn btn-secondary me-2">

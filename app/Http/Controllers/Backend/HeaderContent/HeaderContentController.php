@@ -24,25 +24,27 @@ class HeaderContentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'bg_img' => 'required|image|mimes:jpeg,png,jpg,webp|max:40960',
-            'main_img' => 'required|image|mimes:jpeg,png,jpg,webp|max:40960',
-            'main_text' => 'required|string',
-            'title' => 'nullable|string',
-            'slug' => 'required|string|unique:header_contents,slug|regex:/^[a-z0-9\-]+$/|max:50', // Pflichtfeld
-        ]);
+$request->validate([
+    'bg_img' => 'required|image|mimes:jpeg,png,jpg,webp|max:40960',
+    'main_img' => 'required|image|mimes:jpeg,png,jpg,webp|max:40960',
+    'main_text' => 'required|string',
+    'title' => 'nullable|string',
+    'slug' => 'required|string|regex:/^[a-z0-9\-]+$/|max:50',
+    'sort_order' => 'nullable|integer|min:1'
+]);
 
-        $bgImgPath = $this->processImage($request->file('bg_img'), 'bg', 1970, 550);
-        $mainImgPath = $this->processImage($request->file('main_img'), 'main', 718, 982);
-        $cleanedText = Purifier::clean($request->main_text);
+$bgImgPath = $this->processImage($request->file('bg_img'), 'bg', 1970, 550);
+$mainImgPath = $this->processImage($request->file('main_img'), 'main', 718, 982);
+$cleanedText = Purifier::clean($request->main_text);
 
-        HeaderContent::create([
-            'bg_img' => $bgImgPath,
-            'main_img' => $mainImgPath,
-            'main_text' => $cleanedText,
-            'title' => $request->title,
-            'slug' => $request->slug, // Muss jetzt manuell gesetzt werden
-        ]);
+HeaderContent::create([
+    'bg_img' => $bgImgPath,
+    'main_img' => $mainImgPath,
+    'main_text' => $cleanedText,
+    'title' => $request->title,
+    'slug' => $request->slug,
+    'sort_order' => $request->sort_order ?? 1,
+]);
 
         return redirect()->route('verwaltung.site-manager.header_contents.index')
             ->with('toast', ['type' => 'success', 'message' => 'Header content created successfully!']);
@@ -55,31 +57,35 @@ class HeaderContentController extends Controller
 
     public function update(Request $request, HeaderContent $headerContent)
     {
-        $request->validate([
-            'bg_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:40960',
-            'main_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:40960',
-            'main_text' => 'required|string',
-            'title' => 'nullable|string',
-            'slug' => 'required|string|unique:header_contents,slug,' . $headerContent->id . '|regex:/^[a-z0-9\-]+$/|max:50', // Pflichtfeld
-        ]);
 
-        if ($request->hasFile('bg_img')) {
-            Storage::disk('public')->delete($headerContent->bg_img);
-            $headerContent->bg_img = $this->processImage($request->file('bg_img'), 'bg', 1970, 550);
-        }
 
-        if ($request->hasFile('main_img')) {
-            Storage::disk('public')->delete($headerContent->main_img);
-            $headerContent->main_img = $this->processImage($request->file('main_img'), 'main', 718, 982);
-        }
+$request->validate([
+    'bg_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:40960',
+    'main_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:40960',
+    'main_text' => 'required|string',
+    'title' => 'nullable|string',
+    'slug' => 'required|string|regex:/^[a-z0-9\-]+$/|max:50',
+    'sort_order' => 'nullable|integer|min:1'
+]);
 
-        $cleanedText = Purifier::clean($request->main_text);
+if ($request->hasFile('bg_img')) {
+    Storage::disk('public')->delete($headerContent->bg_img);
+    $headerContent->bg_img = $this->processImage($request->file('bg_img'), 'bg', 1970, 550);
+}
 
-        $headerContent->update([
-            'main_text' => $cleanedText,
-            'title' => $request->title,
-            'slug' => $request->slug,
-        ]);
+if ($request->hasFile('main_img')) {
+    Storage::disk('public')->delete($headerContent->main_img);
+    $headerContent->main_img = $this->processImage($request->file('main_img'), 'main', 718, 982);
+}
+
+$cleanedText = Purifier::clean($request->main_text);
+
+$headerContent->update([
+    'main_text' => $cleanedText,
+    'title' => $request->title,
+    'slug' => $request->slug,
+    'sort_order' => $request->sort_order ?? 1,
+]);
 
         return redirect()->route('verwaltung.site-manager.header_contents.index')
             ->with('toast', ['type' => 'success', 'message' => 'Header content updated successfully!']);

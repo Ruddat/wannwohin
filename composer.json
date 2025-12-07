@@ -38,7 +38,8 @@
     "autoload": {
         "files": [
             "app/Helpers/WeatherHelper.php",
-            "app/Helpers/IconHelper.php"
+            "app/Helpers/IconHelper.php",
+            "app/Helpers/HeatHelper.php"
         ],
         "psr-4": {
             "App\\": "app/",

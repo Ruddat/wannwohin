@@ -125,6 +125,18 @@
         <span class="text-danger">{{ $message }}</span>
     @enderror
 </div>
+
+<div class="mb-3">
+    <label class="form-label">Sortierung</label>
+    <input type="number" name="sort_order"
+           value="{{ $headerContent->sort_order }}"
+           class="form-control" min="1">
+
+    <small class="text-muted">
+        Niedrige Zahl = früher angezeigt.
+    </small>
+</div>
+
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" class="btn btn-secondary me-2">
                         <i class="ti ti-arrow-left"></i> Cancel

@@ -95,28 +95,49 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="fact-row full-width">
-                                <div class="fact-item text-center">
-                                    <span class="fact-icon"><i class="fas fa-passport"></i></span>
-                                    <div class="fact-content">
-                                        <span class="fact-label">{{ __('Visum & Reisepass') }}</span>
-                                        <div class="d-flex justify-content-center align-items-center mt-2">
-                                            @if ($country->country_visum_needed === null)
-                                                <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
-                                                <span class="fw-bold">{{ __('Keine Angaben') }}</span>
-                                            @elseif ($country->country_visum_needed)
-                                                <i class="fas fa-check-circle text-success me-2 fs-5"></i>
-                                                <span class="fw-bold">{{ __('Kein Visum erforderlich') }}</span>
-                                            @else
-                                                <i class="fas fa-exclamation-triangle text-danger me-2 fs-5"></i>
-                                                <span class="fw-bold">
-                                                    {{ $country->country_visum_max_time ?? __('Keine Angaben') }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+<div class="fact-row full-width">
+    <div class="fact-item text-center">
+        <span class="fact-icon"><i class="fas fa-passport"></i></span>
+        <div class="fact-content">
+
+            <span class="fact-label">
+                {{ __('Visum & Reisepass') }}
+
+                <!-- Tooltip Icon -->
+                <i class="fas fa-question-circle text-primary ms-1"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   title="Angaben darüber, ob für dein Reiseziel ein Visum erforderlich ist oder wie lange du ohne Visum einreisen darfst.">
+                </i>
+            </span>
+
+            <div class="d-flex justify-content-center align-items-center mt-2">
+                @php
+                    $needsVisa = $country->country_visum_needed;
+                    $maxTime  = $country->country_visum_max_time;
+                @endphp
+
+                {{-- Keine Angaben --}}
+                @if ($needsVisa === null)
+                    <i class="fas fa-info-circle text-muted me-2 fs-5"></i>
+                    <span class="fw-bold">{{ __('Keine Angaben') }}</span>
+
+                {{-- Kein Visum nötig ODER unbegrenzter Aufenthalt --}}
+                @elseif ($needsVisa === true || ($maxTime && strtolower($maxTime) === 'unbegrenzt'))
+                    <i class="fas fa-check-circle text-success me-2 fs-5"></i>
+                    <span class="fw-bold">{{ __('Kein Visum erforderlich') }}</span>
+
+                {{-- Visum oder begrenzter Aufenthalt --}}
+                @else
+                    <i class="fas fa-exclamation-triangle text-danger me-2 fs-5"></i>
+                    <span class="fw-bold">{{ $maxTime ?? __('Keine Angaben') }}</span>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+
                             <div class="fact-row full-width">
                                 <div class="fact-item travel-warning-card {{ $country->travelWarning ? 'Level-' . substr($country->travelWarning->severity, 6, 1) : 'no-warning' }}">                                    <span class="fact-icon"><i class="fas fa-exclamation-triangle"></i></span>
                                     <div class="fact-content travel-warning-content">
@@ -542,3 +563,11 @@ in Npm:
 
 
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>

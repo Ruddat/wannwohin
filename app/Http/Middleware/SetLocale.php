@@ -14,6 +14,7 @@ class SetLocale
     {
         $locale = $request->input('lang');
 
+        $locale = 'de'; // DEFAULT
 
         // Falls Sprache aus Anfrage kommt, speichern
         if ($request->has('lang')) {

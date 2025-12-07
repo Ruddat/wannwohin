@@ -56,6 +56,8 @@ class ExploreController extends Controller
             'image' => asset('img/explore.jpg'),
         ]);
 
+
+
         $headerData = HeaderHelper::getHeaderContent('explore');
         Session::put('headerData', $headerData);
 
@@ -267,7 +269,14 @@ private function returnExploreView($locations, $activity, $time, $latitude, $lon
     $headerData = HeaderHelper::getHeaderContent($headerSlug);
     Session::put('headerData', $headerData);
 
-//dd($locations);
+//dd($headerData, $headerSlug);
+
+$headerSlug  = HeaderHelper::buildExploreSlug($activity, $time);
+$headerBlock = HeaderHelper::buildHeaderBlock($headerSlug);
+
+Session::put('headerBlock', $headerBlock);
+
+
 
     return view('pages.main.explore-results', [
         'seo' => $seo,
@@ -278,6 +287,7 @@ private function returnExploreView($locations, $activity, $time, $latitude, $lon
         'longitude' => $longitude,
         'panorama_location_picture' => $headerData['bgImgPath'],
         'panorama_location_text' => $headerData['title_text'],
+        'headerBlock' => $headerBlock,
     ]);
 }
 

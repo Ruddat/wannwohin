@@ -42,3 +42,5 @@ Schedule::command(CheckMaintenanceExpiration::class)->everyFiveMinutes();
 // Kommentierte Aufgaben (zur späteren Aktivierung)
 //Schedule::command('locations:import-world-cities --format=csv')->hourly();
 //Schedule::command('locations:download-continent-images')->dailyAt('00:30');
+
+ // $schedule->job(new WarmupClimateJob)->dailyAt('02:00');

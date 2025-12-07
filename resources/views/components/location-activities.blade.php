@@ -40,7 +40,7 @@
         <div class="col-4 border-right">
             <div class="d-flex align-items-center justify-content-start">
                 <div class="col-4">
-                    <img src="{{ asset('img/insel-icon.png') }}" alt="Insel" title="Insel" style="height: 30px;">
+                    <img src="{{ asset('img/insel-icon.jpg') }}" alt="Insel" title="Insel" style="height: 30px;">
                 </div>
                 <div class="col text-start">
                     <span class="text-color-grey bold">Insel</span>

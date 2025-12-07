@@ -264,19 +264,21 @@ style="
                                         }
                                     @endphp
 
-                                    <div class="text-center">
-                                        <strong><i class="fas fa-plug me-2"></i>@autotranslate('Stromnetz', app()->getLocale())</strong>
+<div class="electric-wrapper text-center">
+    <strong>
+        <i class="fas fa-plug me-2"></i>
+        @autotranslate('Stromnetz', app()->getLocale())
+    </strong>
 
-                                        <!-- 🔥 Button zeigt jetzt NUR die Spannung in Volt an -->
-                                        <button class="electric-button mt-2" data-bs-toggle="modal"
-                                            data-bs-target="#electricPowerModal"
-                                            title="Klicken Sie, um mehr über das Stromnetz zu erfahren">
-                                            <i class="fa fa-bolt"></i> {{ $location->electric->power ?? 'N/A' }}V
-                                            <span class="arrow-container">
-                                                <span class="arrow-icon">➜</span>
-                                            </span>
-                                        </button>
-                                    </div>
+    <button class="electric-button"
+        data-bs-toggle="modal"
+        data-bs-target="#electricPowerModal">
+        <i class="fa fa-bolt"></i> {{ $location->electric->power ?? 'N/A' }}V
+        <span class="arrow-container">
+            <span class="arrow-icon">➜</span>
+        </span>
+    </button>
+</div>
                                 </td>
 
                             </tr>
@@ -500,6 +502,18 @@ style="
         transform: translateY(-1px);
         box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
     }
+
+.electric-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.electric-wrapper strong {
+    display: block;
+    margin-bottom: 6px; /* Abstand bleibt konstant */
+}
+
 
     .electric-button i {
         margin-right: 5px;

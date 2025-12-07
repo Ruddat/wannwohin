@@ -1,48 +1,91 @@
-@php
-    $headerData = session('headerData', []);
-    $panoramaLocationPicture = $headerData['bgImgPath'] ?? ($panorama_location_picture ?? asset('default-panorama.jpg'));
-    $mainLocationPicture = $headerData['mainImgPath'] ?? ($main_location_picture ?? asset('default-main.jpg'));
-    $headerTitle = $headerData['title'] ?? ($headerTitle ?? 'Standard Titel');
-    $headerTitleText = $headerData['title_text'] ?? ($headerTitleText ?? 'Standard Titel-Text');
-    $panoramaLocationText = $headerData['main_text'] ?? ($panorama_location_text ?? null);
+@props(['block'])
 
-    // Entferne <p>-Tags aus $headerTitleText, falls vorhanden
-    $headerTitleText = str_replace(['<p>', '</p>'], '', $headerTitleText ?? '');
+@php
+function headerImg($path) {
+
+    if (!$path) {
+        return asset('img/headers/default.jpg');
+    }
+
+    // 1) Bereits vollständige URL?
+    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        return $path;
+    }
+
+    // 2) Pfade aus dem Editor → uploads/xyz.webp
+    if (str_starts_with($path, 'uploads/')) {
+        return asset('storage/' . $path);
+    }
+
+    // 3) Falls jemand /uploads/ gespeichert hat
+    if (str_starts_with($path, '/uploads/')) {
+        return asset('storage' . $path);
+    }
+
+    // 4) Alte Bilder unter /img/
+    if (str_starts_with($path, 'img/')) {
+        return asset($path);
+    }
+
+    // 5) Nur Dateiname? (z. B. "xyz.webp")
+    if (!str_contains($path, '/')) {
+        return asset('storage/uploads/' . $path);
+    }
+
+    // 6) Fallback – kein Prefix doppeln
+    return asset($path);
+}
+
+$bg = headerImg($block->bg_img);
+$main = headerImg($block->main_img);
+
+$title = $block->title ?? '';
+$text = str_replace(['<p>', '</p>'], '', ($block->main_text ?? ''));
 @endphp
 
-    <section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-xs-bg-size-cover parallax-no-overflow m-0">
-        <div class="parallax-background" style="background-image: url('{{ url($panoramaLocationPicture) }}');"></div>
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="custom-header-img col-lg-4 col-md-4 col-sm-12 position-relative custom-sm-margin-bottom-1">
-                    <img src="{{ url($mainLocationPicture) }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4" alt="Main Image" />
-                </div>
-                <div class="col-lg-6 col-xl-5 col-md-8 col-sm-12">
-                    <div class="heading-wrapper">
-                        @if (!empty($headerTitle))
-                            <h2 class="travel-heading-with-bg">
-                                {!! app('autotranslate')->trans($headerTitle, app()->getLocale()) !!}
-                            </h2>
-                        @endif
-                        @if (!empty($headerTitleText))
-                            <h1 class="travel-destination">
-                                {!! app('autotranslate')->trans($headerTitleText, app()->getLocale()) !!}
-                            </h1>
-                        @endif
-                    </div>
-                    @if (Auth::guard('admin')->check())
-                        <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-2">
-                            Header Content Management
-                        </a>
+
+<section class="custom-header-section section section-no-border section-parallax bg-transparent custom-section-padding-1 custom-xs-bg-size-cover parallax-no-overflow m-0">
+    <div class="parallax-background" style="background-image: url('{{ $bg }}');"></div>
+
+    <div class="container">
+        <div class="row align-items-center">
+
+            <div class="custom-header-img col-lg-4 col-md-4 col-sm-12 position-relative custom-sm-margin-bottom-1">
+                <img src="{{ $main }}" class="img-fluid custom-border custom-image-position-2 custom-box-shadow-4">
+            </div>
+
+            <div class="col-lg-6 col-xl-5 col-md-8 col-sm-12">
+                <div class="heading-wrapper">
+
+                    @if ($title)
+                        <h2 class="travel-heading-with-bg">
+                            {!! app('autotranslate')->trans($title, app()->getLocale()) !!}
+                        </h2>
+                    @endif
+
+                    @if ($text)
+                        <h1 class="travel-destination">
+                            {!! app('autotranslate')->trans($text, app()->getLocale()) !!}
+                        </h1>
                     @endif
                 </div>
-                <div class="col-lg-2 col-xl-3 d-none d-lg-block text-center">
-                    <img src="{{ asset('assets/img/pages/main/mouse.png') }}" class="img-fluid custom-image-pos-1" alt="Scroll Icon" />
-                </div>
+
+                @if (Auth::guard('admin')->check())
+                    <a href="{{ route('verwaltung.site-manager.header_contents.index') }}" target="_blank" class="btn btn-primary mt-2">
+                        Header Content Management
+                    </a>
+                @endif
             </div>
+
+            <div class="col-lg-2 col-xl-3 d-none d-lg-block text-center">
+                <img src="{{ asset('assets/img/pages/main/mouse.png') }}" class="img-fluid custom-image-pos-1">
+            </div>
+
         </div>
-    </section>
-    <div class="inner-shape"></div>
+    </div>
+</section>
+
+<div class="inner-shape"></div>
 
     <div class="custom-about-links bg-color-light">
         <!-- Sticky Navigation Bar -->
@@ -101,6 +144,7 @@
             </div>
         </div>
     @endif
+
 
     <style>
         /* Parallax-Effekt */
@@ -425,16 +469,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Parallax-Effekt
-            const parallax = document.querySelector('.parallax-background');
-            const section = document.querySelector('.custom-header-section');
-            if (parallax && section) {
-                window.addEventListener('scroll', () => {
-                    const scrollPosition = window.pageYOffset;
-                    const translateY = Math.min(scrollPosition * 0.3, section.offsetHeight);
-                    parallax.style.transform = 'translateY(-' + translateY + 'px)';
-                });
-            }
+// FIXED Parallax-Effekt
+const parallax = document.querySelector('.parallax-background');
+const section = document.querySelector('.custom-header-section');
 
+if (parallax && section) {
+    window.addEventListener('scroll', () => {
+        let scrollY = window.scrollY;
+
+        // sanfterer Effekt
+        let offset = scrollY * 0.15;
+
+        // Limit → verhindert, dass das Bild zu weit hochschiebt
+        let maxOffset = section.offsetHeight * 0.3;
+        if (offset > maxOffset) {
+            offset = maxOffset;
+        }
+
+        parallax.style.transform = `translateY(-${offset}px)`;
+    });
+}
             // Sticky Navigation
             const stickyNav = document.querySelector('.sticky-nav-wrapper');
             const navToggle = document.querySelector('.nav-toggle');
@@ -456,3 +510,5 @@
             });
         });
     </script>
+
+

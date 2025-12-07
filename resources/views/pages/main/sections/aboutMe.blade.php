@@ -24,9 +24,14 @@
                     <p class="text-color-grey small mt-2">
                         @autotranslate('Keine Idee? Wir finden spontan dein Ziel!', app()->getLocale())
                     </p>
+
+
+{{--
+
 <p class="text-color-grey small mt-3">
     @autotranslate('Tipp für USA-Reisende:', app()->getLocale())
 </p>
+
 
 <p class="text-color-grey small" style="line-height: 1.7;">
     @autotranslate('Das offizielle ESTA-Formular findest du hier:', app()->getLocale())
@@ -37,6 +42,7 @@
         👉 US-ESTA Formular auf Deutsch
     </a>
 </p>
+--}}
 
                 </div>
 

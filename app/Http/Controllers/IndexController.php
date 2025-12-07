@@ -37,6 +37,8 @@ class IndexController extends Controller
 
         // Header-Daten laden
         $headerData = HeaderHelper::getHeaderContent();
+
+
         session(['headerData' => $headerData]);
 
         // Kategorien und Vorschläge
@@ -72,6 +74,7 @@ class IndexController extends Controller
         'image'       => asset('img/homepage.jpg'),
         'canonical'   => url('/'),
     ]);
+
 
         return view('pages.main.index', [
             'seo' => $seo,

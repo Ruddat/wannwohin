@@ -164,7 +164,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/footer.css') }}">
 
-    <!-- jquery UI extra added from hani.masoud@gmx.de -->
+    {{-- jquery UI extra --}}
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.theme.css') }}" />
 
@@ -369,6 +369,7 @@
 
 
 
+
     <div class="bg-white">
         <div class="container-fluid main-content-section">
 
@@ -431,10 +432,10 @@
 <!-- Theme Initialization Files -->
 <script src="{{ asset('assets/js/theme.init.js') }}"></script>
 --}}
-<!-- jquery UI extra added from hani.masoud@gmx.de -->
+{{-- jquery UI extra --}}
 <script src={{ asset('assets/js/jquery-ui.js') }}></script>
 
-<!-- Cookies Consent added from hani.masoud@gmx.de -->
+{{-- Cookies Consent --}}
 <script src={{ asset('assets/js/cookie-consent.js') }}></script>
 
 <!-- Tabler icons-->

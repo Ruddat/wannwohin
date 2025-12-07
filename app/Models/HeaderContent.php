@@ -10,11 +10,14 @@ class HeaderContent extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'bg_img',
-        'main_img',
-        'main_text',
-        'title',
-        'slug', // Slug bleibt fillable
-    ];
+protected $fillable = [
+    'bg_img',
+    'main_img',
+    'main_text',
+    'title',
+    'slug',
+    'sort_order'
+];
+
+
 }

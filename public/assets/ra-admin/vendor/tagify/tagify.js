@@ -8,10 +8,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * 
+ *
  * THE SOFTWARE IS NOT PERMISSIBLE TO BE SOLD.
  */
 
@@ -361,7 +361,7 @@
     enforceWhitelist: false,
     // Only allow tags from the whitelist
     userInput: true,
-    // disable manually typing/pasting/editing tags (tags may only be added from the whitelist)
+    // disable manually typing/pasting/editing tags
     keepInvalidTags: false,
     // if true, do not remove tags which did not pass validation
     createInvalidTags: true,
@@ -1485,7 +1485,7 @@
           }
           shouldAddTags = text && !this.state.actions.selectOption && _s.addTagOnBlur;
 
-          // do not add a tag if "selectOption" action was just fired (this means a tag was just added from the dropdown)
+          // do not add a tag if "selectOption" action was just fired 
           shouldAddTags && this.addTags(text, true);
         }
         this.DOM.input.removeAttribute('style');

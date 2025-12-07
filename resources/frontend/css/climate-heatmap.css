@@ -1,0 +1,67 @@
+/* -----------------------------------------
+   SOFT HEATMAP (Premium-Travel-Design)
+------------------------------------------ */
+
+.climate-table td {
+    border-radius: 6px;
+    transition: background-color .2s ease, color .2s ease;
+    padding: 6px 8px !important;
+}
+
+/* Beste Reisezeit Highlight */
+.best-month {
+    box-shadow: inset 0 0 0 2px #ffcc66;
+    font-weight: 600;
+}
+
+/* Temperatur */
+.heat-temp-very-cold { background:#dce9ff; color:#0b3c7a; }
+.heat-temp-cold      { background:#c7ddff; color:#064a91; }
+.heat-temp-mild      { background:#ffeec7; color:#7a4f00; }
+.heat-temp-warm      { background:#ffd8a8; color:#8a3c00; }
+.heat-temp-hot       { background:#ffb5a1; color:#7a0000; }
+
+/* Wassertemperatur */
+.heat-water-cold { background:#c8e9ff; color:#0f4d78; }
+.heat-water-mid  { background:#ffe7c2; color:#7a4f00; }
+.heat-water-warm { background:#ffcfad; color:#7a2a00; }
+
+/* Luftfeuchtigkeit */
+.heat-humidity-low  { background:#f0f4ff; color:#445a7a; }
+.heat-humidity-mid  { background:#e7fff4; color:#2e6a4e; }
+.heat-humidity-high { background:#fff0f0; color:#7a2a2a; }
+
+/* Sonnenstunden */
+.heat-sun-low  { background:#f0f4ff; color:#415a89; }
+.heat-sun-mid  { background:#ffefc7; color:#7a5a00; }
+.heat-sun-high { background:#ffe5a8; color:#7a4f00; }
+
+/* Regentage */
+.heat-rain-low  { background:#eafff2; color:#17603b; }
+.heat-rain-mid  { background:#fff7c7; color:#7a6700; }
+.heat-rain-high { background:#ffe0e0; color:#7a1f1f; }
+
+/* Reiseindex */
+.heat-index-high { background:#d7ffd7; color:#1f7a1f; }
+.heat-index-mid  { background:#fff7cf; color:#7a6a00; }
+.heat-index-low  { background:#ffe5e5; color:#7a1f1f; }
+
+/* Regenwahrscheinlichkeit */
+.heat-rain-prob-low  { background:#e8fff3; color:#00663f; }
+.heat-rain-prob-mid  { background:#fff3cc; color:#7a5f00; }
+.heat-rain-prob-high { background:#ffe0e0; color:#7a1f1f; }
+
+/* UV */
+.heat-uv-low  { background:#e9f2ff; color:#184a7a; }
+.heat-uv-mid  { background:#fff0cc; color:#7a5300; }
+.heat-uv-high { background:#ffd6c8; color:#7a2200; }
+
+/* Komfort */
+.heat-comfort-high { background:#dfffe4; color:#1f6a2f; }
+.heat-comfort-mid  { background:#fff5d1; color:#7a5d00; }
+.heat-comfort-low  { background:#ffe3e3; color:#7a2323; }
+
+/* Wind */
+.heat-wind-low  { background:#e7f7ff; color:#0f4d78; }
+.heat-wind-mid  { background:#fff4d1; color:#7a5d00; }
+.heat-wind-high { background:#ffe1e1; color:#7a1f1f; }

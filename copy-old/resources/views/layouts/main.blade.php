@@ -45,7 +45,6 @@
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/footer.css') }}">
 
-    <!-- jquery UI extra added from hani.masoud@gmx.de -->
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.css') }}"/>
     <link rel="stylesheet" href="{{ asset('assets/css/jquery-ui.theme.css') }}"/>
 
@@ -116,10 +115,10 @@
     <!-- Theme Initialization Files -->
     <script src="{{ asset('assets/js/theme.init.js') }}"></script>
 
-    <!-- jquery UI extra added from hani.masoud@gmx.de -->
+    {{-- jquery UI extra --}}
     <script src={{ asset('assets/js/jquery-ui.js') }}></script>
 
-    <!-- Cookies Consent added from hani.masoud@gmx.de -->
+    {{-- Cookies Consent --}}
     <script src={{ asset('assets/js/cookie-consent.js') }}></script>
 <script>
     let token = '{{ csrf_token() }}';

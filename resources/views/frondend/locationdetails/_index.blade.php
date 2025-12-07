@@ -1,6 +1,34 @@
 @extends('layouts.main')
 
+
 @section('content')
+
+@php
+    // Fallbacks für die neue Struktur
+    $gallery_images = $gallery ?? [];
+    $parks_with_opening_times = $parks ?? [];
+    $forecast = $weather['forecast'] ?? [];
+    $hourly_weather = $weather['hourly'] ?? [];
+    $current_weather = $weather['current'] ?? [];
+    $climates = $climate ?? [];
+
+    $time_offset = $time_info['offset'] ?? null;
+    $current_time = $time_info['current_time'] ?? null;
+
+    $price_factor = $price_trend['factor'] ?? null;
+    $price_category = $price_trend['category'] ?? null;
+
+    $inspiration_data = $inspiration ?? [];
+
+$best_travel_months = $location->best_traveltime_json
+    ? collect(json_decode($location->best_traveltime_json, true))
+        ->filter(fn($m) => is_numeric($m) && $m >= 1 && $m <= 12)
+        ->sort()
+        ->mapWithKeys(fn($m) => [$m => DateTime::createFromFormat('!m', $m)->format('F')])
+    : collect();
+
+
+@endphp
 
 <div class="body" id="location_page">
     <div role="main" class="main">

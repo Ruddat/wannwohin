@@ -32,7 +32,8 @@
                 </div>
             </div>
 
-            <!-- Language Switcher -->
+            {{-- Language Switcher 
+            
             <div class="col-12 col-md-3 text-center">
                 <h5 class="mb-3">Sprache</h5>
                 <div class="dropdown d-inline-block" wire:ignore>
@@ -59,6 +60,7 @@
                     </ul>
                 </div>
             </div>
+--}}
 
 
             {{-- Newsletter Section

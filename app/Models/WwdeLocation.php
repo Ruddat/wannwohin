@@ -104,6 +104,8 @@ class WwdeLocation extends Model
         'currency',
         'best_traveltime_json',
         'image_short_text',
+        'image_title',
+        'full_slug',
     ];
 
 

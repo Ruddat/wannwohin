@@ -1,46 +1,140 @@
 <section class="timeline-box right custom-box-shadow-2 box-shadow-2 py-4">
     <div class="container weather-container">
         <div class="row align-items-stretch">
-            <!-- Wetter-Widget -->
-            <div class="col-lg-4 col-sm-5 weather-widget-col d-flex h-100">
-                <div class="widget flex-grow-1">
-                    <div class="header">
-                        <div class="date">
-                            <div class="day">{{ $weather_data_widget['date'] }}</div>
-                            <div class="weekday">{{ $weather_data_widget['weekday'] }}</div>
-                        </div>
-                        <div class="time">{{ $weather_data_widget['time'] }}</div>
-                    </div>
-                    <div class="daily-info">
-                        <div class="left">
-                            <div class="city">{{ $location->title }}</div>
-                            <div class="temperature">{{ $weather_data_widget['temperature'] }}°C</div>
-                            <div class="details">
-                                Gefühlt: {{ $forecast[0]['real_feel'] }}°C<br>
-                                Wind: {{ $weather_data_widget['wind_direction'] }}, {{ $weather_data_widget['wind_speed'] }} km/h<br>
-                                Luftdruck: {{ $weather_data_widget['pressure'] }} hPa<br>
-                                Luftfeuchtigkeit: {{ $weather_data_widget['humidity'] }}%
-                            </div>
-                        </div>
-                        <div class="right">
-                            <img src="{{ asset('weather-icons/' . $weather_data_widget['icon']) }}.png" alt="Wetter-Symbol" class="weather-icon">
-                            <div class="sunrise-sunset">
-                                Sonnenaufgang: {{ $forecast[0]['sunrise'] }}<br>
-                                Sonnenuntergang: {{ $forecast[0]['sunset'] }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="forecast">
-                        @foreach (array_slice($forecast, 1, 6) as $day)
-                            <div class="day">
-                                <div class="day-name">{{ $day['weekday'] }}</div>
-                                <img src="{{ asset('weather-icons/' . $day['icon']) }}.png" alt="Wetter-Symbol" class="weather-icon-small" title="{{ $day['weather'] ?? 'Unbekanntes Wetter' }}">
-                                <div class="temperature">{{ $day['temp_max'] }}°C</div>
-                            </div>
-                        @endforeach
-                    </div>
+<!-- Wetter-Widget -->
+<div class="col-lg-4 col-sm-5 weather-widget-col d-flex h-100">
+    <div class="widget flex-grow-1">
+        <div class="header">
+            <div class="date">
+                <div class="day">{{ $weather['current']['date'] ?? '-' }}</div>
+                <div class="weekday">{{ $weather['current']['weekday'] ?? '-' }}</div>
+            </div>
+            <div class="time">{{ $weather['current']['time'] ?? '-' }}</div>
+        </div>
+
+        <div class="daily-info">
+            <div class="left">
+                <div class="city">{{ $location->title }}</div>
+
+                <div class="temperature">
+                    {{ $weather['current']['temperature'] ?? '-' }}°C
+                </div>
+
+                <div class="details">
+                    Gefühlt: {{ $weather['forecast'][0]['real_feel'] ?? '-' }}°C<br>
+                    Wind: {{ $weather['current']['wind_direction'] ?? '-' }},
+                          {{ $weather['current']['wind_speed'] ?? '-' }} km/h<br>
+                    Luftdruck: {{ $weather['current']['pressure'] ?? '-' }} hPa<br>
+                    Luftfeuchtigkeit: {{ $weather['current']['humidity'] ?? '-' }}%
                 </div>
             </div>
+
+            <div class="right">
+                <img src="{{ asset('weather-icons/' . ($weather['current']['icon'] ?? 'cloudy') . '.png') }}"
+                     alt="Wetter-Symbol"
+                     class="weather-icon">
+
+                <div class="sunrise-sunset">
+                    Sonnenaufgang: {{ $weather['forecast'][0]['sunrise'] ?? '-' }}<br>
+                    Sonnenuntergang: {{ $weather['forecast'][0]['sunset'] ?? '-' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 6-Tage Vorhersage -->
+        <div class="forecast">
+            @foreach (array_slice($weather['forecast'] ?? [], 1, 6) as $day)
+                <div class="day">
+                    <div class="day-name">{{ $day['weekday'] ?? '-' }}</div>
+
+                    <img src="{{ asset('weather-icons/' . ($day['icon'] ?? 'cloudy') . '.png') }}"
+                        alt="Wetter"
+                        class="weather-icon-small">
+
+                    <div class="temperature">{{ $day['temp_max'] ?? '-' }}°C</div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+@php
+    $warmest = $climates->sortByDesc('daily_temperature')->first();
+    $coldest = $climates->sortBy('daily_temperature')->first();
+    $sunny   = $climates->sortByDesc('sunshine_per_day')->first();
+    $rainy   = $climates->sortByDesc('rainy_days')->first();
+
+    function m($id) {
+        return \Carbon\Carbon::create(null, $id)->locale('de')->translatedFormat('F');
+    }
+@endphp
+
+<div class="climate-box mb-3 mt-3">
+    <h5 class="climate-box-title">🌡️ Wetter-Highlights</h5>
+
+    <ul class="climate-list">
+        <li><strong>Wärmster Monat:</strong> {{ m($warmest->month_id) }} ({{ nf($warmest->daily_temperature) }} °C)</li>
+        <li><strong>Kältester Monat:</strong> {{ m($coldest->month_id) }} ({{ nf($coldest->daily_temperature) }} °C)</li>
+        <li><strong>Sonnigster Monat:</strong> {{ m($sunny->month_id) }} ({{ nf($sunny->sunshine_per_day) }} h)</li>
+        <li><strong>Nassester Monat:</strong> {{ m($rainy->month_id) }} ({{ $rainy->rainy_days }} Tage)</li>
+    </ul>
+</div>
+
+@php
+    // Prüfen ob Winterdestination
+    $coldMonths = $climates->filter(fn($c) => $c->daily_temperature < 10)->count();
+    $isWinterDestination = $coldMonths >= 6;
+
+    if ($isWinterDestination) {
+        // ❄️ WINTER-REISEZEIT LOGIK
+        $best = $climates->filter(function ($c) {
+            return $c->daily_temperature <= 8
+                && $c->rainy_days <= 12     // Winter hat oft mehr "Tage", wir erlauben mehr
+                && $c->sunshine_per_day >= 1; // minimal Sonne
+        });
+
+        $type = 'Winterreisezeit';
+    } else {
+        // ☀️ SOMMER-REISEZEIT LOGIK
+        $best = $climates->filter(function($c) {
+            return $c->daily_temperature >= 20
+                && $c->sunshine_per_day >= 5
+                && $c->rainy_days <= 10;
+        });
+
+        $type = 'Reisezeit';
+    }
+
+    $bestMonths = $best->pluck('month_id')->map(function($m){
+        return \Carbon\Carbon::create(null, $m)->locale('de')->translatedFormat('F');
+    })->implode(', ');
+@endphp
+
+
+<div class="climate-box mb-3">
+    <h5 class="climate-box-title">
+        ✨ Beste {{ $type }} für {{ $location->title }}
+    </h5>
+
+    @if ($bestMonths)
+        <p class="climate-text">
+            Die beste {{ $type }} ist:
+            <strong>{{ $bestMonths }}</strong>
+        </p>
+    @else
+        <p class="climate-text">
+            Für diese Destination kann leider keine optimale {{ $type }} berechnet werden.
+        </p>
+    @endif
+</div>
+
+
+
+</div>
+
+
+
+
+
 @php
   //  dd(Carbon\Carbon::now()->locale('de')->monthName);
 @endphp
@@ -62,6 +156,13 @@
                                 <th class="center"><i class="fas fa-tint text-weather" title="Luftfeuchtigkeit"></i></th>
                                 <th class="center"><i class="fas fa-sun text-weather" title="Sonnenstunden"></i></th>
                                 <th class="center"><i class="fas fa-umbrella text-weather" title="Regentage"></i></th>
+
+                                <th class="center"><i class="fas fa-star text-weather" title="Reise-Index"></i></th>
+                                <th class="center"><i class="fas fa-cloud text-weather" title="Regenwahrscheinlichkeit"></i></th>
+                                <th class="center"><i class="fas fa-sun text-weather" title="UV-Index"></i></th>
+                                <th class="center"><i class="fas fa-heart text-weather" title="Komfortscore"></i></th>
+                                <th class="center"><i class="fas fa-wind text-weather" title="Windgeschwindigkeit"></i></th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -79,12 +180,69 @@
                                     <td class="center">{{ $climate->humidity ? number_format($climate->humidity, 1, ',', '.') . ' %' : '-' }}</td>
                                     <td class="center">{{ $climate->sunshine_per_day ? number_format($climate->sunshine_per_day, 1, ',', '.') : '-' }} h</td>
                                     <td class="center">{{ $climate->rainy_days ? number_format($climate->rainy_days, 1, ',', '.') : '-' }} Tage</td>
+
+                                <td class="center">
+    <span class="badge"
+          style="background: {{ $climate->travel_index >= 8 ? '#4caf50' : ($climate->travel_index >= 5 ? '#ffc107' : '#f44336') }};
+                 color: white;
+                 padding: 3px 8px;
+                 border-radius: 6px;">
+        {{ $climate->travel_index ?? '-' }}
+    </span>
+</td>
+
+<td class="center">
+    {{ $climate->rain_probability ? number_format($climate->rain_probability, 1, ',', '.') . ' %' : '-' }}
+</td>
+
+<td class="center">
+    {{ $climate->uv_index ? number_format($climate->uv_index, 1, ',', '.') : '-' }}
+</td>
+
+<td class="center">
+    {{ $climate->comfort_score ?? '-' }}
+</td>
+
+<td class="center">
+    {{ $climate->wind_speed_avg ? number_format($climate->wind_speed_avg, 1, ',', '.') . ' km/h' : '-' }}
+</td>
+
+
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+
+
+@if($climates->count())
+    <div class="alert alert-info mb-3">
+        🌍 <strong>Beste Reisezeit für {{ $location->title }}:</strong>
+        @php
+            $best = $climates->where('travel_index', '>=', 7);
+            echo $best->count()
+                ? $best->pluck('month_id')->map(fn($m) =>
+                    \Carbon\Carbon::create(null, $m)->locale('de')->translatedFormat('F')
+                )->join(', ')
+                : 'Keine optimale Reisezeit verfügbar';
+        @endphp
+    </div>
+@endif
+
+
+<!-- Chart: Klimaverlauf -->
+<div style="height: 280px; position: relative;">
+    <canvas id="climateChart"></canvas>
+</div>
+
+<p class="text-muted small mt-2" style="font-size: 12px;">
+    Hinweis: Temperatur- und Sonnenwerte basieren auf Open-Meteo Klimadaten.
+    Wassertemperaturen, Luftfeuchtigkeit, UV-Index, Wind und Reise-Index werden –
+    falls keine Messwerte vorliegen – anhand eines realistischen Klimamodells berechnet.
+</p>
+
+
                     <div class="text-start">
-                        <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}.htm">
+                        <a class="btn btn-primary" target="_blank" href="https://www.klimatabelle.de/klima/{{ $location->continent->alias }}/{{ $location->country->alias }}/klimatabelle-{{ $location->alias }}">
                             Mehr zu Klima & Wetter
                         </a>
                     </div>
@@ -94,7 +252,168 @@
     </div>
 </section>
 
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ctx = document.getElementById('climateChart').getContext('2d');
+
+    const months = @json($climates->pluck('month_id')->map(fn($m) =>
+        \Carbon\Carbon::create(null, $m)->locale('de')->translatedFormat('F')
+    ));
+
+    const dayTemps = @json($climates->pluck('daily_temperature'));
+    const nightTemps = @json($climates->pluck('night_temperature'));
+    const waterTemps = @json($climates->pluck('water_temperature'));
+
+    const travelIndex = @json($climates->pluck('travel_index'));
+    const rainProbability = @json($climates->pluck('rain_probability'));
+    const uvIndex = @json($climates->pluck('uv_index'));
+    const comfortScore = @json($climates->pluck('comfort_score'));
+    const windAvg = @json($climates->pluck('wind_speed_avg'));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Tagestemperatur (°C)',
+                    data: dayTemps,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255,152,0,0.25)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Nachttemperatur (°C)',
+                    data: nightTemps,
+                    borderColor: '#2196f3',
+                    backgroundColor: 'rgba(33,150,243,0.25)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Wassertemperatur (°C)',
+                    data: waterTemps,
+                    borderColor: '#4caf50',
+                    backgroundColor: 'rgba(76,175,80,0.25)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                },
+
+
+                {
+    label: 'Reise-Index',
+    data: travelIndex,
+    borderColor: '#9c27b0',
+    backgroundColor: 'rgba(156,39,176,0.25)',
+    borderWidth: 2,
+    tension: 0.3,
+    fill: true,
+    yAxisID: 'y1'
+},
+{
+    label: 'UV-Index',
+    data: uvIndex,
+    borderColor: '#ff5722',
+    backgroundColor: 'rgba(255,87,34,0.25)',
+    borderWidth: 2,
+    tension: 0.3,
+    fill: false,
+    yAxisID: 'y1'
+},
+{
+    label: 'Komfortscore',
+    data: comfortScore,
+    borderColor: '#009688',
+    backgroundColor: 'rgba(0,150,136,0.25)',
+    borderWidth: 2,
+    tension: 0.3,
+    fill: true,
+    yAxisID: 'y1'
+}
+
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    suggestedMin: -5,
+                    suggestedMax: 40,
+                    ticks: { callback: value => value + '°' }
+                },
+
+y1: {
+    position: 'right',
+    suggestedMin: 0,
+    suggestedMax: 12,
+    ticks: { callback: value => value }
+}
+
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12 }
+                }
+            }
+        }
+    });
+});
+</script>
+
+
+
 <style scoped>
+
+.climate-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid #dbe4ec;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.climate-box-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #089bbc;
+}
+
+.climate-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.climate-list li {
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #eef3f7;
+}
+
+.climate-list li:last-child {
+    border-bottom: 0;
+}
+
+.climate-text {
+    font-size: 14px;
+    color: #333;
+    margin: 0;
+}
+
+
+
 /* Scoped-Style für diese Blade-Datei, um Einflüsse auf andere Templates zu vermeiden */
 .weather-container {
     background-color: #eaeff5;

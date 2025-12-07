@@ -103,9 +103,13 @@ $imagePath = asset('storage/' . $image->image_path);
                     <img src="{{ $modalImagePath }}" class="img-fluid rounded shadow"
                         alt="@autotranslate($image->description ?? 'Bild zu ' . $location->title, app()->getLocale())">
 
-                    @if (!empty($image->description))
+
+{{--
+                        @if (!empty($image->description))
                         <p class="mt-3 text-muted">@autotranslate($image->description, app()->getLocale())</p>
-                    @endif
+                         @endif
+--}}
+
                 </div>
             </div>
         </div>

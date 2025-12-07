@@ -63,4 +63,9 @@ return [
     'key' => env('OPENTRIPMAP_KEY'),
 ],
 
+'openweather' => [
+    'key' => env('OPENWEATHER_API_KEY'),
+],
+
+
 ];
