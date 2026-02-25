@@ -109,10 +109,10 @@ class WwdeLocation extends Model
     ];
 
 
-protected $casts = [
-    'lat' => 'float',
-    'lon' => 'float',
-];
+    protected $casts = [
+        'lat' => 'float',
+        'lon' => 'float',
+    ];
 
 
     /**
@@ -133,58 +133,84 @@ protected $casts = [
     }
 
 
-protected static function booted()
-{
-    static::saving(function ($location) {
+    protected static function booted()
+    {
+        static::saving(function ($location) {
 
-        // MERK DIR DAS ORIGINALE alias
-        $originalAlias = $location->getOriginal('alias');
-        $originalTitle = $location->getOriginal('title');
+            // MERK DIR DAS ORIGINALE alias
+            $originalAlias = $location->getOriginal('alias');
+            $originalTitle = $location->getOriginal('title');
 
-        // -----------------------------------------------------
-        // 1) Alias generieren, falls leer
-        // -----------------------------------------------------
-        if (empty($location->alias)) {
-            $location->alias = Str::slug($location->title);
-        }
+            // -----------------------------------------------------
+            // 1) Alias generieren, falls leer
+            // -----------------------------------------------------
+            if (empty($location->alias)) {
+                $location->alias = Str::slug($location->title);
+            }
 
-        // -----------------------------------------------------
-        // 2) Alias IMMER slugifizieren (Absicherung)
-        // -----------------------------------------------------
-        $location->alias = Str::slug($location->alias);
+            // -----------------------------------------------------
+            // 2) Alias IMMER slugifizieren (Absicherung)
+            // -----------------------------------------------------
+            $location->alias = Str::slug($location->alias);
 
-        // -----------------------------------------------------
-        // 3) Alias neu generieren, wenn der Title geändert wurde,
-        //    ABER NUR, wenn alias vorher aus dem Titel entstand.
-        //    (alias wird NICHT überschrieben, wenn Nutzer es manuell setzte)
-        // -----------------------------------------------------
-        $previousSlug = Str::slug($originalTitle);
+            // -----------------------------------------------------
+            // 3) Alias neu generieren, wenn der Title geändert wurde,
+            //    ABER NUR, wenn alias vorher aus dem Titel entstand.
+            //    (alias wird NICHT überschrieben, wenn Nutzer es manuell setzte)
+            // -----------------------------------------------------
+            $previousSlug = Str::slug($originalTitle);
 
-        if (
-            $location->isDirty('title') &&         // Titel wurde geändert
-            $originalAlias === $previousSlug       // alias basierte direkt auf Titel
-        ) {
-            // Alias neu generieren
-            $location->alias = Str::slug($location->title);
-        }
+            if (
+                $location->isDirty('title') &&         // Titel wurde geändert
+                $originalAlias === $previousSlug       // alias basierte direkt auf Titel
+            ) {
+                // Alias neu generieren
+                $location->alias = Str::slug($location->title);
+            }
 
-        // -----------------------------------------------------
-        // 4) Alias eindeutig machen (auto increment)
-        // -----------------------------------------------------
-        $base = $location->alias;
-        $counter = 2;
+            // -----------------------------------------------------
+            // 4) Alias eindeutig machen (auto increment)
+            // -----------------------------------------------------
+            $base = $location->alias;
+            $counter = 2;
 
-        while (
-            self::where('alias', $location->alias)
+            while (
+                self::where('alias', $location->alias)
                 ->where('id', '!=', $location->id)
                 ->exists()
-        ) {
-            $location->alias = $base . '-' . $counter;
-            $counter++;
-        }
-    });
-}
+            ) {
+                $location->alias = $base . '-' . $counter;
+                $counter++;
+            }
 
+            $country = $location->country ?? WwdeCountry::find($location->country_id);
+
+            if ($country) {
+                $continent = $country->continent ?? WwdeContinent::find($country->continent_id);
+
+                if ($continent) {
+                    $location->full_slug = strtolower(
+                        "{$continent->alias}/{$country->alias}/{$location->alias}"
+                    );
+                }
+            }
+
+
+            // -----------------------------------------------------
+            // 5) full_slug automatisch synchronisieren
+            // -----------------------------------------------------
+            if ($location->country && $location->country->continent) {
+
+                $continentAlias = $location->country->continent->alias;
+                $countryAlias   = $location->country->alias;
+                $locationAlias  = $location->alias;
+
+                $location->full_slug = strtolower(
+                    "{$continentAlias}/{$countryAlias}/{$locationAlias}"
+                );
+            }
+        });
+    }
 
 
 
@@ -322,7 +348,7 @@ protected static function booted()
     {
 
         $priceRange = WwdeRange::find($priceId); // Hier den echten Preis holen
-//dd($priceRange);
+        //dd($priceRange);
 
 
         if ($priceRange) {
@@ -354,7 +380,7 @@ protected static function booted()
     {
         // Sicherstellen, dass eine Zahl extrahiert wird
         $minHours = (int) str_replace('more_', '', $sonnenstunden);
-dd($minHours);
+        dd($minHours);
         if ($minHours > 0) {
             $query->whereHas('climates', function ($q) use ($minHours) {
                 $q->where('sunshine_per_day', '>=', $minHours);
@@ -366,25 +392,22 @@ dd($minHours);
     public function scopeFilterByMinSunshine($query, $minSunshine, $month = null)
     {
 
-dd($query);
+        dd($query);
         $query->where(function ($q) use ($minSunshine, $month) {
             $q->whereHas('climates', function ($subQuery) use ($minSunshine, $month) {
                 $subQuery->where('sunshine_per_day', '>=', $minSunshine);
                 if ($month) {
                     $subQuery->where('month_id', $month);
-
                 }
-
-
             })->orWhere(function ($subQuery) use ($minSunshine, $month) {
                 $subQuery->whereDoesntHave('climates')
-                         ->whereHas('historicalClimates', function ($histQuery) use ($minSunshine, $month) {
-                             $histQuery->where('sunshine_hours', '>=', $minSunshine);
-                             if ($month) {
-                                 $histQuery->where('month', $month);
-                             }
-                             $histQuery->where('year', now()->subYear()->year);
-                         });
+                    ->whereHas('historicalClimates', function ($histQuery) use ($minSunshine, $month) {
+                        $histQuery->where('sunshine_hours', '>=', $minSunshine);
+                        if ($month) {
+                            $histQuery->where('month', $month);
+                        }
+                        $histQuery->where('year', now()->subYear()->year);
+                    });
             });
         });
     }
@@ -414,18 +437,18 @@ dd($query);
         }
     }
 
-// Scope für gefilterte IDs
-public function scopeFilterByIds($query, $ids)
-{
-    if (!empty($ids)) {
-        $query->whereIn('id', $ids);
+    // Scope für gefilterte IDs
+    public function scopeFilterByIds($query, $ids)
+    {
+        if (!empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
     }
-}
 
-public function monthlyClimates()
-{
-    return $this->hasMany(ClimateMonthlyData::class, 'location_id', 'id');
-}
+    public function monthlyClimates()
+    {
+        return $this->hasMany(ClimateMonthlyData::class, 'location_id', 'id');
+    }
 
 
 
@@ -462,5 +485,4 @@ public function monthlyClimates()
     {
         return $this->hasMany(ModLocationFilter::class, 'location_id', 'id');
     }
-
 }

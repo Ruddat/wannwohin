@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use App\Models\WwdeLocation;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class ModLocationGalerie extends Model
 {
@@ -30,4 +31,17 @@ class ModLocationGalerie extends Model
     {
         return $this->belongsTo(WwdeLocation::class, 'location_id');
     }
+
+protected static function booted()
+{
+    static::saved(function ($model) {
+        Cache::forget("gallery_{$model->location_id}");
+    });
+
+    static::deleted(function ($model) {
+        Cache::forget("gallery_{$model->location_id}");
+    });
+}
+
+
 }

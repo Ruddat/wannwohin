@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Frontend\QuickSearch;
 
-use Livewire\Component;
-use App\Models\WwdeRange;
-use App\Models\WwdeLocation;
-use Livewire\WithPagination;
 use App\Models\HeaderContent;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
+use App\Models\WwdeLocation;
+use App\Models\WwdeRange;
 use App\Repositories\LocationRepository;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class SearchResultsComponent extends Component
 {
@@ -155,7 +156,7 @@ class SearchResultsComponent extends Component
         $filteredIds = $query->pluck('id')->toArray();
         session(['quicksearch.filteredLocationIds' => $filteredIds]);
 
-        \Log::info('Updated filtered Location-IDs:', ['count' => count($filteredIds), 'ids' => $filteredIds]);
+        Log::info('Updated filtered Location-IDs:', ['count' => count($filteredIds), 'ids' => $filteredIds]);
     }
 
     private function applyFilters($query)
@@ -330,7 +331,7 @@ class SearchResultsComponent extends Component
             ];
         }
 
-        \Log::info('Enriched Location Data', [
+        Log::info('Enriched Location Data', [
             'location_id' => $location->id,
             'sunshine_hours' => $location->climate_data['sunshine_hours'] ?? 'N/A',
             'water_temperature' => $location->climate_data['water_temperature'] ?? 'N/A',

@@ -1,33 +1,35 @@
 <?php
 
-use App\Models\WwdeCountry;
-use App\Models\WwdeLocation;
-use App\Http\Middleware\SetLocale;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\Admin\AuthController;
+use App\Http\Controllers\Backend\HeaderWeatherController;
+use App\Http\Controllers\Backend\Imports\ContinentImportController;
+use App\Http\Controllers\Backend\Imports\CountryImportController;
+use App\Http\Controllers\Backend\Imports\FilterLocationImportController;
+use App\Http\Controllers\Backend\Imports\LocationImportController;
+use App\Http\Controllers\ExploreController;
+use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
+use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
+use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
+use App\Http\Controllers\Frontend\Search\DetailSearchV2Controller;
+use App\Http\Controllers\Frontend\StaticPageController;
+use App\Http\Controllers\Frontend\TripController;
+use App\Http\Controllers\Frontend\WishlistCompare\WishlistCompareController;
 use App\Http\Controllers\GlobeController;
 use App\Http\Controllers\IndexController;
-use App\Http\Controllers\ExploreController;
-use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSearchController;
-use App\Http\Controllers\WetterTestController;
-use App\Http\Controllers\Frontend\TripController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Tools\ScreenshotController;
-use App\Http\Controllers\Backend\Admin\AuthController;
-use App\Http\Controllers\Frontend\StaticPageController;
-use App\Http\Controllers\Backend\HeaderWeatherController;
-use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
+use App\Http\Controllers\VisitorController;
+use App\Http\Controllers\WetterTestController;
+use App\Http\Middleware\SetLocale;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
-use App\Http\Controllers\Backend\Imports\CountryImportController;
-use App\Http\Controllers\Backend\Imports\LocationImportController;
 use App\Livewire\Backend\LocationManager\LocationManagerComponent;
-use App\Http\Controllers\Backend\Imports\ContinentImportController;
-use App\Http\Controllers\Frontend\DetailSearch\DetailSearchController;
-use App\Http\Controllers\Backend\Imports\FilterLocationImportController;
-use App\Http\Controllers\Frontend\ContinentCountryTable\ContinentController;
-use App\Http\Controllers\Frontend\LocationDetails\LocationDetailsController;
-use App\Http\Controllers\Frontend\WishlistCompare\WishlistCompareController;
+use App\Livewire\Frontend\QuickSearch\SearchResultsComponent;
+use App\Livewire\Frontend\Search\SearchV2;
+use App\Models\WwdeCountry;
+use App\Models\WwdeLocation;
+use Illuminate\Support\Facades\Route;
 
 
 
@@ -102,9 +104,29 @@ Route::middleware(['web', 'breadcrumbs', 'track-referral', 'weather'])->group(fu
     Route::match(['post', 'get'], '/suche', SearchController::class)
         ->name('search');
 
+
+
+        Route::get('/suche-v2', SearchV2::class)->name('search.v2');
+
+    Route::get('/reise/{continent}/{country}/{location}', [LocationDetailsController::class, 'show'])
+        ->where([
+            'continent' => '[a-zA-Z0-9-]+',
+            'country' => '[a-zA-Z0-9-]+',
+            'location' => '[a-zA-Z0-9-]+',
+        ])
+        ->name('location.details');
+
+
+
     Route::get('/detailsuche', [DetailSearchController::class, 'index'])
         ->name('detail_search');
 
+        Route::get('/detail-search/v2', [DetailSearchV2Controller::class, 'index'])->name('detail_search.v2');
+        Route::post('/detail-search/v2/results', [DetailSearchV2Controller::class, 'search'])->name('detail_search.v2.results');
+        Route::get('/detail-search/v2/results', [DetailSearchV2Controller::class, 'results'])->name('detail_search.v2.results.get');
+        Route::post('/detail-search/v2/count', [DetailSearchV2Controller::class, 'count'])->name('detail_search.v2.index');
+Route::get('/detailsuche/{location}', [DetailSearchController::class, 'show'])
+    ->name('location.show');
 
         Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
 

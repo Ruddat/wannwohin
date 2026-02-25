@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Frontend\QuickSearch;
 
-use Livewire\Component;
-use App\Models\WwdeRange;
-use Livewire\Attributes\On;
-use App\Models\WwdeLocation;
 use App\Models\WwdeContinent;
+use App\Models\WwdeLocation;
+use App\Models\WwdeRange;
 use App\Repositories\LocationRepository;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class QuickSearchComponent extends Component
 {
@@ -49,14 +50,14 @@ class QuickSearchComponent extends Component
         'list_island' => 'Inselurlaub',
         'list_culture' => 'Kulturreise',
         'list_nature' => 'Natururlaub',
-       // 'list_watersport' => 'Wassersport',
-       // 'list_wintersport' => 'Wintersport',
-       // 'list_mountainsport' => 'Bergsport',
-       // 'list_biking' => 'Fahrradurlaub',
-       // 'list_fishing' => 'Angelurlaub',
-       // 'list_amusement_park' => 'Freizeitpark',
-       // 'list_water_park' => 'Wasserpark',
-       // 'list_animal_park' => 'Tierpark',
+        // 'list_watersport' => 'Wassersport',
+        // 'list_wintersport' => 'Wintersport',
+        // 'list_mountainsport' => 'Bergsport',
+        // 'list_biking' => 'Fahrradurlaub',
+        // 'list_fishing' => 'Angelurlaub',
+        // 'list_amusement_park' => 'Freizeitpark',
+        // 'list_water_park' => 'Wasserpark',
+        // 'list_animal_park' => 'Tierpark',
     ];
 
     public function mount(LocationRepository $repository)
@@ -89,7 +90,7 @@ class QuickSearchComponent extends Component
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
-        \Log::info('Updated Property', [
+        Log::info('Updated Property', [
             'property' => $propertyName,
             'sonnenstunden' => $this->sonnenstunden,
             'urlaub' => $this->urlaub,
@@ -116,7 +117,7 @@ class QuickSearchComponent extends Component
         $this->applyFilters($query);
         $this->filteredLocations = $query->count();
         $filteredIds = $query->pluck('id')->toArray();
-        \Log::info('Filtered Locations with Sonnenstunden', [
+        Log::info('Filtered Locations with Sonnenstunden', [
             'count' => $this->filteredLocations,
             'ids' => $filteredIds,
             'sonnenstunden' => $this->sonnenstunden,
@@ -129,8 +130,10 @@ class QuickSearchComponent extends Component
     {
         $query->active()->finished();
 
-        if (empty($this->continent) && empty($this->price) && empty($this->urlaub) &&
-            empty($this->sonnenstunden) && empty($this->wassertemperatur) && empty($this->spezielle)) {
+        if (
+            empty($this->continent) && empty($this->price) && empty($this->urlaub) &&
+            empty($this->sonnenstunden) && empty($this->wassertemperatur) && empty($this->spezielle)
+        ) {
             return;
         }
 
@@ -155,7 +158,7 @@ class QuickSearchComponent extends Component
 
             $query->whereHas('climates', function ($subQuery) use ($minHours) {
                 $subQuery->where('month_id', (int) $this->urlaub)
-                         ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
+                    ->whereRaw('COALESCE(sunshine_per_day, 0) >= ?', [$minHours]);
             });
         }
 
@@ -165,7 +168,7 @@ class QuickSearchComponent extends Component
 
             $query->whereHas('climates', function ($subQuery) use ($minTemp) {
                 $subQuery->where('month_id', (int) $this->urlaub)
-                         ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
+                    ->whereRaw('COALESCE(water_temperature, 0) >= ?', [$minTemp]);
             });
         }
 
@@ -176,7 +179,7 @@ class QuickSearchComponent extends Component
         }
 
         $filteredIds = $query->pluck('id')->toArray();
-        \Log::info('Applied Filters Result', [
+        Log::info('Applied Filters Result', [
             'count' => count($filteredIds),
             'ids' => $filteredIds,
             'sonnenstunden' => $this->sonnenstunden,
@@ -200,43 +203,51 @@ class QuickSearchComponent extends Component
         session(['isCollapsed' => $this->isCollapsed]);
     }
 
-    public function redirectToResults()
-    {
-        $this->validate(['urlaub' => 'required|numeric|min:1|max:12']);
+public function redirectToResults()
+{
+    $this->validate(['urlaub' => 'required|numeric|min:1|max:12']);
 
-        $query = WwdeLocation::query()->select('id');
-        $this->applyFilters($query);
+    // Optional: du brauchst diese Session-IDs künftig nicht mehr (V2 nutzt Query)
+    // aber ich lasse es drin, falls du noch Stats/Debug brauchst.
+    $query = WwdeLocation::query()->select('id');
+    $this->applyFilters($query);
+    session(['quicksearch.filteredLocationIds' => $query->pluck('id')->toArray()]);
 
-        $filteredIds = $query->pluck('id')->toArray();
-        session(['quicksearch.filteredLocationIds' => $filteredIds]);
+    // Mapping Quick -> V2
+    $params = [
+        'auto' => 1,
 
-        \Log::info('Redirect to Results', [
-            'filteredIds' => $filteredIds,
-            'queryParams' => [
-                'continent' => $this->continent,
-                'price' => $this->price,
-                'urlaub' => $this->urlaub,
-                'sonnenstunden' => $this->sonnenstunden,
-                'wassertemperatur' => $this->wassertemperatur,
-                'spezielle' => $this->spezielle,
-                'nurInBesterReisezeit' => $this->nurInBesterReisezeit,
-            ],
-        ]);
+        'continent' => $this->continent ?: null,
+        'price' => $this->price ?: null,
 
-        $queryParams = [
-            'continent' => $this->continent,
-            'price' => $this->price,
-            'urlaub' => $this->urlaub,
-            'sonnenstunden' => $this->sonnenstunden,
-            'wassertemperatur' => $this->wassertemperatur,
-            'spezielle' => $this->spezielle,
-            'nurInBesterReisezeit' => $this->nurInBesterReisezeit ? 1 : 0,
-        ];
+        // urlaub -> month
+        'month' => $this->urlaub ? (int) $this->urlaub : null,
 
-        $this->toggleCollapse();
+        // more_7 -> 7
+        'sunshine_min' => $this->sonnenstunden
+            ? (int) str_replace('more_', '', $this->sonnenstunden)
+            : null,
 
-        return redirect()->route('search.results', array_filter($queryParams));
-    }
+        'water_temp_min' => $this->wassertemperatur
+            ? (int) str_replace('more_', '', $this->wassertemperatur)
+            : null,
+
+        // spezielle -> activities (array)
+        'activities' => !empty($this->spezielle) ? array_values($this->spezielle) : [],
+
+        // Flag 0/1
+        'nurInBesterReisezeit' => $this->nurInBesterReisezeit ? 1 : 0,
+    ];
+
+    Log::info('QuickSearch -> SearchV2 redirect', $params);
+
+    $this->toggleCollapse();
+
+    return redirect()->route('search.v2', array_filter(
+        $params,
+        fn ($v) => $v !== null && $v !== '' && $v !== []
+    ));
+}
 
     private function applyPriceFilter($query)
     {

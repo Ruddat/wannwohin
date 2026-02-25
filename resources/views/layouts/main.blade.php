@@ -484,7 +484,7 @@ via npm installiert
                     }, 200); // Nach 200 ms entfernen
                 }, 100); // Nur 100 ms warten, bevor das Ausblenden startet
             }
-        }, 100); // Alle 100 ms aktualisieren (schnellerer Fortschritt)
+        }, 80); // Alle 100 ms aktualisieren (schnellerer Fortschritt)
     });
 </script>
 

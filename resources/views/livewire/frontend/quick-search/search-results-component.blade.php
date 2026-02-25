@@ -14,7 +14,7 @@
                     @autotranslate('Keine Ergebnisse gefunden. Bitte starte die Suche erneut.', app()->getLocale())
                 </div>
             @endif
-
+mmmmmm
             <!-- Sticky-Filterleiste nur für mobile Geräte -->
             <div class="d-flex justify-content-between align-items-center p-2 bg-white shadow-sm sticky-top d-md-none">
                 <button class="btn btn-outline-danger filter-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">

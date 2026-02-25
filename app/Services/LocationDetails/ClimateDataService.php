@@ -50,7 +50,7 @@ class ClimateDataService
     | Importieren
     |--------------------------------------------------------------------------
     */
-    public function import(WwdeLocation $location, int $year = null)
+    public function import(WwdeLocation $location, ?int $year = null)
     {
         $year = $year ?? now()->year - 1;
 
@@ -64,7 +64,9 @@ class ClimateDataService
             . "shortwave_radiation_sum,precipitation_sum"
             . "&start_date={$year}-01-01&end_date={$year}-12-31";
 
-        $response = Http::get($url);
+$response = Http::withOptions([
+    'force_ip_resolve' => 'v4',
+])->retry(5, 500)->get($url);
 
         if (!$response->successful()) {
             return ['error' => true, 'reason' => 'climate-api failed'];

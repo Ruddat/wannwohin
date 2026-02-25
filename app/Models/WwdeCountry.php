@@ -98,6 +98,37 @@ class WwdeCountry extends Model
         return $this->hasMany(WwdeLocation::class, 'country_id', 'id');
     }
 
+    /**
+     * Scope for active countries
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope for ordering by title
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOrderByTitle($query)
+    {
+        return $query->orderBy('title');
+    }
+
+    /**
+     * Check if country is active
+     *
+     * @return bool
+     */
+    public function isActive()
+    {
+        return $this->status === 'active';
+    }
 
     // Beziehungen and Additions
     public function primaryImage()
@@ -115,7 +146,6 @@ class WwdeCountry extends Model
 
         return asset('img/default-location.png'); // Fallback-Bild, falls kein Bild vorhanden ist
     }
-
 
     /**
      * Beziehung zu einer Reisewarnung.
@@ -143,6 +173,39 @@ class WwdeCountry extends Model
         return asset('img/default-country-thumbnail.png');
     }
 
+    /**
+     * Get climate zones as array
+     *
+     * @return array
+     */
+    public function getClimateZonesArrayAttribute()
+    {
+        if (empty($this->climatezones_lnam)) {
+            return [];
+        }
 
+        // Entferne "der" oder "den" Präfixe und trenne bei "und"
+        $zones = preg_split('/\s+und\s+/', $this->climatezones_lnam);
 
+        // Bereinige jeden Eintrag
+        return array_map(function($zone) {
+            return trim(preg_replace('/^(der|den)\s+/', '', $zone));
+        }, $zones);
+    }
+
+    /**
+     * Get price tendency label
+     *
+     * @return string
+     */
+    public function getPriceTendencyLabelAttribute()
+    {
+        $labels = [
+            'Niedrig' => 'Niedrig',
+            'Mittel' => 'Mittel',
+            'Hoch' => 'Hoch',
+        ];
+
+        return $labels[$this->price_tendency] ?? $this->price_tendency;
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\WwdeLocation;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Library\WeatherDataManagerLibrary;
 
@@ -158,7 +159,7 @@ class LocationRepository
 
     public function getHeaderContent()
     {
-        $headerContent = \Cache::remember('header_content_random', 5 * 60, function () {
+        $headerContent = Cache::remember('header_content_random', 5 * 60, function () {
             return \App\Models\HeaderContent::inRandomOrder()->first();
         });
 

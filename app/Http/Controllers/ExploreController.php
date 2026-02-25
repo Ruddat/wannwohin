@@ -161,28 +161,49 @@ public function results(Request $request)
         return $this->returnExploreView($final, $activity, $time, $latitude, $longitude);
     }
 
-    /* ----------------------------------------------
-     * 6) NORMAL LOCATIONS EINLESEN
-     * ---------------------------------------------- */
-    $filters = $activityMap[$activity] ?? [];
+/* ----------------------------------------------
+ * 6) NORMAL LOCATIONS — DUPLICATE-PROOF VERSION
+ * ---------------------------------------------- */
+$filters = $activityMap[$activity] ?? [];
 
-    $results = $this->locationRepository
-        ->getLocationsByFiltersAndMonth($filters, $monthId)
-        ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
-        ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
-        ->leftJoin('stat_location_search_histories', 'wwde_locations.id', '=', 'stat_location_search_histories.location_id')
-        ->select(
-            'wwde_locations.id',
-            'wwde_locations.title',
-            'wwde_locations.lat',
-            'wwde_locations.lon',
-            'wwde_locations.climate_details_lnam',
-            'wwde_continents.alias AS continent_alias',
-            'wwde_countries.alias AS country_alias',
-            'wwde_locations.text_pic1',
-            DB::raw('COALESCE(stat_location_search_histories.search_count, 0) AS search_count')
-        )
-        ->get();
+$baseQuery = $this->locationRepository
+    ->getLocationsByFiltersAndMonth($filters, $monthId);
+
+$results = $baseQuery
+    ->leftJoin('stat_location_search_histories', 'wwde_locations.id', '=', 'stat_location_search_histories.location_id')
+    ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
+    ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
+
+    // WICHTIG: Index-Optimierung
+    ->selectRaw('wwde_locations.id')
+
+    // WICHTIG: gruppieren verhindert jegliche Duplikate
+    ->groupBy(
+        'wwde_locations.id',
+        'wwde_locations.title',
+        'wwde_locations.lat',
+        'wwde_locations.lon',
+        'wwde_locations.climate_details_lnam',
+        'wwde_locations.text_pic1',
+        'wwde_continents.alias',
+        'wwde_countries.alias'
+    )
+
+    // Felder aggregieren
+    ->select(
+        'wwde_locations.id',
+        'wwde_locations.title',
+        'wwde_locations.lat',
+        'wwde_locations.lon',
+        'wwde_locations.climate_details_lnam',
+        'wwde_locations.text_pic1',
+        'wwde_continents.alias AS continent_alias',
+        'wwde_countries.alias AS country_alias',
+        DB::raw('COALESCE(SUM(stat_location_search_histories.search_count), 0) AS search_count')
+    )
+
+    ->distinct() // doppelte Sicherheit
+    ->get();
 
     /* ----------------------------------------------
      * 7) SCORING + ALIAS GENERIEREN

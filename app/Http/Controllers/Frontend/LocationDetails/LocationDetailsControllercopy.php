@@ -59,7 +59,7 @@ class LocationDetailsControllercopy extends Controller
         $seo = $seoService->getSeoData($location);
         $inspirationData = $this->fetchInspirationData($location);
 
-//dd($location);
+dd($location);
 
 
         return view('frondend.locationdetails._index', [
