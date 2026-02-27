@@ -31,21 +31,31 @@ class ExploreController extends Controller
             Session::put('user_location', ['lat' => $latitude, 'lon' => $longitude]);
         }
 
-        $popularLocations = DB::table('stat_location_search_histories')
-            ->join('wwde_locations', 'stat_location_search_histories.location_id', '=', 'wwde_locations.id')
-            ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
-            ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
-            ->select(
-                'wwde_locations.*',
-                'wwde_continents.alias as continent_alias',
-                'wwde_countries.alias as country_alias',
-                'stat_location_search_histories.search_count',
-                'wwde_locations.text_pic1' // Angenommen, das Bildfeld heißt so
-            )
-            ->where('month', '2025-03')
-            ->orderByDesc('search_count')
-            ->limit(12)
-            ->get();
+$months = [
+    now()->format('Y-m'),
+    now()->subMonth()->format('Y-m'),
+    now()->subMonths(2)->format('Y-m'),
+];
+
+$popularLocations = DB::table('stat_location_search_histories')
+    ->join('wwde_locations', 'stat_location_search_histories.location_id', '=', 'wwde_locations.id')
+    ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
+    ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
+    ->whereIn('month', $months)
+    ->groupBy(
+        'wwde_locations.id',
+        'wwde_continents.alias',
+        'wwde_countries.alias'
+    )
+    ->select(
+        'wwde_locations.*',
+        'wwde_continents.alias as continent_alias',
+        'wwde_countries.alias as country_alias',
+        DB::raw('SUM(stat_location_search_histories.search_count) as search_count')
+    )
+    ->orderByDesc('search_count')
+    ->limit(12)
+    ->get();
 
         $seo = $this->seoService->getSeoData([
             'model_type' => 'explore_page',

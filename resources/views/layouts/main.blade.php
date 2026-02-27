@@ -195,7 +195,7 @@
 </head>
 
 <body>
-    <livewire:frontend.quick-search.quick-search-component />
+    <livewire:frontend.quick-search.quick-search-component-v2 />
     {{--
     @include('layouts.search')
 --}}

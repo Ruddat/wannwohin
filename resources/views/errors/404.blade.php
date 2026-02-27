@@ -47,7 +47,7 @@
         <p class="error-message">Ups! Diese Seite scheint auf Reisen zu sein.</p>
         <p class="error-message">Lass uns zurück zur Startseite oder entdecke neue Reiseziele!</p>
         <a href="/" class="btn btn-light btn-home">Zur Startseite</a>
-        <a href="/popular-destinations" class="btn btn-warning btn-home">Beliebte Reiseziele</a>
+        <a href="{{ route('explore') }}" class="btn btn-warning btn-home">Lass dich Inspirieren</a>
         <p class="pixabay-credit">Bildquelle: Pixabay</p>
     </div>
 </body>

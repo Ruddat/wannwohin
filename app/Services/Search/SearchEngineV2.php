@@ -38,10 +38,9 @@ class SearchEngineV2
         }
 
         // ----------------------------------
-        // Reisezeit (nur wenn explizit gewünscht)
-        // ACHTUNG: wir filtern NICHT automatisch bei month
+        // Beste Reisezeit
         // ----------------------------------
-        if ($filters->month && request()->boolean('nurInBesterReisezeit')) {
+        if ($filters->month && $filters->bestTimeOnly) {
             $query->whereRaw(
                 'JSON_CONTAINS(best_traveltime_json, ?)',
                 [json_encode((int) $filters->month)]
@@ -49,34 +48,22 @@ class SearchEngineV2
         }
 
         // ----------------------------------
-        // Sonnenstunden
+        // Klima
         // ----------------------------------
         if ($filters->sunshineMin && $filters->month) {
             $query->whereHas('climates', function ($q) use ($filters) {
                 $q->where('month_id', $filters->month)
-                  ->whereRaw(
-                      'COALESCE(sunshine_per_day,0) >= ?',
-                      [$filters->sunshineMin]
-                  );
+                    ->whereRaw('COALESCE(sunshine_per_day,0) >= ?', [$filters->sunshineMin]);
             });
         }
 
-        // ----------------------------------
-        // Wassertemperatur
-        // ----------------------------------
         if ($filters->waterTempMin && $filters->month) {
             $query->whereHas('climates', function ($q) use ($filters) {
                 $q->where('month_id', $filters->month)
-                  ->whereRaw(
-                      'COALESCE(water_temperature,0) >= ?',
-                      [$filters->waterTempMin]
-                  );
+                    ->whereRaw('COALESCE(water_temperature,0) >= ?', [$filters->waterTempMin]);
             });
         }
 
-        // ----------------------------------
-        // Tages-Temperatur Range
-        // ----------------------------------
         if ($filters->dailyTempMin || $filters->dailyTempMax) {
             $query->whereHas('climates', function ($q) use ($filters) {
 
@@ -95,10 +82,32 @@ class SearchEngineV2
         }
 
         // ----------------------------------
-        // Spezielle Wünsche (AND wie alte Logik)
+        // Activities (Motiv + Legacy)
         // ----------------------------------
         if (!empty($filters->activities)) {
-            foreach ($filters->activities as $wish) {
+
+            $validColumns = [
+                'list_beach',
+                'list_citytravel',
+                'list_sports',
+                'list_island',
+                'list_culture',
+                'list_nature',
+                'list_watersport',
+                'list_wintersport',
+                'list_mountainsport',
+                'list_biking',
+                'list_fishing',
+                'list_amusement_park',
+                'list_water_park',
+                'list_animal_park',
+            ];
+
+            foreach ((array) $filters->activities as $wish) {
+
+                if (!is_string($wish)) continue;
+                if (!in_array($wish, $validColumns, true)) continue;
+
                 $query->where($wish, 1);
             }
         }
@@ -117,6 +126,44 @@ class SearchEngineV2
             $query->where('dist_from_FRA', '<=', $filters->distance);
         }
 
+        // ----------------------------------
+        // TAG SYSTEM
+        // ----------------------------------
+        if (!empty($filters->tags)) {
+
+            // AND Logik (Standard)
+            if ($filters->tagMode === 'and') {
+
+                foreach ($filters->tags as $group => $slugs) {
+
+                    $slugs = array_values(array_filter((array) $slugs));
+                    if (empty($slugs)) continue;
+
+                    $query->whereHas('tags', function ($q) use ($group, $slugs) {
+                        $q->where('group', $group)
+                            ->whereIn('slug', $slugs);
+                    });
+                }
+            }
+            // OR Logik
+            else {
+
+                $query->where(function ($outer) use ($filters) {
+
+                    foreach ($filters->tags as $group => $slugs) {
+
+                        $slugs = array_values(array_filter((array) $slugs));
+                        if (empty($slugs)) continue;
+
+                        $outer->orWhereHas('tags', function ($q) use ($group, $slugs) {
+                            $q->where('group', $group)
+                                ->whereIn('slug', $slugs);
+                        });
+                    }
+                });
+            }
+        }
+
         return $query;
     }
 
@@ -133,7 +180,7 @@ class SearchEngineV2
         if (str_contains($value, '-')) {
             [$min, $max] = array_map(
                 'intval',
-                explode('-', str_replace(['€',' '], '', $value))
+                explode('-', str_replace(['€', ' '], '', $value))
             );
             $query->whereBetween('price_flight', [$min, $max]);
         } elseif (str_contains($value, '>')) {

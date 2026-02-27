@@ -4,6 +4,15 @@
             <label class="form-label">Name</label>
             <input type="text" class="form-control" wire:model="name" placeholder="Parkname">
             @error('name') <span class="text-danger small">{{ $message }}</span> @enderror
+        @if($name)
+    <div class="mb-2">
+        <small class="text-muted">
+            URL: /parks/{{ \Illuminate\Support\Str::slug($name) }}
+        </small>
+    </div>
+@endif
+
+
         </div>
         <div class="mb-4">
             <label class="form-label">Typ</label>
@@ -106,6 +115,27 @@
             <textarea class="form-control" wire:model="description" rows="3" placeholder="Kurze Beschreibung des Parks"></textarea>
             @error('description') <span class="text-danger small">{{ $message }}</span> @enderror
         </div>
+
+<div class="mb-4">
+    <label class="form-label">Monetarisierung</label>
+
+    <div class="form-check form-switch">
+        <input
+            type="checkbox"
+            class="form-check-input"
+            id="affiliateEnabled"
+            wire:model="affiliate_enabled"
+        >
+        <label class="form-check-label" for="affiliateEnabled">
+            Affiliate-Tickets aktivieren
+        </label>
+    </div>
+
+    <small class="text-muted">
+        Wenn aktiviert, wird auf der Park-Seite ein Ticket-Button angezeigt.
+    </small>
+</div>
+
         <div class="mb-4">
             <label class="form-label">Öffnungszeiten</label>
             <div class="mb-3">

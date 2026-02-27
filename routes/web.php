@@ -200,3 +200,13 @@ Route::get('/country-manager/edit/{id}', CountryManagerComponent::class)->name('
 Route::get('/location-manager/edit/{id}', LocationManagerComponent::class)->name('location-manager.edit');
 
 
+Route::prefix('parks')->group(function () {
+
+    // Detailseite
+    Route::get('{slug}', [App\Http\Controllers\Frontend\ParkController::class, 'show'])
+        ->name('parks.show');
+
+    // Affiliate Redirect
+    Route::get('{slug}/go/{provider}', [App\Http\Controllers\Frontend\ParkAffiliateController::class, 'go'])
+        ->name('park.go');
+});

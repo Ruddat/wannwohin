@@ -16,38 +16,94 @@ class DashboardController extends Controller
     {
         $totalLocations = WwdeLocation::count();
         $totalCountries = WwdeCountry::count();
-        $totalParks = AmusementParks::count();
-        $totalImages = ModLocationGalerie::count();
+        $totalParks     = AmusementParks::count();
+        $totalImages    = ModLocationGalerie::count();
 
-    // Top-10 Location Statistiken
-    $topLocations = DB::table('stat_top_ten_locations')
-        ->join('wwde_locations', 'stat_top_ten_locations.location_id', '=', 'wwde_locations.id')
-        ->select('wwde_locations.title', 'stat_top_ten_locations.search_count', 'wwde_locations.lat', 'wwde_locations.lon')
-        ->orderBy('stat_top_ten_locations.search_count', 'desc')
-        ->limit(10)
-        ->get();
+        // ===============================
+        // 📊 Last 7 vs 30 Days
+        // ===============================
+        $last7Days = DB::table('stat_location_search_histories')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->sum('search_count');
 
-    // Monatliche Zusammenfassung
-    $trafficSummary = DB::table('stat_location_search_histories')
-    ->select(
-        'month',
-        DB::raw('SUM(search_count) as total_searches')
-    )
-    ->whereNotNull('month') // Stellt sicher, dass month nicht NULL ist
-    ->groupBy('month')
-    ->orderBy('month', 'desc')
-    ->get();
+        $last30Days = DB::table('stat_location_search_histories')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->sum('search_count');
 
-      //  dd($trafficSummary);
+        $growthPercent = $last30Days > 0
+            ? round((($last7Days - ($last30Days / 4)) / ($last30Days / 4)) * 100, 1)
+            : 0;
 
-    return view('raadmin.index', compact(
-        'totalLocations',
-        'totalCountries',
-        'totalParks',
-        'totalImages',
-        'topLocations',
-        'trafficSummary',
-    ));
+        // ===============================
+        // 🔥 Top Locations Aggregated
+        // ===============================
+        $topLocations = DB::table('stat_location_search_histories')
+            ->join('wwde_locations', 'stat_location_search_histories.location_id', '=', 'wwde_locations.id')
+            ->select(
+                'wwde_locations.id',
+                'wwde_locations.title',
+                'wwde_locations.slug',
+                'wwde_locations.lat',
+                'wwde_locations.lon',
+                DB::raw('SUM(stat_location_search_histories.search_count) as search_count')
+            )
+            ->whereNotNull('wwde_locations.lat')
+            ->whereNotNull('wwde_locations.lon')
+            ->groupBy(
+                'wwde_locations.id',
+                'wwde_locations.title',
+                'wwde_locations.slug',
+                'wwde_locations.lat',
+                'wwde_locations.lon'
+            )
+            ->orderByDesc('search_count')
+            ->limit(10)
+            ->get();
 
+        // ===============================
+        // 🌍 Heatmap Data
+        // ===============================
+        $heatmapData = $topLocations->map(function ($loc) {
+            return [
+                'lat'   => (float)$loc->lat,
+                'lng'   => (float)$loc->lon,
+                'value' => (int)$loc->search_count,
+            ];
+        });
+
+        // ===============================
+        // 📊 Monthly Traffic Summary
+        // ===============================
+        $trafficSummary = DB::table('stat_location_search_histories')
+            ->select(
+                'month',
+                DB::raw('SUM(search_count) as total_searches')
+            )
+            ->whereNotNull('month')
+            ->groupBy('month')
+            ->orderByRaw("STR_TO_DATE(month, '%Y-%m') ASC")
+            ->get();
+
+
+        // ===============================
+        // 🟢 Active vs Pending Ratio
+        // ===============================
+        $activeLocations  = WwdeLocation::where('status', 'active')->count();
+        $pendingLocations = WwdeLocation::where('status', 'pending')->count();
+
+        return view('raadmin.index', compact(
+            'totalLocations',
+            'totalCountries',
+            'totalParks',
+            'totalImages',
+            'topLocations',
+            'last7Days',
+            'last30Days',
+            'growthPercent',
+            'heatmapData',
+            'activeLocations',
+            'pendingLocations',
+            'trafficSummary'
+        ));
     }
 }

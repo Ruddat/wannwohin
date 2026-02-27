@@ -32,6 +32,9 @@ class IndexController extends Controller
         // Top 10 Locations mit Klimadaten laden
         $topTenLocations = $this->getTopTenLocations();
 
+//dd($topTenLocations);
+
+
         // Gesamtanzahl der Locations
         $totalLocations = Cache::remember('total_finished_locations', 5 * 60, fn() => WwdeLocation::count());
 
@@ -89,68 +92,154 @@ class IndexController extends Controller
         ]);
     }
 
-    private function getTopTenLocations(): array
-    {
-Cache::forget('top_ten_location_ids');
+private function getTopTenLocations(): array
+{
+    return Cache::remember('homepage_top_ten', 600, function () {
 
-$topTenIds = DB::table('stat_top_ten_locations')
-    ->orderByDesc('search_count')
-    ->limit(10)
-    ->pluck('location_id')
-    ->toArray();
+        $months = [
+            now()->format('Y-m'),
+            now()->subMonth()->format('Y-m'),
+            now()->subMonths(2)->format('Y-m'),
+        ];
 
-        if (empty($topTenIds)) {
+        // 1️⃣ Ranking aggregieren
+        $ranking = DB::table('stat_location_search_histories')
+            ->select('location_id', DB::raw('SUM(search_count) as total'))
+            ->whereIn('month', $months)
+            ->groupBy('location_id')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        if ($ranking->isEmpty()) {
             return [];
         }
 
-        $currentMonth = (int) date('n'); // z. B. 3 für März
-        $currentYear = (int) date('Y'); // 2025
+        $topTenIds = $ranking->pluck('location_id')->toArray();
 
+        $currentMonth = (int) now()->format('n');
+
+        // 2️⃣ Letztes verfügbares Klima-Jahr (gecached)
+        $latestClimateYear = Cache::remember('latest_climate_year', 3600, function () {
+            return \App\Models\WwdeClimate::max('year');
+        });
+
+        if (!$latestClimateYear) {
+            return [];
+        }
+
+        // 3️⃣ Nur benötigte Klimadaten eager laden
         $locations = WwdeLocation::query()
             ->whereIn('id', $topTenIds)
-            ->with(['climates', 'continent', 'country'])
-            ->get()
-            ->map(function ($location) use ($currentMonth, $currentYear) {
-                $this->updateMissingIsoCodes($location);
+            ->with([
+                'continent:id,alias',
+                'country:id,alias',
+                'climates' => function ($q) use ($currentMonth, $latestClimateYear) {
+                    $q->where('month_id', $currentMonth)
+                      ->where('year', $latestClimateYear);
+                }
+            ])
+            ->orderByRaw('FIELD(id,' . implode(',', $topTenIds) . ')')
+            ->get();
 
-                // Klimadaten für aktuellen Monat/Jahr oder Fallback
-                $climateData = $location->climates
-                    ->where('month_id', sprintf('%02d', $currentMonth))
-                    ->where('year', $currentYear)
-                    ->first() ?? $location->climates->first() ?? (object)[
-                        'daily_temperature' => 'N/A',
-                        'night_temperature' => 'N/A',
-                        'humidity' => 'N/A',
-                        'sunshine_per_day' => 'N/A',
-                        'water_temperature' => 'N/A',
-                        'weather_description' => 'N/A',
-                        'icon' => 'default',
-                    ];
+        // 4️⃣ Mapping
+        return $locations->map(function ($location) {
 
-                return [
-                    'location_id' => $location->id,
-                    'location_title' => $location->title ?? 'Unbekannte Location',
-                    'location_alias' => $location->alias ?? '',
-                    'iso2' => $location->iso2 ?? 'N/A',
-                    'iso3' => $location->iso3 ?? 'N/A',
-                    'continent' => $location->continent->alias ?? 'Unbekannt',
-                    'country' => $location->country->alias ?? 'Unbekannt',
-                    'climate_data' => [
-                        'daily_temperature' => (int)($climateData->daily_temperature ?? 'N/A'),
-                        'night_temperature' => (int)($climateData->night_temperature ?? 'N/A'),
-                        'humidity' => (int)($climateData->humidity ?? 'N/A'),
-                        'sunshine_per_day' => (int)($climateData->sunshine_per_day ?? 'N/A'),
-                        'water_temperature' => (int)($climateData->water_temperature ?? 'N/A'),
-                        'weather_description' => $climateData->weather_description ?? 'N/A',
-                        'icon' => $climateData->icon ?? 'default',
-                    ],
-                ];
-            })->all();
+            $climate = $location->climates->first();
 
-        Log::info('Top 10 Locations Data', ['locations' => $locations]);
+            $temp  = $climate->daily_temperature ?? null;
+            $rain  = $climate->rain_probability ?? null;
+            $sun   = $climate->sunshine_per_day ?? null;
+            $humid = $climate->humidity ?? null;
 
-        return array_slice($locations, 0, 10);
+$climateMeta = $this->resolveClimateMeta($sun, $rain, $temp);
+
+            return [
+                'location_id'    => $location->id,
+                'location_title' => $location->title,
+                'location_alias' => $location->alias,
+                'iso2'           => $location->iso2,
+                'iso3'           => $location->iso3,
+                'continent'      => $location->continent->alias ?? null,
+                'country'        => $location->country->alias ?? null,
+                'climate_data'   => [
+                    'daily_temperature' => $temp,
+                    'night_temperature' => $climate->night_temperature ?? null,
+                    'humidity'          => $humid,
+                    'sunshine_per_day'  => $sun,
+                    'water_temperature' => $climate->water_temperature ?? null,
+                   // 'icon'              => $this->resolveClimateIcon($sun, $rain, $temp),
+
+
+'icon'        => $climateMeta['icon'],
+'description' => $climateMeta['description'],
+
+                ],
+            ];
+        })->toArray();
+
+    });
+}
+
+
+private function resolveClimateMeta($sun, $rain, $temp): array
+{
+    if (!$sun && !$rain && !$temp) {
+        return [
+            'icon' => 'default',
+            'description' => 'Keine Klimadaten verfügbar'
+        ];
     }
+
+    if ($rain > 60) {
+        return [
+            'icon' => 'rainy',
+            'description' => 'Regnerische Bedingungen'
+        ];
+    }
+
+    if ($temp !== null && $temp <= 0) {
+        return [
+            'icon' => 'snowy',
+            'description' => 'Winterliche Temperaturen'
+        ];
+    }
+
+    if ($sun > 8 && $temp > 25) {
+        return [
+            'icon' => 'sunny',
+            'description' => 'Sonnig und warm'
+        ];
+    }
+
+    if ($sun > 5) {
+        return [
+            'icon' => 'partly-cloudy',
+            'description' => 'Teilweise sonnig'
+        ];
+    }
+
+    return [
+        'icon' => 'cloudy',
+        'description' => 'Überwiegend bewölkt'
+    ];
+}
+
+
+private function resolveClimateIcon($sun, $rain, $temp): string
+{
+    if (!$sun && !$rain && !$temp) {
+        return 'default';
+    }
+
+    if ($rain > 60) return 'rainy';
+    if ($temp <= 0) return 'snowy';
+    if ($sun > 8 && $temp > 25) return 'sunny';
+    if ($sun > 5) return 'partly-cloudy';
+
+    return 'cloudy';
+}
+
 
     private function updateMissingIsoCodes($location): void
     {

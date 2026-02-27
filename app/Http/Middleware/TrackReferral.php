@@ -11,6 +11,19 @@ class TrackReferral
 {
     public function handle(Request $request, Closure $next)
     {
+
+
+    if (
+        !$request->isMethod('GET') ||              // nur echte Seitenaufrufe
+        $request->is('track-dwell-time') ||       // Tracking-Endpoint ausschließen
+        $request->routeIs('track.dwell.time') ||  // zusätzliche Sicherheit
+        $request->is('admin/*') ||                // Backend ignorieren
+        $request->is('livewire/*') ||             // Livewire AJAX ignorieren
+        auth('admin')->check()                    // Admin komplett ignorieren
+    ) {
+        return $next($request);
+    }
+
         $referer = $request->header('referer');
         $landingPage = $request->fullUrl();
         $ipAddress = $request->ip();

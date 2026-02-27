@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Frontend\LocationDetails;
 
-use DateTime;
-
 use App\Http\Controllers\Controller;
 use App\Services\LocationPageService;
+use DateTime;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -19,6 +19,8 @@ public function show($continent, $country, $location, LocationPageService $servi
     $data = $service->get($slug);
 
     $locationModel = $data['location'];
+
+    $this->trackLocationView($locationModel->id);
 
     return view('frondend.locationdetails._index', array_merge($data, [
 
@@ -47,5 +49,32 @@ public function show($continent, $country, $location, LocationPageService $servi
         'gallery_images' => $data['gallery_images'] ?? [],
     ]));
 }
+
+private function trackLocationView(int $locationId): void
+{
+    $month = now()->format('Y-m');
+
+    // Session-Key verhindert Mehrfachzählung
+    $sessionKey = "viewed_location_{$locationId}_{$month}";
+
+    if (session()->has($sessionKey)) {
+        return;
+    }
+
+    DB::table('stat_location_search_histories')->updateOrInsert(
+        [
+            'location_id' => $locationId,
+            'month'       => $month,
+        ],
+        [
+            'search_count' => DB::raw('search_count + 1'),
+            'updated_at'   => now(),
+        ]
+    );
+
+    session()->put($sessionKey, true);
+}
+
+
 
 }

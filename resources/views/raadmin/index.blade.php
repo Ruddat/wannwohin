@@ -35,6 +35,9 @@
                 </div>
             </div>
 
+
+
+
             <!-- Total Countries -->
             <div class="col-sm-6 col-lg-3">
                 <div class="card bg-success-lt h-100">
@@ -94,6 +97,53 @@
                     </div>
                 </div>
             </div>
+
+
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Last 7 Days</div>
+                        <div class="h2">{{ number_format($last7Days) }}</div>
+                        <div class="text-muted small">Last 30 Days: {{ number_format($last30Days) }}</div>
+                    </div>
+
+                    <div class="text-end">
+                        @if($growthPercent > 0)
+                            <div class="text-success h3">▲ {{ $growthPercent }}%</div>
+                        @elseif($growthPercent < 0)
+                            <div class="text-danger h3">▼ {{ abs($growthPercent) }}%</div>
+                        @else
+                            <div class="text-muted h3">0%</div>
+                        @endif
+                        <div class="small text-muted">vs Monthly Avg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active vs Pending -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-bold">Location Status Ratio</div>
+            <div class="card-body">
+                <canvas id="statusChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
         </div>
 
         <!-- Weitere Inhalte -->
@@ -158,9 +208,12 @@
 
 <!-- Daten für JavaScript -->
 <script>
-    window.trafficSummaryData = {!! json_encode($trafficSummary->pluck('total_searches')->toArray()) !!};
-    window.trafficSummaryMonths = {!! json_encode($trafficSummary->pluck('month')->toArray()) !!};
-    window.topLocations = {!! json_encode($topLocations) !!};
+    window.trafficSummaryData = @json($trafficSummary->pluck('total_searches'));
+    window.trafficSummaryMonths = @json($trafficSummary->pluck('month'));
+    window.topLocations = @json($topLocations ?? []);
+    window.heatmapData = @json($heatmapData);
+    window.activeLocations = {{ $activeLocations ?? 0 }};
+    window.pendingLocations = {{ $pendingLocations ?? 0 }};
 </script>
 @endsection
 

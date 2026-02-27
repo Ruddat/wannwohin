@@ -31,7 +31,7 @@ Schedule::command('scrape:travel-warnings')->monthly();
 Schedule::command('currency:update-exchange-rates')->monthly();
 
 // Stündliche Aufgaben
-Schedule::command('locations:update-history')->hourly();
+// Schedule::command('locations:update-history')->hourly();
 
 // Backup-Aufgaben
 Schedule::command('backup:run')->dailyAt('02:00');

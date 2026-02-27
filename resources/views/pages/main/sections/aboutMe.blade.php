@@ -18,7 +18,8 @@
                         style="animation-delay: 0.6s;">
                         @autotranslate('Wir wünschen Ihnen viel Freude bei der Reiseplanung – Ihr Team von wann-wohin.de', app()->getLocale())
                     </p>
-                    <a href="{{ route('explore') }}" class="btn btn-explore mt-3 animate__animated animate__pulse" id="explore-btn" style="animation-delay: 0.8s;">
+                    <a href="{{ route('explore') }}" class="btn btn-explore mt-3 animate__animated animate__pulse"
+                        id="explore-btn" style="animation-delay: 0.8s;">
                         @autotranslate('Finde jetzt dein Abenteuer!', app()->getLocale())
                     </a>
                     <p class="text-color-grey small mt-2">
@@ -26,7 +27,7 @@
                     </p>
 
 
-{{--
+                    {{--
 
 <p class="text-color-grey small mt-3">
     @autotranslate('Tipp für USA-Reisende:', app()->getLocale())
@@ -45,16 +46,18 @@
 --}}
 
                 </div>
-
-
                 <!-- Top 10 Box -->
                 <div class="col-lg-6">
                     <div class="top-ten-box bg-white p-4 rounded shadow-lg aanimate__backInRight"
-
                         style="animation-delay: 0.4s;">
-                        <h4 class="text-center text-color-dark font-weight-bold mb-4">
-                            🌟 @autotranslate('Top 10 Reiseziele', app()->getLocale())
+                        <h4 class="text-center text-color-dark font-weight-bold mb-2">
+                            🌟 Top 10 Reiseziele
                         </h4>
+
+                        <p class="text-muted text-center small mb-4">
+                            Die angezeigten Temperaturen und Wetterbedingungen basieren auf durchschnittlichen
+                            Monatswerten des letzten verfügbaren Jahres.
+                        </p>
                         @if (!empty($top_ten))
                             <!-- Desktop-Tabelle -->
                             <div class="d-none d-md-block table-responsive">
@@ -92,9 +95,9 @@
                                                 <td class="text-center">
                                                     @if (!empty($location['climate_data']['icon']))
                                                         <img src="{{ asset('weather-icons/' . $location['climate_data']['icon'] . '.png') }}"
-                                                            alt="{{ $location['climate_data']['weather_description'] ?? '-' }}"
+                                                            alt="{{ $location['climate_data']['description'] ?? '-' }}"
                                                             class="weather-icon" data-bs-toggle="tooltip"
-                                                            title="{{ $location['climate_data']['weather_description'] ?? '-' }}">
+                                                            title="{{ $location['climate_data']['description'] ?? '-' }}">
                                                     @else
                                                         -
                                                     @endif
@@ -128,9 +131,9 @@
                                                 <span>{{ $location['climate_data']['daily_temperature'] ?? 'N/A' }}°C</span>
                                                 @if (!empty($location['climate_data']['icon']))
                                                     <img src="{{ asset('weather-icons/' . $location['climate_data']['icon'] . '.png') }}"
-                                                        alt="{{ $location['climate_data']['weather_description'] ?? '-' }}"
+                                                        alt="{{ $location['climate_data']['description'] ?? '-' }}"
                                                         class="weather-icon" data-bs-toggle="tooltip"
-                                                        title="{{ $location['climate_data']['weather_description'] ?? '-' }}">
+                                                        title="{{ $location['climate_data']['description'] ?? '-' }}">
                                                 @else
                                                     <span>-</span>
                                                 @endif
@@ -199,8 +202,7 @@
         transition: transform 0.3s ease;
     }
 
-    .top-ten-box:hover {
-    }
+    .top-ten-box:hover {}
 
     .top-ten-box h4 {
         font-size: 1.5rem;
@@ -312,29 +314,29 @@
 
 
     .btn-explore {
-    background: linear-gradient(135deg, #ff6b6b, #ff8e53); /* Auffälliger Farbverlauf */
-    border: none;
-    padding: 14px 35px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: white;
-    text-transform: uppercase;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-    transition: all 0.3s ease;
-}
+        background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+        /* Auffälliger Farbverlauf */
+        border: none;
+        padding: 14px 35px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: white;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        transition: all 0.3s ease;
+    }
 
-.btn-explore:hover {
-    background: linear-gradient(135deg, #ff8e53, #ff6b6b);
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
-}
+    .btn-explore:hover {
+        background: linear-gradient(135deg, #ff8e53, #ff6b6b);
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    }
 
-.animate__pulse {
-    animation-iteration-count: infinite;
-    animation-duration: 1.5s;
-}
-
+    .animate__pulse {
+        animation-iteration-count: infinite;
+        animation-duration: 1.5s;
+    }
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -353,7 +355,10 @@
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    const location = { lat, lon };
+                    const location = {
+                        lat,
+                        lon
+                    };
                     localStorage.setItem('userLocation', JSON.stringify(location));
                     callback(location);
                 },
@@ -373,8 +378,7 @@
                             localStorage.setItem('userLocation', 'error');
                     }
                     callback(null);
-                },
-                {
+                }, {
                     timeout: 10000, // Erhöhe Timeout auf 10 Sekunden
                     maximumAge: 60000, // Akzeptiere Standortdaten, die bis zu 60 Sekunden alt sind
                     enableHighAccuracy: false // Keine hohe Genauigkeit erforderlich, spart Zeit
@@ -394,9 +398,14 @@
             e.preventDefault();
             const storedLocation = localStorage.getItem('userLocation');
 
-            if (storedLocation && storedLocation !== 'not_available' && storedLocation !== 'denied' && storedLocation !== 'unavailable' && storedLocation !== 'timeout' && storedLocation !== 'error' && storedLocation !== 'not_supported') {
+            if (storedLocation && storedLocation !== 'not_available' && storedLocation !== 'denied' &&
+                storedLocation !== 'unavailable' && storedLocation !== 'timeout' && storedLocation !==
+                'error' && storedLocation !== 'not_supported') {
                 try {
-                    const { lat, lon } = JSON.parse(storedLocation);
+                    const {
+                        lat,
+                        lon
+                    } = JSON.parse(storedLocation);
                     window.location.href = `/explore?lat=${lat}&lon=${lon}`;
                 } catch (err) {
                     console.error('Fehler beim Parsen der Standortdaten:', err);
@@ -409,4 +418,4 @@
             }
         });
     });
-    </script>
+</script>

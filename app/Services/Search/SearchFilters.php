@@ -16,7 +16,7 @@ class SearchFilters
     public ?int $dailyTempMin = null;
     public ?int $dailyTempMax = null;
 
-    public ?array $activities = null;
+    public array $activities = [];
 
     public ?string $language = null;
     public ?string $currency = null;
@@ -25,6 +25,16 @@ class SearchFilters
 
     public ?int $flightDuration = null;
     public ?int $distance = null;
+
+    // 🔥 TAG SYSTEM
+    public array $tags = [];
+
+    // 🔥 BESTE REISEZEIT
+    public bool $bestTimeOnly = false;
+
+    // 🔥 TAG LOGIC: 'and' | 'or'
+    public string $tagMode = 'and';
+
 
     public static function fromRequest(Request $request): self
     {

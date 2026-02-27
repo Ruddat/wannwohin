@@ -1,35 +1,36 @@
 <?php
 
 
-use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\Admin\AuthController;
+use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
+use App\Http\Controllers\Backend\Location\LocationController;
+use App\Http\Controllers\Backend\SeoStatistik\VisitorStatsController;
+use App\Http\Controllers\Backend\SystemComponent\BackupController;
+use App\Livewire\Backend\AdvertisementManager\AdvertisementBlocksComponent;
+use App\Livewire\Backend\AdvertisementManager\ProvidersComponent;
+use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
+use App\Livewire\Backend\CountryManager\CountryManagerComponent;
+use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
+use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
+use App\Livewire\Backend\LocationFilters\AdvancedLocationFilter;
+use App\Livewire\Backend\LocationFilters\LocationFilterTable;
+use App\Livewire\Backend\LocationManager\LocationManagerComponent;
+use App\Livewire\Backend\LocationManager\LocationTableComponent;
+use App\Livewire\Backend\ParkListManager\ParkFormComponent;
+use App\Livewire\Backend\ParkListManager\ParkListComponent;
+use App\Livewire\Backend\QuickFilterManager\QuickFilterComponent;
+use App\Livewire\Backend\RangeManager\RangeManagerComponent;
 use App\Livewire\Backend\SeoMetaComponent\SeoMetaEdit;
 use App\Livewire\Backend\SeoMetaComponent\SeoMetaTable;
 use App\Livewire\Backend\SeoMetaComponent\VisitorStats;
-use App\Livewire\Backend\ParkListManager\ParkFormComponent;
-use App\Livewire\Backend\ParkListManager\ParkListComponent;
-use App\Livewire\Backend\WeatherManager\ClimateDataManager;
-use App\Livewire\Backend\RangeManager\RangeManagerComponent;
-use App\Http\Controllers\Backend\Location\LocationController;
-use App\Livewire\Backend\LocationFilters\LocationFilterTable;
-use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
-use App\Livewire\Backend\CountryManager\CountryManagerComponent;
-use App\Livewire\Backend\GalleryManager\GalleryManagerComponent;
-use App\Livewire\Backend\LocationFilters\AdvancedLocationFilter;
-use App\Livewire\Backend\LocationManager\LocationTableComponent;
-use App\Livewire\Backend\AdvertisementManager\ProvidersComponent;
-use App\Livewire\Backend\QuickFilterManager\QuickFilterComponent;
-use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
-use App\Http\Controllers\Backend\SystemComponent\BackupController;
-use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
-use App\Livewire\Backend\LocationManager\LocationManagerComponent;
 use App\Livewire\Backend\SiteSettingsComponent\SiteSettingsManager;
-use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
-use App\Http\Controllers\Backend\SeoStatistik\VisitorStatsController;
 use App\Livewire\Backend\StaticPageManager\StaticPageManagerComponent;
-use App\Http\Controllers\Backend\HeaderContent\HeaderContentController;
 use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
-use App\Livewire\Backend\AdvertisementManager\AdvertisementBlocksComponent;
+use App\Livewire\Backend\WeatherManager\ClimateDataManager;
+use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
+use App\Livewire\Backend\WeatherManager\WeatherStationsComponent;
+use Illuminate\Support\Facades\Route;
 
 
 // admin.php
@@ -168,6 +169,9 @@ Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function (
     ->name('backup.delete');
 
 //    Route::delete('/backups/delete/{path}', [BackupController::class, 'delete'])->name('backup.delete');
+
+        Route::get('/settings/account', \App\Livewire\Backend\Settings\AccountSettings::class)
+            ->name('settings.account');
 });
 
 

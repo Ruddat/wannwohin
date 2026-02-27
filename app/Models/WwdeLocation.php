@@ -485,4 +485,12 @@ class WwdeLocation extends Model
     {
         return $this->hasMany(ModLocationFilter::class, 'location_id', 'id');
     }
+
+public function tags()
+{
+    return $this->belongsToMany(\App\Models\WwdeTag::class, 'wwde_location_tag', 'location_id', 'tag_id')
+        ->withTimestamps();
+}
+
+
 }

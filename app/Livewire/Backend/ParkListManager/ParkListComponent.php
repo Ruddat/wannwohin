@@ -24,6 +24,8 @@ class ParkListComponent extends Component
 
     protected $geocodeService;
 
+    public $affiliate_enabled = false;
+
     public function mount()
     {
         $this->countries = AmusementParks::select('country')->distinct()->pluck('country')->toArray();

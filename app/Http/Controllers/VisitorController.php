@@ -9,6 +9,7 @@ class VisitorController extends Controller
 {
     public function trackDwellTime(Request $request)
     {
+
         $sessionId = $request->input('session_id');
         $dwellTime = $request->input('dwell_time');
         $pageUrl = $request->input('page_url');
@@ -16,8 +17,7 @@ class VisitorController extends Controller
         $session = ModVisitorSession::where('session_id', $sessionId)->first();
         if ($session) {
             $session->update([
-                'dwell_time' => $session->dwell_time + $dwellTime,
-                'page_url' => $pageUrl,
+                'dwell_time' => max($session->dwell_time, $dwellTime),
                 'last_activity_at' => now(),
             ]);
         }

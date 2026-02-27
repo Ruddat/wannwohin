@@ -8,23 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('wwde_locations', function (Blueprint $table) {
-            // UNIQUE(alias) hinzufügen, falls noch nicht vorhanden
-            try {
-                $table->unique('alias', 'wwde_locations_alias_unique');
-            } catch (\Exception $e) {
-                // Index existiert bereits → ignorieren
-            }
-        });
+        // alias darf nicht global unique sein
+        // bewusst leer
     }
 
     public function down(): void
     {
-        Schema::table('wwde_locations', function (Blueprint $table) {
-            // UNIQUE(alias) entfernen, falls existiert
-            try {
-                $table->dropUnique('wwde_locations_alias_unique');
-            } catch (\Exception $e) {}
-        });
+        // nichts zu tun
     }
 };

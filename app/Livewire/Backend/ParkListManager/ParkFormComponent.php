@@ -39,6 +39,8 @@ class ParkFormComponent extends Component
     public $defaultClose = '';
     public $hasVideo = false;
 
+    public $affiliate_enabled = false;
+
     protected $rules = [
         'name' => 'required|string',
         'country' => 'required|string',
@@ -92,6 +94,7 @@ class ParkFormComponent extends Component
                     'videoUrl' => $park->video_url,
                     'embedCode' => $park->embed_code,
                     'logoUrl' => $park->logo_url,
+                    'affiliate_enabled' => $park->affiliate_enabled,
                 ]);
                 $this->hasVideo = !empty($park->video_url) || !empty($park->embed_code);
                 if ($park->opening_hours && $park->opening_hours !== 'null') {
@@ -202,6 +205,7 @@ class ParkFormComponent extends Component
         $this->validate($rules);
 
         $externalId = Str::slug($this->name, '');
+        $slug = Str::slug($this->name);
 
         $openingHours = is_array($this->opening_hours) ? $this->opening_hours : [];
         if ($this->applyToAll && $this->defaultOpen && $this->defaultClose) {
@@ -219,9 +223,15 @@ class ParkFormComponent extends Component
             }
         }
 
+        $countryModel = \App\Models\WwdeCountry::where('title', $this->country)->first();
+
+
         $data = [
             'name' => $this->name,
             'country' => $this->country,
+            'country_id' => $countryModel?->id,
+            'slug' => $slug,
+            'affiliate_enabled' => $this->affiliate_enabled,
             'type' => $this->type,
             'location' => $this->location,
             'latitude' => $this->latitude,
@@ -430,6 +440,6 @@ class ParkFormComponent extends Component
     public function render()
     {
         return view('livewire.backend.park-list-manager.park-form-component')
-        ->layout('raadmin.layout.master');
+            ->layout('raadmin.layout.master');
     }
 }

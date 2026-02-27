@@ -78,6 +78,7 @@
                     <li><a href="{{ route('verwaltung.seo-table-manager.site-settings') }}">Site Settings</a></li>
                     <li><a href="{{ route('verwaltung.seo-table-manager.static-page-manager') }}">Statische Seiten</a></li>
                     <li><a href="{{ route('verwaltung.translation-manager.index') }}">Translation Manager</a></li>
+                    <li><a href="{{ route('verwaltung.seo-table-manager.settings.account') }}">Account Settings</a></li>
                 </ul>
             </li>
 
