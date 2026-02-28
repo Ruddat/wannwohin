@@ -5,88 +5,65 @@ namespace App\Console\Commands\Fix;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\Tags\TagNormalizer;
 
 class RebuildLocationTags extends Command
 {
     protected $signature = 'locations:rebuild-tags {--dry-run}';
-    protected $description = 'Rebuild wwde_tags and wwde_location_tag from mod_location_filters';
+    protected $description = 'Rebuild dynamic tag system from mod_location_filters';
 
-    public function handle()
+    public function handle(TagNormalizer $normalizer)
     {
         $dryRun = $this->option('dry-run');
-
-        $this->info('Collecting distinct filter categories...');
 
         $filters = DB::table('mod_location_filters')
             ->where('is_active', 1)
             ->whereNotNull('category')
-            ->select('text_type', 'category')
-            ->distinct()
             ->get();
 
-        $this->info('Found '.$filters->count().' unique tag combinations.');
-
         if (!$dryRun) {
-            DB::table('wwde_tags')->truncate();
+            DB::table('wwde_location_tag')->delete();
         }
+
+        $inserted = 0;
 
         foreach ($filters as $filter) {
 
-            $group = Str::slug($filter->text_type);
-            $title = trim($filter->category);
-            $slug  = Str::slug($title);
+            $normalized = $normalizer->normalize($filter->category);
 
-            if ($dryRun) {
-                $this->line("Would create: {$group} / {$slug}");
+            $tag = DB::table('wwde_tags')
+                ->where('normalized', $normalized)
+                ->first();
+
+            if (!$tag && !$dryRun) {
+
+                $tagId = DB::table('wwde_tags')->insertGetId([
+                    'group'      => $filter->text_type,
+                    'title'      => trim($filter->category),
+                    'slug'       => Str::slug($filter->category),
+                    'normalized' => $normalized,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+            } else {
+                $tagId = $tag->id ?? null;
+            }
+
+            if ($dryRun || !$tagId) {
                 continue;
             }
 
-            DB::table('wwde_tags')->insertOrIgnore([
-                'group'      => $group,
-                'slug'       => $slug,
-                'title'      => $title,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->info('Tags rebuilt.');
-
-        // -------------------------
-        // Pivot neu aufbauen
-        // -------------------------
-
-        if (!$dryRun) {
-            DB::table('wwde_location_tag')->truncate();
-        }
-
-        $this->info('Rebuilding pivot table...');
-
-        $relations = DB::table('mod_location_filters as f')
-            ->join('wwde_tags as t', function ($join) {
-                $join->on(DB::raw('LOWER(TRIM(f.category))'), '=', DB::raw('LOWER(t.title)'));
-            })
-            ->where('f.is_active', 1)
-            ->select('f.location_id', 't.id as tag_id')
-            ->distinct()
-            ->get();
-
-        $this->info('Found '.$relations->count().' pivot relations.');
-
-        if ($dryRun) {
-            $this->warn('Dry run finished.');
-            return;
-        }
-
-        foreach ($relations as $row) {
             DB::table('wwde_location_tag')->insertOrIgnore([
-                'location_id' => $row->location_id,
-                'tag_id'      => $row->tag_id,
+                'location_id' => $filter->location_id,
+                'tag_id'      => $tagId,
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ]);
+
+            $inserted++;
         }
 
-        $this->info('Pivot rebuilt successfully.');
+        $this->info("Inserted {$inserted} pivot relations.");
     }
 }

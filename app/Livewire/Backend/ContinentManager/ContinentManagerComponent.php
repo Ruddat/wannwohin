@@ -24,6 +24,7 @@ class ContinentManagerComponent extends Component
     public $status = 'active';
     public $search = '';
     public $editMode = false;
+    public $continents = [];
 
     public $searchKeyword = '';
     public $pixabayImages = [];

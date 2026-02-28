@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AmusementParkService
 {
@@ -72,7 +73,7 @@ class AmusementParkService
                 'lon' => $response[0]['lon'] ?? null,
             ];
         } catch (\Exception $e) {
-            \Log::error("Failed to fetch coordinates for {$parkName}: " . $e->getMessage());
+            Log::error("Failed to fetch coordinates for {$parkName}: " . $e->getMessage());
             return ['lat' => null, 'lon' => null];
         }
     }

@@ -37,23 +37,47 @@ $months = [
     now()->subMonths(2)->format('Y-m'),
 ];
 
-$popularLocations = DB::table('stat_location_search_histories')
-    ->join('wwde_locations', 'stat_location_search_histories.location_id', '=', 'wwde_locations.id')
-    ->join('wwde_continents', 'wwde_locations.continent_id', '=', 'wwde_continents.id')
-    ->join('wwde_countries', 'wwde_locations.country_id', '=', 'wwde_countries.id')
-    ->whereIn('month', $months)
-    ->groupBy(
-        'wwde_locations.id',
-        'wwde_continents.alias',
-        'wwde_countries.alias'
-    )
+/*
+|--------------------------------------------------------------------------
+| 1) Stats zuerst aggregieren (clean, nur location_id + SUM)
+|--------------------------------------------------------------------------
+*/
+$statsSub = DB::table('stat_location_search_histories')
     ->select(
-        'wwde_locations.*',
-        'wwde_continents.alias as continent_alias',
-        'wwde_countries.alias as country_alias',
-        DB::raw('SUM(stat_location_search_histories.search_count) as search_count')
+        'location_id',
+        DB::raw('SUM(search_count) as total_search_count')
     )
-    ->orderByDesc('search_count')
+    ->whereIn('month', $months)
+    ->groupBy('location_id');
+
+/*
+|--------------------------------------------------------------------------
+| 2) Danach joinen wir nur noch auf Locations
+|--------------------------------------------------------------------------
+*/
+$popularLocations = DB::query()
+    ->fromSub($statsSub, 'stats')
+    ->join('wwde_locations', 'stats.location_id', '=', 'wwde_locations.id')
+    ->select(
+        'wwde_locations.id',
+        'wwde_locations.title',
+        'wwde_locations.slug',
+        'wwde_locations.full_slug',
+        'wwde_locations.lat',
+        'wwde_locations.lon',
+        'wwde_locations.text_pic1',
+        'wwde_locations.climate_details_lnam',
+
+        // Activity Flags (wichtig für Blade!)
+        'wwde_locations.list_beach',
+        'wwde_locations.list_citytravel',
+        'wwde_locations.list_sports',
+        'wwde_locations.list_nature',
+        'wwde_locations.list_culture',
+
+        DB::raw('stats.total_search_count as search_count')
+    )
+    ->orderByDesc('stats.total_search_count')
     ->limit(12)
     ->get();
 
@@ -66,7 +90,7 @@ $popularLocations = DB::table('stat_location_search_histories')
             'image' => asset('img/explore.jpg'),
         ]);
 
-
+//dd($popularLocations);
 
         $headerData = HeaderHelper::getHeaderContent('explore');
         Session::put('headerData', $headerData);

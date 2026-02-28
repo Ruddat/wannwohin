@@ -9,6 +9,7 @@ use App\Http\Controllers\Backend\SeoStatistik\VisitorStatsController;
 use App\Http\Controllers\Backend\SystemComponent\BackupController;
 use App\Livewire\Backend\AdvertisementManager\AdvertisementBlocksComponent;
 use App\Livewire\Backend\AdvertisementManager\ProvidersComponent;
+use App\Livewire\Backend\ConflictManager\AdminTagConflictManager;
 use App\Livewire\Backend\ContinentManager\ContinentManagerComponent;
 use App\Livewire\Backend\CountryManager\CountryManagerComponent;
 use App\Livewire\Backend\ElectricManager\ElectricManagerComponent;
@@ -26,6 +27,7 @@ use App\Livewire\Backend\SeoMetaComponent\SeoMetaTable;
 use App\Livewire\Backend\SeoMetaComponent\VisitorStats;
 use App\Livewire\Backend\SiteSettingsComponent\SiteSettingsManager;
 use App\Livewire\Backend\StaticPageManager\StaticPageManagerComponent;
+use App\Livewire\Backend\Tags\AdminTagManager;
 use App\Livewire\Backend\TranslationManager\TranslationManagerComponent;
 use App\Livewire\Backend\WeatherManager\ClimateDataManager;
 use App\Livewire\Backend\WeatherManager\WeatherStationImporter;
@@ -140,9 +142,15 @@ Route::prefix('range-manager')->name('range-manager.')->group(function () {
     });
 
 
+    // Conflict Manager
+    Route::prefix('conflict-manager')->name('conflict-manager.')->group(function () {
+        Route::get('/tag-conflicts', AdminTagConflictManager::class)->name('tag-conflicts');
+    });
 
-
-
+    // Tag Manager
+    Route::prefix('tag-manager')->name('tag-manager.')->group(function () {
+        Route::get('/', AdminTagManager::class)->name('index');
+    });
 
 // SiteSettings Manager SeoMetaTable Manager
 Route::prefix('seo-table-manager')->name('seo-table-manager.')->group(function () {

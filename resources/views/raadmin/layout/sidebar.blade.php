@@ -52,6 +52,33 @@
                 </ul>
             </li>
 
+            {{-- Conflict Manager
+            <li class="menu-title"><span>Conflict Manager</span></li>
+            <li>
+                <a class="" href="#ConflictManager" data-bs-toggle="collapse" aria-expanded="false">
+                    <i class="ph-duotone ph-exclamation-triangle"></i>
+                    Conflict Manager
+                </a>
+                <ul class="collapse" id="ConflictManager">
+                    <li><a href="{{ route('verwaltung.conflict-manager.tag-conflicts') }}">Tag Conflicts</a></li>
+                </ul>
+            </li>
+--}}
+
+            {{-- Tag Manager --}}
+            <li class="menu-title"><span>Tag Manager</span></li>
+            <li>
+                <a class="" href="#TagManager" data-bs-toggle="collapse" aria-expanded="false">
+                    <i class="ph-duotone ph-tag"></i>
+                    Tag Manager
+                </a>
+                <ul class="collapse" id="TagManager">
+                    <li><a href="{{ route('verwaltung.tag-manager.index') }}">Alle Tags</a></li>
+                </ul>
+            </li>
+
+
+
             <!-- Import & Scrape -->
             <li class="menu-title"><span>Import & Scrape</span></li>
             <li>
@@ -66,6 +93,9 @@
                 </ul>
             </li>
 
+
+
+
             <!-- System -->
             <li class="menu-title"><span>System</span></li>
             <li>
@@ -79,6 +109,7 @@
                     <li><a href="{{ route('verwaltung.seo-table-manager.static-page-manager') }}">Statische Seiten</a></li>
                     <li><a href="{{ route('verwaltung.translation-manager.index') }}">Translation Manager</a></li>
                     <li><a href="{{ route('verwaltung.seo-table-manager.settings.account') }}">Account Settings</a></li>
+
                 </ul>
             </li>
 

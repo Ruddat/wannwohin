@@ -403,10 +403,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p><strong>Aktivitäten:</strong> {{ $activityList ?: 'Keine spezifizierten Aktivitäten' }}</p>
                                     </div>
                                     <footer class="ds-card-footer">
-                                        <a href="{{ url('/details/' . ($popularLocation->continent_alias ?? 'unknown') . '/' . ($popularLocation->country_alias ?? 'unknown') . '/' . ($popularLocation->alias ?? 'unknown')) }}"
-                                           class="ds-card-button">
-                                            Mehr sehen
-                                        </a>
+<a href="{{ url('/reise/' . $popularLocation->full_slug) }}"
+   class="ds-card-button">
+    Mehr sehen
+</a>
                                     </footer>
                                 </div>
                             </div>

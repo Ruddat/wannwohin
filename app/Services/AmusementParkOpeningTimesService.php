@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AmusementParkOpeningTimesService
 {
@@ -54,7 +55,7 @@ class AmusementParkOpeningTimesService
             ];
         }
 
-        \Log::error("Failed to fetch queue times for park ID {$queueTimesId}: " . $response->body());
+        Log::error("Failed to fetch queue times for park ID {$queueTimesId}: " . $response->body());
         return null;
     }
 

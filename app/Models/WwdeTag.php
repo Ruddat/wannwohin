@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WwdeTag extends Model
 {
-    protected $fillable = ['group','slug','title'];
+    protected $fillable = ['group','slug','title', 'normalized', 'parent_id', 'usage_count'];
 
     public function locations()
     {
@@ -24,5 +24,12 @@ public function parks()
         'park_id'
     );
 }
+
+
+public function aliases()
+{
+    return $this->hasMany(WwdeTagAliase::class, 'tag_id');
+}
+
 
 }
